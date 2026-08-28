@@ -23,15 +23,14 @@ header{padding:24px 5%;display:flex;justify-content:space-between;align-items:ce
 .btn.secondary{background:#fff;color:#111}
 .btn.danger{background:#fff;color:var(--danger);border-color:#efb2b2}
 main{max-width:1200px;margin:auto;padding:34px 5% 60px}
-.hero{text-align:center;padding:60px 10px 50px}
+.hero{text-align:center;padding:30px 10px 38px}
 .catalog-note{font-size:14px;font-weight:700;color:#555;max-width:900px;margin:10px auto 8px;line-height:1.5}
 .hero h1{font-size:clamp(30px,5vw,56px);margin:0 0 15px;letter-spacing:-1px}
 .hero p{color:var(--muted);font-size:16px;margin:0 0 30px}
 .hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
 .hidden{display:none!important}
 .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:15px}
-.section-title h2{margin:0;font-size:25px}.section-title #pageTitle{display:none!important}
-.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+.section-title h2{margin:0;font-size:25px}.section-title #pageTitle{display:block!important}.sort-control{display:flex;align-items:center;gap:8px;margin-left:auto}.sort-control label{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}.sort-control select{height:44px;padding:0 38px 0 12px;border:1px solid #d8d8d8;border-radius:10px;background:#fff;font-size:14px;font-weight:700;cursor:pointer}.section-left{display:flex;align-items:center;gap:14px;min-width:0}.hero-random-wrap{max-width:520px;margin:0 auto;padding:8px;border-radius:18px;background:#fff;border:1px solid var(--border);box-shadow:0 8px 25px rgba(0,0,0,.06)}.hero-random-img{width:100%;aspect-ratio:4/3;object-fit:contain;border-radius:12px;display:block;transition:opacity .25s ease}.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:.2s;cursor:pointer}
 .card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.08)}
 .card-img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eee;display:block}
@@ -219,11 +218,24 @@ footer{text-align:center;color:#888;font-size:12px;padding:30px}
 <main>
   <section id="catalogPage">
     <div class="hero catalog-hero">
-<h1>KATALOG DESAIN<br>SKINSUIT</h1>
-      <p>Pilih desain berdasarkan tema dan warna yang Anda cari.</p>
+      <div class="hero-random-wrap">
+        <img id="heroRandomImage" class="hero-random-img" src="images/1.jpg" alt="Preview desain katalog">
+      </div>
     </div>
     <div class="section-title">
-      <h2 id="pageTitle">Semua Desain</h2>
+      <div class="section-left"><h2 id="pageTitle">Desain Tersedia</h2>
+        <div class="sort-control">
+          <label for="sortSelect">Urutkan</label>
+          <select id="sortSelect">
+            <option value="random">Acak</option>
+            <option value="newest">Terbaru</option>
+            <option value="number">Nomor</option>
+            <option value="name">Nama</option>
+            <option value="color">Warna</option>
+            <option value="theme">Tema</option>
+          </select>
+        </div>
+      </div>
       <div class="admin-actions">
         <button class="btn hidden" id="addBtn">＋ TAMBAH GAMBAR</button>
         <button class="btn hidden" id="bulkBtn">＋ UPLOAD BANYAK</button>
@@ -435,6 +447,9 @@ let mode = new URLSearchParams(location.search).get("admin")==="1" ? "admin" : "
 let selectedDesign = null;
 let themeFilterValue = "all";
 let colorFilterValue = "all";
+let sortValue = "random";
+const randomRanks = new Map();
+let heroTimer = null;
 
 
 const catalogPage=document.getElementById("catalogPage");
@@ -446,6 +461,8 @@ const pageTitle=document.getElementById("pageTitle");
 const themeFilterEl=document.getElementById("themeFilter");
 const colorFilterEl=document.getElementById("colorFilter");
 const resultCount=document.getElementById("resultCount");
+const sortSelect=document.getElementById("sortSelect");
+const heroRandomImage=document.getElementById("heroRandomImage");
 const cartBtn=document.getElementById("cartBtn");
 const cartCount=document.getElementById("cartCount");
 
@@ -501,13 +518,45 @@ function setupFilters(){
   colorFilterEl.value=colorFilterValue;
 }
 
+function getProductNumber(item){
+  const raw=String(item?.code ?? item?.id ?? "");
+  const match=raw.match(/(\d+)/);
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function getSortText(item, field){
+  if(field==="name") return String(item?.name||"").toLocaleLowerCase("id");
+  if(field==="color") return (item?.colors||[]).join(", ").toLocaleLowerCase("id");
+  if(field==="theme") return (item?.themes||[]).join(" • ").toLocaleLowerCase("id");
+  return "";
+}
+
+function ensureRandomRanks(){
+  designs.forEach(item=>{
+    if(!randomRanks.has(item.id)) randomRanks.set(item.id, Math.random());
+  });
+}
+
+function sortDesigns(list){
+  ensureRandomRanks();
+  const copy=[...list];
+  if(sortValue==="random") return copy.sort((a,b)=>(randomRanks.get(a.id)||0)-(randomRanks.get(b.id)||0));
+  if(sortValue==="newest") return copy.sort((a,b)=>getProductNumber(b)-getProductNumber(a));
+  if(sortValue==="number") return copy.sort((a,b)=>getProductNumber(a)-getProductNumber(b));
+  if(sortValue==="name") return copy.sort((a,b)=>getSortText(a,"name").localeCompare(getSortText(b,"name"),"id") || getProductNumber(a)-getProductNumber(b));
+  if(sortValue==="color") return copy.sort((a,b)=>getSortText(a,"color").localeCompare(getSortText(b,"color"),"id") || getProductNumber(a)-getProductNumber(b));
+  if(sortValue==="theme") return copy.sort((a,b)=>getSortText(a,"theme").localeCompare(getSortText(b,"theme"),"id") || getProductNumber(a)-getProductNumber(b));
+  return copy;
+}
+
 function getFilteredDesigns(){
-  return designs.filter(item=>{
+  const filtered=designs.filter(item=>{
     if(item.isSpecial)return true;
     const themeOk=themeFilterValue==="all"||(item.themes||[]).includes(themeFilterValue);
     const colorOk=colorFilterValue==="all"||(item.colors||[]).includes(colorFilterValue);
     return themeOk&&colorOk;
   });
+  return sortDesigns(filtered);
 }
 
 function renderCatalog(){
@@ -765,12 +814,40 @@ function sendOrder(){
   window.location.assign(url);
 }
 
+function pickRandomHeroImage(){
+  if(!heroRandomImage || !designs.length)return;
+  const candidates=designs.filter(item=>item.image);
+  if(!candidates.length)return;
+  let next=candidates[Math.floor(Math.random()*candidates.length)];
+  const current=heroRandomImage.dataset.productId;
+  if(candidates.length>1){
+    let guard=0;
+    while(String(next.id)===String(current) && guard<10){
+      next=candidates[Math.floor(Math.random()*candidates.length)];
+      guard++;
+    }
+  }
+  heroRandomImage.style.opacity="0.35";
+  setTimeout(()=>{
+    heroRandomImage.src=next.image;
+    heroRandomImage.alt=next.name||"Preview desain katalog";
+    heroRandomImage.dataset.productId=next.id;
+    heroRandomImage.style.opacity="1";
+  },120);
+}
+
+function startRandomHero(){
+  pickRandomHeroImage();
+  if(heroTimer)clearInterval(heroTimer);
+  heroTimer=setInterval(pickRandomHeroImage,4500);
+}
+
 function showPage(newMode){
   mode=newMode;
   addBtn.classList.toggle("hidden",mode!=="admin");
   bulkBtn.classList.toggle("hidden",mode!=="admin");
   adminNote.classList.toggle("hidden",mode!=="admin");
-  pageTitle.textContent=mode==="admin"?"Katalog Desain — ADMIN":"Semua Desain";
+  pageTitle.textContent=mode==="admin"?"Desain Tersedia — ADMIN":"Desain Tersedia";
   renderCatalog();
 }
 
@@ -839,6 +916,10 @@ themeFilterEl.addEventListener("change",()=>{
 });
 colorFilterEl.addEventListener("change",()=>{
   colorFilterValue=colorFilterEl.value;
+  renderCatalog();
+});
+sortSelect.addEventListener("change",()=>{
+  sortValue=sortSelect.value;
   renderCatalog();
 });
 document.getElementById("resetFilters").onclick=()=>{
@@ -985,6 +1066,9 @@ document.querySelectorAll(".modal-backdrop").forEach(backdrop=>{
   });
 });
 
+ensureRandomRanks();
+sortSelect.value=sortValue;
+startRandomHero();
 updateCartCount();
 showPage(mode);
 </script>
