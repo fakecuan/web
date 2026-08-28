@@ -1167,5 +1167,53 @@ function send(){
 }
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('addClickerBatchName').onclick=addRow;document.getElementById('sendBatch').onclick=send;addRow()});
 })();
-</script></body>
+</script>
+<style id="clicker-mobile-final">
+/* KLIKER NAMA: all three color boxes fit fully on mobile; no horizontal scrollbar */
+.clicker-name-col,
+.clicker-colors-wrap,
+.clicker-color-row{
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+}
+.clicker-color-row{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:4px !important;
+  width:100% !important;
+  margin-top:6px;
+  padding:0 !important;
+  overflow:hidden !important;
+}
+.clicker-color-row select{
+  box-sizing:border-box !important;
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  padding:8px 2px !important;
+  font-size:9px !important;
+  line-height:1.1 !important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+@media(max-width:600px){
+  .clicker-row{
+    grid-template-columns:28px minmax(0,1fr) 76px 32px !important;
+    gap:5px !important;
+  }
+  .clicker-color-row{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:3px !important;
+  }
+  .clicker-color-row select{
+    font-size:8.5px !important;
+    padding:8px 1px !important;
+    border-radius:8px;
+  }
+}
+</style>
+</body>
 </html>
