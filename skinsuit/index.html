@@ -1,9 +1,1323 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Divalicious Skinsuit</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Katalog Desain Skinsuit DIVA SKATE — 86 Produk</title>
+<style>
+:root{
+  --bg:#f5f5f7; --card:#fff; --text:#111; --muted:#707070;
+  --accent:#111; --border:#e7e7e7; --danger:#d62828;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer}
+header{padding:24px 5%;display:flex;justify-content:space-between;align-items:center;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.logo{font-weight:900;letter-spacing:2px;font-size:20px}
+.header-actions{display:flex;gap:10px}
+.bulk-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 18px;max-height:260px;overflow:auto}
+.bulk-preview-item{border:1px solid #ddd;border-radius:8px;overflow:hidden;background:#f7f7f7}
+.bulk-preview-item img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.bulk-preview-item div{padding:6px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{border:1px solid #111;background:#111;color:#fff;padding:12px 18px;border-radius:10px;font-weight:700}
+.btn.secondary{background:#fff;color:#111}
+.btn.danger{background:#fff;color:var(--danger);border-color:#efb2b2}
+main{max-width:1200px;margin:auto;padding:34px 5% 60px}
+.hero{text-align:center;padding:60px 10px 50px}
+.catalog-note{font-size:14px;font-weight:700;color:#555;max-width:900px;margin:10px auto 8px;line-height:1.5}
+.hero h1{font-size:clamp(30px,5vw,56px);margin:0 0 15px;letter-spacing:-1px}
+.hero p{color:var(--muted);font-size:16px;margin:0 0 30px}
+.hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.hidden{display:none!important}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:15px}
+.section-title h2{margin:0;font-size:25px}.section-title #pageTitle{display:none!important}
+.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:.2s;cursor:pointer}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,.08)}
+.card-img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eee;display:block}
+.card-media{position:relative}
+
+.card-body{padding:14px}
+.card-name{font-weight:800;margin-bottom:5px}
+.card-sub{font-size:13px;color:var(--muted)}
+.delete-card-btn{display:block;position:relative;z-index:100;width:100%;margin-top:12px;padding:10px;border:1px solid #e5aaaa;background:#fff;color:#c62828;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;position:relative;z-index:5}
+.delete-card-btn:hover{background:#fff1f1}
+.bulk-preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:15px 0;max-height:420px;overflow:auto}
+.bulk-item{border:1px solid #ddd;border-radius:10px;padding:8px;background:#fafafa}
+.bulk-item img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:7px;margin:0 0 7px}
+.bulk-item input{padding:8px;font-size:13px;margin-bottom:6px}
+.bulk-number{font-size:11px;color:#777;font-weight:700;margin-bottom:5px}
+.bulk-hint{font-size:11px;color:#888;line-height:1.3}
+.delete-card-btn:active{transform:scale(.98)}
+.empty{padding:60px 20px;text-align:center;color:var(--muted);background:#fff;border:1px dashed #ccc;border-radius:16px}
+.catalog-hero{padding:34px 10px 25px}.catalog-hero h1{font-size:clamp(28px,4vw,44px)}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.filters{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin:0 0 14px;padding:15px;background:#fff;border:1px solid var(--border);border-radius:14px}.filter-group label{font-size:12px;color:var(--muted);margin-bottom:6px}.filter-reset{height:44px}.result-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 14px}
+.result-count{font-size:13px;color:var(--muted);margin:0}
+.sort-picker{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sort-picker label{font-size:13px;color:var(--muted)}
+.sort-picker select{height:40px;padding:8px 32px 8px 11px;border:1px solid #d8d8d8;border-radius:9px;background:#fff;font-size:13px;min-width:145px}
+@media(max-width:600px){
+  .result-toolbar{align-items:stretch}
+  .sort-picker{justify-content:flex-end}
+  .sort-picker select{min-width:130px}
+}
+.product-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.tag{display:inline-block;padding:5px 8px;border-radius:999px;background:#f1f1f1;font-size:11px;font-weight:700}.tag.theme{background:#eef5ff}.tag.color{background:#fff3e8}.detail-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 16px}.meta-box{padding:10px 12px;border:1px solid #e5e5e5;border-radius:10px;background:#fafafa}.meta-label{font-size:11px;color:#777;text-transform:uppercase;font-weight:700;margin-bottom:4px}.meta-value{font-size:13px;font-weight:700}.size-picker select,.model-picker select{width:100%;padding:13px;border:1px solid #d8d8d8;border-radius:10px;background:#fff;font-size:16px}.size-chart-compact{margin:10px 0 16px;border:1px solid #e5e5e5;border-radius:10px;background:#fafafa}.size-chart-compact summary{padding:11px 13px;font-weight:700;cursor:pointer}.size-chart-compact .size-table-wrap{max-height:280px;overflow:auto;padding:0 10px 10px}.cart-modal{max-width:620px}.cart-item-custom{font-size:12px;color:#555;line-height:1.5;margin-top:5px;padding:6px 8px;background:#f7f7f7;border-radius:7px}
+.cart-items{display:flex;flex-direction:column;gap:10px}.cart-item{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid #e5e5e5;border-radius:12px}.cart-item img{width:70px;height:70px;object-fit:cover;border-radius:8px;background:#eee}.cart-item-name{font-weight:800;font-size:14px}.cart-item-price{font-weight:800;margin-top:6px}.cart-grand-total{display:flex;justify-content:space-between;align-items:center;margin:12px 0 16px;padding:15px;border:1px solid #ddd;border-radius:10px;background:#f7f7f7;font-size:18px}.cart-item-size{font-size:13px;color:#666;margin-top:4px}.remove-item{border:0;background:#fff0f0;color:#c62828;border-radius:8px;padding:8px;font-size:12px;font-weight:700}.order-total{display:flex;justify-content:space-between;align-items:center;margin:18px 0 14px;padding:13px 15px;background:#f5f5f5;border-radius:10px}.customer-form h4{margin:18px 0 12px}.customer-form input,.customer-form textarea{width:100%;padding:12px;border:1px solid #d8d8d8;border-radius:9px;font:inherit}.header-actions .btn{white-space:nowrap}.shipping-note{margin:6px 0 16px;padding:0;background:transparent;border:0;border-radius:0;color:#888;font-size:11px;line-height:1.4;text-align:center}.shipping-note .btn{margin-top:6px;width:auto;display:inline-block;text-align:center;text-decoration:none;padding:7px 14px;border-radius:7px;font-size:12px}
+
+@media(max-width:600px){.filters{grid-template-columns:1fr 1fr}.filter-reset{grid-column:1/-1}.detail-meta{grid-template-columns:1fr}}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:30}
+.modal{background:#fff;border-radius:18px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:24px}
+.modal h3{margin:0 0 20px;font-size:23px}
+.modal img{width:100%;max-height:380px;object-fit:contain;background:#f4f4f4;border-radius:12px;margin-bottom:18px}
+.close{float:right;border:0;background:#eee;border-radius:50%;width:34px;height:34px}
+.form-group{margin-bottom:15px}
+label{display:block;font-weight:700;margin-bottom:7px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:9px;font-size:15px;font-family:inherit;resize:vertical}
+.size-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0 20px}
+.size-option input{display:none}
+.size-option span{display:block;text-align:center;border:1px solid #ccc;padding:11px 4px;border-radius:8px;font-weight:700}
+.size-option input:checked+span{background:#111;color:#fff;border-color:#111}
+.product-description{background:#f7f7f7;border-radius:10px;padding:12px 14px;margin:-5px 0 18px;color:#444;font-size:14px;line-height:1.5;white-space:pre-wrap}
+.size-chart{margin:0 0 20px}
+.size-chart h4{margin:0 0 10px;font-size:15px}
+.size-table-wrap{max-height:260px;overflow:auto;border:1px solid #ddd;border-radius:10px}
+.size-chart table{width:100%;border-collapse:collapse;font-size:12px}
+.size-chart th,.size-chart td{padding:8px 7px;border-bottom:1px solid #e5e5e5;text-align:center}
+.size-chart th{background:#0c91a5;color:#fff;position:sticky;top:0}
+.size-chart tbody tr:last-child td{border-bottom:0}
+.detail-actions{display:flex;gap:10px}
+.detail-actions .btn{flex:1}
+.admin-note{background:#fff8e1;border:1px solid #f1d98a;padding:12px 15px;border-radius:10px;margin-bottom:20px;font-size:14px}
+footer{text-align:center;color:#888;font-size:12px;padding:30px}
+@media(max-width:600px){
+ header{padding:18px 4%}.logo{font-size:16px}
+ .header-actions .btn{padding:9px 12px;font-size:13px}
+ main{padding:20px 4% 40px}
+ .hero{padding:40px 5px}.hero h1{font-size:32px}
+ .catalog{grid-template-columns:repeat(2,1fr);gap:10px}
+ .card-body{padding:10px}.card-name{font-size:14px}
+ .size-grid{grid-template-columns:repeat(4,1fr)}
+}
+.brand-logo{display:block;width:112px;height:auto;object-fit:contain}.hero-brand-logo{display:block;width:min(220px,45vw);height:auto;margin:0 auto 18px;object-fit:contain}.footer-logo{display:inline-block;width:82px;height:auto;vertical-align:middle;margin-right:8px;object-fit:contain}
+.search-wrap{display:none!important;margin:0 0 14px;padding:12px 15px;background:#fff;border:1px solid var(--border);border-radius:14px;display:flex;gap:10px;align-items:center}.search-box{flex:1;position:relative}.search-box input{width:100%;height:44px;padding:0 42px 0 14px;border:1px solid #d8d8d8;border-radius:10px;font-size:15px;outline:none}.search-box input:focus{border-color:#111}.search-icon{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:18px;color:#777;pointer-events:none}.search-clear{height:44px;min-width:44px;padding:0 13px}.filters{grid-template-columns:1fr 1fr auto}
+@media(max-width:700px){.filters{grid-template-columns:1fr 1fr}.filter-reset{grid-column:1/-1}.search-wrap{padding:10px}.search-clear{min-width:70px}}
+
+
+.size-recommendation{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#eef7ff;
+  border:1px solid #b9dcff;
+  color:#124a73;
+  font-size:14px;
+  line-height:1.45;
+}
+.size-recommendation b{font-size:16px;}
+.size-recommendation small{display:block;margin-top:3px;color:#526b7b;}
+.size-chart-note{margin-top:8px;font-size:12px;color:#666;}
+</style>
+
+<style id="compact-cart-mobile">
+.cart-summary, .order-summary, .cart-total, .grand-total, .total-pesanan {
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+.cart-summary, .order-summary {
+  padding:10px !important;
+}
+.shipping-info-clean {
+  width:100% !important;
+  box-sizing:border-box !important;
+  margin:8px 0 0 !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  color:#888 !important;
+  font-size:11px !important;
+  line-height:1.35 !important;
+  text-align:center !important;
+}
+.shipping-info-clean a {
+  font-size:11px !important;
+  padding:5px 10px !important;
+  margin-top:5px !important;
+}
+@media (max-width:600px){
+  .cart-summary, .order-summary {
+    padding:8px !important;
+    margin:6px 0 !important;
+  }
+  .cart-summary *,.order-summary * {
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+  .shipping-info-clean {
+    font-size:10px !important;
+  }
+  .shipping-info-clean a {
+    font-size:10px !important;
+    padding:5px 9px !important;
+  }
+}
+</style>
+
+
+<style id="cart-summary-clean-final">
+.cart-summary-compact{
+  margin:14px 0 16px;
+  padding:12px 14px;
+  border:1px solid #e1e1e1;
+  border-radius:12px;
+  background:#fafafa;
+  box-sizing:border-box;
+}
+.cart-summary-compact .summary-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  box-sizing:border-box;
+  padding:6px 0;
+  font-size:15px;
+}
+.cart-summary-compact .summary-row span{color:#444;}
+.cart-summary-compact .summary-row strong{font-weight:700;text-align:right;white-space:nowrap;}
+.cart-summary-compact #cartGrandTotal{margin:0;border:0;border-radius:0;background:transparent;padding:6px 0 8px;font-size:16px;}
+.cart-summary-compact .shipping-note{
+  margin:7px 0 0;
+  padding:8px 0 0;
+  border-top:1px solid #e8e8e8;
+  background:transparent;
+  color:#888;
+  font-size:11px;
+  line-height:1.45;
+  text-align:center;
+}
+.cart-summary-compact .shipping-note .btn{
+  display:inline-block;
+  width:auto;
+  margin-top:7px;
+  padding:7px 14px;
+  border-radius:8px;
+  font-size:12px;
+  text-decoration:none;
+  white-space:nowrap;
+}
+@media(max-width:600px){
+  .cart-modal{padding:16px !important;}
+  .cart-summary-compact{margin:10px 0 14px;padding:10px 12px;border-radius:10px;}
+  .cart-summary-compact .summary-row{font-size:14px;padding:5px 0;}
+  .cart-summary-compact #cartGrandTotal{font-size:15px;}
+  .cart-summary-compact .shipping-note{font-size:10px;padding-top:7px;}
+  .cart-summary-compact .shipping-note .btn{font-size:11px;padding:6px 12px;margin-top:6px;}
+}
+</style>
+
+<style id="chat-admin-banner-style">
+.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chat-admin-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;white-space:nowrap}
+.chat-admin-icon{font-size:16px;line-height:1}
+.catalog-banner-wrap{padding:24px 0 18px!important}
+.catalog-banner{position:relative;width:100%;height:clamp(220px,34vw,430px);overflow:hidden;border-radius:18px;background:#f1f1f1;box-shadow:0 6px 24px rgba(0,0,0,.08)}
+.catalog-banner-slides,.catalog-banner-slide{position:absolute;inset:0;width:100%;height:100%}
+.catalog-banner-slide{object-fit:cover;opacity:0;transform:scale(1.035);transition:opacity 1.2s ease,transform 4.2s ease}
+.catalog-banner-slide.active{opacity:1;transform:scale(1)}
+.catalog-banner-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:linear-gradient(to bottom,rgba(0,0,0,.08),rgba(0,0,0,.34));color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.55);pointer-events:none}
+.catalog-banner-overlay h1{font-size:clamp(28px,5vw,56px)!important;margin:0 0 10px!important;line-height:1.05}
+.catalog-banner-overlay p{font-size:clamp(13px,2vw,17px)!important;margin:0!important;color:#fff!important}
+.catalog-note{font-size:12px;font-weight:400;color:#888;max-width:900px;margin:10px auto 0;line-height:1.45;text-align:center}
+@media(max-width:600px){.header-actions{gap:5px}.chat-admin-btn{font-size:11px!important;padding:8px 9px!important}.chat-admin-icon{font-size:14px}.catalog-banner{height:240px;border-radius:14px}.catalog-banner-overlay{padding:14px}.catalog-banner-overlay h1{font-size:28px!important}.catalog-banner-overlay p{font-size:12px!important}.catalog-note{font-size:11px;padding:0 10px}}
+</style>
+
+<style id="header-no-text">
+/* Header halaman utama: hanya tampilkan banner gambar */
+.hero-title, .hero-subtitle, .banner-title, .banner-subtitle,
+.catalog-title, .catalog-note, .header-title, .header-subtitle {
+  display: none !important;
+}
+/* Pastikan teks yang menempel sebagai overlay pada banner utama juga tidak tampil */
+.hero-overlay-text, .banner-overlay-text {
+  display: none !important;
+}
+</style>
+
+<style id="remove-catalog-banner-text">
+.catalog-banner-overlay { display:none !important; }
+</style>
+
+<style id="icon-only-social-buttons">
+.follow-ig-btn,
+a[aria-label="Chat Admin"] {
+  width:52px !important;
+  height:52px !important;
+  min-width:52px !important;
+  padding:0 !important;
+  margin:0 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:1px solid #222 !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  color:#111 !important;
+  box-sizing:border-box !important;
+}
+.follow-ig-btn { margin-top:8px !important; }
+.follow-ig-btn svg,
+a[aria-label="Chat Admin"] svg {
+  width:27px !important;
+  height:27px !important;
+  display:block !important;
+}
+@media (max-width:600px){
+  .follow-ig-btn,
+  a[aria-label="Chat Admin"] {
+    width:46px !important;
+    height:46px !important;
+    min-width:46px !important;
+    border-radius:12px !important;
+  }
+  .follow-ig-btn svg,
+  a[aria-label="Chat Admin"] svg {
+    width:24px !important;
+    height:24px !important;
+  }
+}
+</style>
+
 </head>
 <body>
-    <h1>Divalicious Skinsuit</h1>
+
+<header>
+  <div class="logo"><img class="brand-logo" src="images/logo.png" alt="DIVA SKATE"></div>
+  <div class="header-actions">
+    <a class="btn secondary chat-admin-btn" id="chatAdminBtn" href="https://wa.me/628561902897?text=Ada%20yang%20bisa%20dibantu%3F" target="_blank" rel="noopener noreferrer" aria-label="Chat Admin" title="Chat Admin"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M16 3.2A12.8 12.8 0 0 0 4.9 22.4L3.2 28.8l6.5-1.7A12.8 12.8 0 1 0 16 3.2Zm0 23.1c-2 0-4-.5-5.7-1.5l-.4-.2-3.8 1 1-3.7-.2-.4A10.7 10.7 0 1 1 16 26.3Zm5.9-8c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-1.6-.8-2.7-1.4-3.8-3.2-.3-.5.3-.5.8-1.6.1-.2.1-.4 0-.6l-.9-2.1c-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.1 3.1 1.3 3.3c.2.2 2.2 3.4 5.3 4.7.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.6-.4Z"/>
+</svg></a>
+<a class="follow-ig-btn" href="https://www.instagram.com/d.va_skate?igsi=Njk4Ym9vNm83bHZr" target="_blank" rel="noopener noreferrer"
+   style="display:block;text-decoration:none;text-align:center;" aria-label="Follow Instagram" title="Follow Instagram"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+<rect x="5" y="5" width="22" height="22" rx="6" fill="none" stroke="currentColor" stroke-width="2.6"/>
+<circle cx="16" cy="16" r="5.2" fill="none" stroke="currentColor" stroke-width="2.6"/>
+<circle cx="23" cy="9" r="1.7" fill="currentColor"/>
+</svg></a>
+<style>
+.follow-ig-btn {
+  margin-top:8px;
+  padding:10px 18px;
+  border:1px solid #222;
+  border-radius:14px;
+  background:#fff;
+  color:#111;
+  font-weight:700;
+  font-size:14px;
+  box-sizing:border-box;
+}
+.follow-ig-btn:hover { background:#f5f5f5; }
+@media (max-width:600px) {
+  .follow-ig-btn { font-size:13px; padding:9px 14px; }
+}
+</style>
+
+    <button class="btn secondary" id="cartBtn">🛒 PESANAN <span id="cartCount">0</span></button>
+  </div>
+</header>
+
+<main>
+  <section id="catalogPage">
+    <div class="hero catalog-hero catalog-banner-wrap">
+      <div id="catalogBanner" class="catalog-banner" aria-label="Katalog desain skinsuit">
+        <div class="catalog-banner-slides"></div>
+      </div>
+      
+    </div>
+    <div class="section-title">
+      <h2 id="pageTitle">Semua Desain</h2>
+      <div class="admin-actions">
+        <button class="btn hidden" id="addBtn">＋ TAMBAH GAMBAR</button>
+        <button class="btn hidden" id="bulkBtn">＋ UPLOAD BANYAK</button>
+      </div>
+    </div>
+    <div id="adminNote" class="admin-note hidden">Mode Admin aktif. Tambahkan satu desain dengan <b>＋ TAMBAH GAMBAR</b> atau banyak desain dengan <b>＋ UPLOAD BANYAK</b>.</div>
+    <div class="filters">
+      <div class="filter-group"><label for="themeFilter">Tema</label><select id="themeFilter"><option value="all">Semua Tema</option></select></div>
+      <div class="filter-group"><label for="colorFilter">Warna</label><select id="colorFilter"><option value="all">Semua Warna</option></select></div>
+      <button class="btn secondary filter-reset" id="resetFilters">Reset Filter</button>
+    </div>
+    <div class="result-toolbar">
+      <div id="resultCount" class="result-count"></div>
+      <div class="sort-picker">
+        <label for="sortSelect">Urutkan</label>
+        <select id="sortSelect" aria-label="Urutkan desain">
+          <option value="" selected>Urutan...</option>
+          <option value="latest">Terbaru</option>
+          <option value="number">Nomor</option>
+          <option value="name">Nama</option>
+          <option value="color">Warna</option>
+          <option value="theme">Tema</option>
+        </select>
+      </div>
+    </div>
+    <div id="catalog" class="catalog"></div>
+  </section>
+</main>
+
+<footer><img class="footer-logo" src="images/logo.png" alt="DIVA SKATE"> • Katalog Desain Skinsuit</footer><div id="cartModal" class="modal-backdrop hidden">
+  <div class="modal cart-modal">
+    <button class="close" data-close="cartModal">×</button>
+    <h3>Pesanan Anda</h3>
+    <div id="cartItems" class="cart-items"></div>
+    <div id="cartEmpty" class="empty">Belum ada desain yang ditambahkan ke pesanan.</div>
+    <div id="customerForm" class="customer-form hidden">
+      <div class="cart-summary-compact">
+        <div class="summary-row"><span>Total Pesanan</span><strong id="cartTotal">0 pcs</strong></div>
+        <div id="cartGrandTotal" class="summary-row"><span>Total Pembelian</span><strong>Rp0</strong></div>
+        <div id="cartShippingNote" class="shipping-note">
+          <div>Harga belum termasuk ongkos kirim</div>
+          <div>Pengiriman dari MUSTIKAJAYA, BEKASI (BKA)</div>
+          <a class="btn secondary" href="https://lionparcel.com/ongkir" target="_blank" rel="noopener noreferrer">CEK ONGKIR</a>
+        </div>
+      </div>
+      <h4>Data Pelanggan</h4>
+      <div class="form-group"><label for="customerName">Nama</label><input id="customerName" type="text" placeholder="Nama lengkap"></div>
+      <div class="form-group"><label for="customerPhone">No. Telepon</label><input id="customerPhone" type="tel" placeholder="Contoh: 08123456789"></div>
+      <div class="form-group"><label for="customerAddress">Alamat</label><textarea id="customerAddress" rows="3" placeholder="Alamat lengkap pengiriman"></textarea></div>
+      <button class="btn" id="sendOrderBtn" style="width:100%">PESAN VIA WHATSAPP</button>
+    </div>
+  </div>
+</div>
+
+<div id="addModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <button class="close" data-close="addModal">×</button>
+    <h3>Tambah Desain</h3>
+    <div class="form-group">
+      <label for="designName">Judul Desain (kosongkan untuk dibuat otomatis)</label>
+      <input id="designName" placeholder="Contoh: DIVA-001">
+    </div>
+    <div class="form-group">
+      <label for="designTheme">Tema</label>
+      <input id="designTheme" placeholder="Contoh: Karakter, Sport, Cute, Fantasy">
+    </div>
+    <div class="form-group">
+      <label for="designColor">Warna</label>
+      <input id="designColor" placeholder="Contoh: Pink, Ungu, Putih">
+    </div>
+    <div class="form-group">
+      <label for="designDescription">Keterangan Produk</label>
+      <textarea id="designDescription" rows="3" placeholder="Contoh: Skinsuit dengan motif sporty dan karakter..."></textarea>
+    </div>
+    <div class="form-group">
+      <label for="designFile">Pilih Gambar</label>
+      <input id="designFile" type="file" accept="image/*">
+    </div>
+    <button class="btn" id="saveDesign" style="width:100%">SIMPAN DESAIN</button>
+  </div>
+</div>
+
+<div id="bulkModal" class="modal-backdrop hidden">
+  <div class="modal" style="max-width:700px">
+    <button class="close" data-close="bulkModal">×</button>
+    <h3>Upload Banyak Desain</h3>
+    <p style="color:#707070;font-size:14px;margin-top:-10px">
+      Pilih banyak gambar sekaligus. Nomor desain dibuat otomatis dan judul/deskripsi awal dibuat dari nama file.
+    </p>
+
+    <div class="form-group">
+      <label for="bulkFiles">Pilih Banyak Gambar</label>
+      <input id="bulkFiles" type="file" accept="image/*" multiple>
+    </div>
+
+    <div id="bulkPreview" class="bulk-preview"></div>
+
+    <button class="btn" id="saveBulk" style="width:100%">SIMPAN SEMUA DESAIN</button>
+  </div>
+</div>
+
+<div id="detailModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <button class="close" data-close="detailModal">×</button>
+    <img id="detailImg" alt="Desain skinsuit">
+<h3 id="detailName"></h3>
+    <div id="detailMeta" class="detail-meta"><div class="meta-box"><div class="meta-label">Tema</div><div class="meta-value" id="detailThemes"></div></div><div class="meta-box"><div class="meta-label">Warna</div><div class="meta-value" id="detailColors"></div></div></div>
+    <div id="detailDescription" class="product-description"></div>
+
+    <details class="size-chart-compact">
+      <summary>📏 Lihat Size Chart</summary>
+      <div class="size-table-wrap">
+        <table>
+          <thead><tr><th>Ukuran</th><th>Tinggi (cm)</th><th>Lingkar Dada (LD) (cm)</th></tr></thead>
+          <tbody>
+            <tr><td>12S</td><td>90–99</td><td>50</td></tr><tr><td>11S</td><td>100–110</td><td>52</td></tr>
+            <tr><td>10S</td><td>110–120</td><td>54</td></tr><tr><td>9S</td><td>121–125</td><td>56</td></tr>
+            <tr><td>8S</td><td>126–130</td><td>58</td></tr><tr><td>7S</td><td>131–135</td><td>60</td></tr>
+            <tr><td>6S</td><td>136–140</td><td>62</td></tr><tr><td>5S</td><td>141–145</td><td>64</td></tr>
+            <tr><td>4S</td><td>146–150</td><td>66</td></tr><tr><td>3S</td><td>151–155</td><td>68</td></tr>
+            <tr><td>2S</td><td>156–158</td><td>70</td></tr><tr><td>XS</td><td>159–162</td><td>72</td></tr>
+            <tr><td>S</td><td>163–165</td><td>76</td></tr><tr><td>M</td><td>166–170</td><td>80</td></tr>
+            <tr><td>L</td><td>171–175</td><td>84</td></tr><tr><td>XL</td><td>175–180</td><td>86</td></tr>
+            <tr><td>2XL</td><td>&gt;180</td><td>88</td></tr>
+          </tbody>
+        </table>
+        <div class="size-chart-note">LD = Lingkar Dada.</div>
+      </div>
+    </details>
+    <div class="form-group size-picker">
+      <label for="sizeSelect">Ukuran</label>
+      <select id="sizeSelect">
+        <option value="">Pilih ukuran</option>
+        <option>12S</option><option>11S</option><option>10S</option><option>9S</option>
+        <option>8S</option><option>7S</option><option>6S</option><option>5S</option>
+        <option>4S</option><option>3S</option><option>2S</option><option>XS</option>
+        <option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option>
+      </select>
+<div class="measurement-inputs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+  <label style="flex:1;min-width:120px;">Tinggi Badan (cm)<input type="number" inputmode="numeric" min="0" step="1" placeholder="Opsional" class="height-input"></label>
+  <label style="flex:1;min-width:120px;">Berat Badan (kg)<input type="number" inputmode="numeric" min="0" step="0.1" placeholder="Opsional" class="weight-input"></label>
+  <label style="flex:1;min-width:120px;">Lingkar Dada (cm)<input type="number" inputmode="numeric" min="0" step="1" placeholder="Opsional" class="body-input"></label>
+</div>
+<div id="sizeRecommendation" class="size-recommendation hidden" aria-live="polite"></div>
+
+    </div>
+    <div class="form-group model-picker">
+      <label for="modelSelect">MODEL</label>
+      <select id="modelSelect">
+        <option value="">Pilih model</option>
+        <option value="Lengan pendek" data-price="300000">Lengan pendek — Rp300.000</option>
+        <option value="Lengan panjang" data-price="320000">Lengan panjang — Rp320.000</option>
+        <option value="Lengan panjang dan rok" data-price="350000">Lengan panjang dan rok — Rp350.000</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="customName">Custom Nama <span style="font-weight:400;color:#777">(opsional)</span></label>
+      <input id="customName" type="text" maxlength="20" placeholder="Contoh: DODY">
+    </div>
+    <div class="form-group">
+      <label for="namePosition">Posisi Nama</label>
+      <select id="namePosition">
+        <option value="">Tanpa nama custom</option>
+        <option value="Dada besar">Dada besar</option>
+        <option value="Dada kecil">Dada kecil</option>
+        <option value="Paha">Paha</option>
+        <option value="Lis paha">Lis paha</option>
+        <option value="Lengan">Lengan</option>
+        <option value="Punggung">Punggung</option>
+      </select>
+    </div>
+    <div class="detail-actions">
+      <button class="btn secondary" id="closeDetail">TUTUP</button>
+      <button class="btn" id="addToCartBtn">TAMBAH PESANAN</button>
+    </div>
+  </div>
+</div>
+
+<script>const INITIAL_DESIGNS = [{"id":"pesanan_khusus_0","code":"#0","number":0,"name":"#0 — PESANAN KHUSUS","description":"","themes":[],"colors":[],"theme":"","color":"","isSpecial":true,"image":"images/0.svg"},{"id":"produk_001","code":"PRODUK-001","name":"#1 — Rediva Racing","description":"Desain racing biru dengan aksen merah dan putih yang tegas, menampilkan identitas Rediva dengan nuansa cepat dan kompetitif. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Biru","Merah","Putih"],"theme":"Sport • Racing","color":"Biru, Merah, Putih","image":"images/1.jpg","source":"initial"},{"id":"produk_002","code":"PRODUK-002","name":"#2 — Neon Speed Graphic","description":"Perpaduan hitam dengan aksen ungu, biru, dan pink yang dinamis untuk tampilan skinsuit modern dan sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Graphic"],"colors":["Hitam","Ungu","Biru","Pink"],"theme":"Sport • Racing • Graphic","color":"Hitam, Ungu, Biru, Pink","image":"images/2.jpg","source":"initial"},{"id":"produk_003","code":"PRODUK-003","name":"#3 — Magenta Racing Graphic","description":"Grafis racing berenergi dengan kombinasi hitam, magenta, kuning, dan putih untuk kesan cepat dan kuat. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Graphic"],"colors":["Hitam","Magenta","Kuning","Putih"],"theme":"Sport • Racing • Graphic","color":"Hitam, Magenta, Kuning, Putih","image":"images/3.jpg","source":"initial"},{"id":"produk_004","code":"PRODUK-004","name":"#4 — Luffy Gear One Piece","description":"Desain bertema Luffy Gear dari One Piece dengan dominasi hitam dan aksen merah-oranye yang berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","One Piece","Luffy","Anime"],"colors":["Hitam","Merah","Oranye"],"theme":"Sport • Racing • One Piece • Luffy • Anime","color":"Hitam, Merah, Oranye","image":"images/4.jpg","source":"initial"},{"id":"produk_005","code":"PRODUK-005","name":"#5 — Hot Wheels","description":"Nuansa balap biru dengan grafis Hot Wheels dan aksen oranye, dibuat untuk tampilan racing yang agresif dan penuh energi. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Hot Wheels"],"colors":["Biru","Oranye","Hitam"],"theme":"Sport • Racing • Hot Wheels","color":"Biru, Oranye, Hitam","image":"images/5.jpg","source":"initial"},{"id":"produk_006","code":"PRODUK-006","name":"#6 — Roblox","description":"Desain racing merah-hitam dengan elemen Roblox dan identitas Syaki AF, memberi kesan kompetitif dan modern. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Roblox"],"colors":["Merah","Hitam","Putih"],"theme":"Sport • Racing • Roblox","color":"Merah, Hitam, Putih","image":"images/6.jpg","source":"initial"},{"id":"produk_007","code":"PRODUK-007","name":"#7 — KPIC Team Racing","description":"Desain tim KPIC dengan dominasi biru dan detail grafis yang tegas, cocok untuk tampilan racing yang rapi dan profesional. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","KPIC","Team"],"colors":["Biru","Putih","Merah"],"theme":"Sport • Racing • KPIC • Team","color":"Biru, Putih, Merah","image":"images/7.jpg","source":"initial"},{"id":"produk_008","code":"PRODUK-008","name":"#8 — Optima Speed","description":"Desain minimalis putih-biru dengan grafis performa dan identitas Optima untuk gaya speed skating yang bersih dan sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Optima"],"colors":["Putih","Biru"],"theme":"Sport • Racing • Optima","color":"Putih, Biru","image":"images/8.jpg","source":"initial"},{"id":"produk_009","code":"PRODUK-009","name":"#9 — Comic Speed","description":"Grafis komik penuh warna dengan perpaduan pink, ungu, biru, dan hitam yang playful namun tetap sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Comic","Graphic"],"colors":["Pink","Ungu","Biru","Hitam"],"theme":"Sport • Comic • Graphic","color":"Pink, Ungu, Biru, Hitam","image":"images/9.jpg","source":"initial"},{"id":"produk_010","code":"PRODUK-010","name":"#10 — Classic Racing","description":"Gaya racing klasik dengan warna hitam, putih, dan merah serta garis tegas yang memberikan kesan cepat dan profesional. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Classic"],"colors":["Hitam","Putih","Merah"],"theme":"Sport • Racing • Classic","color":"Hitam, Putih, Merah","image":"images/10.jpg","source":"initial"},{"id":"produk_011","code":"PRODUK-011","name":"#11 — SYDZZ 65 Racing","description":"Desain racing SYDZZ 65 dengan grafis dinamis merah-biru di atas dasar putih, tampil kuat dan berkarakter. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","SYDZZ 65"],"colors":["Putih","Merah","Biru"],"theme":"Sport • Racing • SYDZZ 65","color":"Putih, Merah, Biru","image":"images/11.jpg","source":"initial"},{"id":"produk_012","code":"PRODUK-012","name":"#12 — SYDZZ 65 Blue","description":"Varian biru SYDZZ 65 dengan motif grafis yang berani dan kontras untuk tampilan speed skating yang sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","SYDZZ 65"],"colors":["Biru","Putih","Hitam"],"theme":"Sport • Racing • SYDZZ 65","color":"Biru, Putih, Hitam","image":"images/12.jpg","source":"initial"},{"id":"produk_013","code":"PRODUK-013","name":"#13 — Orange Skate Racing","description":"Desain oranye-hitam yang sangat tegas dengan identitas Orange Skate, memberikan kesan berani dan penuh energi. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Orange Skate"],"colors":["Oranye","Hitam"],"theme":"Sport • Racing • Orange Skate","color":"Oranye, Hitam","image":"images/13.jpg","source":"initial"},{"id":"produk_014","code":"PRODUK-014","name":"#14 — Roller Skate Blue","description":"Desain biru dengan pola grafis tajam dan aksen hitam-putih untuk gaya roller skate yang sporty dan modern. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Roller Skate"],"colors":["Biru","Putih","Hitam"],"theme":"Sport • Racing • Roller Skate","color":"Biru, Putih, Hitam","image":"images/14.jpg","source":"initial"},{"id":"produk_015","code":"PRODUK-015","name":"#15 — Leave Pass Speed","description":"Desain putih-biru dengan grafis khas speed skating dan pesan Leave Pass, memberikan tampilan bersih sekaligus kompetitif. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Graphic"],"colors":["Putih","Biru","Hitam"],"theme":"Sport • Racing • Graphic","color":"Putih, Biru, Hitam","image":"images/15.jpg","source":"initial"},{"id":"produk_016","code":"PRODUK-016","name":"#16 — Lightning Speed","description":"Tema kecepatan dengan grafis biru-kuning di atas dasar putih, menonjolkan semangat melaju tanpa batas. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Speed"],"colors":["Putih","Biru","Hitam","Kuning"],"theme":"Sport • Racing • Speed","color":"Putih, Biru, Hitam, Kuning","image":"images/16.jpg","source":"initial"},{"id":"produk_017","code":"PRODUK-017","name":"#17 — No Pain No Gain","description":"Desain motivasional No Pain No Gain dengan nuansa biru gelap dan grafis racing yang kuat. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Motivation"],"colors":["Biru","Hitam","Putih"],"theme":"Sport • Racing • Motivation","color":"Biru, Hitam, Putih","image":"images/17.jpg","source":"initial"},{"id":"produk_018","code":"PRODUK-018","name":"#18 — DOLZ Fire Racing","description":"Desain DOLZ bernuansa hitam dengan aksen merah-oranye dan grafis api untuk karakter racing yang agresif. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DOLZ"],"colors":["Hitam","Merah","Oranye"],"theme":"Sport • Racing • DOLZ","color":"Hitam, Merah, Oranye","image":"images/18.jpg","source":"initial"},{"id":"produk_019","code":"PRODUK-019","name":"#19 — Alfaro Racing","description":"Desain Alfaro dengan kombinasi biru, merah, hitam, dan putih yang memberikan karakter racing cepat dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Biru","Merah","Hitam","Putih"],"theme":"Sport • Racing","color":"Biru, Merah, Hitam, Putih","image":"images/19.jpg","source":"initial"},{"id":"produk_020","code":"PRODUK-020","name":"#20 — Pink Roller Skate","description":"Desain roller skate bernuansa pink dan ungu dengan sentuhan biru untuk tampilan sporty yang lebih playful. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Roller Skate"],"colors":["Pink","Ungu","Biru"],"theme":"Sport • Racing • Roller Skate","color":"Pink, Ungu, Biru","image":"images/20.jpg","source":"initial"},{"id":"produk_021","code":"PRODUK-021","name":"#21 — Speed With Style","description":"Desain ungu-pink dengan grafis Speed With Style, memadukan karakter fashionable dan energi balap. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Style"],"colors":["Ungu","Pink","Hitam"],"theme":"Sport • Racing • Style","color":"Ungu, Pink, Hitam","image":"images/21.jpg","source":"initial"},{"id":"produk_022","code":"PRODUK-022","name":"#22 — RadyBalon Cute","description":"Desain pink yang playful dengan grafis karakter lucu dan identitas RadyBalon untuk gaya skating yang ceria. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Cute"],"colors":["Pink","Putih","Hitam"],"theme":"Sport • Cute","color":"Pink, Putih, Hitam","image":"images/22.jpg","source":"initial"},{"id":"produk_023","code":"PRODUK-023","name":"#23 — Wild Speed Graphic","description":"Grafis speed dengan ilustrasi bergaya wild dan kombinasi merah-biru-hitam yang membuat tampilan lebih agresif. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Graphic"],"colors":["Putih","Merah","Biru","Hitam"],"theme":"Sport • Racing • Graphic","color":"Putih, Merah, Biru, Hitam","image":"images/23.jpg","source":"initial"},{"id":"produk_024","code":"PRODUK-024","name":"#24 — Floral Racing","description":"Desain putih dengan aksen merah dan hitam serta detail floral untuk tampilan racing yang elegan. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Graphic"],"colors":["Putih","Merah","Hitam"],"theme":"Sport • Racing • Graphic","color":"Putih, Merah, Hitam","image":"images/24.jpg","source":"initial"},{"id":"produk_025","code":"PRODUK-025","name":"#25 — Ride With Confidence","description":"Perpaduan pink, putih, dan hitam dengan grafis Ride With Confidence untuk kesan sporty yang percaya diri. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Style"],"colors":["Pink","Putih","Hitam"],"theme":"Sport • Racing • Style","color":"Pink, Putih, Hitam","image":"images/25.jpg","source":"initial"},{"id":"produk_026","code":"PRODUK-026","name":"#26 — Champions Team","description":"Desain biru elegan dengan aksen emas dan identitas Champions, cocok untuk nuansa tim dan kemenangan. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Team","Champions"],"colors":["Biru","Emas","Putih"],"theme":"Sport • Team • Champions","color":"Biru, Emas, Putih","image":"images/26.jpg","source":"initial"},{"id":"produk_027","code":"PRODUK-027","name":"#27 — Big Speed In Style","description":"Grafis Big Speed In Style dengan perpaduan pink, putih, dan biru yang modern dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Style"],"colors":["Pink","Putih","Biru"],"theme":"Sport • Racing • Style","color":"Pink, Putih, Biru","image":"images/27.jpg","source":"initial"},{"id":"produk_028","code":"PRODUK-028","name":"#28 — DOLZ Malang","description":"Desain DOLZ bernuansa biru dengan identitas Malang Roller Skating Club dan grafis Feel The Energy. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DOLZ","Malang"],"colors":["Biru","Putih","Hitam"],"theme":"Sport • Racing • DOLZ • Malang","color":"Biru, Putih, Hitam","image":"images/28.jpg","source":"initial"},{"id":"produk_029","code":"PRODUK-029","name":"#29 — MRS Musi Roller Skate","description":"Desain MRS Musi Roller Skate dengan nuansa ungu dan pink serta motif grafis yang khas dan energik. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","MRS","Musi Roller Skate"],"colors":["Ungu","Pink","Putih"],"theme":"Sport • Racing • MRS • Musi Roller Skate","color":"Ungu, Pink, Putih","image":"images/29.jpg","source":"initial"},{"id":"produk_030","code":"PRODUK-030","name":"#30 — DIVA SKATE Without Limits","description":"Desain DIVA SKATE dengan grafis Skate Without Limits dan kombinasi hitam, putih, biru, serta pink yang dinamis. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DIVA SKATE"],"colors":["Hitam","Putih","Biru","Pink"],"theme":"Sport • Racing • DIVA SKATE","color":"Hitam, Putih, Biru, Pink","image":"images/30.jpg","source":"initial"},{"id":"produk_031","code":"PRODUK-031","name":"#31 — Unleash Speed","description":"Desain Unleash Speed dengan pola geometris biru-merah dan dasar putih untuk kesan cepat dan modern. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DIVA SKATE"],"colors":["Putih","Biru","Merah"],"theme":"Sport • Racing • DIVA SKATE","color":"Putih, Biru, Merah","image":"images/31.jpg","source":"initial"},{"id":"produk_032","code":"PRODUK-032","name":"#32 — DIVA SKATE Playful","description":"Desain skate suit bernuansa hitam, ungu, dan pink dengan grafis playful yang tetap terlihat sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DIVA SKATE"],"colors":["Hitam","Ungu","Pink"],"theme":"Sport • Racing • DIVA SKATE","color":"Hitam, Ungu, Pink","image":"images/32.jpg","source":"initial"},{"id":"produk_033","code":"PRODUK-033","name":"#33 — Powerpuff Girls","description":"Desain karakter Powerpuff Girls dengan warna pastel dan cerah, menghadirkan gaya playful yang tetap cocok untuk aktivitas skating. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Character","Powerpuff Girls"],"colors":["Pink","Putih","Biru","Hijau"],"theme":"Sport • Character • Powerpuff Girls","color":"Pink, Putih, Biru, Hijau","image":"images/33.jpg","source":"initial"},{"id":"produk_034","code":"PRODUK-034","name":"#34 — Kuromi","description":"Desain Kuromi dengan kombinasi ungu, pink, dan hitam, dihiasi elemen pita dan grafis cute yang khas. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Character","Kuromi","Sanrio"],"colors":["Ungu","Pink","Hitam"],"theme":"Sport • Character • Kuromi • Sanrio","color":"Ungu, Pink, Hitam","image":"images/34.jpg","source":"initial"},{"id":"produk_035","code":"PRODUK-035","name":"#35 — DIVA SKATE Unleash","description":"Desain Skate Suit Unleash dengan dasar gelap dan aksen biru-pink untuk tampilan racing yang kuat. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DIVA SKATE"],"colors":["Hitam","Biru","Pink"],"theme":"Sport • Racing • DIVA SKATE","color":"Hitam, Biru, Pink","image":"images/35.jpg","source":"initial"},{"id":"produk_036","code":"PRODUK-036","name":"#36 — Floral Pink","description":"Desain floral dengan nuansa pink-putih dan ilustrasi grafis yang memberi kesan manis namun tetap sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Floral","Graphic"],"colors":["Pink","Putih","Hitam"],"theme":"Sport • Floral • Graphic","color":"Pink, Putih, Hitam","image":"images/36.jpg","source":"initial"},{"id":"produk_037","code":"PRODUK-037","name":"#37 — Be Fun DIVA SKATE","description":"Desain Be Fun dengan motif grafis penuh warna untuk tampilan skate suit yang ceria dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DIVA SKATE"],"colors":["Hitam","Biru","Merah","Kuning"],"theme":"Sport • Racing • DIVA SKATE","color":"Hitam, Biru, Merah, Kuning","image":"images/37.jpg","source":"initial"},{"id":"produk_038","code":"PRODUK-038","name":"#38 — DOLZ 1978","description":"Desain DOLZ 1978 dengan grafis api merah-biru dan dasar putih yang kuat untuk nuansa racing klasik. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DOLZ"],"colors":["Putih","Merah","Biru"],"theme":"Sport • Racing • DOLZ","color":"Putih, Merah, Biru","image":"images/38.jpg","source":"initial"},{"id":"produk_039","code":"PRODUK-039","name":"#39 — On Skater","description":"Desain On Skater dengan dominasi biru dan putih serta grafis speed yang bersih dan modern. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DIVA SKATE"],"colors":["Biru","Putih","Hitam"],"theme":"Sport • Racing • DIVA SKATE","color":"Biru, Putih, Hitam","image":"images/39.jpg","source":"initial"},{"id":"produk_040","code":"PRODUK-040","name":"#40 — Floral Character","description":"Desain floral dengan elemen karakter dan aksen ungu, putih, serta hijau untuk tampilan yang unik dan ceria. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Floral","Character"],"colors":["Ungu","Putih","Hijau"],"theme":"Sport • Floral • Character","color":"Ungu, Putih, Hijau","image":"images/40.jpg","source":"initial"},{"id":"produk_041","code":"PRODUK-041","name":"#41 — Indonesia Racing","description":"Desain bertema Indonesia dengan kombinasi hitam, merah, dan putih serta grafis racing yang tegas. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Indonesia"],"colors":["Hitam","Merah","Putih"],"theme":"Sport • Racing • Indonesia","color":"Hitam, Merah, Putih","image":"images/41.jpg","source":"initial"},{"id":"produk_042","code":"PRODUK-042","name":"#42 — Race With Pride","description":"Desain Race With Pride dengan warna hitam-merah-putih dan grafis balap yang memberi kesan kompetitif. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Team"],"colors":["Hitam","Merah","Putih"],"theme":"Sport • Racing • Team","color":"Hitam, Merah, Putih","image":"images/42.jpg","source":"initial"},{"id":"produk_043","code":"PRODUK-043","name":"#43 — Pink Red Racing","description":"Desain racing gelap dengan aksen pink-merah dan grafis geometris yang tajam. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Team"],"colors":["Hitam","Pink","Merah"],"theme":"Sport • Racing • Team","color":"Hitam, Pink, Merah","image":"images/43.jpg","source":"initial"},{"id":"produk_044","code":"PRODUK-044","name":"#44 — Korea Racing","description":"Desain biru-putih dengan identitas Korea dan motif grafis yang memberi kesan bersih serta sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Korea"],"colors":["Biru","Putih"],"theme":"Sport • Racing • Korea","color":"Biru, Putih","image":"images/44.jpg","source":"initial"},{"id":"produk_045","code":"PRODUK-045","name":"#45 — Princess Skater","description":"Desain Princess Skater dengan ilustrasi putri bergaya colorful, dipadukan dengan pink, kuning, ungu, dan hitam. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Character","Princess"],"colors":["Pink","Kuning","Ungu","Hitam"],"theme":"Sport • Character • Princess","color":"Pink, Kuning, Ungu, Hitam","image":"images/45.jpg","source":"initial"},{"id":"produk_046","code":"PRODUK-046","name":"#46 — Peacock Purple","description":"Desain bernuansa peacock dengan gradasi ungu-biru dan detail dekoratif untuk tampilan elegan dan unik. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Floral","Peacock"],"colors":["Ungu","Biru","Hijau","Putih"],"theme":"Sport • Floral • Peacock","color":"Ungu, Biru, Hijau, Putih","image":"images/46.jpg","source":"initial"},{"id":"produk_047","code":"PRODUK-047","name":"#47 — Peacock Blue","description":"Varian peacock biru dengan dasar putih dan detail bulu merak yang memberi karakter kuat namun tetap elegan. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Floral","Peacock"],"colors":["Biru","Putih","Hijau"],"theme":"Sport • Floral • Peacock","color":"Biru, Putih, Hijau","image":"images/47.jpg","source":"initial"},{"id":"produk_048","code":"PRODUK-048","name":"#48 — Shakaya Fast & Strong","description":"Desain Shakaya Fast & Strong dengan perpaduan hitam, merah, biru, dan putih untuk kesan cepat dan bertenaga. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Hitam","Merah","Biru","Putih"],"theme":"Sport • Racing","color":"Hitam, Merah, Biru, Putih","image":"images/48.jpg","source":"initial"},{"id":"produk_049","code":"PRODUK-049","name":"#49 — Comic Character","description":"Desain comic skinsuit dengan grafis karakter dan warna biru, merah, kuning, serta hitam yang playful dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Comic","Character"],"colors":["Biru","Merah","Kuning","Hitam"],"theme":"Sport • Comic • Character","color":"Biru, Merah, Kuning, Hitam","image":"images/49.jpg","source":"initial"},{"id":"produk_050","code":"PRODUK-050","name":"#50 — Floral Pink Blue","description":"Desain floral dengan dasar putih dan aksen pink-biru yang ringan, cerah, dan nyaman dilihat. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Floral","Graphic"],"colors":["Putih","Pink","Biru"],"theme":"Sport • Floral • Graphic","color":"Putih, Pink, Biru","image":"images/50.jpg","source":"initial"},{"id":"produk_051","code":"PRODUK-051","name":"#51 — Purple Pink Racing","description":"Desain racing gelap dengan grafis ungu-pink yang kontras, memberikan karakter modern dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Graphic"],"colors":["Hitam","Ungu","Pink"],"theme":"Sport • Racing • Graphic","color":"Hitam, Ungu, Pink","image":"images/51.jpg","source":"initial"},{"id":"produk_052","code":"PRODUK-052","name":"#52 — SKATES Racing","description":"Desain skinsuit bernuansa biru dan hitam dengan grafis SKATES yang tegas, cocok untuk gaya racing yang modern dan dinamis. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Skates"],"colors":["Biru","Hitam","Putih"],"theme":"Sport • Racing • Skates","color":"Biru, Hitam, Putih","image":"images/52.jpg","source":"initial"},{"id":"produk_053","code":"PRODUK-053","name":"#53 — Minecraft","description":"Desain bertema Minecraft dengan grafis pixel khas game dan kombinasi atasan hijau serta celana merah yang ceria. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Minecraft","Game","Sport"],"colors":["Hijau","Merah","Putih"],"theme":"Minecraft • Game • Sport","color":"Hijau, Merah, Putih","image":"images/53.jpg","source":"initial"},{"id":"produk_054","code":"PRODUK-054","name":"#54 — Lavender Geometric","description":"Desain ungu lavender dengan panel geometris, aksen hitam, dan nuansa elegan yang ringan untuk tampilan sporty. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Geometric","Cute"],"colors":["Ungu","Lavender","Hitam","Putih"],"theme":"Sport • Geometric • Cute","color":"Ungu, Lavender, Hitam, Putih","image":"images/54.jpg","source":"initial"},{"id":"produk_055","code":"PRODUK-055","name":"#55 — Lightning","description":"Desain biru elektrik dengan efek kilat dan nuansa futuristik yang kuat, memberikan kesan cepat dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Lightning"],"colors":["Biru","Hitam","Putih"],"theme":"Sport • Racing • Lightning","color":"Biru, Hitam, Putih","image":"images/55.jpg","source":"initial"},{"id":"produk_056","code":"PRODUK-056","name":"#56 — Cute Girl Character","description":"Desain bernuansa pink lembut dengan ilustrasi karakter anak perempuan dan panel biru navy, cocok untuk gaya cute dan playful. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Cute","Character"],"colors":["Pink","Putih","Navy"],"theme":"Sport • Cute • Character","color":"Pink, Putih, Navy","image":"images/56.jpg","source":"initial"},{"id":"produk_057","code":"PRODUK-057","name":"#57 — Indonesia Motorsport","description":"Desain racing hitam, putih, dan merah dengan identitas Indonesia, terinspirasi gaya motorsport untuk skater muda. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Indonesia"],"colors":["Hitam","Putih","Merah"],"theme":"Sport • Racing • Indonesia","color":"Hitam, Putih, Merah","image":"images/57.jpg","source":"initial"},{"id":"produk_058","code":"PRODUK-058","name":"#58 — Play Skate Shine","description":"Desain grafis warna-warni dengan nuansa street-art dan tulisan Play Skate Shine, tampil berani untuk gaya skater muda. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Graphic","Street"],"colors":["Hitam","Biru","Pink","Merah"],"theme":"Sport • Graphic • Street","color":"Hitam, Biru, Pink, Merah","image":"images/58.jpg","source":"initial"},{"id":"produk_059","code":"PRODUK-059","name":"#59 — Mega Mendung","description":"Desain skinsuit bernuansa Mega Mendung dengan pola awan khas Indonesia, dominasi marun dan hitam dengan aksen emas. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Mega Mendung","Indonesia","Traditional","Sport"],"colors":["Marun","Hitam","Emas"],"theme":"Mega Mendung • Indonesia • Traditional • Sport","color":"Marun, Hitam, Emas","image":"images/59.jpg","source":"initial"},{"id":"produk_060","code":"PRODUK-060","name":"#60 — Indonesia Racing","description":"Skinsuit bertema Indonesia dengan kombinasi warna merah dan putih serta elemen grafis racing yang tegas, memberikan tampilan nasional yang sporty dan berkarakter. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Indonesia"],"colors":["Merah","Putih"],"theme":"Sport • Indonesia","color":"Merah, Putih","image":"images/60.jpg","source":"initial"},{"id":"produk_061","code":"PRODUK-061","name":"#61 — Black Racing","description":"Skinsuit dominan hitam dengan grafis racing dan aksen kontras, memberikan kesan modern, tegas, dan agresif untuk aktivitas skating. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Indonesia"],"colors":["Hitam","Merah","Putih"],"theme":"Sport • Indonesia","color":"Hitam, Merah, Putih","image":"images/61.jpg","source":"initial"},{"id":"produk_062","code":"PRODUK-062","name":"#62 — JAZZIE 13","description":"Skinsuit JAZZIE 13 dengan kombinasi kuning dan biru serta grafis sporty yang cerah, memberikan tampilan racing yang energik dan menonjol. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Kuning","Biru"],"theme":"Sport • Racing","color":"Kuning, Biru","image":"images/62.jpg","source":"initial"},{"id":"produk_063","code":"PRODUK-063","name":"#63 — Pikachu Pokémon","description":"Skinsuit bertema Pokémon Pikachu dengan dominasi hitam dan aksen merah-kuning serta elemen karakter yang playful, cocok untuk tampilan skating yang ceria dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Pokémon"],"colors":["Hitam","Merah","Kuning"],"theme":"Sport • Pokémon","color":"Hitam, Merah, Kuning","image":"images/63.jpg","source":"initial"},{"id":"produk_064","code":"PRODUK-064","name":"#64 — DIVA SKATE Geometric","description":"Skinsuit DIVA SKATE bernuansa pink, magenta, dan navy dengan grafis geometris dinamis serta tulisan DIVA SKATE, memberikan kesan sporty, modern, dan penuh energi. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","DIVA SKATE"],"colors":["Biru","Pink","Navy"],"theme":"Sport • DIVA SKATE","color":"Biru, Pink, Navy","image":"images/64.jpg","source":"initial"},{"id":"produk_065","code":"PRODUK-065","name":"#65 — ALBI Racing","description":"Skinsuit ALBI dengan kombinasi hitam dan merah serta grafis racing yang tegas, memberikan tampilan sporty yang kuat dan agresif untuk aktivitas skating. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Hitam","Merah"],"theme":"Sport • Racing","color":"Hitam, Merah","image":"images/65.jpg","source":"initial"},{"id":"produk_066","code":"PRODUK-066","name":"#66 — ZOYA Racing","description":"Skinsuit ZOYA dengan dominasi hitam dan aksen merah serta grafis racing yang kontras, memberikan karakter modern, sporty, dan berani. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Hitam","Merah"],"theme":"Sport • Racing","color":"Hitam, Merah","image":"images/66.jpg","source":"initial"},{"id":"produk_067","code":"PRODUK-067","name":"#67 — Abstract Geometric","description":"Skinsuit lengan pendek dengan motif geometris abstrak warna hitam, biru, magenta, hijau, dan kuning pada bagian atas serta aksen motif daun warna-warni pada bagian bawah. Desain depan dan belakang dibuat serasi untuk tampilan racing yang dinamis. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Hitam","Biru","Magenta","Hijau","Kuning","Merah"],"theme":"Sport • Racing","color":"Hitam, Biru, Magenta, Hijau, Kuning, Merah","image":"images/67.jpg","source":"initial"},{"id":"produk_068","code":"PRODUK-068","name":"#68 — Phoenix Racing","description":"Skinsuit lengan pendek dengan dominasi oranye, aksen biru-ungu, dan grafis burung phoenix besar pada bagian depan dan belakang. Kombinasi warna kontras memberikan kesan sporty, berani, dan penuh energi. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Oranye","Ungu","Biru","Hitam"],"theme":"Sport • Racing","color":"Oranye, Ungu, Biru, Hitam","image":"images/68.jpg","source":"initial"},{"id":"produk_069","code":"PRODUK-069","name":"#69 — Mulawarman Racing","description":"Skinsuit lengan pendek dominan hitam dengan aksen kuning, garis diagonal, detail kotak-kotak, dan identitas Mulawarman pada bagian depan serta belakang. Desainnya memberikan karakter racing yang tegas, modern, dan aerodinamis. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing"],"colors":["Hitam","Kuning"],"theme":"Sport • Racing","color":"Hitam, Kuning","image":"images/69.jpg","source":"initial"},{"id":"produk_070","code":"PRODUK-070","name":"#70 — ZOYA Teknik Utama","description":"Desain ZOYA Teknik Utama dengan dominasi hitam dan aksen emas-merah, menampilkan grafis alat berat, identitas ZOYA, serta detail racing yang tegas. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","ZOYA","Teknik Utama"],"colors":["Hitam","Merah","Emas"],"theme":"Sport • Racing • ZOYA • Teknik Utama","color":"Hitam, Merah, Emas","image":"images/70.jpg","source":"initial"},{"id":"produk_071","code":"PRODUK-071","name":"#71 — Sonic","description":"Desain karakter Sonic dengan dominasi hitam dan biru elektrik, efek petir, serta grafis Sonic pada bagian depan dan belakang untuk tampilan skating yang cepat dan energik. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Character","Sonic","Racing"],"colors":["Hitam","Biru","Kuning"],"theme":"Sport • Character • Sonic • Racing","color":"Hitam, Biru, Kuning","image":"images/71.jpg","source":"initial"},{"id":"produk_072","code":"PRODUK-072","name":"#72 — Lyla Zaina","description":"Desain Lyla Zaina bertema unicorn dengan dominasi putih, lavender, dan pink, dihiasi bintang serta ilustrasi unicorn pada bagian belakang. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Character","Lyla Zaina","Unicorn","Cute"],"colors":["Putih","Ungu","Pink"],"theme":"Sport • Character • Lyla Zaina • Unicorn • Cute","color":"Putih, Ungu, Pink","image":"images/72.jpg","source":"initial"},{"id":"produk_073","code":"PRODUK-073","name":"#73 — DMRT Baeng Mus Racing Team","description":"Desain skinsuit racing DMRT Baeng Mus Racing Team dengan grafis abstrak berwarna oranye, biru dan putih pada dasar hitam. Menampilkan tampilan balap yang tegas dan dinamis. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","DMRT","Team"],"colors":["Hitam","Oranye","Biru","Putih"],"theme":"Sport • Racing • DMRT • Team","color":"Hitam, Oranye, Biru, Putih","image":"images/73.jpg","source":"initial"},{"id":"produk_074","code":"PRODUK-074","name":"#74 — Scuderia Ferrari","description":"Desain racing merah bertema Scuderia Ferrari dengan aksen hitam dan detail identitas Ferrari yang kuat, menghadirkan nuansa motorsport klasik dan kompetitif. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Scuderia Ferrari","Ferrari"],"colors":["Merah","Hitam","Putih","Kuning"],"theme":"Sport • Racing • Scuderia Ferrari • Ferrari","color":"Merah, Hitam, Putih, Kuning","image":"images/74.jpg","source":"initial"},{"id":"produk_075","code":"PRODUK-075","name":"#75 — Hot Wheels Alvaro R5","description":"Desain skinsuit Hot Wheels Alvaro R5 dengan kombinasi biru, merah, kuning dan putih serta grafis sponsor bertema balap dan skateboard. Bahan: LYCRA Spandek dengan komposisi polyester 85% dan spandek 15% dengan gramasi 200 gsm.","themes":["Sport","Racing","Hot Wheels","Alvaro R5"],"colors":["Biru","Merah","Kuning","Putih"],"theme":"Sport • Racing • Hot Wheels • Alvaro R5","color":"Biru, Merah, Kuning, Putih","image":"images/75.jpg","source":"initial"},{"id":"produk_076","code":"PRODUK-076","name":"#76 — KPIC Karawang","description":"Desain skinsuit racing bertema KPIC Karawang dengan dominasi merah dan hitam, grafis sporty yang tegas, serta aksen putih. Tulisan, logo dan nama pada produk hanyalah contoh dan dapat dirubah sesuai keinginan.","themes":["KPIC Karawang","Sport","Racing"],"colors":["Merah","Hitam","Putih"],"theme":"KPIC Karawang • Sport • Racing","color":"Merah, Hitam, Putih","image":"images/76.jpg","source":"initial"},{"id":"produk_077","code":"PRODUK-077","name":"#77 — DIVA SKATE Floral Gradient","description":"Desain skinsuit sport dengan perpaduan warna biru, pink dan ungu, dihiasi motif floral dekoratif. Tampilan dinamis, elegan, ringan dan cocok untuk aktivitas inline skating.","themes":["Sport","DIVA SKATE","Floral"],"colors":["Biru","Pink","Ungu"],"theme":"Sport • DIVA SKATE • Floral","color":"Biru, Pink, Ungu","image":"images/77.jpg"},{"id":"produk_078","code":"PRODUK-078","name":"#78 — ARIAL SPORT","description":"Desain skinsuit sport merah, hitam, dan putih dengan identitas ARIAL SPORT dan gaya racing yang tegas.","themes":["Sport","Racing","ARIAL SPORT"],"colors":["Merah","Hitam","Putih"],"theme":"Sport • Racing • ARIAL SPORT","color":"Merah, Hitam, Putih","image":"images/78.jpg"},{"id":"produk_079","code":"PRODUK-079","name":"#79 — MAHESA","description":"Desain skinsuit bertema karakter anime dengan dominasi merah, navy, dan hitam, menampilkan karakter Luffy dan nama MAHESA.","themes":["Sport","Anime","Character"],"colors":["Merah","Navy","Hitam","Putih"],"theme":"Sport • Anime • Character","color":"Merah, Navy, Hitam, Putih","image":"images/79.jpg"},{"id":"produk_080","code":"PRODUK-080","name":"#80 — AQIRA","description":"Desain playful untuk anak dengan motif abstrak warna-warni bernuansa biru, pink, kuning, dan teal.","themes":["Kids","Colorful","Playful"],"colors":["Biru","Pink","Kuning","Teal","Hitam"],"theme":"Kids • Colorful • Playful","color":"Biru, Pink, Kuning, Teal, Hitam","image":"images/80.jpg"},{"id":"produk_081","code":"PRODUK-081","name":"#81 — KOPI ABC BAIM 08","description":"Desain skinsuit biru dengan aksen putih dan kuning, menampilkan nama BAIM dan nomor 08 dengan gaya jersey sporty.","themes":["Sport","Team","Blue"],"colors":["Biru","Putih","Kuning"],"theme":"Sport • Team • Blue","color":"Biru, Putih, Kuning","image":"images/81.jpg"},{"id":"produk_082","code":"PRODUK-082","name":"#82 — ALVARO","description":"Desain racing biru dan kuning dengan karakter anak bermain inline skate serta aksen grafis petir.","themes":["Kids","Racing","Character"],"colors":["Biru","Kuning","Putih","Merah"],"theme":"Kids • Racing • Character","color":"Biru, Kuning, Putih, Merah","image":"images/82.jpg"},{"id":"produk_083","code":"PRODUK-083","name":"#83 — VIONA","description":"Desain floral bernuansa biru dengan bunga pink, kuning, dan putih serta detail ornamen dekoratif.","themes":["Sport","Floral","Elegant"],"colors":["Biru","Pink","Kuning","Putih"],"theme":"Sport • Floral • Elegant","color":"Biru, Pink, Kuning, Putih","image":"images/83.jpg"},{"id":"produk_084","code":"PRODUK-084","name":"#84 — SPEED BLAST","description":"Desain racing biru-oranye dengan motif geometris warna-warni pada bagian depan dan grafis inline skate.","themes":["Sport","Racing","Geometric"],"colors":["Biru","Oranye","Putih","Kuning"],"theme":"Sport • Racing • Geometric","color":"Biru, Oranye, Putih, Kuning","image":"images/84.jpg"},{"id":"produk_085","code":"PRODUK-085","name":"#85 — KUROMI","description":"Desain cute bertema Kuromi dengan dominasi lavender, pink, putih, dan hitam, cocok untuk gaya skating anak.","themes":["Kids","Character","Cute"],"colors":["Ungu","Pink","Putih","Hitam"],"theme":"Kids • Character • Cute","color":"Ungu, Pink, Putih, Hitam","image":"images/85.jpg"},{"id":"produk_086","code":"PRODUK-086","name":"#86 — MASHA","description":"Desain skinsuit biru-putih dengan motif sayap dan identitas SHARK INDONESIA, tampil sporty dan elegan.","themes":["Sport","Team","Wings"],"colors":["Biru","Putih","Hitam"],"theme":"Sport • Team • Wings","color":"Biru, Putih, Hitam","image":"images/86.jpg"},{"id":"produk_087","code":"PRODUK-087","name":"#87 — R4DIP","description":"Desain racing hitam dengan aksen oranye dan kuning, menampilkan identitas R4DIP QuickOver dengan gaya agresif.","themes":["Sport","Racing","R4DIP"],"colors":["Hitam","Oranye","Kuning"],"theme":"Sport • Racing • R4DIP","color":"Hitam, Oranye, Kuning","image":"images/87.jpg"},{"id":"produk_088","code":"PRODUK-088","number":88,"name":"#88 — Khaleya Alonza","description":"Desain skinsuit Khaleya Alonza dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Sport","Floral","Graffiti"],"colors":["Ungu","Magenta","Kuning","Hitam","Putih"],"theme":"Sport • Floral • Graffiti","color":"Ungu, Magenta, Kuning, Hitam, Putih","image":"images/88.jpg"},{"id":"produk_089","code":"PRODUK-089","number":89,"name":"#89 — Kuromi Skate","description":"Desain skinsuit Kuromi Skate dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Cartoon","Skate","Fantasy"],"colors":["Ungu","Pink","Hitam","Putih"],"theme":"Cartoon • Skate • Fantasy","color":"Ungu, Pink, Hitam, Putih","image":"images/89.jpg"},{"id":"produk_090","code":"PRODUK-090","number":90,"name":"#90 — Kuromi","description":"Desain skinsuit Kuromi dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Cartoon","Cute","Skate"],"colors":["Ungu","Pink","Hitam","Putih"],"theme":"Cartoon • Cute • Skate","color":"Ungu, Pink, Hitam, Putih","image":"images/90.jpg"},{"id":"produk_091","code":"PRODUK-091","number":91,"name":"#91 — Roller Skate","description":"Desain skinsuit Roller Skate dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Sport","Neon","Skate"],"colors":["Hitam","Pink","Cyan"],"theme":"Sport • Neon • Skate","color":"Hitam, Pink, Cyan","image":"images/91.jpg"},{"id":"produk_092","code":"PRODUK-092","number":92,"name":"#92 — Super Keana","description":"Desain skinsuit Super Keana dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Cartoon","Game","Skate"],"colors":["Putih","Biru","Merah","Kuning","Hijau"],"theme":"Cartoon • Game • Skate","color":"Putih, Biru, Merah, Kuning, Hijau","image":"images/92.jpg"},{"id":"produk_093","code":"PRODUK-093","number":93,"name":"#93 — Qi Skate","description":"Desain skinsuit Qi Skate dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Sport","Ethnic","Skate"],"colors":["Biru","Pink","Oranye"],"theme":"Sport • Ethnic • Skate","color":"Biru, Pink, Oranye","image":"images/93.jpg"},{"id":"produk_094","code":"PRODUK-094","number":94,"name":"#94 — Indonesia","description":"Desain skinsuit Indonesia dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Sport","Racing","Indonesia"],"colors":["Navy","Merah","Putih"],"theme":"Sport • Racing • Indonesia","color":"Navy, Merah, Putih","image":"images/94.jpg"},{"id":"produk_095","code":"PRODUK-095","number":95,"name":"#95 — Skate Speed — Karawang KPIC","description":"Desain skinsuit Skate Speed — Karawang KPIC dengan tampilan sporty dan grafis sesuai desain katalog.","themes":["Sport","Racing","Skate"],"colors":["Hitam","Merah","Putih"],"theme":"Sport • Racing • Skate","color":"Hitam, Merah, Putih","image":"images/95.jpg"}];
+const PRODUCT_META = {};
+
+const STORAGE_KEY = "divaskate_catalog_v7";
+const DELETED_KEY = "divaskate_deleted_initial_v7";
+const CART_KEY = "divaskate_cart_v3";
+const WA_NUMBER = "628561902897";
+try { localStorage.removeItem("divaskate_catalog_v4"); localStorage.removeItem("divaskate_deleted_initial_v4"); localStorage.removeItem("divaskate_catalog_v5"); localStorage.removeItem("divaskate_deleted_initial_v5"); localStorage.removeItem("divaskate_catalog_video_v6"); localStorage.removeItem("divaskate_deleted_initial_video_v6"); localStorage.removeItem("divaskate_cart_v2"); } catch(e) {}
+
+function readJSON(key,fallback){
+  try { const raw=localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+  catch(e){ return fallback; }
+}
+
+const deletedInitial = [];
+const savedUserDesigns = [];
+
+INITIAL_DESIGNS.forEach(item=>{
+  const meta=PRODUCT_META[item.code];
+  if(meta){
+    item.themes=meta.themes;
+    item.colors=meta.colors;
+    item.theme=meta.themes.join(" • ");
+    item.color=meta.colors.join(", ");
+    item.source="initial";
+  }
+});
+
+let designs = INITIAL_DESIGNS
+  .filter(item => !deletedInitial.includes(item.id))
+  .concat(savedUserDesigns);
+
+designs.forEach(item=>{
+  const blockedThemes=new Set(["Rediva","Syaki AF","Alfaro","RadyBalon","Shakaya"]);
+  if(!item.themes) item.themes=item.theme?String(item.theme).split(/\s*[•,/]+\s*/).filter(Boolean):["Sport"];
+  item.themes=item.themes.filter(t=>t && !blockedThemes.has(t));
+  item.theme=item.themes.join(" • ");
+  if(!item.colors) item.colors=item.color?String(item.color).split(/\s*[,/]+\s*/).filter(Boolean):["Multiwarna"];
+});
+
+let cart = readJSON(CART_KEY, []);
+let mode = new URLSearchParams(location.search).get("admin")==="1" ? "admin" : "customer";
+let selectedDesign = null;
+let themeFilterValue = "all";
+let colorFilterValue = "all";
+
+
+const catalogPage=document.getElementById("catalogPage");
+const catalog=document.getElementById("catalog");
+const addBtn=document.getElementById("addBtn");
+const bulkBtn=document.getElementById("bulkBtn");
+const adminNote=document.getElementById("adminNote");
+const pageTitle=document.getElementById("pageTitle");
+const themeFilterEl=document.getElementById("themeFilter");
+const colorFilterEl=document.getElementById("colorFilter");
+const resultCount=document.getElementById("resultCount");
+const cartBtn=document.getElementById("cartBtn");
+const cartCount=document.getElementById("cartCount");
+
+function saveData(){
+  try{
+    const userDesigns=designs.filter(item=>item.source!=="initial");
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(userDesigns));
+    localStorage.setItem(DELETED_KEY,JSON.stringify(deletedInitial));
+    return true;
+  }catch(e){
+    alert("Gagal menyimpan perubahan katalog di browser.");
+    return false;
+  }
+}
+
+function saveCart(){
+  localStorage.setItem(CART_KEY,JSON.stringify(cart));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  cartCount.textContent=cart.length;
+}
+
+function deleteDesign(index){
+  index=Number(index);
+  if(!Number.isInteger(index)||index<0||index>=designs.length)return false;
+  const product=designs[index];
+  if(!confirm(`Hapus desain "${product.code||""} ${product.name||""}" dari katalog?`))return false;
+
+  if(product.source==="initial"){
+    if(!deletedInitial.includes(product.id)) deletedInitial.push(product.id);
+  }else{
+    designs.splice(index,1);
+  }
+  saveData();
+  renderCatalog();
+  return true;
+}
+
+function escapeHtml(text){
+  return String(text).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+function setupFilters(){
+  const blockedThemes=new Set(["Rediva","Syaki AF","Alfaro","RadyBalon","Shakaya"]);
+  const themes=[...new Set(designs.flatMap(d=>(d.themes||[]).filter(t=>t && !blockedThemes.has(t))))].sort((a,b)=>a.localeCompare(b,"id"));
+  const colors=[...new Set(designs.flatMap(d=>d.colors||[]))].sort();
+
+  themeFilterEl.innerHTML='<option value="all">Semua Tema</option>'+themes.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  colorFilterEl.innerHTML='<option value="all">Semua Warna</option>'+colors.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  themeFilterEl.value=themeFilterValue;
+  colorFilterEl.value=colorFilterValue;
+}
+
+let catalogInitialRandom=true;
+let catalogSortMode="";
+
+function shuffleArray(arr){
+  const copy=arr.slice();
+  for(let i=copy.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+
+function getDesignNumber(item){
+  const n=Number(item?.number);
+  if(Number.isFinite(n)) return n;
+  const m=String(item?.code||"").match(/(\d+)/);
+  return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function getSortText(item, field){
+  const value=field==="color" ? (item?.colors||item?.color||[])[0]
+             : field==="theme" ? (item?.themes||item?.theme||[])[0]
+             : field==="name" ? item?.name
+             : "";
+  return String(value||"").trim().toLocaleLowerCase("id-ID");
+}
+
+function getAddedTime(item){
+  const t=Number(item?.createdAt||item?.addedAt||item?.id);
+  return Number.isFinite(t) ? t : 0;
+}
+
+function sortDesigns(items, mode){
+  const copy=items.slice();
+
+  if(mode==="latest"){
+    return copy.sort((a,b)=>{
+      const tb=getAddedTime(b), ta=getAddedTime(a);
+      if(tb!==ta) return tb-ta;
+      return getDesignNumber(b)-getDesignNumber(a);
+    });
+  }
+
+  if(mode==="number"){
+    return copy.sort((a,b)=>{
+      const na=getDesignNumber(a), nb=getDesignNumber(b);
+      if(na!==nb) return na-nb;
+      return String(a?.name||"").localeCompare(String(b?.name||""),"id");
+    });
+  }
+
+  if(mode==="name"){
+    return copy.sort((a,b)=>getSortText(a,"name").localeCompare(getSortText(b,"name"),"id"));
+  }
+
+  if(mode==="color"){
+    return copy.sort((a,b)=>getSortText(a,"color").localeCompare(getSortText(b,"color"),"id"));
+  }
+
+  if(mode==="theme"){
+    return copy.sort((a,b)=>getSortText(a,"theme").localeCompare(getSortText(b,"theme"),"id"));
+  }
+
+  return copy;
+}
+
+function getFilteredDesigns(){
+  return designs.filter(item=>{
+    if(item.isSpecial)return true;
+    const themeOk=themeFilterValue==="all"||(item.themes||[]).includes(themeFilterValue);
+    const colorOk=colorFilterValue==="all"||(item.colors||[]).includes(colorFilterValue);
+    return themeOk&&colorOk;
+  });
+}
+
+function renderCatalog(){
+  setupFilters();
+  catalog.innerHTML="";
+  let filtered=getFilteredDesigns();
+
+  // Setiap membuka/reload halaman, katalog pertama kali ditampilkan secara acak.
+  // Setelah pelanggan memilih "Urutkan", pilihan tersebut digunakan secara normal.
+  if(catalogInitialRandom && !catalogSortMode){
+    filtered=shuffleArray(filtered);
+    catalogInitialRandom=false;
+  }else if(catalogSortMode){
+    filtered=sortDesigns(filtered,catalogSortMode);
+  }
+
+  resultCount.textContent=`${filtered.length} desain tersedia`;
+
+  if(!filtered.length){
+    catalog.innerHTML='<div class="empty" style="grid-column:1/-1">Tidak ada desain yang sesuai dengan filter.<br><br>Silakan pilih <b>Reset Filter</b>.</div>';
+    return;
+  }
+
+  filtered.forEach(item=>{
+    const index=designs.indexOf(item);
+    const card=document.createElement("div");
+    card.className="card";
+
+    const media=document.createElement("div");
+    media.className="card-media";
+    const img=document.createElement("img");
+    img.className="card-img";
+    img.src=item.image;
+    img.alt=item.name||"Desain skinsuit";
+    media.appendChild(img);
+    card.appendChild(media);
+
+    const body=document.createElement("div");
+    body.className="card-body";
+
+    const name=document.createElement("div");
+    name.className="card-name";
+    name.textContent=item.name||"Tanpa nama";
+    body.appendChild(name);
+
+    const tags=document.createElement("div");
+    tags.className="product-tags";
+    (item.themes||[]).slice(0,3).forEach(t=>{
+      const el=document.createElement("span");
+      el.className="tag theme";
+      el.textContent=t;
+      tags.appendChild(el);
+    });
+    (item.colors||[]).slice(0,3).forEach(c=>{
+      const el=document.createElement("span");
+      el.className="tag color";
+      el.textContent=c;
+      tags.appendChild(el);
+    });
+    body.appendChild(tags);
+
+    const sub=document.createElement("div");
+    sub.className="card-sub";
+    sub.textContent="Klik untuk memilih ukuran";
+    body.appendChild(sub);
+
+    if(mode==="admin"){
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="delete-card-btn";
+      button.textContent="🗑 HAPUS DESAIN";
+      button.addEventListener("click",e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        deleteDesign(index);
+      });
+      body.appendChild(button);
+    }
+
+    card.appendChild(body);
+    card.addEventListener("click",()=>openDetail(index));
+    catalog.appendChild(card);
+  });
+}
+
+function openDetail(index){
+  selectedDesign=designs[index];
+  document.getElementById("detailImg").src=selectedDesign.image;
+  document.getElementById("detailName").textContent=selectedDesign.name||"Tanpa nama";
+  const detailMeta=document.getElementById("detailMeta");
+  const detailDescription=document.getElementById("detailDescription");
+  const isSpecial=!!selectedDesign.isSpecial;
+  detailMeta.classList.toggle("hidden",isSpecial);
+  detailDescription.classList.toggle("hidden",isSpecial);
+  detailDescription.textContent=selectedDesign.description||"Desain skinsuit DIVA SKATE. Pilih ukuran sesuai kebutuhan.";
+  document.getElementById("detailThemes").textContent=(selectedDesign.themes||[]).join(" • ");
+  document.getElementById("detailColors").textContent=(selectedDesign.colors||[]).join(", ");
+  document.getElementById("sizeSelect").value="";
+
+  const adminDelete=document.getElementById("deleteDesign");
+  if(adminDelete)adminDelete.remove();
+
+  if(mode==="admin"){
+    const btn=document.createElement("button");
+    btn.id="deleteDesign";
+    btn.className="btn danger";
+    btn.textContent="🗑 HAPUS DESAIN";
+    btn.style.width="100%";
+    btn.style.marginTop="10px";
+    btn.onclick=()=>{
+      const idx=designs.indexOf(selectedDesign);
+      if(deleteDesign(idx))closeModal("detailModal");
+    };
+    document.querySelector("#detailModal .modal").appendChild(btn);
+  }
+
+  document.getElementById("detailModal").classList.remove("hidden");
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.add("hidden");
+}
+
+function addToCart(){
+  const size=document.getElementById("sizeSelect").value;
+  const customName=(document.getElementById("customName")?.value||"").trim();
+  const namePosition=document.getElementById("namePosition")?.value||"";
+  if(!size){
+    alert("Silakan pilih ukuran terlebih dahulu.");
+    return;
+  }
+  if(customName && !namePosition){
+    alert("Silakan pilih posisi nama.");
+    return;
+  }
+
+  cart.push({
+    id:Date.now().toString()+"_"+Math.random().toString(36).slice(2),
+    productId:selectedDesign.id,
+    code:selectedDesign.code||"",
+    name:selectedDesign.name||"Desain Skinsuit",
+    size,
+    customName,
+    namePosition,
+    image:selectedDesign.image
+  });
+
+  saveCart();
+  document.getElementById("customName").value="";
+  document.getElementById("namePosition").value="";
+  closeModal("detailModal");
+  openCart();
+}
+
+function renderCart(){
+  const itemsEl=document.getElementById("cartItems");
+  const emptyEl=document.getElementById("cartEmpty");
+  const formEl=document.getElementById("customerForm");
+  const totalEl=document.getElementById("cartTotal");
+  const grandTotalEl=document.getElementById("cartGrandTotal");
+  const shippingNote=document.getElementById("cartShippingNote");
+
+  itemsEl.innerHTML="";
+
+  if(!cart.length){
+    emptyEl.classList.remove("hidden");
+    formEl.classList.add("hidden");
+    return;
+  }
+
+  emptyEl.classList.add("hidden");
+  formEl.classList.remove("hidden");
+
+  const grandTotal=cart.reduce((sum,item)=>sum+Number(item.price||0),0);
+  totalEl.textContent=`${cart.length} pcs`;
+  grandTotalEl.innerHTML=`<span>Total Pembelian</span><strong>Rp${grandTotal.toLocaleString("id-ID")}</strong>`;
+  shippingNote.innerHTML=`<div>Harga belum termasuk ongkos kirim</div><div>Pengiriman dari MUSTIKAJAYA, BEKASI (BKA)</div><a class="btn secondary" href="https://lionparcel.com/ongkir" target="_blank" rel="noopener noreferrer">CEK ONGKIR</a>`;
+
+  cart.forEach((item,index)=>{
+    const row=document.createElement("div");
+    row.className="cart-item";
+
+    const img=document.createElement("img");
+    img.src=item.image;
+    img.alt=item.name;
+    row.appendChild(img);
+
+    const info=document.createElement("div");
+    const itemPrice=Number(item.price||0);
+    info.innerHTML=`<div class="cart-item-name">${escapeHtml(item.name)}</div>
+      <div class="cart-item-size">Ukuran: <b>${escapeHtml(item.size)}</b></div>
+      <div class="cart-item-size">MODEL: <b>${escapeHtml(item.model||"-")}</b></div>
+      <div class="cart-item-price">Harga: Rp${itemPrice.toLocaleString("id-ID")}</div>
+      ${item.customName?`<div class="cart-item-size">Custom nama: <b>${escapeHtml(item.customName)}</b></div>`:`<div class="cart-item-size">Custom nama: <b>Tidak ada</b></div>`}
+      ${item.namePosition?`<div class="cart-item-size">Posisi nama: <b>${escapeHtml(item.namePosition)}</b></div>`:""}
+      ${item.height?`<div class="cart-item-size">Tinggi Badan: <b>${escapeHtml(item.height)} cm</b></div>`:""}
+      ${item.weight?`<div class="cart-item-size">Berat Badan: <b>${escapeHtml(item.weight)} kg</b></div>`:""}
+      ${item.chest?`<div class="cart-item-size">Lingkar Dada: <b>${escapeHtml(item.chest)} cm</b></div>`:""}`;
+    row.appendChild(info);
+
+    const remove=document.createElement("button");
+    remove.className="remove-item";
+    remove.textContent="Hapus";
+    remove.onclick=()=>{
+      cart.splice(index,1);
+      saveCart();
+      renderCart();
+    };
+    row.appendChild(remove);
+    itemsEl.appendChild(row);
+  });
+}
+
+function openCart(){
+  renderCart();
+  document.getElementById("cartModal").classList.remove("hidden");
+}
+
+function sendOrder(){
+  if(!cart.length)return alert("Belum ada pesanan.");
+  const name=document.getElementById("customerName").value.trim();
+  const phone=document.getElementById("customerPhone").value.trim();
+  const address=document.getElementById("customerAddress").value.trim();
+
+  if(!name||!phone||!address){
+    alert("Mohon lengkapi Nama, No. Telepon, dan Alamat.");
+    return;
+  }
+
+  const lines=[
+    "Halo DIVA SKATE, saya ingin memesan skinsuit.",
+    "",
+    "DATA PELANGGAN",
+    `Nama: ${name}`,
+    `No. Telepon: ${phone}`,
+    `Alamat: ${address}`,
+    "",
+    "DETAIL PESANAN"
+  ];
+
+  cart.forEach((item,i)=>{
+    lines.push(`${i+1}. ${item.name}`);
+    lines.push(`   Ukuran: ${item.size}`);
+    lines.push(`   MODEL: ${item.model || "-"}`);
+    lines.push(`   Harga: Rp${Number(item.price || 0).toLocaleString("id-ID")}`);
+    lines.push(`   Custom nama: ${item.customName || "-"}`);
+    lines.push(`   Posisi nama: ${item.namePosition || "-"}`);
+    lines.push(`   Tinggi Badan: ${item.height ? item.height + " cm" : "-"}`);
+    lines.push(`   Berat Badan: ${item.weight ? item.weight + " kg" : "-"}`);
+    lines.push(`   Lingkar Dada: ${item.chest ? item.chest + " cm" : "-"}`);
+  });
+
+  lines.push("");
+  const grandTotal = cart.reduce((sum,item)=>sum + Number(item.price || 0),0);
+  lines.push(`Total Pesanan: ${cart.length} pcs`);
+  lines.push(`Total Pembelian: Rp${grandTotal.toLocaleString("id-ID")}`);
+  lines.push("");
+  lines.push("Mohon konfirmasi pesanan dan proses selanjutnya. Terima kasih.");
+
+  const message = lines.join("\n");
+  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+
+  // Gunakan navigasi langsung agar bekerja saat HTML dibuka secara lokal.
+  // wa.me akan meneruskan ke aplikasi WhatsApp atau WhatsApp Web.
+  window.location.assign(url);
+}
+
+function showPage(newMode){
+  mode=newMode;
+  addBtn.classList.toggle("hidden",mode!=="admin");
+  bulkBtn.classList.toggle("hidden",mode!=="admin");
+  adminNote.classList.toggle("hidden",mode!=="admin");
+  pageTitle.textContent=mode==="admin"?"Katalog Desain — ADMIN":"Semua Desain";
+  renderCatalog();
+}
+
+document.getElementById("cartBtn").onclick=openCart;
+document.getElementById("sendOrderBtn").addEventListener("click", function(e){
+  e.preventDefault();
+  sendOrder();
+});
+document.getElementById("addToCartBtn").onclick = ()=>{
+  const size = document.getElementById("sizeSelect").value;
+  const modelEl = document.getElementById("modelSelect");
+  const model = modelEl.value;
+  const price = Number(modelEl.selectedOptions[0]?.dataset.price || 0);
+  const customName = document.getElementById("customName").value.trim();
+  const namePosition = document.getElementById("namePosition").value;
+
+  if(!size){
+    alert("Silakan pilih ukuran terlebih dahulu.");
+    return;
+  }
+  if(!model){
+    alert("Silakan pilih MODEL terlebih dahulu.");
+    return;
+  }
+  if(customName && !namePosition){
+    alert("Silakan pilih posisi nama custom.");
+    return;
+  }
+  if(!customName && namePosition){
+    alert("Silakan isi nama custom atau pilih 'Tanpa nama custom'.");
+    return;
+  }
+
+  cart.push({
+    id: Date.now() + "_" + Math.random().toString(36).slice(2),
+    productId: selectedDesign.id,
+    designId: selectedDesign.id,
+    code: selectedDesign.code || selectedDesign.id,
+    name: selectedDesign.name,
+    size,
+    model,
+    price,
+    customName,
+    namePosition,
+    height: document.querySelector('.height-input')?.value?.trim() || '',
+    weight: document.querySelector('.weight-input')?.value?.trim() || '',
+    chest: document.querySelector('.body-input')?.value?.trim() || '',
+    image: selectedDesign.image
+  });
+
+  saveCart();
+  updateCartCount();
+  closeModal("detailModal");
+
+  document.getElementById("sizeSelect").value = "";
+  document.getElementById("modelSelect").value = "";
+  document.getElementById("customName").value = "";
+  document.getElementById("namePosition").value = "";
+  document.querySelectorAll('.height-input, .weight-input, .body-input').forEach(el => el.value = "");
+
+  alert("Pesanan berhasil ditambahkan.");
+};
+themeFilterEl.addEventListener("change",()=>{
+  themeFilterValue=themeFilterEl.value;
+  renderCatalog();
+});
+colorFilterEl.addEventListener("change",()=>{
+  colorFilterValue=colorFilterEl.value;
+  renderCatalog();
+});
+document.getElementById("resetFilters").onclick=()=>{
+  themeFilterValue="all";
+  colorFilterValue="all";
+  
+  
+  renderCatalog();
+};
+
+addBtn.onclick=()=>document.getElementById("addModal").classList.remove("hidden");
+
+function nextDesignNumber(){
+  let max=0;
+  designs.forEach(item=>{
+    const m=String(item.code||item.number||item.name||"").match(/(\d+)$/);
+    if(m)max=Math.max(max,parseInt(m[1],10));
+  });
+  return max+1;
+}
+
+function titleFromFilename(filename){
+  let base=filename.replace(/\.[^/.]+$/,"").replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
+  return base?base.replace(/\b\w/g,c=>c.toUpperCase()):"Desain Skinsuit";
+}
+
+function descriptionFromTitle(title){
+  return `Desain skinsuit DIVA SKATE dengan tema ${title}. Tampilan sporty dan modern untuk kebutuhan inline speed skating. Pilih ukuran sesuai size chart sebelum menambahkan ke pesanan.`;
+}
+
+const bulkFiles=document.getElementById("bulkFiles");
+const bulkPreview=document.getElementById("bulkPreview");
+let bulkItems=[];
+
+bulkBtn.onclick=()=>{
+  bulkFiles.value="";
+  bulkPreview.innerHTML="";
+  bulkItems=[];
+  document.getElementById("bulkModal").classList.remove("hidden");
+};
+
+bulkFiles.addEventListener("change",async()=>{
+  bulkPreview.innerHTML="";
+  bulkItems=[];
+  const files=Array.from(bulkFiles.files||[]).filter(f=>f.type.startsWith("image/"));
+  if(!files.length)return;
+
+  let number=nextDesignNumber();
+  for(const file of files){
+    const image=await new Promise(resolve=>{
+      const reader=new FileReader();
+      reader.onload=e=>resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+    const title=titleFromFilename(file.name);
+    bulkItems.push({file,image,number:number++,title,description:descriptionFromTitle(title)});
+  }
+
+  bulkItems.forEach(item=>{
+    const box=document.createElement("div");
+    box.className="bulk-item";
+    box.innerHTML=`
+      <div class="bulk-number">DIVA-${String(item.number).padStart(3,"0")}</div>
+      <img src="${item.image}" alt="">
+      <input class="bulk-title" value="${escapeHtml(item.title)}" placeholder="Judul desain">
+      <input class="bulk-theme" value="Sport" placeholder="Tema">
+      <input class="bulk-color" value="Multiwarna" placeholder="Warna">
+      <textarea class="bulk-description" rows="3" placeholder="Deskripsi">${escapeHtml(item.description)}</textarea>`;
+    bulkPreview.appendChild(box);
+  });
+});
+
+document.getElementById("saveBulk").onclick=()=>{
+  if(!bulkItems.length)return alert("Pilih gambar terlebih dahulu.");
+  const boxes=Array.from(bulkPreview.querySelectorAll(".bulk-item"));
+
+  bulkItems.forEach((item,i)=>{
+    const title=boxes[i].querySelector(".bulk-title").value.trim()||item.title;
+    const themeText=boxes[i].querySelector(".bulk-theme").value.trim()||"Sport";
+    const colorText=boxes[i].querySelector(".bulk-color").value.trim()||"Multiwarna";
+    const description=boxes[i].querySelector(".bulk-description").value.trim()||item.description;
+    const code="DIVA-"+String(item.number).padStart(3,"0");
+
+    designs.unshift({
+      id:Date.now().toString()+"_"+i,
+      code,number:item.number,name:title,
+      theme:themeText,
+      themes:themeText.split(/\s*[,•/]+\s*/).filter(Boolean),
+      color:colorText,
+      colors:colorText.split(/\s*[,/]+\s*/).filter(Boolean),
+      description,image:item.image,source:"user"
+    });
+  });
+
+  if(saveData()){
+    renderCatalog();
+    closeModal("bulkModal");
+    alert(`${bulkItems.length} desain berhasil ditambahkan.`);
+  }
+};
+
+const sortSelect=document.getElementById("sortSelect");
+if(sortSelect){
+  sortSelect.addEventListener("change",()=>{
+    catalogSortMode=sortSelect.value||"";
+    catalogInitialRandom=false;
+    renderCatalog();
+  });
+}
+
+document.getElementById("saveDesign").onclick=()=>{
+  const name=document.getElementById("designName").value.trim();
+  const themeText=document.getElementById("designTheme").value.trim()||"Sport";
+  const colorText=document.getElementById("designColor").value.trim()||"Multiwarna";
+  const description=document.getElementById("designDescription").value.trim();
+  const file=document.getElementById("designFile").files[0];
+
+  if(!name)return alert("Masukkan judul desain.");
+  if(!file)return alert("Pilih gambar terlebih dahulu.");
+
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const number=nextDesignNumber();
+    const code="DIVA-"+String(number).padStart(3,"0");
+
+    designs.unshift({
+      id:Date.now().toString(),code,number,name,
+      theme:themeText,
+      themes:themeText.split(/\s*[,•/]+\s*/).filter(Boolean),
+      color:colorText,
+      colors:colorText.split(/\s*[,/]+\s*/).filter(Boolean),
+      description:description||descriptionFromTitle(name),
+      image:e.target.result,source:"user"
+    });
+
+    saveData();
+    ["designName","designTheme","designColor","designDescription","designFile"].forEach(id=>document.getElementById(id).value="");
+    closeModal("addModal");
+    renderCatalog();
+    alert("Desain berhasil ditambahkan.");
+  };
+  reader.readAsDataURL(file);
+};
+
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.onclick=()=>closeModal(btn.dataset.close);
+});
+document.getElementById("closeDetail").onclick=()=>closeModal("detailModal");
+
+document.querySelectorAll(".modal-backdrop").forEach(backdrop=>{
+  backdrop.addEventListener("click",e=>{
+    if(e.target===backdrop)backdrop.classList.add("hidden");
+  });
+});
+
+updateCartCount();
+showPage(mode);
+</script>
+
+
+<script>
+(function(){
+  const chart = [
+    {size:"12S",ld:50},{size:"11S",ld:52},{size:"10S",ld:54},{size:"9S",ld:56},
+    {size:"8S",ld:58},{size:"7S",ld:60},{size:"6S",ld:62},{size:"5S",ld:64},
+    {size:"4S",ld:66},{size:"3S",ld:68},{size:"2S",ld:70},{size:"XS",ld:72},
+    {size:"S",ld:76},{size:"M",ld:80},{size:"L",ld:84},{size:"XL",ld:86},{size:"2XL",ld:88}
+  ];
+
+  function estimateChest(height, weight){
+    // Rumus estimasi LD sesuai ketentuan katalog DIVA SKATE.
+    // Jika pelanggan mengisi Lingkar Dada, nilai tersebut tetap menjadi prioritas.
+    if(height < 120){
+      // Balita / Anak Kecil
+      return (0.28 * height) + (0.90 * weight) + 11.0;
+    }else if(height <= 149){
+      // Anak Sekolah
+      return (0.30 * height) + (0.50 * weight) + 10.5;
+    }else{
+      // TB >= 150 cm
+      return (0.25 * height) + (0.55 * weight) + 15.0;
+    }
+  }
+
+  function roundToChartLD(ld){
+    // Contoh: 59 -> 60, 60 -> 60, 61 -> 62.
+    return Math.ceil(ld / 2) * 2;
+  }
+
+  function recommendSize(ld){
+    const rounded=roundToChartLD(ld);
+    let row=chart.find(x=>x.ld>=rounded);
+    if(!row) row=chart[chart.length-1];
+    if(rounded<chart[0].ld) row=chart[0];
+    return {row,rounded};
+  }
+
+  function updateRecommendation(){
+    const h=parseFloat(document.querySelector('.height-input')?.value);
+    const w=parseFloat(document.querySelector('.weight-input')?.value);
+    const chest=parseFloat(document.querySelector('.body-input')?.value);
+    const box=document.getElementById('sizeRecommendation');
+    if(!box)return;
+
+    let ld=null, source="";
+    if(Number.isFinite(chest) && chest>0){
+      ld=chest;
+      source="berdasarkan Lingkar Dada yang diisi";
+    }else if(Number.isFinite(h) && h>0 && Number.isFinite(w) && w>0){
+      ld=estimateChest(h,w);
+      source=`estimasi dari Tinggi Badan ${h} cm dan Berat Badan ${w} kg`;
+    }
+
+    if(!Number.isFinite(ld) || ld<=0){
+      box.classList.add('hidden');
+      box.innerHTML="";
+      return;
+    }
+
+    const rec=recommendSize(ld);
+    box.classList.remove('hidden');
+    box.innerHTML=`UKURAN REKOMENDASI: <b>${rec.row.size}</b>
+      <small>Perkiraan LD ${ld.toFixed(1)} cm → ${rec.rounded} cm pada size chart (${source}).</small>`;
+
+    const sizeSelect=document.getElementById('sizeSelect');
+    if(sizeSelect && selectedDesign){
+      sizeSelect.value=rec.row.size;
+    }
+  }
+
+  document.addEventListener('input',function(e){
+    if(e.target.matches('.height-input,.weight-input,.body-input')) updateRecommendation();
+  });
+  document.addEventListener('change',function(e){
+    if(e.target.matches('.height-input,.weight-input,.body-input')) updateRecommendation();
+  });
+
+  // Reset recommendation whenever a product detail is opened.
+  const originalOpenDetail=window.openDetail;
+  if(typeof originalOpenDetail==="function"){
+    window.openDetail=function(index){
+      originalOpenDetail(index);
+      const box=document.getElementById('sizeRecommendation');
+      if(box){
+        box.classList.add('hidden');
+        box.innerHTML="";
+      }
+      const h=document.querySelector('.height-input');
+      const w=document.querySelector('.weight-input');
+      const c=document.querySelector('.body-input');
+      if(h)h.value="";
+      if(w)w.value="";
+      if(c)c.value="";
+      const size=document.getElementById('sizeSelect');
+      if(size)size.value="";
+    };
+  }
+})();
+
+(function initCatalogBanner(){
+  function start(){
+    const host=document.getElementById("catalogBanner");
+    if(!host || typeof designs === "undefined") return;
+    const container=host.querySelector(".catalog-banner-slides");
+    if(!container) return;
+    const pool=designs.filter(d=>d && d.image && !d.isSpecial);
+    if(!pool.length) return;
+    const picks=pool.slice().sort(()=>Math.random()-0.5).slice(0,Math.min(6,pool.length));
+    container.innerHTML="";
+    picks.forEach((item,i)=>{const img=document.createElement("img");img.className="catalog-banner-slide";img.alt=item.name||"Desain skinsuit";img.src=item.image;if(i===0)img.classList.add("active");container.appendChild(img);});
+    const slides=[...container.querySelectorAll("img")]; let current=0;
+    if(slides.length>1)setInterval(()=>{slides[current].classList.remove("active");current=(current+1)%slides.length;slides[current].classList.add("active");},2800);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
+})();
+</script>
+
+
+
+
 </body>
 </html>
