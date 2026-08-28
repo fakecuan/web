@@ -122,9 +122,9 @@ input[name="nama"],input[name="name"],#nama,#name,#namaInput,#nameInput{ text-tr
 .clicker-row{display:grid;grid-template-columns:28px 1fr 76px 32px;gap:6px;align-items:start;margin-bottom:12px}
 .clicker-name-col{min-width:0}
 .clicker-row input{box-sizing:border-box;width:100%;padding:12px 10px;border:1px solid #dddfe6;border-radius:10px;background:#fff;font:14px Arial;font-weight:800;text-transform:uppercase;outline:none}
-.clicker-model{width:76px;padding:10px 4px;border:1px solid #dddfe6;border-radius:9px;background:#fff;font:10px Arial;font-weight:800;color:#6544d9;outline:none;cursor:pointer}
-.clicker-color-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
-.clicker-color-row select{box-sizing:border-box;width:100%;padding:8px 6px;border:1px solid #dddfe6;border-radius:9px;background:#fff;font:11px Arial;outline:none}
+.clicker-model{width:86px;padding:10px 4px;border:1px solid #dddfe6;border-radius:9px;background:#fff;font:10px Arial;font-weight:800;color:#6544d9;outline:none;cursor:pointer}
+.clicker-color-row{display:grid;grid-template-columns:repeat(3,minmax(88px,1fr));gap:7px;margin-top:6px;overflow-x:auto;padding-bottom:2px}
+.clicker-color-row select{box-sizing:border-box;width:100%;min-width:88px;padding:9px 7px;border:1px solid #dddfe6;border-radius:9px;background:#fff;font:11px Arial;font-weight:700;outline:none}
 .clicker-num{text-align:center;font-size:12px;font-weight:900;color:#777;padding-top:12px}
 .clicker-x{height:34px;border:0;border-radius:9px;background:#f1f1f4;color:#888;font-weight:900;cursor:pointer;margin-top:10px}
   .clicker-preview-card{display:flex;justify-content:center;align-items:center;min-height:128px;padding:18px 16px;background:linear-gradient(145deg,#fff 0%,#f6f2ff 52%,#eee5ff 100%);border:1px solid #ddd0ff;border-radius:16px;margin-bottom:12px;overflow:auto;box-shadow:inset 0 1px #fff,0 8px 20px #5b3d8a1c}
@@ -135,7 +135,7 @@ input[name="nama"],input[name="name"],#nama,#name,#namaInput,#nameInput{ text-tr
   .clicker-char .cap-layer{width:48px;height:39px;border-radius:8px 8px 7px 7px;position:absolute;bottom:3px;box-shadow:inset 3px 3px 0 #ffffff4d,inset -3px -4px 0 #0000002a,0 2px 3px #0002}
   .clicker-char .letter-layer{position:absolute;bottom:11px;font-size:25px;line-height:1;font-weight:900;font-family:Arial Black,Arial,sans-serif;z-index:3;text-shadow:1px 1px 0 #fff9,-1px -1px 0 #0003,2px 3px 2px #0004}
 .clicker-preview-meta{font-size:10px;color:#777;text-align:center;margin:4px 0 12px}
-@media(max-width:600px){.clicker-head,.clicker-row{grid-template-columns:24px 1fr 64px 30px;gap:5px}.clicker-model{width:64px;font-size:9px}.clicker-color-row{grid-template-columns:repeat(3,1fr)}.clicker-keychain{gap:5px}.clicker-char{min-width:42px}.clicker-char .base-layer{width:42px;height:45px}.clicker-char .cap-layer{width:35px;height:36px}.clicker-char .letter-layer{font-size:22px}}
+@media(max-width:600px){.clicker-head,.clicker-row{grid-template-columns:24px 1fr 72px 30px;gap:5px}.clicker-model{width:72px;font-size:9px}.clicker-color-row{grid-template-columns:repeat(3,88px);gap:7px}.clicker-color-row select{min-width:88px;padding:9px 7px;font-size:10px}.clicker-keychain{gap:5px}.clicker-char{min-width:42px}.clicker-char .base-layer{width:42px;height:45px}.clicker-char .cap-layer{width:35px;height:36px}.clicker-char .letter-layer{font-size:22px}}
 </style><style>
 .clicker-compact-price{
   margin-top:8px;
@@ -1018,8 +1018,13 @@ document.addEventListener('DOMContentLoaded',function(){
 <script>
 (function(){
 const CC=[
-['Pink muda','#ff9fc5'],['Ungu muda','#b9a6ff'],['Biru muda','#73dfff'],['Hijau muda','#9be58a'],['Kuning muda','#ffe66b'],['Coklat muda','#c89b6d'],
-['Pink tua','#e83e82'],['Ungu tua','#6339a7'],['Biru tua','#1747b7'],['Hijau tua','#159a78'],['Coklat tua','#8b5a2b'],['Merah','#d7263d'],['Hitam','#222'],['Putih','#ffffff'],['Putih','#ffffff']
+['Pink muda','#ff9fc5'],['Pink tua','#e83e82'],
+['Ungu muda','#b9a6ff'],['Ungu tua','#6339a7'],
+['Biru muda','#73dfff'],['Biru tua','#1747b7'],
+['Hijau muda','#9be58a'],['Hijau tua','#159a78'],
+['Kuning','#ffe66b'],
+['Coklat muda','#c89b6d'],['Coklat tua','#8b5a2b'],
+['Merah','#d7263d'],['Hitam','#222'],['Putih','#ffffff']
 ].map(x=>({name:x[0],color:x[1]}));
 const PR=[0,18000,22000,25000,28000,32000,36000,40000,44000,48000,52000];
 const rp=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
@@ -1033,7 +1038,7 @@ function addRow(){
  let nameCol=document.createElement('div');nameCol.className='clicker-name-col';
  let i=document.createElement('input');i.placeholder='NAMA';i.maxLength=30;
  let model=document.createElement('select');model.className='clicker-model';
- model.innerHTML='<option value="1">1</option><option value="2">2</option>';
+ model.innerHTML='<option value="1">Model 1</option><option value="2">Model 2</option>';
  let colorsWrap=document.createElement('div');colorsWrap.className='clicker-colors-wrap';
  let help=document.createElement('div');help.className='clicker-color-help';help.textContent='Pilih Warna';
  let colors=document.createElement('div');colors.className='clicker-color-row';
@@ -1116,10 +1121,10 @@ window.openBatch=function(){document.getElementById('landing').style.display='no
 window.closeBatch=function(){document.getElementById('batchView').style.display='none';document.getElementById('landing').style.display='block'};
 function send(){
  let c=document.getElementById('batchCustomerName').value.trim(),p=document.getElementById('batchCustomerPhone').value.trim(),a=document.getElementById('batchCustomerAddress').value.trim();
- let items=rows().map(r=>{let n=r.querySelector('input').value.trim().toUpperCase(),s=r.querySelectorAll('select');return{name:n,B:CC[+s[0].value],C:CC[+s[1].value],L:CC[+s[2].value],p:price(n)}}).filter(x=>x.name);
+ let items=rows().map(r=>{let n=r.querySelector('input').value.trim().toUpperCase(),s=r.querySelectorAll('select'),model=r.querySelector('.clicker-model').value;return{name:n,B:CC[+s[0].value],C:CC[+s[1].value],L:CC[+s[2].value],model,p:price(n)}}).filter(x=>x.name);
  if(!c||!p||!items.length){alert('Nama pelanggan, telepon, dan minimal satu nama wajib diisi.');return}
  let total=0,lines=['HALO DIVALICIOUS, SAYA INGIN ORDER KLIKER NAMA','','DATA PELANGGAN','Nama: '+c,'Telepon: '+p];if(a)lines.push('Alamat: '+a);lines.push('','DAFTAR NAMA');
- items.forEach((x,i)=>{total+=x.p;lines.push((i+1)+'. '+x.name,'   Base: '+x.B.name,'   Cap: '+x.C.name,'   Huruf: '+x.L.name,'   '+x.name.replace(/[^A-Z0-9]/gi,'').length+' huruf — '+rp(x.p))});
+ items.forEach((x,i)=>{total+=x.p;const modelLabel=x.model==='2'?'Model 2 — Cap dan huruf selang-seling':'Model 1';lines.push((i+1)+'. '+x.name,'   Model: '+modelLabel,'   Base: '+x.B.name,'   Cap: '+x.C.name,'   Huruf: '+x.L.name,'   '+x.name.replace(/[^A-Z0-9]/gi,'').length+' huruf — '+rp(x.p))});
  lines.push('','TOTAL PESANAN: '+rp(total),'Belum termasuk biaya kirim.','','Mohon konfirmasi pesanan.');
  let u='https://wa.me/6285921529461?text='+encodeURIComponent(lines.join('\n'));window.open(u,'_blank')
 }
