@@ -105,6 +105,14 @@ footer{text-align:center;color:#888;font-size:12px;padding:30px}
 .size-recommendation b{font-size:16px;}
 .size-recommendation small{display:block;margin-top:3px;color:#526b7b;}
 .size-chart-note{margin-top:8px;font-size:12px;color:#666;}
+
+.header-social{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:9px 13px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#111;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap;transition:.2s}
+.header-social:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,0,0,.08)}
+.header-social svg{width:22px;height:22px;display:block;flex:none}
+.header-social.whatsapp svg{color:#25D366}
+.header-social.instagram svg{color:#E1306C}
+@media(max-width:600px){.header-actions{gap:6px}.header-social{min-height:40px;padding:8px}.header-social span{display:inline}.header-social svg{width:20px;height:20px}.header-actions .btn{padding:8px 10px;font-size:12px}}
+
 </style>
 
 <style id="compact-cart-mobile">
@@ -211,6 +219,13 @@ footer{text-align:center;color:#888;font-size:12px;padding:30px}
 <header>
   <div class="logo"><img class="brand-logo" src="images/logo.png" alt="DIVA SKATE"></div>
   <div class="header-actions">
+    <a class="header-social whatsapp" href="https://wa.me/628561902897?text=Ada%20yang%20bisa%20dibantu%3F" target="_blank" rel="noopener noreferrer" aria-label="Chat Admin via WhatsApp" title="Chat Admin">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C8.82 3 3 8.82 3 16c0 2.3.6 4.47 1.74 6.42L3.08 29l6.76-1.62A12.94 12.94 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3Zm0 23.55c-2.02 0-4-.54-5.73-1.57l-.41-.24-4.01.96.98-3.9-.27-.42A10.56 10.56 0 1 1 16 26.55Zm5.8-7.88c-.32-.16-1.9-.94-2.2-1.05-.29-.11-.5-.16-.71.16-.21.31-.81 1.05-.99 1.26-.18.21-.36.24-.68.08-.32-.16-1.35-.5-2.57-1.6-.95-.85-1.6-1.9-1.79-2.22-.18-.31-.02-.48.14-.64.14-.14.32-.36.47-.53.16-.18.21-.31.32-.52.11-.21.05-.4-.03-.55-.08-.16-.71-1.71-.97-2.34-.26-.61-.52-.53-.71-.54h-.61c-.21 0-.55.08-.84.4-.29.31-1.1 1.08-1.1 2.63s1.13 3.05 1.29 3.26c.16.21 2.22 3.39 5.38 4.75.75.32 1.34.51 1.8.65.76.24 1.45.2 2 .12.61-.09 1.9-.78 2.17-1.53.27-.75.27-1.39.19-1.53-.08-.14-.29-.22-.61-.38Z"/></svg>
+      <span>Chat Admin</span>
+    </a>
+    <a class="header-social instagram" href="https://www.instagram.com/d.va_skate/" target="_blank" rel="noopener noreferrer" aria-label="Instagram DIVA SKATE" title="Instagram DIVA SKATE">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 5.7c3.35 0 3.75.01 5.08.07 1.23.06 1.9.26 2.35.44.57.21.98.47 1.41.9.43.43.69.84.9 1.41.18.45.38 1.12.44 2.35.06 1.33.07 1.73.07 5.08s-.01 3.75-.07 5.08c-.06 1.23-.26 1.9-.44 2.35-.21.57-.47.98-.9 1.41-.43.43-.84.69-1.41.9-.45.18-1.12.38-2.35.44-1.33.06-1.73.07-5.08.07s-3.75-.01-5.08-.07c-1.23-.06-1.9-.26-2.35-.44-.57-.21-.98-.47-1.41-.9-.43-.43-.69-.84-.9-1.41-.18-.45-.38-1.12-.44-2.35-.06-1.33-.07-1.73-.07-5.08s.01-3.75.07-5.08c.06-1.23.26-1.9.44-2.35.21-.57.47-.98.9-1.41.43-.43.84-.69 1.41-.9.45-.18 1.12-.38 2.35-.44C12.25 5.71 12.65 5.7 16 5.7Zm0-2.7c-3.4 0-3.84.01-5.18.08-1.34.06-2.25.27-3.05.58-.83.32-1.53.75-2.23 1.45-.7.7-1.13 1.4-1.45 2.23-.31.8-.52 1.71-.58 3.05C3.44 11.72 3.43 12.16 3.43 15.56s.01 3.84.08 5.18c.06 1.34.27 2.25.58 3.05.32.83.75 1.53 1.45 2.23.7.7 1.4 1.13 2.23 1.45.8.31 1.71.52 3.05.58 1.34.07 1.78.08 5.18.08s3.84-.01 5.18-.08c1.34-.06 2.25-.27 3.05-.58.83-.32 1.53-.75 2.23-1.45.7-.7 1.13-1.4 1.45-2.23.31-.8.52-1.71.58-3.05.07-1.34.08-1.78.08-5.18s-.01-3.84-.08-5.18c-.06-1.34-.27-2.25-.58-3.05-.32-.83-.75-1.53-1.45-2.23-.7-.7-1.4-1.13-2.23-1.45-.8-.31-1.71-.52-3.05-.58C19.84 3.01 19.4 3 16 3Zm0 7.3A5.26 5.26 0 1 0 16 20.82 5.26 5.26 0 0 0 16 10.3Zm0 8.52a3.26 3.26 0 1 1 0-6.52 3.26 3.26 0 0 1 0 6.52Zm6.7-8.74a1.23 1.23 0 1 1-2.46 0 1.23 1.23 0 0 1 2.46 0Z"/></svg>
+    </a>
     <button class="btn secondary" id="cartBtn">🛒 PESANAN <span id="cartCount">0</span></button>
   </div>
 </header>
