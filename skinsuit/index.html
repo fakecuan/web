@@ -233,6 +233,7 @@ footer{text-align:center;color:#888;font-size:12px;padding:30px}
 <main>
   <section id="catalogPage">
     <div class="hero catalog-hero">
+      <div class="catalog-note">Tulisan dan logo pada gambar produk hanya untuk ilustrasi bentuk dan posisi. Pelanggan bisa kasih catatan apabila ingin diganti atau dihilangkan.</div>
       <div class="hero-random-wrap">
         <img id="heroRandomImage" class="hero-random-img" src="images/1.jpg" alt="Preview desain katalog">
       </div>
@@ -384,20 +385,8 @@ footer{text-align:center;color:#888;font-size:12px;padding:30px}
     </div>
 
     <div class="form-group">
-      <label for="customName">Custom Nama <span style="font-weight:400;color:#777">(opsional)</span></label>
-      <input id="customName" type="text" maxlength="20" placeholder="Contoh: DODY">
-    </div>
-    <div class="form-group">
-      <label for="namePosition">Posisi Nama</label>
-      <select id="namePosition">
-        <option value="">Tanpa nama custom</option>
-        <option value="Dada besar">Dada besar</option>
-        <option value="Dada kecil">Dada kecil</option>
-        <option value="Paha">Paha</option>
-        <option value="Lis paha">Lis paha</option>
-        <option value="Lengan">Lengan</option>
-        <option value="Punggung">Punggung</option>
-      </select>
+      <label for="customName">Catatan untuk logo dan tulisan ( Jika ada )</label>
+      <textarea id="customName" rows="3" maxlength="300" placeholder="Contoh: Ganti nama menjadi DODY, hapus logo tertentu, atau tuliskan permintaan lainnya."></textarea>
     </div>
     <div class="detail-actions">
       <button class="btn secondary" id="closeDetail">TUTUP</button>
@@ -676,37 +665,6 @@ function closeModal(id){
   document.getElementById(id).classList.add("hidden");
 }
 
-function addToCart(){
-  const size=document.getElementById("sizeSelect").value;
-  const customName=(document.getElementById("customName")?.value||"").trim();
-  const namePosition=document.getElementById("namePosition")?.value||"";
-  if(!size){
-    alert("Silakan pilih ukuran terlebih dahulu.");
-    return;
-  }
-  if(customName && !namePosition){
-    alert("Silakan pilih posisi nama.");
-    return;
-  }
-
-  cart.push({
-    id:Date.now().toString()+"_"+Math.random().toString(36).slice(2),
-    productId:selectedDesign.id,
-    code:selectedDesign.code||"",
-    name:selectedDesign.name||"Desain Skinsuit",
-    size,
-    customName,
-    namePosition,
-    image:selectedDesign.image
-  });
-
-  saveCart();
-  document.getElementById("customName").value="";
-  document.getElementById("namePosition").value="";
-  closeModal("detailModal");
-  openCart();
-}
-
 function renderCart(){
   const itemsEl=document.getElementById("cartItems");
   const emptyEl=document.getElementById("cartEmpty");
@@ -746,8 +704,7 @@ function renderCart(){
       <div class="cart-item-size">Ukuran: <b>${escapeHtml(item.size)}</b></div>
       <div class="cart-item-size">MODEL: <b>${escapeHtml(item.model||"-")}</b></div>
       <div class="cart-item-price">Harga: Rp${itemPrice.toLocaleString("id-ID")}</div>
-      ${item.customName?`<div class="cart-item-size">Custom nama: <b>${escapeHtml(item.customName)}</b></div>`:`<div class="cart-item-size">Custom nama: <b>Tidak ada</b></div>`}
-      ${item.namePosition?`<div class="cart-item-size">Posisi nama: <b>${escapeHtml(item.namePosition)}</b></div>`:""}
+      ${item.customName?`<div class="cart-item-size">Catatan logo/tulisan: <b>${escapeHtml(item.customName)}</b></div>`:`<div class="cart-item-size">Catatan logo/tulisan: <b>Tidak ada</b></div>`}
       ${item.height?`<div class="cart-item-size">Tinggi Badan: <b>${escapeHtml(item.height)} cm</b></div>`:""}
       ${item.weight?`<div class="cart-item-size">Berat Badan: <b>${escapeHtml(item.weight)} kg</b></div>`:""}
       ${item.chest?`<div class="cart-item-size">Lingkar Dada: <b>${escapeHtml(item.chest)} cm</b></div>`:""}`;
@@ -798,8 +755,7 @@ function sendOrder(){
     lines.push(`   Ukuran: ${item.size}`);
     lines.push(`   MODEL: ${item.model || "-"}`);
     lines.push(`   Harga: Rp${Number(item.price || 0).toLocaleString("id-ID")}`);
-    lines.push(`   Custom nama: ${item.customName || "-"}`);
-    lines.push(`   Posisi nama: ${item.namePosition || "-"}`);
+    lines.push(`   Catatan logo/tulisan: ${item.customName || "-"}`);
     lines.push(`   Tinggi Badan: ${item.height ? item.height + " cm" : "-"}`);
     lines.push(`   Berat Badan: ${item.weight ? item.weight + " kg" : "-"}`);
     lines.push(`   Lingkar Dada: ${item.chest ? item.chest + " cm" : "-"}`);
@@ -868,7 +824,6 @@ document.getElementById("addToCartBtn").onclick = ()=>{
   const model = modelEl.value;
   const price = Number(modelEl.selectedOptions[0]?.dataset.price || 0);
   const customName = document.getElementById("customName").value.trim();
-  const namePosition = document.getElementById("namePosition").value;
 
   if(!size){
     alert("Silakan pilih ukuran terlebih dahulu.");
@@ -876,14 +831,6 @@ document.getElementById("addToCartBtn").onclick = ()=>{
   }
   if(!model){
     alert("Silakan pilih MODEL terlebih dahulu.");
-    return;
-  }
-  if(customName && !namePosition){
-    alert("Silakan pilih posisi nama custom.");
-    return;
-  }
-  if(!customName && namePosition){
-    alert("Silakan isi nama custom atau pilih 'Tanpa nama custom'.");
     return;
   }
 
@@ -897,7 +844,6 @@ document.getElementById("addToCartBtn").onclick = ()=>{
     model,
     price,
     customName,
-    namePosition,
     height: document.querySelector('.height-input')?.value?.trim() || '',
     weight: document.querySelector('.weight-input')?.value?.trim() || '',
     chest: document.querySelector('.body-input')?.value?.trim() || '',
@@ -911,7 +857,6 @@ document.getElementById("addToCartBtn").onclick = ()=>{
   document.getElementById("sizeSelect").value = "";
   document.getElementById("modelSelect").value = "";
   document.getElementById("customName").value = "";
-  document.getElementById("namePosition").value = "";
   document.querySelectorAll('.height-input, .weight-input, .body-input').forEach(el => el.value = "");
 
   alert("Pesanan berhasil ditambahkan.");
