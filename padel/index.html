@@ -80,7 +80,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#020617;color:#e2e8f0}but
  <div class="panel"><h2 class="font-bold text-xs mb-2">Unggah Arsip Sebelumnya</h2><p class="muted small mb-3">Pilih file JSON backup/arsip yang pernah diekspor dari aplikasi ini. File divalidasi sebelum diproses.</p><input id="importFile" class="field" type="file" accept=".json,application/json"><div id="importPanel" class="hidden mt-4"><label class="muted small block mb-1">Pilih pertandingan dari file</label><select id="importSelect" class="field"></select><div id="importDetails" class="muted small mt-2"></div><button id="importSelected" class="btn primary w-full mt-3">Impor Poin Pertandingan Terpilih</button></div><p id="importMessage" class="small mt-3 muted"></p></div>
 </section>
 <section id="view-profiles" class="hidden">
- <div class="panel mb-3"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold text-lg">👤 PROFIL ATLET</h2><p class="muted small">Kelola foto, nama, domisili, dan motto pemain. Data profil ikut tersimpan bersama data pemain aplikasi.</p></div><div class="flex gap-2"><select id="profileSort" class="field" style="width:auto"><option value="points">Urutkan: Klasemen</option><option value="name">Urutkan: Nama A–Z</option></select><button id="profileRefresh" class="btn">↻ Muat ulang</button></div></div></div>
+ <div class="panel mb-3"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold text-lg">👤 PROFIL ATLET</h2><p class="muted small">Kelola foto, nama, domisili, dan motto pemain. Data profil ikut tersimpan bersama data pemain aplikasi.</p></div><div class="flex gap-2"><select id="profileSort" class="field" style="width:auto"><option value="points">Urutkan: Klasemen</option><option value="name">Urutkan: Nama A–Z</option></select><button id="profileAddPlayer" class="btn primary">＋ Tambah Pemain</button><button id="profileRefresh" class="btn">↻ Muat ulang</button></div></div></div>
  <div id="profileGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
  <div id="profileDetail" class="panel mt-3 hidden"></div>
 </section>
@@ -195,6 +195,24 @@ function openProfile(id){const p=playerById(id);if(!p)return;const {pts,ranked}=
 function resizeProfileImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{try{const c=document.createElement('canvas');c.width=512;c.height=512;const ctx=c.getContext('2d'),side=Math.min(img.width,img.height),sx=(img.width-side)/2,sy=(img.height-side)/2;ctx.drawImage(img,sx,sy,side,side,0,0,512,512);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.82))}catch(e){reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('invalid image'))};img.src=url})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const d=$('profileDetail');if(d&&!d.classList.contains('hidden')){d.classList.add('hidden');document.body.classList.remove('profile-modal-open')}}});
 $('profileSort')?.addEventListener('change',renderProfiles);$('profileRefresh')?.addEventListener('click',renderProfiles);
+$('profileAddPlayer')?.addEventListener('click',async()=>{
+ if($('profileAddPlayer').disabled)return;
+ const raw=prompt('Masukkan nama pemain baru:');
+ if(raw===null)return;
+ const name=raw.trim().replace(/\s+/g,' ');
+ if(!name)return toast('Nama pemain tidak boleh kosong.');
+ if(state.players.some(p=>norm(p.name)===norm(name)))return toast('Pemain dengan nama tersebut sudah ada.');
+ const btn=$('profileAddPlayer');btn.disabled=true;btn.textContent='Menambahkan…';
+ try{
+  const p=addPlayer(name,false);if(!p)throw Error('Nama pemain tidak valid.');
+  renderPlayers();renderProfiles();saveLocal();
+  if(!cloudReady)throw Error('Pemain ditambahkan pada sesi ini, tetapi Firebase belum tersambung. Sambungkan cloud lalu simpan perubahan agar tampil di perangkat lain.');
+  const ok=await Promise.race([saveCloud(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Penyimpanan cloud lebih dari 20 detik. Periksa koneksi dan Firebase.' )),20000))]);
+  if(!ok)throw Error($('cloudMessage')?.textContent||'Gagal menyimpan ke cloud.');
+  toast('Pemain '+name+' berhasil ditambahkan dan disimpan ke cloud.');renderProfiles();
+ }catch(err){console.error('Tambah pemain gagal',err);toast(err.message||'Gagal menambahkan pemain.');}
+ finally{btn.disabled=false;btn.textContent='＋ Tambah Pemain'}
+});
 function switchTab(t){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));['setup','rounds','board','archive','settings','profiles','editor'].forEach(v=>$('view-'+v).classList.toggle('hidden',v!==t));if(t==='board')renderBoard();if(t==='archive')renderArchives();if(t==='profiles')renderProfiles();if(t==='editor')refreshDataEditor()}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 function renderPlayers(){$('sessionCount').textContent=state.sessionPlayerIds.length;$('sessionPlayers').innerHTML=sessionPlayers().map(p=>`<div class="player"><span class="truncate">🟢 ${esc(p.name)}</span><button class="muted" data-remove="${p.id}" title="Hapus dari sesi">×</button></div>`).join('')||'<p class="muted small col-span-full py-4 text-center">Belum ada pemain dalam sesi.</p>';$('sessionPlayers').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{if(started)return toast('Timer berjalan.');state.sessionPlayerIds=state.sessionPlayerIds.filter(id=>id!==b.dataset.remove);renderPlayers();saveLocal()});$('masterPlayers').innerHTML=state.players.map(p=>`<div class="player"><span class="truncate">${esc(p.name)}</span><button class="btn" data-join="${p.id}">${state.sessionPlayerIds.includes(p.id)?'Dipilih':'+ Sesi'}</button></div>`).join('')||'<p class="muted small col-span-full">Master pemain masih kosong.</p>';$('masterPlayers').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{if(started)return toast('Sesi sedang berjalan.');if(!state.sessionPlayerIds.includes(b.dataset.join))state.sessionPlayerIds.push(b.dataset.join);renderPlayers();saveLocal()})}
