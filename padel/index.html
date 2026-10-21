@@ -170,22 +170,38 @@ function openProfile(id){const p=playerById(id);if(!p)return;const {pts,ranked}=
   const yes=confirm('Apakah yakin mau hapus data atlet? Jika terhapus maka semua data foto yang tersimpan juga akan dihapus. Atlet ini juga akan dihapus dari sesi dan klasemen. Riwayat pertandingan/arsip lama tetap disimpan sebagai catatan.');
   if(!yes)return;
   const btn=$('profileDelete');btn.disabled=true;btn.textContent='Menghapus…';
-  try{
-   if(cloudReady && storage){
-    const path=p.photoStoragePath||('player-profiles/'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_')+'.jpg');
-    try{await deleteObject(storageRef(storage,path));}catch(photoErr){if(photoErr?.code!=='storage/object-not-found')console.warn('Foto Storage tidak dapat dihapus:',photoErr)}
-   }
-   state.players=state.players.filter(x=>x.id!==id);
-   state.sessionPlayerIds=(state.sessionPlayerIds||[]).filter(x=>x!==id);
-   delete state.cumulativePoints[id];
-   if(state.localStats)delete state.localStats[id];
-   state.rounds.forEach(r=>{if(Array.isArray(r.players))r.players=r.players.filter(x=>x!==id);if(Array.isArray(r.playerIds))r.playerIds=r.playerIds.filter(x=>x!==id);});
-   // Remove current standings references; preserve old archived matches as historical records.
-   saveLocal();renderAll();renderProfiles();
-   if(cloudReady){const ok=await saveCloud();if(!ok)throw Error($('cloudMessage')?.textContent||'Data terhapus lokal tetapi gagal disimpan ke cloud.');toast('Data atlet, foto Storage, dan klasemen berhasil diperbarui di cloud.')}else{toast('Data atlet dihapus dari perangkat ini. Sambungkan cloud dan simpan agar perubahan berlaku di perangkat lain.')}
-   const d=$('profileDetail');d.classList.add('hidden');document.body.classList.remove('profile-modal-open');
-  }catch(err){console.error('Hapus atlet gagal',err);toast('Penghapusan cloud gagal: '+err.message+' Periksa koneksi lalu simpan data cloud.');}
-  finally{btn.disabled=false;btn.textContent='Hapus Data Atlet'}
+  // Capture Storage location before removing the player from state.
+  const photoPath=p.photoStoragePath||('player-profiles/'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_')+'.jpg');
+  // Remove from local UI/state immediately; never wait for Storage/CORS to finish.
+  state.players=state.players.filter(x=>x.id!==id);
+  state.sessionPlayerIds=(state.sessionPlayerIds||[]).filter(x=>x!==id);
+  delete state.cumulativePoints[id];
+  if(state.localStats)delete state.localStats[id];
+  state.rounds.forEach(r=>{
+    if(Array.isArray(r.players))r.players=r.players.filter(x=>x!==id);
+    if(Array.isArray(r.playerIds))r.playerIds=r.playerIds.filter(x=>x!==id);
+    (r.matches||[]).forEach(m=>{if(Array.isArray(m.team1))m.team1=m.team1.filter(x=>x!==id);if(Array.isArray(m.team2))m.team2=m.team2.filter(x=>x!==id)});
+    if(Array.isArray(r.rest))r.rest=r.rest.filter(x=>x!==id);
+  });
+  // Keep archived records as historical snapshots, but remove this ID from live standings.
+  saveLocal();renderAll();renderProfiles();
+  const d=$('profileDetail');d.classList.add('hidden');document.body.classList.remove('profile-modal-open');
+  if(!cloudReady){btn.disabled=false;toast('Atlet dihapus dari perangkat ini. Sambungkan cloud lalu simpan data agar penghapusan berlaku di perangkat lain.');return;}
+  btn.textContent='Menyimpan cloud…';
+  let cloudSaved=false;
+  try{cloudSaved=await saveCloud();}catch(err){console.error('Simpan penghapusan ke Firestore gagal',err)}
+  if(!cloudSaved){btn.disabled=false;toast('Atlet dihapus di perangkat ini, tetapi sinkronisasi cloud gagal. Periksa koneksi/Firestore lalu tekan Simpan Data ke Cloud agar tidak muncul lagi di perangkat lain.');return;}
+  toast('Atlet dihapus dari daftar dan klasemen; penghapusan tersimpan di Firestore. Foto akan dibersihkan terpisah.');
+  // Storage can fail because the bucket is not active or CORS/network rules block it.
+  // Fire-and-forget: never block the delete UI on this request; log a clear error if it fails.
+  if(storage){
+    deleteObject(storageRef(storage,photoPath)).then(()=>console.info('Foto atlet dihapus dari Storage:',photoPath)).catch(err=>{
+      if(err?.code==='storage/object-not-found')return;
+      console.warn('Data atlet sudah terhapus dari Firestore, tetapi file foto Storage belum terhapus:',err);
+      toast('Profil sudah terhapus dan tersimpan di cloud. Foto Storage belum bisa dihapus ('+(err?.code||err?.message||'error')+'). Periksa Storage/bucket dan Rules.');
+    });
+  }
+  btn.disabled=false;btn.textContent='Hapus Data Atlet';
  };
  $('profileDownload').onclick=()=>{if(!(p.photoData||p.photoUrl))return toast('Unggah foto terlebih dahulu.');const a=document.createElement('a');a.href=p.photoData||p.photoUrl;a.download=(p.name||'profil-atlet').replace(/[^a-z0-9-_]/gi,'_')+'.jpg';a.click()};
 }
