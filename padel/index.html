@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Winner Padel — Arsip Mingguan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{font-family:Inter,system-ui,sans-serif;background:#020617;color:#e2e8f0}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.panel{background:#0f172a;border:1px solid #263244;border-radius:14px;padding:15px}.field{background:#020617;border:1px solid #334155;border-radius:8px;padding:9px;color:#f8fafc;width:100%;min-width:0}.btn{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700}.primary{background:#10b981;border-color:#10b981;color:#022c22}.muted{color:#94a3b8}.tab{padding:12px 10px;border-bottom:2px solid transparent;color:#94a3b8;white-space:nowrap;font-size:12px;font-weight:700}.tab.on{border-color:#10b981;color:#34d399}.hidden{display:none!important}.small{font-size:11px}.card{background:#020617;border:1px solid #263244;border-radius:10px;padding:11px;margin-top:9px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}td,th{padding:10px 8px;border-bottom:1px solid #263244;text-align:left}th{font-size:10px;color:#94a3b8;text-transform:uppercase}.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #475569;border-radius:10px;padding:12px 16px;z-index:99;max-width:90%;font-size:12px;box-shadow:0 10px 30px #0009}.score{width:55px!important;text-align:center}.tag{font-size:10px;border-radius:6px;padding:4px 7px;background:#1e293b}.match-status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.035em;white-space:nowrap}.status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 9px}.status-running{color:#34d399}.status-running .status-dot{background:#22c55e;box-shadow:0 0 8px #22c55e;animation:padelBlink 1s infinite}.status-done{color:#f87171}.status-done .status-dot{background:#ef4444}.status-wait{color:#facc15}.status-wait .status-dot{background:#eab308}@keyframes padelBlink{0%,100%{opacity:1;box-shadow:0 0 9px #22c55e}50%{opacity:.25;box-shadow:0 0 1px #22c55e}}.player{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#020617;border:1px solid #263244;border-radius:8px;padding:8px;font-size:12px}
+#roundFullscreen{position:fixed;inset:0;z-index:1000;background:#020617;color:#e2e8f0;overflow:auto;padding:clamp(12px,3vw,30px);display:none}#roundFullscreen.open{display:block}#roundFullscreen .fs-wrap{max-width:1000px;margin:0 auto}#roundFullscreen .fs-score{font-size:clamp(42px,9vw,84px);font-weight:900;line-height:1.1;min-width:1.5em;text-align:center}#roundFullscreen .fs-team{font-size:clamp(14px,2.8vw,23px);font-weight:800;overflow-wrap:anywhere}#roundFullscreen .fs-step{width:clamp(48px,8vw,76px);height:clamp(48px,8vw,76px);border-radius:14px;border:1px solid #475569;background:#1e293b;color:#fff;font-size:clamp(25px,5vw,40px);font-weight:900}#roundFullscreen .fs-step.plus{background:#059669;border-color:#059669}#roundFullscreen .fs-step:disabled{opacity:.35}#roundFullscreen:fullscreen{overflow:auto}body.fs-open{overflow:hidden}
+
+#roundFullscreen .match-point-warning{background:#713f12;border:2px solid #facc15;color:#fef08a;padding:12px 14px;border-radius:12px;font-weight:900;text-align:center;animation:matchPulse 1s infinite}
+#roundFullscreen .match-winner{background:#064e3b;border:2px solid #34d399;color:#d1fae5;padding:14px;border-radius:12px;text-align:center;font-weight:900}
+#roundFullscreen .match-winner .winner-title{font-size:clamp(18px,3vw,28px);margin-bottom:4px}
+@keyframes matchPulse{0%,100%{opacity:1}50%{opacity:.65}}
+
+</style>
+</head>
+<body>
+<div class="max-w-5xl mx-auto p-3 sm:p-5">
+<header class="flex justify-between items-center gap-3 mb-4">
+ <div class="flex gap-3 items-center"><div class="bg-emerald-400 text-slate-950 rounded-xl w-10 h-10 flex items-center justify-center" aria-label="Logo raket padel dan bola" title="Raket padel dan bola">
+ <svg width="32" height="32" viewBox="0 0 64 64" role="img" aria-label="Dua raket padel dan bola" fill="none">
+  <g transform="rotate(-32 23 25)"><ellipse cx="23" cy="22" rx="11" ry="15" stroke="#022c22" stroke-width="4"/><path d="M23 37V54" stroke="#022c22" stroke-width="5" stroke-linecap="round"/><g fill="#022c22"><circle cx="19" cy="14" r="1.3"/><circle cx="25" cy="13" r="1.3"/><circle cx="16" cy="20" r="1.3"/><circle cx="22" cy="20" r="1.3"/><circle cx="28" cy="20" r="1.3"/><circle cx="19" cy="26" r="1.3"/><circle cx="25" cy="26" r="1.3"/><circle cx="22" cy="32" r="1.3"/></g></g>
+  <g transform="rotate(31 42 29)"><ellipse cx="42" cy="25" rx="10" ry="14" stroke="#022c22" stroke-width="4"/><path d="M42 39V54" stroke="#022c22" stroke-width="5" stroke-linecap="round"/><g fill="#022c22"><circle cx="38" cy="18" r="1.2"/><circle cx="44" cy="17" r="1.2"/><circle cx="35" cy="24" r="1.2"/><circle cx="41" cy="24" r="1.2"/><circle cx="47" cy="24" r="1.2"/><circle cx="38" cy="30" r="1.2"/><circle cx="44" cy="30" r="1.2"/></g></g>
+  <circle cx="52" cy="11" r="6" fill="#facc15" stroke="#022c22" stroke-width="2"/><path d="M49 7c4 2 5 5 4 8" stroke="#022c22" stroke-width="1.5" stroke-linecap="round"/>
+ </svg>
+</div><div><h1 class="font-bold text-sm sm:text-base">Turnamen The Winner Padel</h1><p class="muted text-xs">Klasemen kumulatif • Arsip mingguan</p></div></div>
+ <div class="text-right"><div class="flex flex-wrap items-center justify-end gap-2"><div id="cloudStatus" class="muted text-xs">● Firebase dikonfigurasi — belum tersambung</div><button id="topConnectCloud" class="btn primary" style="font-size:11px;padding:7px 9px">☁ SAMBUNGKAN & MUAT CLOUD</button></div><div id="localSaveStatus" class="muted text-xs mt-1">Autosave menyiapkan penyimpanan…</div><div id="globalTimer" class="font-mono text-amber-400 font-bold text-lg">60:00</div></div>
+</header>
+<nav class="flex overflow-x-auto border-b border-slate-700 mb-4">
+<button class="tab on" data-tab="setup">① Setup</button><button class="tab" data-tab="rounds">② Jadwal & Skor</button><button class="tab" data-tab="board">③ Klasemen</button><button class="tab" data-tab="archive">④ Arsip Mingguan</button><button class="tab" data-tab="settings">⑤ Cloud</button><button class="tab" data-tab="profiles">⑥ Profil Atlet</button><button class="tab" data-tab="editor">⑦ Editor Data</button>
+</nav>
+<section id="view-setup">
+ <div class="grid sm:grid-cols-2 gap-3">
+  <div class="panel"><h2 class="font-bold text-xs mb-3">Jumlah Lapangan</h2><div class="grid grid-cols-2 gap-2"><button id="court1" class="btn primary">1 Lapangan</button><button id="court2" class="btn">2 Lapangan</button></div></div>
+  <div class="panel"><label class="font-bold text-xs block mb-3" for="duration">Durasi sesi (menit)</label><input id="duration" class="field" type="number" min="15" max="180" step="5" value="60"></div>
+ </div>
+ <div class="panel mt-3"><h2 class="font-bold text-xs mb-2">Data Pemain</h2><p class="muted small mb-3">Tentukan jumlah pemain, lalu pilih pemain lama dari daftar atau masukkan nama pemain baru. Pemain lama menampilkan total poin dan peringkat global.</p>
+ <div class="grid sm:grid-cols-[180px_1fr] gap-3 items-end"><div><label class="small muted block mb-1" for="playerCountInput">Jumlah pemain</label><input id="playerCountInput" class="field" type="number" min="2" max="32" value="10"></div><button id="buildPlayerCards" class="btn primary">Buat Daftar Pemain</button></div>
+ <div id="playerEntryCards" class="grid md:grid-cols-2 gap-3 mt-3"></div><button id="applyPlayerCards" class="btn primary w-full mt-3">Gunakan Pemain Terpilih</button>
+ <div class="flex flex-wrap gap-2 mt-3"><button class="btn" data-preset="6">Preset 6</button><button class="btn" data-preset="8">Preset 8</button><button class="btn" data-preset="10">Preset 10</button><button id="clearSession" class="btn text-rose-300 ml-auto">Reset sesi</button></div>
+ </div>
+ <div class="panel mt-3"><div class="flex justify-between gap-2 items-center mb-3"><h2 class="font-bold text-xs">Pemain sesi ini <span id="sessionCount" class="text-emerald-400">0</span></h2><span class="muted small">Nama dari master pemain</span></div><div id="sessionPlayers" class="grid sm:grid-cols-3 grid-cols-2 gap-2"></div><button id="generate" class="btn primary w-full mt-4">Buat Jadwal Ronde →</button></div>
+ <div class="panel"><h2 class="font-bold text-xs mb-2">Daftar Master Pemain</h2><p class="muted small mb-3">Identitas pemain disimpan terpisah dari nama tampilan. Hindari menghapus pemain yang sudah punya riwayat poin.</p><div id="masterPlayers" class="grid sm:grid-cols-3 grid-cols-2 gap-2"></div></div>
+</section>
+<section id="view-rounds" class="hidden">
+ <div class="panel mb-3"><div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="font-bold text-xs">Jadwal dan input skor</h2><p class="muted small mt-1">Simpan pertandingan setelah seluruh skor sudah benar.</p></div><div class="flex gap-2"><button id="start" class="btn primary">▶ Mulai Timer</button><button id="regen" class="btn">Buat Ulang</button></div></div></div>
+ <div id="roundList"></div>
+ <div class="panel mt-3"><h2 class="font-bold text-xs mb-3">Simpan Pertandingan</h2><div class="grid sm:grid-cols-2 gap-3"><div><label class="small muted block mb-1">Nama pertandingan / pekan</label><input id="matchName" class="field" placeholder="Contoh: The Winner Padel — Minggu 1"></div><div><label class="small muted block mb-1">Tanggal</label><input id="matchDate" class="field" type="date"></div></div><p class="muted small my-3">Yang ditambahkan ke klasemen kumulatif adalah poin hasil pertandingan ini saja. Statistik main/menang/kalah pada klasemen adalah statistik dari pertandingan yang tersimpan di aplikasi ini, bukan dari arsip poin lama.</p><button id="saveMatch" class="btn primary w-full">✓ Simpan Pertandingan ke Arsip</button></div>
+</section>
+<section id="view-board" class="hidden">
+ <div class="panel mb-3"><div class="flex flex-wrap justify-between items-start gap-3 mb-3"><div><h2 class="font-bold text-xs">🏆 Klasemen Hari Ini</h2><p class="muted small mt-1">Statistik dari skor pertandingan yang sedang disusun di sesi ini. Tidak termasuk arsip hari lain.</p></div></div>
+ <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Nama Pemain</th><th>Poin (akumulasi skor)</th><th>Main</th></tr></thead><tbody id="todayBoardBody"></tbody></table></div></div>
+ <div class="panel"><div class="mb-3"><h2 class="font-bold text-xs">🌐 Klasemen Global</h2><p class="muted small mt-1">Akumulasi poin dari semua arsip pertandingan. Poin baru hari ini ditambahkan ke total global sebelumnya.</p><p id="globalDateLabel" class="muted small mt-1"></p></div>
+ <div class="grid grid-cols-3 gap-2 mb-4"><div class="bg-slate-950 border border-slate-800 rounded-lg p-3"><span class="muted small">Pemain</span><strong id="boardPlayers" class="block text-xl mt-1">0</strong></div><div class="bg-slate-950 border border-slate-800 rounded-lg p-3"><span class="muted small">Total arsip</span><strong id="boardArchives" class="block text-xl mt-1">0</strong></div><div class="bg-slate-950 border border-slate-800 rounded-lg p-3"><span class="muted small">Total poin global</span><strong id="boardPoints" class="block text-xl mt-1">0</strong></div></div>
+ <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Nama Pemain</th><th>Poin (akumulasi skor)</th><th>Main</th></tr></thead><tbody id="boardBody"></tbody></table></div></div>
+</section>
+<section id="view-archive" class="hidden">
+ <div class="panel"><h2 class="font-bold text-xs mb-1">📚 Arsip Pertandingan</h2><p class="muted small mb-4">Setiap pertandingan yang disimpan memiliki ID unik. Arsip yang sama tidak akan dihitung dua kali.</p><div id="archiveList"></div></div>
+ <div class="panel" style="border-color:#7f1d1d;background:#1c1016">
+  <h2 class="font-bold text-xs mb-2 text-rose-300">⚠️ Reset Semua Data Lokal</h2>
+  <p class="muted small mb-3">Menghapus seluruh data aplikasi yang tersimpan di browser ini: master pemain, sesi dan jadwal, skor, semua arsip lama, arsip hari ini, poin, serta statistik menang/seri/kalah. File backup yang sudah diunduh dan data Firebase tidak ikut terhapus.</p>
+  <button id="resetAllLocal" class="btn w-full" style="background:#991b1b;border-color:#b91c1c;color:#fff">🗑 Reset Semua Data Lokal</button>
+ </div>
+ <div id="resetConfirm" class="hidden" role="dialog" aria-modal="true" aria-labelledby="resetConfirmTitle" style="position:fixed;inset:0;z-index:2000;background:#020617eF;padding:18px;align-items:center;justify-content:center">
+  <div class="panel w-full max-w-md" style="border-color:#b91c1c;box-shadow:0 20px 60px #0009">
+   <h2 id="resetConfirmTitle" class="font-bold text-base text-rose-300 mb-3">Apakah Anda yakin?</h2>
+   <p class="text-sm mb-3">Semua arsip dan rekaman lama, termasuk data hari ini, akan dihapus dari penyimpanan lokal browser. Master pemain, jadwal, skor, poin, dan statistik menang/seri/kalah juga akan dikosongkan.</p>
+   <p class="muted small mb-5">Tindakan ini tidak dapat dibatalkan dari aplikasi. Pastikan Anda sudah mengunduh backup jika masih membutuhkannya.</p>
+   <div class="flex gap-2">
+    <button id="cancelResetAll" class="btn flex-1">Batal</button>
+    <button id="confirmResetAll" class="btn flex-1" style="background:#dc2626;border-color:#dc2626;color:#fff">Ya, hapus semua</button>
+   </div>
+  </div>
+ </div>
+ <div class="panel"><h2 class="font-bold text-xs mb-2">Unggah Arsip Sebelumnya</h2><p class="muted small mb-3">Pilih file JSON backup/arsip yang pernah diekspor dari aplikasi ini. File divalidasi sebelum diproses.</p><input id="importFile" class="field" type="file" accept=".json,application/json"><div id="importPanel" class="hidden mt-4"><label class="muted small block mb-1">Pilih pertandingan dari file</label><select id="importSelect" class="field"></select><div id="importDetails" class="muted small mt-2"></div><button id="importSelected" class="btn primary w-full mt-3">Impor Poin Pertandingan Terpilih</button></div><p id="importMessage" class="small mt-3 muted"></p></div>
+</section>
+<section id="view-profiles" class="hidden">
+ <div class="panel mb-3"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold text-lg">👤 PROFIL ATLET</h2><p class="muted small">Kelola foto, nama, domisili, dan motto pemain. Data profil ikut tersimpan bersama data pemain aplikasi.</p></div><div class="flex gap-2"><select id="profileSort" class="field" style="width:auto"><option value="points">Urutkan: Klasemen</option><option value="name">Urutkan: Nama A–Z</option></select><button id="profileRefresh" class="btn">↻ Muat ulang</button></div></div></div>
+ <div id="profileGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+ <div id="profileDetail" class="panel mt-3 hidden"></div>
+</section>
+<section id="view-editor" class="hidden">
+ <div class="panel"><h2 class="font-bold text-lg mb-2">🛠 Kelola Data Turnamen</h2>
+ <p class="muted small mb-4">Pilih minggu/pertandingan untuk mengedit datanya. Perubahan disimpan ke aplikasi dan bisa dikirim ke Firebase. Unduh backup sebelum menghapus data.</p>
+ <div class="flex flex-wrap gap-2 mb-4"><button id="editorRefresh" class="btn">↻ Muat Data Aplikasi</button><button id="editorLoadCloud" class="btn">☁ Muat Data Firebase</button><button id="editorSaveCloud" class="btn primary">☁ Simpan Perubahan ke Firebase</button><button id="editorDownload" class="btn">↓ Backup JSON</button></div>
+ <div class="grid md:grid-cols-2 gap-3 mb-4"><div><label class="small muted block mb-1" for="adminWeek">Pilih minggu / pertandingan</label><select id="adminWeek" class="field"></select></div><div class="muted small flex items-center">Pemain: <b id="editorPlayerCount" class="ml-1">0</b>　 Arsip: <b id="editorArchiveCount" class="ml-1">0</b>　 Status cloud: <b id="editorCloudState" class="ml-1">Belum tersambung</b></div></div>
+ <div class="panel mb-4" style="background:rgba(255,255,255,.025)"><div class="flex flex-wrap items-center justify-between gap-2 mb-3"><h3 class="font-bold">📅 Detail pertandingan mingguan</h3><div class="flex gap-2"><button id="adminEditArchive" class="btn">✎ Edit detail</button><button id="adminDeleteArchive" class="btn" style="border-color:#7f1d1d;color:#fca5a5">Hapus pertandingan</button></div></div><div id="adminArchiveDetail" class="muted small">Pilih arsip untuk melihat detail.</div><div id="adminArchiveForm" class="hidden grid md:grid-cols-2 gap-3 mt-3"><div><label class="small muted">Nama pertandingan/minggu</label><input id="adminArchiveName" class="field"></div><div><label class="small muted">Tanggal</label><input id="adminArchiveDate" type="date" class="field"></div><div class="flex gap-2"><button id="adminSaveArchive" class="btn primary">Simpan detail</button><button id="adminCancelArchive" class="btn">Batal</button></div></div></div>
+ <div class="panel mb-4" style="background:rgba(255,255,255,.025)"><h3 class="font-bold mb-3">👥 Daftar pemain</h3><p class="muted small mb-3">Edit nama pemain di bawah ini. ID pemain tetap dipertahankan agar poinnya tidak terputus.</p><div id="adminPlayersTable" class="overflow-x-auto"></div></div>
+ <div class="panel" style="background:rgba(255,255,255,.025)"><h3 class="font-bold mb-3">🎾 Skor dan poin pertandingan terpilih</h3><div id="adminMatchesTable" class="overflow-x-auto"></div><p id="editorMessage" class="muted small mt-3">Pilih arsip mingguan untuk memulai.</p></div>
+ <p class="small mt-3" style="color:#fbbf24">Hapus arsip akan memengaruhi riwayat dan poin. Perubahan hanya masuk Firebase setelah menekan “Simpan Perubahan ke Firebase”. Pastikan akses Firebase dilindungi dengan aturan yang sesuai.</p></div>
+</section>
+<section id="view-settings" class="hidden">
+ <div class="panel"><h2 class="font-bold text-xs mb-2">☁️ Konfigurasi Firebase Cloud</h2><p class="muted small mb-4">Konfigurasi proyek winnerpadel sudah diisi otomatis. Konfigurasi disimpan di browser ini. Aktifkan Authentication (Anonymous) dan Cloud Firestore pada Firebase Console sebelum menyambungkan.</p>
+ <div class="grid sm:grid-cols-2 gap-3"><div><label class="small muted block mb-1">API Key</label><input id="fbApiKey" class="field" value="AIzaSyDiVYwwj73-pnQUii6EUc7WeZnJ-3D7CD8" placeholder="AIza..."></div><div><label class="small muted block mb-1">Auth Domain</label><input id="fbAuthDomain" class="field" value="winnerpadel.firebaseapp.com" placeholder="project.firebaseapp.com"></div><div><label class="small muted block mb-1">Project ID</label><input id="fbProjectId" class="field" value="winnerpadel" placeholder="project-id"></div><div><label class="small muted block mb-1">App ID</label><input id="fbAppId" class="field" value="1:539208934533:web:919f119da78f9825a5b5ec" placeholder="1:...:web:..."></div><div><label class="small muted block mb-1">Storage Bucket (opsional)</label><input id="fbBucket" class="field" value="winnerpadel.firebasestorage.app"></div><div><label class="small muted block mb-1">Messaging Sender ID (opsional)</label><input id="fbSender" class="field" value="539208934533"></div></div>
+ <div class="flex flex-wrap gap-2 mt-4"><button id="connectFirebase" class="btn primary">Sambungkan & Muat Cloud</button><button id="pushCloud" class="btn">Simpan Data ke Cloud</button><button id="pullCloud" class="btn">Muat Ulang dari Cloud</button></div><p id="cloudMessage" class="muted small mt-3">Mode lokal aktif sampai Firebase dikonfigurasi.</p></div>
+ <div class="panel"><h2 class="font-bold text-xs mb-2">Backup dan pemulihan</h2><p class="muted small mb-3">Ekspor backup JSON secara berkala. File berisi master pemain, poin akumulasi skor pertandingan dan arsip ber-ID unik. Statistik arsip dapat dibawa ke pertandingan berikutnya saat diimpor; Klasemen Global tetap menghitung arsip bertanggal hari ini saja.</p><button id="exportBackup2" class="btn">↓ Unduh Backup JSON</button></div>
+</section>
+<div id="roundFullscreen" aria-label="Kontrol skor layar penuh">
+ <div class="fs-wrap">
+  <div class="flex items-center justify-between gap-3 flex-wrap mb-5"><div><div class="font-bold text-lg sm:text-2xl">THE WINNER PADEL</div><div id="fsRoundTitle" class="muted text-sm mt-1">RONDE</div></div><button id="fsExit" class="btn">✕ Keluar Layar Penuh</button></div>
+  <div class="flex items-center justify-between gap-3 flex-wrap mb-4 p-4 rounded-xl border border-slate-700 bg-slate-900"><div><div class="muted small">SISA WAKTU RONDE</div><div id="fsTimer" class="font-mono text-amber-400 font-bold" style="font-size:clamp(34px,7vw,60px)">00:00</div></div><div class="flex gap-2 flex-wrap"><button id="fsStart" class="btn primary">▶ Mulai Timer</button><button id="fsPause" class="btn">Ⅱ Jeda</button></div></div>
+  <div id="fsMatches"></div>
+  <div id="fsNextMatch" class="panel mb-4" style="border-color:#0f766e;background:#042f2e">
+   <div class="text-xs font-bold" style="color:#5eead4">⏭ PERTANDINGAN SELANJUTNYA</div>
+   <div class="muted small mt-2">Informasi pertandingan berikutnya akan tampil di sini.</div>
+  </div>
+  <div class="flex flex-wrap gap-2 mt-5"><button id="fsUndoScore" class="btn" disabled>↶ Undo Skor</button><button id="fsSkipRound" class="btn" style="background:#854d0e;border-color:#f59e0b;color:#fff">⏭ Skip Ronde</button><button id="fsLockNext" class="btn primary">🔒 Kunci Skor & Lanjut Ronde</button><button id="fsExitBottom" class="btn">Kembali ke Jadwal</button></div>
+  <p class="muted small mt-4">Skor otomatis dikunci ketika timer ronde mencapai nol. Ronde berikutnya dimulai dengan sisa waktu ronde sebelumnya sesuai pengaturan aplikasi.</p>
+ </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+const $=id=>document.getElementById(id);
+const STORE_KEY='theWinnerPadelBackupV1', FB_KEY='theWinnerPadelFirebaseConfigV1';
+let state={schemaVersion:1,players:[],sessionPlayerIds:[],archives:[],cumulativePoints:{},importedArchiveIds:[],deletedArchiveIds:[],localStats:{},rounds:[],courtCount:1,duration:60};
+let app=null,auth=null,db=null,cloudDoc=null,cloudReady=false,globalInterval=null,roundInterval=null,secondsLeft=3600,started=false,importCandidates=[];let scoreUndoStack=[],cloudAutosaveTimer=null;
+const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+$('matchDate').value=today();
+function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),3000)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function queueCloudAutosave(){if(!cloudReady||cloudAutosaveTimer)return;cloudAutosaveTimer=setTimeout(async()=>{cloudAutosaveTimer=null;if(cloudReady)await saveCloud()},30000)}
+function saveLocal(){try{localStorage.setItem(STORE_KEY,JSON.stringify(exportData()));const el=$('localSaveStatus');if(el){el.textContent='✓ Autosave lokal: '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});el.style.color='#34d399'}queueCloudAutosave()}catch(e){const el=$('localSaveStatus');if(el){el.textContent='⚠ Gagal autosave — unduh backup JSON';el.style.color='#f87171'}console.error('Autosave lokal gagal',e)}}
+function exportData(){return {format:'the-winner-padel-archive',schemaVersion:1,exportedAt:new Date().toISOString(),players:state.players,sessionPlayerIds:state.sessionPlayerIds,rounds:state.rounds,courtCount:state.courtCount||courtCount||1,duration:state.duration||60,secondsLeft,started,activeRoundNumber:(state.rounds.find(r=>r.running&&!r.locked)||{}).number||null,sessionSavedAt:new Date().toISOString(),archives:state.archives,cumulativePoints:state.cumulativePoints,importedArchiveIds:state.importedArchiveIds,deletedArchiveIds:state.deletedArchiveIds||[],localStats:state.localStats}}
+function restoreData(d,merge=false){if(!validBackup(d))throw Error('Format file tidak valid. Pastikan file adalah backup The Winner Padel.');if(!merge){state.players=d.players;state.archives=d.archives;state.cumulativePoints=d.cumulativePoints||{};state.importedArchiveIds=d.importedArchiveIds||[];state.deletedArchiveIds=Array.isArray(d.deletedArchiveIds)?d.deletedArchiveIds:[];state.localStats=d.localStats||{};state.sessionPlayerIds=Array.isArray(d.sessionPlayerIds)?d.sessionPlayerIds.filter(id=>state.players.some(p=>p.id===id)):[];state.rounds=Array.isArray(d.rounds)?d.rounds:[];state.courtCount=Number(d.courtCount)||1;state.duration=Number(d.duration)||60;courtCount=state.courtCount;secondsLeft=Number.isFinite(d.secondsLeft)?Math.max(0,d.secondsLeft):state.duration*60;const wasRunning=!!d.started;const activeRound=state.rounds.find(r=>r.number===d.activeRoundNumber)||state.rounds.find(r=>r.running&&!r.locked);if(wasRunning&&activeRound){const stamp=Date.parse(d.sessionSavedAt||d.exportedAt||'');const elapsed=Number.isFinite(stamp)?Math.max(0,Math.floor((Date.now()-stamp)/1000)):0;activeRound.seconds=Math.max(0,(Number(activeRound.seconds)||0)-elapsed);secondsLeft=Math.max(0,secondsLeft-elapsed);if(activeRound.seconds<=0)activeRound.locked=true;state.recoveredWasRunning=true;state.resumeRoundNumber=activeRound.number}state.rounds.forEach(r=>r.running=false);normalizeArchivePoints();return}
+ const idsByPlayer=new Set(state.players.map(p=>p.id));
+ d.players.forEach(p=>{if(!idsByPlayer.has(p.id)&&!state.players.some(x=>norm(x.name)===norm(p.name))){state.players.push(p);idsByPlayer.add(p.id)}});
+ const deletedIds=new Set([...(state.deletedArchiveIds||[]),...(d.deletedArchiveIds||[])]);state.deletedArchiveIds=[...deletedIds];
+ const archivesById=new Map(state.archives.map(a=>[a.id,a]));
+ d.archives.forEach(a=>{if(!deletedIds.has(a.id)&&!archivesById.has(a.id)){state.archives.push(a);archivesById.set(a.id,a)}});
+ state.archives=state.archives.filter(a=>!deletedIds.has(a.id));
+ // Rebuild totals from unique archive point rows to avoid double-counting during cloud merges.
+ normalizeArchivePoints();
+ state.importedArchiveIds=[...new Set([...state.importedArchiveIds,...(d.importedArchiveIds||[]),...state.archives.map(a=>a.id)])];
+ state.localStats={...(state.localStats||{}),...(d.localStats||{})};
+}
+function validBackup(d){if(!d||d.format!=='the-winner-padel-archive'||d.schemaVersion!==1||!Array.isArray(d.players)||!Array.isArray(d.archives))return false;if(d.players.some(p=>!p||typeof p.id!=='string'||typeof p.name!=='string'||!p.name.trim()))return false;if(d.archives.some(a=>!a||typeof a.id!=='string'||typeof a.name!=='string'||!Array.isArray(a.points)||a.points.some(p=>!p||typeof p.playerId!=='string'||!Number.isFinite(p.points)||p.points<0)))return false;return true}
+function norm(s){return String(s).trim().toLocaleLowerCase('id-ID').replace(/\s+/g,' ')}
+function playerById(id){return state.players.find(p=>p.id===id)}
+function addPlayer(name,session=true){name=name.trim().replace(/\s+/g,' ');if(!name)return null;let existing=state.players.find(p=>norm(p.name)===norm(name));if(existing){if(session&&!state.sessionPlayerIds.includes(existing.id))state.sessionPlayerIds.push(existing.id);return existing}let p={id:uid(),name,createdAt:new Date().toISOString()};state.players.push(p);state.cumulativePoints[p.id]=state.cumulativePoints[p.id]||0;if(session)state.sessionPlayerIds.push(p.id);return p}
+function sessionPlayers(){return state.sessionPlayerIds.map(playerById).filter(Boolean)}
+function scoreDefault(){return {played:0,won:0,drawn:0,lost:0,gamesFor:0,gamesAgainst:0}}
+function statsNow(){let out={};state.players.forEach(p=>out[p.id]=scoreDefault());state.archives.forEach(a=>(a.matches||[]).forEach(m=>{if(!Number.isFinite(m.s1)||!Number.isFinite(m.s2))return;[m.team1,m.team2].forEach((team,idx)=>team.forEach(id=>{if(!out[id])return;let s=out[id],gf=idx===0?m.s1:m.s2,ga=idx===0?m.s2:m.s1;s.played++;s.gamesFor+=gf;s.gamesAgainst+=ga;if(gf>ga)s.won++;else if(gf===ga)s.drawn++;else s.lost++}))}));return out}
+function pointsForArchive(a){return pointsForMatches(a.matches||[])}
+function applyArchivePoints(a){if(state.importedArchiveIds.includes(a.id)||state.archives.some(x=>x.id===a.id))return false;let pts=a.points||[];pts.forEach(p=>{state.cumulativePoints[p.playerId]=(state.cumulativePoints[p.playerId]||0)+p.points});state.archives.push(a);state.importedArchiveIds.push(a.id);return true}
+function renderProfiles(){
+ const grid=$('profileGrid'); if(!grid)return; const sort=$('profileSort')?.value||'points'; const {pts,ranked}=globalPlayerStats();
+ const players=[...state.players].sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'id'):((pts[b.id]||0)-(pts[a.id]||0)||a.name.localeCompare(b.name,'id')));
+ grid.innerHTML=players.map(p=>{const rank=ranked.findIndex(x=>x.id===p.id)+1;const photo=p.photoData||'';return `<button class="card text-left" data-profile="${esc(p.id)}" style="margin-top:0"><div class="flex items-center gap-3"><img src="${photo||''}" alt="" style="width:76px;height:76px;object-fit:cover;border-radius:50%;background:#1e293b" onerror="this.style.display='none'"><div class="min-w-0"><div class="font-bold">${esc(p.name)}</div><div class="muted small">${esc(p.domicile||'Domisili belum diisi')}</div><div class="text-emerald-300 text-sm font-bold mt-1">${Number(pts[p.id]||0)} poin · Rank ${rank||'—'}</div></div></div><div class="muted small mt-3">${esc(p.quote||'Belum ada motto')}</div></button>`}).join('')||'<div class="panel muted small">Belum ada pemain. Tambahkan pemain melalui tab Setup terlebih dahulu.</div>';
+ grid.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>openProfile(b.dataset.profile));
+}
+function openProfile(id){const p=playerById(id);if(!p)return;const {pts,ranked}=globalPlayerStats();const st=statsNow()[id]||scoreDefault();const rank=ranked.findIndex(x=>x.id===id)+1;const hist=state.archives.filter(a=>(a.points||[]).some(x=>x.playerId===id)||(a.matches||[]).some(m=>(m.team1||[]).includes(id)||(m.team2||[]).includes(id))).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ const d=$('profileDetail');d.classList.remove('hidden');d.innerHTML=`<div class="flex flex-wrap justify-between gap-2 items-center mb-3"><h3 class="font-bold text-base">Detail Profil Atlet</h3><button id="profileClose" class="btn">Tutup</button></div><div class="grid md:grid-cols-[160px_1fr] gap-4"><div><img id="profilePreview" src="${p.photoData||''}" alt="Foto pemain" style="width:150px;height:150px;object-fit:cover;border-radius:12px;background:#1e293b" onerror="this.style.display='none'"><label class="btn block text-center mt-2">Unggah foto<input id="profilePhoto" type="file" accept="image/*" class="hidden"></label><button id="profileDownload" class="btn w-full mt-2">Unduh foto</button></div><div><label class="small muted block mb-1">Nama pemain</label><input id="profileName" class="field mb-2" maxlength="60" value="${esc(p.name)}"><label class="small muted block mb-1">Domisili</label><input id="profileDomicile" class="field mb-2" maxlength="100" value="${esc(p.domicile||'')}"><label class="small muted block mb-1">Motto / kutipan</label><textarea id="profileQuote" class="field mb-3" maxlength="240" rows="2">${esc(p.quote||'')}</textarea><button id="profileSave" class="btn primary">Simpan profil</button><div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3"><div class="card"><div class="muted small">Poin global</div><b>${Number(pts[id]||0)}</b></div><div class="card"><div class="muted small">Peringkat</div><b>${rank||'—'}</b></div><div class="card"><div class="muted small">Main</div><b>${st.played}</b></div><div class="card"><div class="muted small">Menang</div><b>${st.won}</b></div></div></div></div><div class="mt-4"><h4 class="font-bold text-sm mb-2">Riwayat pertandingan</h4>${hist.map(a=>`<div class="card"><b>${esc(a.name||'Pertandingan')}</b><div class="muted small">${esc(a.date||'Tanpa tanggal')} · Poin arsip: ${Number((a.points||[]).find(x=>x.playerId===id)?.points||0)}</div></div>`).join('')||'<p class="muted small">Belum ada riwayat pertandingan tersimpan.</p>'}</div>`;
+ $('profileClose').onclick=()=>d.classList.add('hidden');$('profilePhoto').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('image/'))return toast('Pilih file gambar.');try{p.photoData=await resizeProfileImage(f);$('profilePreview').src=p.photoData;$('profilePreview').style.display='block';}catch(err){toast('Foto gagal diproses.')}};
+ $('profileSave').onclick=()=>{const name=$('profileName').value.trim();if(!name)return toast('Nama tidak boleh kosong.');if(state.players.some(x=>x.id!==id&&norm(x.name)===norm(name)))return toast('Nama pemain sudah digunakan.');p.name=name;p.domicile=$('profileDomicile').value.trim();p.quote=$('profileQuote').value.trim();saveLocal();renderAll();renderProfiles();openProfile(id);toast('Profil tersimpan di perangkat ini.')};
+ $('profileDownload').onclick=()=>{if(!p.photoData)return toast('Unggah foto terlebih dahulu.');const a=document.createElement('a');a.href=p.photoData;a.download=(p.name||'profil-atlet').replace(/[^a-z0-9-_]/gi,'_')+'.jpg';a.click()};
+}
+function resizeProfileImage(file){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{try{const c=document.createElement('canvas');c.width=512;c.height=512;const ctx=c.getContext('2d'),side=Math.min(img.width,img.height),sx=(img.width-side)/2,sy=(img.height-side)/2;ctx.drawImage(img,sx,sy,side,side,0,0,512,512);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.82))}catch(e){reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('invalid image'))};img.src=url})}
+$('profileSort')?.addEventListener('change',renderProfiles);$('profileRefresh')?.addEventListener('click',renderProfiles);
+function switchTab(t){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));['setup','rounds','board','archive','settings','profiles','editor'].forEach(v=>$('view-'+v).classList.toggle('hidden',v!==t));if(t==='board')renderBoard();if(t==='archive')renderArchives();if(t==='profiles')renderProfiles();if(t==='editor')refreshDataEditor()}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+function renderPlayers(){$('sessionCount').textContent=state.sessionPlayerIds.length;$('sessionPlayers').innerHTML=sessionPlayers().map(p=>`<div class="player"><span class="truncate">🟢 ${esc(p.name)}</span><button class="muted" data-remove="${p.id}" title="Hapus dari sesi">×</button></div>`).join('')||'<p class="muted small col-span-full py-4 text-center">Belum ada pemain dalam sesi.</p>';$('sessionPlayers').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{if(started)return toast('Timer berjalan.');state.sessionPlayerIds=state.sessionPlayerIds.filter(id=>id!==b.dataset.remove);renderPlayers();saveLocal()});$('masterPlayers').innerHTML=state.players.map(p=>`<div class="player"><span class="truncate">${esc(p.name)}</span><button class="btn" data-join="${p.id}">${state.sessionPlayerIds.includes(p.id)?'Dipilih':'+ Sesi'}</button></div>`).join('')||'<p class="muted small col-span-full">Master pemain masih kosong.</p>';$('masterPlayers').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{if(started)return toast('Sesi sedang berjalan.');if(!state.sessionPlayerIds.includes(b.dataset.join))state.sessionPlayerIds.push(b.dataset.join);renderPlayers();saveLocal()})}
+function globalPlayerStats(){const pts={...(state.cumulativePoints||{})};(state.archives||[]).forEach(a=>(a.points||[]).forEach(p=>{pts[p.playerId]=Math.max(Number(pts[p.playerId]||0),Number(p.points||0))}));const ranked=[...state.players].map(p=>({id:p.id,name:p.name,points:Number(pts[p.id]||0)})).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));return {pts,ranked}}
+function renderPlayerEntryCards(){const count=Math.max(2,Math.min(32,Number($('playerCountInput').value)||2));$('playerCountInput').value=count;const {pts,ranked}=globalPlayerStats();const existing=sessionPlayers();const options=state.players.slice().sort((a,b)=>a.name.localeCompare(b.name));$('playerEntryCards').innerHTML=Array.from({length:count},(_,i)=>{const selected=existing[i]?.id||'';return `<div class="card" style="margin-top:0"><label class="small muted block mb-1">Pemain ${i+1}</label><select class="field player-existing" data-slot="${i}"><option value="">+ Pemain baru</option>${options.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?'selected':''}>${esc(p.name)}</option>`).join('')}</select><input class="field mt-2 player-new-name ${selected?'hidden':''}" data-slot="${i}" placeholder="Nama pemain baru" maxlength="60"><div class="small mt-2 player-info" data-info="${i}">${selected?(()=>{let r=ranked.findIndex(x=>x.id===selected);return `Total poin: <b>${pts[selected]||0}</b> · Peringkat global: <b>${r>=0?r+1:'—'}</b>`})():'<span style="color:#34d399;font-weight:700">New Comer</span>'}</div></div>`}).join('');$('playerEntryCards').querySelectorAll('.player-existing').forEach(sel=>sel.onchange=()=>{const i=+sel.dataset.slot;const inp=$('playerEntryCards').querySelector(`.player-new-name[data-slot="${i}"]`);const info=$('playerEntryCards').querySelector(`[data-info="${i}"]`);if(sel.value){inp.classList.add('hidden');const r=ranked.findIndex(x=>x.id===sel.value);info.innerHTML=`Total poin: <b>${pts[sel.value]||0}</b> · Peringkat global: <b>${r>=0?r+1:'—'}</b>`}else{inp.classList.remove('hidden');info.innerHTML='<span style="color:#34d399;font-weight:700">New Comer</span>'}})}
+$('buildPlayerCards').onclick=renderPlayerEntryCards;$('playerCountInput').onchange=renderPlayerEntryCards;
+$('applyPlayerCards').onclick=()=>{if(started)return toast('Reset sesi sebelum mengubah pemain.');const sels=[...$('playerEntryCards').querySelectorAll('.player-existing')],used=new Set(),ids=[];for(const sel of sels){let p=null;if(sel.value)p=state.players.find(x=>x.id===sel.value);else{const input=$('playerEntryCards').querySelector(`.player-new-name[data-slot="${sel.dataset.slot}"]`);const name=(input?.value||'').trim();if(!name)return toast(`Isi nama pemain baru pada slot ${Number(sel.dataset.slot)+1}, atau pilih pemain lama.`);p=addPlayer(name,false)}if(!p)continue;if(used.has(p.id))return toast(`Pemain ${p.name} dipilih lebih dari sekali.`);used.add(p.id);ids.push(p.id)}if(ids.length<2)return toast('Pilih minimal dua pemain.');state.sessionPlayerIds=ids;renderPlayers();renderPlayerEntryCards();saveLocal();toast(`${ids.length} pemain dipilih untuk sesi.`)};
+$('topConnectCloud').onclick=()=>{switchTab('settings');$('connectFirebase').click()};
+const addForm=$('addForm');if(addForm)addForm.onsubmit=e=>{e.preventDefault();if(started)return toast('Reset sesi sebelum mengubah pemain.');let n=$('newName').value.trim();if(!n)return;let existed=state.players.find(p=>norm(p.name)===norm(n));addPlayer(n,true);$('newName').value='';renderPlayers();saveLocal();toast(existed?'Nama cocok dengan pemain yang sudah ada; tidak dibuat ganda.':'Pemain ditambahkan ke master dan sesi.')};
+const presetNames=['Andi','Budi','Candra','Dedi','Eko','Fajar','Gilang','Hadi','Irfan','Joko'];
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{if(started)return toast('Sesi sedang berjalan.');presetNames.slice(0,+b.dataset.preset).forEach(n=>addPlayer(n,true));renderPlayers();saveLocal()});
+let courtCount=1;
+function setCourt(n){if(started)return toast('Timer berjalan.');courtCount=n;state.courtCount=n;$('court1').classList.toggle('primary',n===1);$('court2').classList.toggle('primary',n===2);saveLocal()}
+$('court1').onclick=()=>setCourt(1);$('court2').onclick=()=>setCourt(2);
+$('clearSession').onclick=()=>{if(!confirm('Kosongkan pemain sesi dan jadwal saat ini? Arsip/poin tersimpan tetap dipertahankan.'))return;stopTimers();started=false;state.sessionPlayerIds=[];state.rounds=[];renderPlayers();renderRounds();saveLocal()};
+function generate(){if(started)return toast('Timer berjalan.');let ps=sessionPlayers();if(ps.length<courtCount*4)return toast(`Minimal ${courtCount*4} pemain untuk ${courtCount} lapangan.`);let d=Math.max(15,Math.min(180,Number($('duration').value)||60));d=Math.round(d/5)*5;$('duration').value=d;state.duration=d;secondsLeft=d*60;$('globalTimer').textContent=fmt(secondsLeft);let count=ps.length<=8?6:8,plays=Object.fromEntries(ps.map(p=>[p.id,0]));state.rounds=[];for(let r=1;r<=count;r++){let sorted=[...ps].sort((a,b)=>plays[a.id]-plays[b.id]||Math.random()-.5);let active=sorted.slice(0,courtCount*4),rest=sorted.slice(courtCount*4);active.forEach(p=>plays[p.id]++);active.sort(()=>Math.random()-.5);let matches=[];for(let c=0;c<courtCount;c++){let a=active.slice(c*4,c*4+4);matches.push({court:c+1,team1:a.slice(0,2).map(p=>p.id),team2:a.slice(2,4).map(p=>p.id),s1:null,s2:null})}state.rounds.push({number:r,matches,rest:rest.map(p=>p.id),seconds:Math.floor(d*60/count),locked:false,running:false})}renderRounds();saveLocal();switchTab('rounds')}
+$('generate').onclick=generate;$('regen').onclick=generate;
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function stopTimers(){clearInterval(globalInterval);clearInterval(roundInterval);globalInterval=roundInterval=null}
+function statusIndicator(r){let cls=r.locked?'status-done':r.running?'status-running':'status-wait';let label=r.locked?'SUDAH MAIN':r.running?'SEDANG MAIN':'BELUM MAIN';return `<span class="match-status ${cls}"><span class="status-dot"></span>${label}</span>`}
+function renderRounds(){let rs=state.rounds;$('roundList').innerHTML=rs.length?rs.map((r,i)=>`<div class="panel mb-3" style="border-color:${r.running?'#10b981':'#263244'}"><div class="flex justify-between items-center gap-2 pb-3 border-b border-slate-700"><div><b class="text-xs">Ronde #${r.number}</b><div class="mt-1"><span class="tag">${r.locked?'Terkunci':r.running?'Sedang Main':'Menunggu'}</span></div></div><div class="flex items-center gap-2 flex-wrap"><b id="roundTimer${i}" class="font-mono text-amber-400">${fmt(r.seconds)}</b><button class="btn" data-full="${i}">⛶ Full Screen</button><button class="btn" data-next="${i}" ${r.locked?'disabled':''}>Kunci / Lanjut →</button></div></div>${r.rest.length?`<div class="small text-amber-300 mt-3">Istirahat: ${r.rest.map(id=>esc(playerById(id)?.name||'Pemain')).join(', ')}</div>`:''}${r.matches.map((m,j)=>`<div class="card"><div class="flex justify-between small mb-3"><b class="text-sky-400 flex items-center gap-2 flex-wrap">Lapangan #${m.court} ${statusIndicator(r)}</b><span>${Number.isFinite(m.s1)&&Number.isFinite(m.s2)?'Skor terisi':'Input skor'}</span></div><div class="grid items-center gap-2" style="grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)"><div class="text-center bg-slate-900 rounded-lg p-2"><div class="muted small">TIM A</div><b class="text-xs">${m.team1.map(id=>esc(playerById(id)?.name||'?')).join(' & ')}</b></div><div class="flex gap-1 items-center"><input class="field score" type="number" min="0" max="99" value="${m.s1??''}" data-score="${i},${j},s1" ${r.locked?'disabled':''}><span class="muted">–</span><input class="field score" type="number" min="0" max="99" value="${m.s2??''}" data-score="${i},${j},s2" ${r.locked?'disabled':''}></div><div class="text-center bg-slate-900 rounded-lg p-2"><div class="muted small">TIM B</div><b class="text-xs">${m.team2.map(id=>esc(playerById(id)?.name||'?')).join(' & ')}</b></div></div></div>`).join('')}</div>`).join(''):'<div class="panel muted small text-center py-8">Buat jadwal dari tab Setup terlebih dahulu.</div>';
+$('roundList').querySelectorAll('[data-score]').forEach(inp=>inp.onchange=()=>{let [i,j,k]=inp.dataset.score.split(',');let v=inp.value===''?null:Math.max(0,Math.min(99,parseInt(inp.value)));state.rounds[+i].matches[+j][k]=Number.isFinite(v)?v:null;saveLocal();renderRounds()});$('roundList').querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>advance(+b.dataset.next,true));$('roundList').querySelectorAll('[data-full]').forEach(b=>b.onclick=()=>openRoundFullscreen(+b.dataset.full))}
+let fullscreenRoundIndex=null;
+function openRoundFullscreen(i){
+ const r=state.rounds[i];if(!r)return;fullscreenRoundIndex=i;
+ $('fsRoundTitle').textContent='RONDE #'+r.number+(r.locked?' • TERKUNCI':' • '+(r.running?'SEDANG MAIN':'SIAP'));
+ renderFullscreenRound();$('roundFullscreen').classList.add('open');document.body.classList.add('fs-open');
+ try{if($('roundFullscreen').requestFullscreen)$('roundFullscreen').requestFullscreen().catch(()=>{});}catch(e){}
+}
+function closeRoundFullscreen(){ $('roundFullscreen').classList.remove('open');document.body.classList.remove('fs-open');try{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});}catch(e){} }
+
+function matchHasWinnerForNext(m, round){
+ const a=Number.isFinite(m.s1)?m.s1:0, b=Number.isFinite(m.s2)?m.s2:0;
+ const total=a+b;
+ // A match is complete if total reaches 21, or its round is locked and its final score is unequal.
+ return (total>=21 || !!round.locked || (round.seconds<=0 && round.running===false)) && a!==b;
+}
+function roundHasUnfinishedMatches(r){
+ return !!r && r.matches.some(m=>!matchHasWinnerForNext(m,r));
+}
+
+function isLastUpcomingRound(next,current){
+ const remaining=state.rounds.slice(current+1).filter(roundHasUnfinishedMatches);
+ return remaining.length===1 && remaining[0]===next;
+}
+function renderFullscreenNextMatch(){
+ const host=$('fsNextMatch');if(!host)return;
+ const current=fullscreenRoundIndex;
+ const next=current===null?null:state.rounds.slice(current+1).find(r=>roundHasUnfinishedMatches(r));
+ if(!next){
+  host.innerHTML='<div class="text-xs font-bold" style="color:#5eead4">⏭ PERTANDINGAN SELANJUTNYA</div><div class="muted small mt-2">'+(state.rounds.length&&state.rounds.every(r=>r.locked)?'Semua ronde telah selesai.':'Belum ada ronde berikutnya.')+'</div>';
+  return;
+ }
+ const games=next.matches.filter(m=>!matchHasWinnerForNext(m,next)).map(m=>{
+  const a=m.team1.map(id=>esc(playerById(id)?.name||'?')).join(' & ');
+  const b=m.team2.map(id=>esc(playerById(id)?.name||'?')).join(' & ');
+  const score=Number.isFinite(m.s1)&&Number.isFinite(m.s2)?`<span class="font-mono font-bold">${m.s1} – ${m.s2}</span>`:'<span class="muted small">Menunggu skor</span>';
+  return `<div class="card" style="background:#022c22;border-color:#115e59"><div class="muted small mb-2">LAPANGAN #${m.court}</div><div class="grid items-center gap-2" style="grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)"><div class="font-bold text-sm">${a}</div><div>${score}</div><div class="font-bold text-sm text-right">${b}</div></div></div>`;
+ }).join('');
+ host.innerHTML=`<div class="flex items-center justify-between gap-2 flex-wrap"><div class="text-xs font-bold" style="color:#5eead4">⏭ PERTANDINGAN SELANJUTNYA</div><span class="tag">RONDE #${next.number} · ${next.locked?'TERKUNCI':next.running?'SEDANG MAIN':'BELUM MAIN'}</span></div>${isLastUpcomingRound(next,current)?'<div class="mt-2 rounded-lg border border-amber-400 bg-amber-950 text-amber-200 px-3 py-2 font-extrabold text-sm">🏁 PERTANDINGAN TERAKHIR</div>':''}${games||'<div class="muted small mt-2">Belum ada pasangan pertandingan pada ronde berikutnya.</div>'}`;
+}
+
+function matchOutcome(m, timedOut=false){
+ const a=Number.isFinite(m.s1)?m.s1:0, b=Number.isFinite(m.s2)?m.s2:0, total=a+b;
+ if(total>=21 || timedOut){
+  if(a>b)return {finished:true,winner:'Tim A',score:`${a} – ${b}`,team:m.team1.map(id=>playerById(id)?.name||'?').join(' & '),reason:total>=21?'TOTAL SKOR 21 TERCAPAI':'WAKTU HABIS'};
+  if(b>a)return {finished:true,winner:'Tim B',score:`${a} – ${b}`,team:m.team2.map(id=>playerById(id)?.name||'?').join(' & '),reason:total>=21?'TOTAL SKOR 21 TERCAPAI':'WAKTU HABIS'};
+  return {finished:true,winner:null,score:`${a} – ${b}`,team:null,reason:total>=21?'TOTAL SKOR 21 TERCAPAI':'WAKTU HABIS'};
+ }
+ return {finished:false,total,a,b};
+}
+function fullscreenMatchNotice(m, timedOut=false){
+ const o=matchOutcome(m,timedOut);
+ if(o.finished){
+  if(!o.winner)return `<div class="match-winner mt-4"><div class="winner-title">PERTANDINGAN SELESAI</div><div>Skor imbang ${o.score}. Belum ada pemenang.</div><div class="text-xs mt-1">${o.reason}</div></div>`;
+  return `<div class="match-winner mt-4"><div class="winner-title">🎉 SELAMAT, ${esc(o.winner.toUpperCase())} MENANG!</div><div>${esc(o.team)} · Skor ${o.score}</div><div class="text-xs mt-1">${o.reason}</div></div>`;
+ }
+ if(o.total===20)return `<div class="match-point-warning mt-4">⚠️ MATCH POINT! Satu poin lagi untuk mencapai total 21 (${o.a} – ${o.b})</div>`;
+ return '';
+}
+function allMatchesFinished(r, timedOut=false){
+ return r.matches.length>0 && r.matches.every(m=>matchOutcome(m,timedOut).finished);
+}
+
+function renderFullscreenRound(){
+ const r=state.rounds[fullscreenRoundIndex];if(!r)return;$('fsTimer').textContent=fmt(r.seconds);$('fsRoundTitle').textContent='RONDE #'+r.number+(r.locked?' • SKOR TERKUNCI':' • '+(r.running?'SEDANG MAIN':'SIAP'));
+ $('fsMatches').innerHTML=r.matches.map((m,j)=>`<div class="panel mb-4"><div class="flex justify-between items-center gap-2 mb-4"><b class="text-sky-400 flex items-center gap-2 flex-wrap">LAPANGAN #${m.court} ${statusIndicator(r)}</b><span class="tag">${r.locked?'TERKUNCI':Number.isFinite(m.s1)&&Number.isFinite(m.s2)?'SKOR TERISI':'INPUT SKOR'}</span></div><div class="grid items-center gap-3" style="grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)"><div class="text-center"><div class="fs-team">${m.team1.map(id=>esc(playerById(id)?.name||'?')).join(' & ')}</div><div class="muted small mt-2">TIM A</div></div><div class="flex items-center gap-2 sm:gap-3"><div class="flex flex-col items-center gap-2"><button class="fs-step" data-fscore="${j},s1,-1" ${r.locked||(Number.isFinite(m.s1)&&Number.isFinite(m.s2)&&m.s1+m.s2>=21)?'disabled':''} aria-label="Kurangi skor Tim A">−</button><div class="fs-score">${m.s1??0}</div><button class="fs-step plus" data-fscore="${j},s1,1" ${r.locked||(Number.isFinite(m.s1)&&Number.isFinite(m.s2)&&m.s1+m.s2>=21)?'disabled':''} aria-label="Tambah skor Tim A">+</button></div><div class="muted font-bold">–</div><div class="flex flex-col items-center gap-2"><button class="fs-step" data-fscore="${j},s2,-1" ${r.locked||(Number.isFinite(m.s1)&&Number.isFinite(m.s2)&&m.s1+m.s2>=21)?'disabled':''} aria-label="Kurangi skor Tim B">−</button><div class="fs-score">${m.s2??0}</div><button class="fs-step plus" data-fscore="${j},s2,1" ${r.locked||(Number.isFinite(m.s1)&&Number.isFinite(m.s2)&&m.s1+m.s2>=21)?'disabled':''} aria-label="Tambah skor Tim B">+</button></div></div><div class="text-center"><div class="fs-team">${m.team2.map(id=>esc(playerById(id)?.name||'?')).join(' & ')}</div><div class="muted small mt-2">TIM B</div></div></div>${fullscreenMatchNotice(m,r.locked || r.seconds<=0)}</div>`).join('')||'<div class="panel muted">Tidak ada pertandingan pada ronde ini.</div>';
+ $('fsMatches').querySelectorAll('[data-fscore]').forEach(b=>b.onclick=()=>{const [j,k,delta]=b.dataset.fscore.split(',');const round=state.rounds[fullscreenRoundIndex];const match=round.matches[+j];if(round.locked || (Number.isFinite(match.s1)&&Number.isFinite(match.s2)&&match.s1+match.s2>=21))return;scoreUndoStack.push({round,match,key:k,previous:match[k]});match[k]=Math.max(0,Math.min(99,(Number.isFinite(match[k])?match[k]:0)+Number(delta)));saveLocal();renderFullscreenRound();renderRounds()});
+ const roundComplete = r.locked || allMatchesFinished(r,false);
+ const nextAvailable = state.rounds.some((x,idx)=>idx!==fullscreenRoundIndex&&!x.locked&&roundHasUnfinishedMatches(x));
+ $('fsLockNext').disabled = roundComplete ? !nextAvailable : !started;
+ $('fsLockNext').textContent = roundComplete ? (nextAvailable ? '➡️ Ronde Selanjutnya' : 'Semua Ronde Selesai') : '🔒 Kunci Skor & Lanjut Ronde';
+ $('fsUndoScore').disabled = scoreUndoStack.length===0;
+ renderFullscreenNextMatch();
+}
+$('fsUndoScore').onclick=()=>{
+ if(!scoreUndoStack.length)return toast('Belum ada perubahan skor yang bisa dibatalkan.');
+ const last=scoreUndoStack.pop();
+ last.match[last.key]=last.previous;
+ saveLocal();renderRounds();renderFullscreenRound();
+ toast('Skor terakhir dibatalkan.');
+};
+$('fsSkipRound').onclick=()=>{
+ const i=fullscreenRoundIndex;if(i===null)return;
+ const round=state.rounds[i];if(!round||round.locked)return toast('Ronde yang sudah terkunci tidak bisa di-skip.');
+ const nextIndex=state.rounds.findIndex((r,idx)=>idx!==i&&!r.locked);
+ if(nextIndex<0)return toast('Tidak ada ronde lain yang bisa dimainkan sebelum ronde ini dipindahkan ke akhir.');
+ const wasRunning=started;
+ round.running=false;
+ state.rounds.splice(i,1);
+ state.rounds.push(round);
+ state.rounds.forEach((r,idx)=>r.number=idx+1);
+ const newRoundIndex=state.rounds.findIndex(r=>r===round);
+ let next=state.rounds.find((r,idx)=>idx!==newRoundIndex&&!r.locked&&roundHasUnfinishedMatches(r));
+ if(wasRunning&&next){state.rounds.forEach(r=>r.running=false);next.running=true;}
+ fullscreenRoundIndex=next?state.rounds.findIndex(r=>r===next):newRoundIndex;
+ renderRounds();renderFullscreenRound();saveLocal();
+ toast('Ronde ditunda dan dipindahkan ke urutan terakhir. Sisa waktu ronde tetap tersimpan.');
+};
+$('fsExit').onclick=closeRoundFullscreen;$('fsExitBottom').onclick=closeRoundFullscreen;
+$('fsStart').onclick=()=>{if(!started)$('start').click();else toast('Timer sesi sudah berjalan.');renderFullscreenRound()};
+$('fsPause').onclick=()=>{if(globalInterval||roundInterval){stopTimers();started=false;state.rounds.forEach(x=>x.running=false);renderRounds();renderFullscreenRound();toast('Timer dijeda. Tekan Mulai Timer untuk melanjutkan.')}else toast('Timer sedang tidak berjalan.')};
+$('fsLockNext').onclick=()=>{
+ const i=fullscreenRoundIndex;if(i===null)return;
+ const r=state.rounds[i];if(!r)return;
+ const complete=r.locked||allMatchesFinished(r,false);
+ // A decided match/round can proceed even if the timer has not been started.
+ if(!complete&&!started)return toast('Tekan Mulai Timer terlebih dahulu, atau selesaikan skor pertandingan.');
+ if(!complete){
+  r.locked=true;r.running=false;
+  if(started)stopTimers();
+ }
+ const candidates=state.rounds.map((round,idx)=>({round,idx}))
+  .filter(x=>x.idx!==i&&!x.round.locked&&roundHasUnfinishedMatches(x.round));
+ let next=candidates.find(x=>x.idx>i)||candidates[0];
+ if(!next){
+  renderRounds();renderFullscreenRound();saveLocal();
+  return toast('Semua pertandingan sudah selesai.');
+ }
+ const oldSeconds=Math.max(0,r.seconds||0);
+ if(!r.locked){r.locked=true;r.running=false;}
+ if(started)stopTimers();
+ state.rounds.forEach(x=>x.running=false);
+ // Keep the next unfinished round's stored time; carry remaining time only when a timer was actively running.
+ if(started)next.round.seconds=(Number(next.round.seconds)||0)+oldSeconds;
+ fullscreenRoundIndex=next.idx;
+ renderRounds();renderFullscreenRound();saveLocal();
+ if(!started)$('start').click();
+};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeRoundFullscreen()});
+function advance(i,manual,leftoverSeconds=0){let r=state.rounds[i];if(!r||r.locked)return;if(manual&&!started)return toast('Mulai timer terlebih dahulu.');let leftover=manual?Math.max(0,r.seconds):Math.max(0,leftoverSeconds);r.locked=true;r.running=false;r.seconds=0;let next=state.rounds[i+1];if(next){next.seconds+=leftover;next.running=true;if($('roundFullscreen').classList.contains('open'))fullscreenRoundIndex=i+1;toast(manual?'Ronde '+r.number+' dikunci. Sisa waktu '+leftover+' detik dipindahkan ke ronde '+next.number+'.':'Waktu ronde habis. Skor dikunci otomatis; lanjut ke ronde '+next.number+'.')}else{stopTimers();started=false;toast('Ronde terakhir dikunci. Silakan simpan pertandingan.')}renderRounds();if(fullscreenRoundIndex===i&&$('roundFullscreen').classList.contains('open'))renderFullscreenRound();saveLocal()}
+$('start').onclick=()=>{if(!state.rounds.length)return toast('Buat jadwal dulu.');if(started)return toast('Timer sudah berjalan.');let idx=state.rounds.findIndex(r=>!r.locked&&r.number===state.resumeRoundNumber);if(idx<0)idx=state.rounds.findIndex(r=>!r.locked);if(idx<0){started=false;return toast('Semua ronde terkunci.')}started=true;state.resumeRoundNumber=null;state.rounds[idx].running=true;globalInterval=setInterval(()=>{if(secondsLeft>0)secondsLeft--;$('globalTimer').textContent=fmt(secondsLeft);if(secondsLeft%5===0)saveLocal();if(secondsLeft<=0)clearInterval(globalInterval)},1000);roundInterval=setInterval(()=>{let i=state.rounds.findIndex(r=>r.running&&!r.locked);if(i<0)return;let r=state.rounds[i];if(r.seconds>0){r.seconds--;let el=$('roundTimer'+i);if(el)el.textContent=fmt(r.seconds);if(fullscreenRoundIndex===i)$('fsTimer').textContent=fmt(r.seconds);if(r.seconds%5===0)saveLocal();if(r.seconds===0){r.locked=true;r.running=false;stopTimers();started=false;renderRounds();if(fullscreenRoundIndex===i)renderFullscreenRound();saveLocal();toast('Waktu habis. Skor menjadi hasil akhir pertandingan.')} }else {r.locked=true;r.running=false;stopTimers();started=false;renderRounds();if(fullscreenRoundIndex===i)renderFullscreenRound();saveLocal();toast('Waktu habis. Skor menjadi hasil akhir pertandingan.')}},1000);renderRounds();if($('roundFullscreen').classList.contains('open'))renderFullscreenRound();toast('Timer sesi dimulai.')};
+function currentPoints(){let pts={};let stats={};sessionPlayers().forEach(p=>{pts[p.id]=0;stats[p.id]=scoreDefault()});let valid=0;state.rounds.forEach(r=>r.matches.forEach(m=>{if(!Number.isFinite(m.s1)||!Number.isFinite(m.s2))return;valid++;let a=m.s1,b=m.s2;[[m.team1,a,b],[m.team2,b,a]].forEach(([team,gf,ga])=>team.forEach(id=>{pts[id]=(pts[id]||0)+gf;let s=stats[id]||(stats[id]=scoreDefault());s.played++;s.gamesFor+=gf;s.gamesAgainst+=ga;if(gf>ga)s.won++;else if(gf===ga)s.drawn++;else s.lost++}))}));return {pts,stats,valid}}
+$('saveMatch').onclick=async()=>{let name=$('matchName').value.trim(),date=$('matchDate').value;if(!name||!date)return toast('Isi nama dan tanggal pertandingan.');if(!state.rounds.length)return toast('Belum ada jadwal.');let res=currentPoints();if(!res.valid)return toast('Masukkan minimal satu skor pertandingan sebelum menyimpan.');let duplicate=state.archives.find(a=>norm(a.name)===norm(name)&&a.date===date);if(duplicate)return toast('Nama dan tanggal pertandingan ini sudah diarsipkan.');if(!confirm(`Simpan "${name}" tanggal ${date}? Poin pertandingan akan ditambahkan ke klasemen satu kali.`))return;let carryStats=JSON.parse(JSON.stringify(state.localStats||{}));addStatsInto(carryStats,res.stats);let archive={id:uid(),name,date,savedAt:new Date().toISOString(),players:sessionPlayers().map(p=>({playerId:p.id,name:p.name})),points:Object.entries(res.pts).map(([playerId,points])=>({playerId,points})),stats:res.stats,carryStats,matches:state.rounds.flatMap(r=>r.matches.filter(m=>Number.isFinite(m.s1)&&Number.isFinite(m.s2)).map(m=>({round:r.number,court:m.court,team1:m.team1,team2:m.team2,s1:m.s1,s2:m.s2}))),source:'created'};state.archives.push(archive);state.importedArchiveIds.push(archive.id);Object.entries(res.pts).forEach(([id,p])=>state.cumulativePoints[id]=(state.cumulativePoints[id]||0)+p);Object.entries(res.stats).forEach(([id,s])=>{let old=state.localStats[id]||scoreDefault();Object.keys(s).forEach(k=>old[k]=(old[k]||0)+s[k]);state.localStats[id]=old});saveLocal();renderBoard();renderArchives();toast('Pertandingan disimpan. Poin ditambahkan ke klasemen.');if(cloudReady)await saveCloud();switchTab('archive')};
+function addStatsInto(target,source){Object.entries(source||{}).forEach(([id,raw])=>{let s=target[id]||(target[id]=scoreDefault());['played','won','drawn','lost','gamesFor','gamesAgainst'].forEach(k=>s[k]=(Number(s[k])||0)+(Number(raw?.[k])||0))})}
+function mergeStatsMax(target,source){Object.entries(source||{}).forEach(([id,raw])=>{let s=target[id]||(target[id]=scoreDefault());['played','won','drawn','lost','gamesFor','gamesAgainst'].forEach(k=>s[k]=Math.max(Number(s[k])||0,Number(raw?.[k])||0))})}
+function statsForMatches(matches){let out={};(matches||[]).forEach(m=>{if(!Number.isFinite(m.s1)||!Number.isFinite(m.s2))return;[[m.team1,m.s1,m.s2],[m.team2,m.s2,m.s1]].forEach(([team,gf,ga])=>(team||[]).forEach(id=>{let x=out[id]||(out[id]=scoreDefault());x.played++;x.gamesFor+=gf;x.gamesAgainst+=ga;if(gf>ga)x.won++;else if(gf===ga)x.drawn++;else x.lost++}))});return out}
+function pointsForMatches(matches){let out={};(matches||[]).forEach(m=>{if(!Number.isFinite(m.s1)||!Number.isFinite(m.s2))return;[[m.team1,m.s1],[m.team2,m.s2]].forEach(([team,score])=>(team||[]).forEach(id=>out[id]=(out[id]||0)+score))});return out}
+function normalizeArchivePoints(){
+ state.archives.forEach(a=>{
+  if(Array.isArray(a.matches)&&a.matches.length){
+   const calculated=pointsForMatches(a.matches);
+   a.points=Object.entries(calculated).map(([playerId,points])=>({playerId,points}));
+  }
+ });
+ state.cumulativePoints={};
+ state.archives.forEach(a=>(a.points||[]).forEach(p=>{
+  state.cumulativePoints[p.playerId]=(state.cumulativePoints[p.playerId]||0)+(Number(p.points)||0);
+ }));
+}
+function boardRows(stats,points){return state.players.map(p=>({p,s:stats[p.id]||scoreDefault(),points:Number(points[p.id]||0)})).filter(r=>r.s.played||r.points||state.sessionPlayerIds.includes(r.p.id)).sort((a,b)=>b.points-a.points||a.p.name.localeCompare(b.p.name,'id'))}
+function boardTable(rows){const medals=['🥇','🥈','🥉'];return rows.map((r,i)=>`<tr><td>${i+1}</td><td class="font-bold"><span class="inline-flex items-center gap-2">${i<3?`<span title="${['Emas','Perak','Perunggu'][i]}" aria-label="${['Emas','Perak','Perunggu'][i]}">${medals[i]}</span>`:''}<span>${esc(r.p.name)}</span></span></td><td class="text-emerald-400 font-bold">${r.points}</td><td>${r.s.played}</td></tr>`).join('')||'<tr><td colspan="4" class="muted text-center">Belum ada hasil pertandingan.</td></tr>'}
+function renderBoard(){
+ const live=currentPoints(),liveStats=live.stats,livePts=live.pts;
+ $('todayBoardBody').innerHTML=boardTable(boardRows(liveStats,livePts));
+
+ // Global standings accumulate points from every saved archive, regardless of date.
+ let globalStats={};
+ state.archives.forEach(a=>{
+  const astats=a.stats||statsForMatches(a.matches||[]);
+  addStatsInto(globalStats,astats);
+ });
+ const globalPts={...(state.cumulativePoints||{})};
+ // Include today's live session preview only when it has not already been archived.
+ const sessionName=norm($('matchName')?.value||'');
+ const sessionDate=$('matchDate')?.value||today();
+ const alreadyArchived=state.archives.some(a=>norm(a.name)===sessionName&&a.date===sessionDate&&sessionName);
+ if(!alreadyArchived){
+  Object.entries(livePts).forEach(([id,points])=>globalPts[id]=(globalPts[id]||0)+(Number(points)||0));
+  addStatsInto(globalStats,liveStats);
+ }
+ const rows=boardRows(globalStats,globalPts);
+ $('boardPlayers').textContent=rows.length;
+ $('boardArchives').textContent=state.archives.length;
+ $('boardPoints').textContent=rows.reduce((n,r)=>n+r.points,0);
+ $('globalDateLabel').textContent='Akumulasi seluruh arsip + sesi hari ini yang belum disimpan';
+ $('boardBody').innerHTML=boardTable(rows);
+}
+function renderArchives(){$('archiveList').innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>`<div class="card"><div class="flex justify-between gap-2 items-start"><div><b class="text-sm">${esc(a.name)}</b><p class="muted small mt-1">${esc(a.date)} • ${a.points.length} pemain • ${a.matches?.length||0} skor tersimpan</p><p class="muted small mt-1">ID arsip: ${esc(a.id.slice(0,13))}…</p></div><button class="btn" data-export-archive="${a.id}">Ekspor</button></div></div>`).join(''):'<p class="muted small py-5 text-center">Belum ada arsip pertandingan.</p>';$('archiveList').querySelectorAll('[data-export-archive]').forEach(b=>b.onclick=()=>{let a=state.archives.find(x=>x.id===b.dataset.exportArchive);let st=a?(a.stats||statsForMatches(a.matches||[])):{};let carried=a?(a.carryStats||st):st;downloadJSON({format:'the-winner-padel-archive',schemaVersion:1,exportedAt:new Date().toISOString(),players:state.players,archives:a?[{...a,stats:st,carryStats:carried}]:[],cumulativePoints:{},importedArchiveIds:[],localStats:carried},'arsip-'+b.dataset.exportArchive+'.json')})}
+function downloadJSON(data,filename){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportBackup(){downloadJSON(exportData(),'the-winner-padel-backup-'+today()+'.json');toast('Backup JSON diunduh.')}
+const exportBackupBtn=$('exportBackup');if(exportBackupBtn)exportBackupBtn.onclick=exportBackup;const exportBackupBtn2=$('exportBackup2');if(exportBackupBtn2)exportBackupBtn2.onclick=exportBackup;
+$('importFile').onchange=async e=>{let f=e.target.files?.[0];$('importPanel').classList.add('hidden');$('importMessage').textContent='';importCandidates=[];if(!f)return;try{if(f.size>10*1024*1024)throw Error('File terlalu besar (maksimum 10 MB).');let d=JSON.parse(await f.text());if(!validBackup(d))throw Error('Struktur backup tidak sesuai atau ada data wajib yang tidak valid.');importCandidates=d.archives;if(!importCandidates.length)throw Error('File tidak berisi arsip pertandingan.');$('importSelect').innerHTML=importCandidates.map((a,i)=>`<option value="${i}">${esc(a.name)} — ${esc(a.date||'tanpa tanggal')} (${a.points.length} pemain)</option>`).join('');$('importPanel').classList.remove('hidden');showImportDetails();$('importMessage').textContent='File valid. Pilih arsip yang akan diimpor.'}catch(err){$('importMessage').textContent='Gagal membaca file: '+err.message;$('importMessage').style.color='#fda4af'}};
+function showImportDetails(){let a=importCandidates[+$('importSelect').value];if(!a)return;let duplicate=state.archives.some(x=>x.id===a.id);$('importDetails').textContent=`Tanggal: ${a.date||'—'} • Pemain: ${a.points.length} • ${duplicate?'ARSIP SUDAH ADA — tidak akan dihitung ulang':'Belum terdeteksi di arsip lokal'}`;$('importSelected').disabled=duplicate}
+$('importSelect').onchange=showImportDetails;
+// Reset seluruh data lokal aplikasi, tetapi pertahankan konfigurasi Firebase dan file backup eksternal.
+$('resetAllLocal').onclick=()=>{$('resetConfirm').classList.remove('hidden');$('resetConfirm').style.display='flex'};
+$('cancelResetAll').onclick=()=>{$('resetConfirm').classList.add('hidden');$('resetConfirm').style.display='none'};
+$('confirmResetAll').onclick=async()=>{
+ stopTimers();started=false;secondsLeft=3600;
+ try{localStorage.removeItem(STORE_KEY)}catch(e){}
+ state={schemaVersion:1,players:[],sessionPlayerIds:[],archives:[],cumulativePoints:{},importedArchiveIds:[],deletedArchiveIds:[],localStats:{},rounds:[],courtCount:1,duration:60};
+ courtCount=1;$('court1').classList.add('primary');$('court2').classList.remove('primary');$('duration').value=60;
+ $('matchName').value='';$('matchDate').value=today();$('importFile').value='';$('importPanel').classList.add('hidden');$('importMessage').textContent='';importCandidates=[];
+ $('globalTimer').textContent='60:00';$('resetConfirm').classList.add('hidden');$('resetConfirm').style.display='none';
+ renderAll();saveLocal();
+ if(cloudReady){$('cloudMessage').textContent='Data lokal telah direset. Data Firebase tidak dihapus; jangan tekan “Simpan Data ke Cloud” jika ingin mempertahankan cloud lama.'}
+ toast('Semua data lokal berhasil direset. Aplikasi siap dimulai dari nol.');
+};
+$('resetConfirm').addEventListener('click',e=>{if(e.target===$('resetConfirm')){$('resetConfirm').classList.add('hidden');$('resetConfirm').style.display='none'}});
+$('importSelected').onclick=async()=>{let a=importCandidates[+$('importSelect').value];if(!a)return;if(state.archives.some(x=>x.id===a.id))return toast('Arsip dengan ID ini sudah diimpor.');if(!confirm(`Impor poin dari "${a.name}"? Poin dihitung dari skor tiap tim dan dijumlahkan untuk pemain yang sama; arsip hanya ditambahkan satu kali. Klasemen Global tetap hanya menghitung arsip bertanggal hari ini.`))return;let known=new Set(state.players.map(p=>p.id));for(let p of (a.points||[])){if(!known.has(p.playerId)){let fromFile=importCandidates;let name=fromFile.flatMap(x=>x.players||[]).find(x=>x.playerId===p.playerId)?.name||'Pemain impor';let same=state.players.find(x=>norm(x.name)===norm(name));if(same)p.playerId=same.id;else{state.players.push({id:p.playerId,name,createdAt:new Date().toISOString()});state.cumulativePoints[p.playerId]=0;known.add(p.playerId)}}}
+ // Normalize archive's point rows to known IDs and mark it as imported.
+ let imported={...a,source:'imported',importedAt:new Date().toISOString(),points:(a.matches&&a.matches.length?Object.entries(pointsForMatches(a.matches)).map(([playerId,points])=>({playerId,points})):a.points.map(p=>({...p}))),stats:a.stats||statsForMatches(a.matches||[])};if(!applyArchivePoints(imported))return toast('Arsip sudah pernah diimpor.');if(imported.carryStats)mergeStatsMax(state.localStats,imported.carryStats);else addStatsInto(state.localStats,imported.stats);saveLocal();renderPlayers();renderBoard();renderArchives();$('importMessage').textContent='Arsip berhasil diimpor. Poin berdasarkan skor tiap tim ditambahkan satu kali untuk pemain yang sama. Klasemen Global tetap hanya menghitung arsip tanggal hari ini.';$('importMessage').style.color='#6ee7b7';toast('Poin dan statistik arsip berhasil ditambahkan.');if(cloudReady)await saveCloud();showImportDetails()};
+function getFirebaseConfig(){return {apiKey:$('fbApiKey').value.trim(),authDomain:$('fbAuthDomain').value.trim(),projectId:$('fbProjectId').value.trim(),appId:$('fbAppId').value.trim(),storageBucket:$('fbBucket').value.trim()||DEFAULT_FIREBASE_CONFIG.storageBucket,messagingSenderId:$('fbSender').value.trim()||DEFAULT_FIREBASE_CONFIG.messagingSenderId,measurementId:DEFAULT_FIREBASE_CONFIG.measurementId}}
+const DEFAULT_FIREBASE_CONFIG={apiKey:'AIzaSyDiVYwwj73-pnQUii6EUc7WeZnJ-3D7CD8',authDomain:'winnerpadel.firebaseapp.com',projectId:'winnerpadel',storageBucket:'winnerpadel.firebasestorage.app',messagingSenderId:'539208934533',appId:'1:539208934533:web:919f119da78f9825a5b5ec',measurementId:'G-QCWWSRSWE6'};
+function loadFbInputs(){let saved={};try{saved=JSON.parse(localStorage.getItem(FB_KEY)||'{}')||{}}catch{};const c={...DEFAULT_FIREBASE_CONFIG};for(const k of Object.keys(DEFAULT_FIREBASE_CONFIG)){if(typeof saved[k]==='string'&&saved[k].trim())c[k]=saved[k].trim()}$('fbApiKey').value=c.apiKey;$('fbAuthDomain').value=c.authDomain;$('fbProjectId').value=c.projectId;$('fbAppId').value=c.appId;$('fbBucket').value=c.storageBucket;$('fbSender').value=c.messagingSenderId;$('cloudStatus').textContent='● Firebase dikonfigurasi — belum tersambung';$('cloudStatus').className='muted text-xs';$('cloudMessage').textContent='Konfigurasi SDK winnerpadel sudah terisi otomatis. Tekan “Sambungkan & Muat Cloud” untuk menguji koneksi.'}
+$('connectFirebase').onclick=async()=>{let c=getFirebaseConfig();if(!c.apiKey||!c.projectId||!c.appId)return $('cloudMessage').textContent='API Key, Project ID, dan App ID wajib diisi.';try{localStorage.setItem(FB_KEY,JSON.stringify(c));app=initializeApp(c,'winner-padel-'+Date.now());auth=getAuth(app);await signInAnonymously(auth);db=getFirestore(app);cloudDoc=doc(db,'theWinnerPadel','weeklyArchive');cloudReady=true;$('cloudStatus').textContent='● Firebase terhubung';$('cloudStatus').className='text-emerald-400 text-xs';$('cloudMessage').textContent='Terhubung. Memeriksa data cloud…';await loadCloud(true)}catch(e){cloudReady=false;$('cloudMessage').textContent='Gagal tersambung: '+e.message+' — periksa konfigurasi, Anonymous Auth, Firestore, dan rules.';$('cloudStatus').textContent='● Cloud gagal';}};
+async function saveCloud(){if(!cloudReady||!cloudDoc)return false;try{await setDoc(cloudDoc,{...exportData(),updatedAt:new Date().toISOString()});$('cloudMessage').textContent='Data berhasil disimpan ke Firebase pada '+new Date().toLocaleString('id-ID');return true}catch(e){$('cloudMessage').textContent='Gagal menyimpan: '+e.message;return false}}
+async function loadCloud(merge){if(!cloudReady||!cloudDoc)return;try{let snap=await getDoc(cloudDoc);if(snap.exists()){let d=snap.data();if(!validBackup(d))throw Error('Data cloud memiliki format tidak dikenal.');if(merge){restoreData(d,true)}else restoreData(d,false);saveLocal();renderAll();$('cloudMessage').textContent='Data cloud dimuat. Terakhir diperbarui: '+(d.updatedAt||'tidak diketahui')}else{$('cloudMessage').textContent='Belum ada data di cloud. Mengunggah data lokal pertama kali…';await saveCloud()} }catch(e){$('cloudMessage').textContent='Gagal memuat cloud: '+e.message}}
+$('pushCloud').onclick=async()=>{if(!cloudReady)return toast('Sambungkan Firebase terlebih dahulu.');if(await saveCloud())toast('Data disimpan ke cloud.')};
+$('pullCloud').onclick=()=>loadCloud(true);
+function renderAll(){renderPlayers();renderRounds();renderBoard();renderArchives()}
+let adminSelectedArchiveId='';
+function escAdmin(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function selectedAdminArchive(){return state.archives.find(a=>a.id===adminSelectedArchiveId)||null}
+function refreshDataEditor(){const sel=$('adminWeek');if(!sel)return;const old=adminSelectedArchiveId;sel.innerHTML='';if(!state.archives.length){sel.innerHTML='<option value="">Belum ada arsip pertandingan</option>';adminSelectedArchiveId='';}else{state.archives.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=(a.date||'Tanpa tanggal')+' — '+(a.name||'Pertandingan');sel.appendChild(o)});adminSelectedArchiveId=state.archives.some(a=>a.id===old)?old:sel.value;sel.value=adminSelectedArchiveId;} $('editorPlayerCount').textContent=state.players.length;$('editorArchiveCount').textContent=state.archives.length;$('editorCloudState').textContent=cloudReady?'Terhubung':'Belum tersambung';renderAdminEditor()}
+function renderAdminEditor(){const a=selectedAdminArchive();const d=$('adminArchiveDetail');if(!a){d.textContent='Belum ada arsip. Simpan pertandingan terlebih dahulu di tab Jadwal & Skor.';$('adminPlayersTable').innerHTML='<p class="muted small">Tidak ada pemain.</p>';$('adminMatchesTable').innerHTML='<p class="muted small">Tidak ada skor.</p>';return}d.innerHTML='<p><b>Nama:</b> '+escAdmin(a.name)+'　 <b>Tanggal:</b> '+escAdmin(a.date||'—')+'</p><p><b>Pemain pada arsip:</b> '+((a.players||[]).length)+'　 <b>Ronde tersimpan:</b> '+((a.matches||[]).length)+'</p>';
+$('adminPlayersTable').innerHTML='<table class="w-full text-sm"><thead><tr><th class="text-left p-2">Nama pemain</th><th class="text-left p-2">Poin arsip</th><th class="p-2">Aksi</th></tr></thead><tbody>'+((a.players||[]).map((ap,i)=>{const pl=state.players.find(p=>p.id===ap.playerId);const pts=(a.points||[]).find(x=>x.playerId===ap.playerId);return '<tr class="border-t border-slate-700"><td class="p-2"><input class="field" id="adminPlayerName_'+i+'" value="'+escAdmin(ap.name||(pl&&pl.name)||'')+'"></td><td class="p-2"><input class="field" type="number" min="0" step="1" id="adminPlayerPoints_'+i+'" value="'+Number(pts?pts.points:0)+'" style="max-width:110px"></td><td class="p-2"><button class="btn" onclick="saveAdminPlayer('+i+')">Simpan</button></td></tr>'}).join(''))+'</tbody></table>';
+$('adminMatchesTable').innerHTML=(a.matches&&a.matches.length)?'<table class="w-full text-sm"><thead><tr><th class="p-2 text-left">Ronde / Lapangan</th><th class="p-2 text-left">Tim 1</th><th class="p-2">Skor</th><th class="p-2 text-left">Tim 2</th><th class="p-2">Aksi</th></tr></thead><tbody>'+a.matches.map((m,i)=>'<tr class="border-t border-slate-700"><td class="p-2">Ronde '+escAdmin(m.round||'—')+' / Lapangan '+escAdmin(m.court||'—')+'</td><td class="p-2">'+escAdmin((m.team1||[]).map(id=>{let p=state.players.find(x=>x.id===id)||(a.players||[]).find(x=>x.playerId===id);return p?p.name:'?'}).join(' + '))+'</td><td class="p-2"><div class="flex items-center gap-1"><input class="field" style="width:64px" type="number" min="0" id="adminS1_'+i+'" value="'+Number(m.s1||0)+'"><span>–</span><input class="field" style="width:64px" type="number" min="0" id="adminS2_'+i+'" value="'+Number(m.s2||0)+'"></div></td><td class="p-2">'+escAdmin((m.team2||[]).map(id=>{let p=state.players.find(x=>x.id===id)||(a.players||[]).find(x=>x.playerId===id);return p?p.name:'?'}).join(' + '))+'</td><td class="p-2"><button class="btn" onclick="saveAdminMatch('+i+')">Simpan skor</button> <button class="btn" style="color:#fca5a5" onclick="deleteAdminMatch('+i+')">Hapus</button></td></tr>').join('')+'</tbody></table>':'<p class="muted small">Arsip ini tidak menyimpan rincian skor per pertandingan.</p>'}
+window.saveAdminPlayer=function(i){const a=selectedAdminArchive();if(!a)return;const ap=a.players[i];const name=$('adminPlayerName_'+i).value.trim();const pts=Number($('adminPlayerPoints_'+i).value);if(!name||!Number.isFinite(pts)||pts<0)return alert('Nama dan poin harus valid.');ap.name=name;let pl=state.players.find(p=>p.id===ap.playerId);if(pl)pl.name=name;let row=(a.points||[]).find(x=>x.playerId===ap.playerId);if(!row){a.points=a.points||[];row={playerId:ap.playerId,points:pts};a.points.push(row)}else row.points=pts;rebuildAdminCumulative();saveLocal();renderAll();refreshDataEditor();$('editorMessage').textContent='Nama dan poin pemain diperbarui. Tekan Simpan Perubahan ke Firebase untuk menyimpan ke cloud.'};
+window.saveAdminMatch=function(i){const a=selectedAdminArchive();if(!a)return;const m=a.matches[i],s1=Number($('adminS1_'+i).value),s2=Number($('adminS2_'+i).value);if(!Number.isInteger(s1)||!Number.isInteger(s2)||s1<0||s2<0)return alert('Skor harus bilangan bulat 0 atau lebih.');m.s1=s1;m.s2=s2;recalcOneArchive(a);saveLocal();renderAll();refreshDataEditor();$('editorMessage').textContent='Skor diperbarui dan poin arsip dihitung ulang. Simpan ke Firebase untuk menyimpan cloud.'};
+window.deleteAdminMatch=function(i){const a=selectedAdminArchive();if(!a||!confirm('Hapus skor pertandingan ini dari arsip? Tindakan ini memengaruhi poin arsip.'))return;a.matches.splice(i,1);recalcOneArchive(a);saveLocal();renderAll();refreshDataEditor()};
+function recalcOneArchive(a){const pts=pointsForMatches(a.matches||[]);a.points=Object.entries(pts).map(([playerId,points])=>({playerId,points}));rebuildAdminCumulative()}
+function rebuildAdminCumulative(){state.cumulativePoints={};state.archives.forEach(a=>(a.points||[]).forEach(p=>state.cumulativePoints[p.playerId]=(state.cumulativePoints[p.playerId]||0)+Number(p.points||0)));state.importedArchiveIds=[...new Set(state.archives.map(a=>a.id))]}
+$('adminWeek').onchange=()=>{adminSelectedArchiveId=$('adminWeek').value;renderAdminEditor()};
+$('adminEditArchive').onclick=()=>{const a=selectedAdminArchive();if(!a)return;$('adminArchiveForm').classList.remove('hidden');$('adminArchiveName').value=a.name||'';$('adminArchiveDate').value=a.date||''};
+$('adminCancelArchive').onclick=()=>$('adminArchiveForm').classList.add('hidden');
+$('adminSaveArchive').onclick=()=>{const a=selectedAdminArchive();if(!a)return;const name=$('adminArchiveName').value.trim(),date=$('adminArchiveDate').value;if(!name||!date)return alert('Isi nama dan tanggal.');a.name=name;a.date=date;$('adminArchiveForm').classList.add('hidden');saveLocal();renderAll();refreshDataEditor();$('editorMessage').textContent='Detail pertandingan diperbarui. Simpan ke Firebase untuk mengirim perubahan.'};
+$('adminDeleteArchive').onclick=()=>{const a=selectedAdminArchive();if(!a||!confirm('Hapus arsip “'+a.name+'” beserta skor dan poinnya? Tindakan ini tidak bisa dibatalkan setelah disimpan ke Firebase. Unduh backup terlebih dahulu.'))return;state.deletedArchiveIds=state.deletedArchiveIds||[];if(!state.deletedArchiveIds.includes(a.id))state.deletedArchiveIds.push(a.id);state.archives=state.archives.filter(x=>x.id!==a.id);rebuildAdminCumulative();saveLocal();renderAll();refreshDataEditor();$('editorMessage').textContent='Arsip dihapus dari data lokal. Simpan ke Firebase untuk menerapkan penghapusan di cloud.'};
+$('editorRefresh').onclick=()=>{refreshDataEditor();$('editorMessage').textContent='Data aplikasi dimuat.'};
+$('editorLoadCloud').onclick=async()=>{if(!cloudReady){$('editorMessage').textContent='Sambungkan Firebase terlebih dahulu di tab Cloud.';return}await loadCloud(false);refreshDataEditor();$('editorMessage').textContent='Data Firebase dimuat.'};
+$('editorSaveCloud').onclick=async()=>{if(!cloudReady){$('editorMessage').textContent='Sambungkan Firebase terlebih dahulu di tab Cloud.';return}if(!confirm('Simpan perubahan lokal ke Firebase? Data cloud saat ini akan diperbarui.'))return;saveLocal();if(cloudAutosaveTimer){clearTimeout(cloudAutosaveTimer);cloudAutosaveTimer=null}const ok=await saveCloud();if(ok){try{const verify=await getDoc(cloudDoc);const cloudIds=verify.exists()?(verify.data().archives||[]).map(a=>a.id):[];const deleted=(state.deletedArchiveIds||[]).filter(id=>!state.archives.some(a=>a.id===id));if(deleted.some(id=>cloudIds.includes(id)))throw Error('Firebase masih mengembalikan arsip yang dihapus. Periksa Rules atau apakah file terbaru sudah dipasang.')}catch(e){console.warn('Verifikasi cloud:',e)}}refreshDataEditor();$('editorMessage').textContent=ok?'Perubahan berhasil disimpan ke Firebase. Penghapusan ditandai agar tidak muncul kembali saat data dimuat ulang.':'Gagal menyimpan: '+$('cloudMessage').textContent};
+$('editorDownload').onclick=()=>downloadJSON(exportData(),'the-winner-padel-backup-'+today()+'.json');
+const raw=localStorage.getItem(STORE_KEY);if(raw){try{let d=JSON.parse(raw);if(validBackup(d))restoreData(d,false)}catch(e){console.warn(e)}}
+if(!state.cumulativePoints)state.cumulativePoints={};courtCount=state.courtCount||1;$('court1').classList.toggle('primary',courtCount===1);$('court2').classList.toggle('primary',courtCount===2);$('duration').value=state.duration||60;$('globalTimer').textContent=fmt(secondsLeft);loadFbInputs();renderAll();renderPlayerEntryCards();
+if(state.recoveredWasRunning){toast('Sesi terakhir dipulihkan. Timer dijeda untuk keamanan; tekan Mulai Timer untuk melanjutkan.');state.recoveredWasRunning=false}else if(state.rounds.length||state.sessionPlayerIds.length)toast('Sesi sebelumnya berhasil dipulihkan.');
+// Autosave berkala, termasuk skor, pemain, jadwal, dan sisa waktu.
+setInterval(()=>saveLocal(),5000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveLocal();else{$('globalTimer').textContent=fmt(secondsLeft);saveLocal()}});
+window.addEventListener('pagehide',()=>saveLocal());
+window.addEventListener('beforeunload',()=>{saveLocal();stopTimers()});
+// Simpan kondisi awal agar data baru tidak hanya berada di memori halaman.
+saveLocal();
+</script>
+</body></html>
