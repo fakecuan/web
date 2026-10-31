@@ -53,9 +53,10 @@ body{font-family:Inter,system-ui,sans-serif;background:#020617;color:#e2e8f0}but
  <div class="panel mt-3"><h2 class="font-bold text-xs mb-3">Simpan Pertandingan</h2><div class="grid sm:grid-cols-2 gap-3"><div><label class="small muted block mb-1">Nama pertandingan / pekan</label><input id="matchName" class="field" placeholder="Contoh: The Winner Padel — Minggu 1"></div><div><label class="small muted block mb-1">Tanggal pertandingan</label><input id="matchDate" class="field" type="date"><p id="matchDateFormatted" class="muted small mt-1"></p></div></div><p class="muted small my-3">Yang ditambahkan ke klasemen kumulatif adalah poin hasil pertandingan ini saja. Statistik main/menang/kalah pada klasemen adalah statistik dari pertandingan yang tersimpan di aplikasi ini, bukan dari arsip poin lama.</p><button id="saveMatch" class="btn primary w-full">✓ Simpan Pertandingan ke Arsip</button></div>
 </section>
 <section id="view-board" class="hidden">
- <div class="panel mb-3"><div class="flex flex-wrap justify-between items-start gap-3 mb-3"><div><h2 class="font-bold text-xs">🏆 Klasemen Hari Ini</h2><p class="muted small mt-1">Statistik dari skor pertandingan yang sedang disusun di sesi ini. Tidak termasuk arsip hari lain.</p></div></div>
- <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Nama Pemain</th><th>Poin (akumulasi skor)</th><th>Main</th></tr></thead><tbody id="todayBoardBody"></tbody></table></div></div>
- <div class="panel"><div class="mb-3"><h2 class="font-bold text-xs">🌐 Klasemen Global</h2><p class="muted small mt-1">Akumulasi poin dari semua arsip pertandingan. Poin baru hari ini ditambahkan ke total global sebelumnya.</p><p id="globalDateLabel" class="muted small mt-1"></p></div>
+ <div class="panel mb-3"><div class="flex flex-wrap justify-between items-end gap-3 mb-3"><div><h2 class="font-bold text-xs">🏆 Klasemen Arsip</h2><p class="muted small mt-1">Hanya menampilkan poin dan statistik dari arsip pertandingan yang dipilih.</p></div><div class="w-full sm:w-72"><label for="boardArchiveSelect" class="muted small block mb-1">Pilih arsip pertandingan</label><select id="boardArchiveSelect" class="field"><option value="">Belum ada arsip</option></select></div></div>
+ <p id="selectedArchiveLabel" class="muted small mb-2"></p>
+ <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Nama Pemain</th><th>Poin</th><th>Main</th></tr></thead><tbody id="todayBoardBody"></tbody></table></div></div>
+ <div class="panel"><div class="mb-3"><h2 class="font-bold text-xs">🌐 Klasemen Global</h2><p class="muted small mt-1">Akumulasi poin dan statistik dari seluruh arsip pertandingan yang sudah tersimpan. Sesi yang belum diarsipkan tidak dihitung.</p><p id="globalDateLabel" class="muted small mt-1"></p></div>
  <div class="grid grid-cols-3 gap-2 mb-4"><div class="bg-slate-950 border border-slate-800 rounded-lg p-3"><span class="muted small">Pemain</span><strong id="boardPlayers" class="block text-xl mt-1">0</strong></div><div class="bg-slate-950 border border-slate-800 rounded-lg p-3"><span class="muted small">Total arsip</span><strong id="boardArchives" class="block text-xl mt-1">0</strong></div><div class="bg-slate-950 border border-slate-800 rounded-lg p-3"><span class="muted small">Total poin global</span><strong id="boardPoints" class="block text-xl mt-1">0</strong></div></div>
  <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Nama Pemain</th><th>Poin (akumulasi skor)</th><th>Main</th></tr></thead><tbody id="boardBody"></tbody></table></div></div>
 </section>
@@ -124,7 +125,7 @@ import { getStorage, ref as storageRef, uploadString, getDownloadURL, deleteObje
 const $=id=>document.getElementById(id);
 const FB_KEY='theWinnerPadelFirebaseConfigV1'; // Data pertandingan hanya dimuat dari Firebase; tidak memakai backup lokal otomatis.
 let state={schemaVersion:1,players:[],sessionPlayerIds:[],archives:[],cumulativePoints:{},importedArchiveIds:[],deletedArchiveIds:[],localStats:{},rounds:[],courtCount:1,duration:60};
-let app=null,auth=null,db=null,storage=null,cloudDoc=null,cloudReady=false,globalInterval=null,roundInterval=null,secondsLeft=3600,started=false,importCandidates=[];let scoreUndoStack=[],cloudAutosaveTimer=null;
+let app=null,auth=null,db=null,storage=null,cloudDoc=null,cloudReady=false,globalInterval=null,roundInterval=null,secondsLeft=3600,started=false,importCandidates=[];let scoreUndoStack=[],cloudAutosaveTimer=null,selectedBoardArchiveId=null;
 const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const formatDateLong=value=>{if(!value)return '';const parts=value.split('-').map(Number);if(parts.length!==3||parts.some(n=>!n))return value;return new Date(parts[0],parts[1]-1,parts[2],12).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).replace(/^./,c=>c.toLocaleUpperCase('id-ID'))};
@@ -392,29 +393,37 @@ function normalizeArchivePoints(){
 function boardRows(stats,points){return state.players.map(p=>({p,s:stats[p.id]||scoreDefault(),points:Number(points[p.id]||0)})).filter(r=>r.s.played||r.points||state.sessionPlayerIds.includes(r.p.id)).sort((a,b)=>b.points-a.points||a.p.name.localeCompare(b.p.name,'id'))}
 function boardTable(rows){const medals=['🥇','🥈','🥉'];return rows.map((r,i)=>`<tr><td>${i+1}</td><td class="font-bold"><span class="inline-flex items-center gap-2">${i<3?`<span title="${['Emas','Perak','Perunggu'][i]}" aria-label="${['Emas','Perak','Perunggu'][i]}">${medals[i]}</span>`:''}<span>${esc(r.p.name)}</span></span></td><td class="text-emerald-400 font-bold">${r.points}</td><td>${r.s.played}</td></tr>`).join('')||'<tr><td colspan="4" class="muted text-center">Belum ada hasil pertandingan.</td></tr>'}
 function renderBoard(){
- const live=currentPoints(),liveStats=live.stats,livePts=live.pts;
- $('todayBoardBody').innerHTML=boardTable(boardRows(liveStats,livePts));
-
- // Global standings accumulate points from every saved archive, regardless of date.
- let globalStats={};
- state.archives.forEach(a=>{
-  const astats=a.stats||statsForMatches(a.matches||[]);
-  addStatsInto(globalStats,astats);
- });
- const globalPts={...(state.cumulativePoints||{})};
- // Include today's live session preview only when it has not already been archived.
- const sessionName=norm($('matchName')?.value||'');
- const sessionDate=$('matchDate')?.value||today();
- const alreadyArchived=state.archives.some(a=>norm(a.name)===sessionName&&a.date===sessionDate&&sessionName);
- if(!alreadyArchived){
-  Object.entries(livePts).forEach(([id,points])=>globalPts[id]=(globalPts[id]||0)+(Number(points)||0));
-  addStatsInto(globalStats,liveStats);
+ // Klasemen hanya boleh berasal dari arsip yang benar-benar tersimpan.
+ // Bangun ulang total kumulatif dari arsip untuk membuang poin sesi uji coba yang belum disimpan.
+ normalizeArchivePoints();
+ const sortedArchives=[...(state.archives||[])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
+ const selector=$('boardArchiveSelect');
+ if(selector){
+  if(!selectedBoardArchiveId||!sortedArchives.some(a=>a.id===selectedBoardArchiveId))selectedBoardArchiveId=sortedArchives[0]?.id||null;
+  selector.innerHTML=sortedArchives.map(a=>`<option value="${esc(a.id)}">${esc(a.name||'Pertandingan')} — ${esc(formatDateLong(a.date||''))}</option>`).join('')||'<option value="">Belum ada arsip</option>';
+  selector.value=selectedBoardArchiveId||'';
+  selector.onchange=()=>{selectedBoardArchiveId=selector.value||null;renderBoard()};
  }
+ const selected=sortedArchives.find(a=>a.id===selectedBoardArchiveId);
+ if(selected){
+  const archivePts={};
+  (selected.points||[]).forEach(x=>archivePts[x.playerId]=Number(x.points)||0);
+  const archiveStats=selected.stats||statsForMatches(selected.matches||[]);
+  $('todayBoardBody').innerHTML=boardTable(boardRows(archiveStats,archivePts));
+  $('selectedArchiveLabel').textContent=`${selected.name||'Pertandingan'} · ${formatDateLong(selected.date||'')}`;
+ }else{
+  $('todayBoardBody').innerHTML=boardTable([]);
+  $('selectedArchiveLabel').textContent='Belum ada arsip pertandingan tersimpan.';
+ }
+ // Klasemen global hanya menghitung seluruh arsip tersimpan.
+ let globalStats={};
+ sortedArchives.forEach(a=>addStatsInto(globalStats,a.stats||statsForMatches(a.matches||[])));
+ const globalPts={...(state.cumulativePoints||{})};
  const rows=boardRows(globalStats,globalPts);
  $('boardPlayers').textContent=rows.length;
  $('boardArchives').textContent=state.archives.length;
  $('boardPoints').textContent=rows.reduce((n,r)=>n+r.points,0);
- $('globalDateLabel').textContent='Akumulasi seluruh arsip + sesi hari ini yang belum disimpan';
+ $('globalDateLabel').textContent='Dihitung dari '+state.archives.length+' arsip tersimpan. Sesi yang belum disimpan tidak dihitung.';
  $('boardBody').innerHTML=boardTable(rows);
 }
 function renderArchives(){$('archiveList').innerHTML=state.archives.length?[...state.archives].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>`<div class="card"><div class="flex justify-between gap-2 items-start"><div><b class="text-sm">${esc(a.name)}</b><p class="muted small mt-1">${esc(formatDateLong(a.date))} • ${a.points.length} pemain • ${a.matches?.length||0} skor tersimpan</p><p class="muted small mt-1">ID arsip: ${esc(a.id.slice(0,13))}…</p></div><button class="btn" data-export-archive="${a.id}">Ekspor</button></div></div>`).join(''):'<p class="muted small py-5 text-center">Belum ada arsip pertandingan.</p>';$('archiveList').querySelectorAll('[data-export-archive]').forEach(b=>b.onclick=()=>{let a=state.archives.find(x=>x.id===b.dataset.exportArchive);let st=a?(a.stats||statsForMatches(a.matches||[])):{};let carried=a?(a.carryStats||st):st;downloadJSON({format:'the-winner-padel-archive',schemaVersion:1,exportedAt:new Date().toISOString(),players:state.players,archives:a?[{...a,stats:st,carryStats:carried}]:[],cumulativePoints:{},importedArchiveIds:[],localStats:carried},'arsip-'+b.dataset.exportArchive+'.json')})}
@@ -441,7 +450,7 @@ $('confirmResetAll').onclick=async()=>{
 $('resetConfirm').addEventListener('click',e=>{if(e.target===$('resetConfirm')){$('resetConfirm').classList.add('hidden');$('resetConfirm').style.display='none'}});
 $('importSelected').onclick=async()=>{let a=importCandidates[+$('importSelect').value];if(!a)return;if(state.archives.some(x=>x.id===a.id))return toast('Arsip dengan ID ini sudah diimpor.');if(!confirm(`Impor poin dari "${a.name}"? Poin dihitung dari skor tiap tim dan dijumlahkan untuk pemain yang sama; arsip hanya ditambahkan satu kali. Klasemen Global tetap hanya menghitung arsip bertanggal hari ini.`))return;let known=new Set(state.players.map(p=>p.id));for(let p of (a.points||[])){if(!known.has(p.playerId)){let fromFile=importCandidates;let name=fromFile.flatMap(x=>x.players||[]).find(x=>x.playerId===p.playerId)?.name||'Pemain impor';let same=state.players.find(x=>norm(x.name)===norm(name));if(same)p.playerId=same.id;else{state.players.push({id:p.playerId,name,createdAt:new Date().toISOString()});state.cumulativePoints[p.playerId]=0;known.add(p.playerId)}}}
  // Normalize archive's point rows to known IDs and mark it as imported.
- let imported={...a,source:'imported',importedAt:new Date().toISOString(),points:(a.matches&&a.matches.length?Object.entries(pointsForMatches(a.matches)).map(([playerId,points])=>({playerId,points})):a.points.map(p=>({...p}))),stats:a.stats||statsForMatches(a.matches||[])};if(!applyArchivePoints(imported))return toast('Arsip sudah pernah diimpor.');if(imported.carryStats)mergeStatsMax(state.localStats,imported.carryStats);else addStatsInto(state.localStats,imported.stats);saveLocal();renderPlayers();renderBoard();renderArchives();$('importMessage').textContent='Arsip berhasil diimpor. Poin berdasarkan skor tiap tim ditambahkan satu kali untuk pemain yang sama. Klasemen Global tetap hanya menghitung arsip tanggal hari ini.';$('importMessage').style.color='#6ee7b7';toast('Poin dan statistik arsip berhasil ditambahkan.');if(cloudReady)await saveCloud();showImportDetails()};
+ let imported={...a,source:'imported',importedAt:new Date().toISOString(),points:(a.matches&&a.matches.length?Object.entries(pointsForMatches(a.matches)).map(([playerId,points])=>({playerId,points})):a.points.map(p=>({...p}))),stats:a.stats||statsForMatches(a.matches||[])};if(!applyArchivePoints(imported))return toast('Arsip sudah pernah diimpor.');if(imported.carryStats)mergeStatsMax(state.localStats,imported.carryStats);else addStatsInto(state.localStats,imported.stats);saveLocal();renderPlayers();renderBoard();renderArchives();$('importMessage').textContent='Arsip berhasil diimpor. Poin berdasarkan skor tiap tim ditambahkan satu kali untuk pemain yang sama. Klasemen Arsip dan Klasemen Global hanya menghitung arsip yang sudah tersimpan.';$('importMessage').style.color='#6ee7b7';toast('Poin dan statistik arsip berhasil ditambahkan.');if(cloudReady)await saveCloud();showImportDetails()};
 function getFirebaseConfig(){return {apiKey:$('fbApiKey').value.trim(),authDomain:$('fbAuthDomain').value.trim(),projectId:$('fbProjectId').value.trim(),appId:$('fbAppId').value.trim(),storageBucket:$('fbBucket').value.trim()||DEFAULT_FIREBASE_CONFIG.storageBucket,messagingSenderId:$('fbSender').value.trim()||DEFAULT_FIREBASE_CONFIG.messagingSenderId,measurementId:DEFAULT_FIREBASE_CONFIG.measurementId}}
 const DEFAULT_FIREBASE_CONFIG={apiKey:'AIzaSyDiVYwwj73-pnQUii6EUc7WeZnJ-3D7CD8',authDomain:'winnerpadel.firebaseapp.com',projectId:'winnerpadel',storageBucket:'winnerpadel.firebasestorage.app',messagingSenderId:'539208934533',appId:'1:539208934533:web:919f119da78f9825a5b5ec',measurementId:'G-QCWWSRSWE6'};
 function loadFbInputs(){let saved={};try{saved=JSON.parse(localStorage.getItem(FB_KEY)||'{}')||{}}catch{};const c={...DEFAULT_FIREBASE_CONFIG};for(const k of Object.keys(DEFAULT_FIREBASE_CONFIG)){if(typeof saved[k]==='string'&&saved[k].trim())c[k]=saved[k].trim()}$('fbApiKey').value=c.apiKey;$('fbAuthDomain').value=c.authDomain;$('fbProjectId').value=c.projectId;$('fbAppId').value=c.appId;$('fbBucket').value=c.storageBucket;$('fbSender').value=c.messagingSenderId;$('cloudStatus').textContent='● Firebase dikonfigurasi — belum tersambung';$('cloudStatus').className='muted text-xs';$('cloudMessage').textContent='Konfigurasi SDK winnerpadel sudah terisi otomatis. Tekan “Sambungkan & Muat Cloud” untuk menguji koneksi.'}
