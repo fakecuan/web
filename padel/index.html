@@ -17,6 +17,10 @@ body{font-family:Inter,system-ui,sans-serif;background:#020617;color:#e2e8f0}but
 #roundFullscreen .match-winner .winner-title{font-size:clamp(18px,3vw,28px);margin-bottom:4px}
 @keyframes matchPulse{0%,100%{opacity:1}50%{opacity:.65}}
 
+
+#roundFullscreen .fs-ball-notice{position:sticky;top:8px;z-index:20;margin:0 0 16px;padding:16px 20px;border:2px solid #ff4fa3;border-radius:14px;background:linear-gradient(135deg,#831843,#be185d);color:#fff;text-align:center;font-size:clamp(22px,4vw,34px);font-weight:1000;letter-spacing:.12em;box-shadow:0 0 22px #ff4fa388;animation:fsBallNoticePulse .65s infinite alternate}
+#roundFullscreen .fs-ball-notice.hidden{display:none!important}
+@keyframes fsBallNoticePulse{from{transform:scale(1);box-shadow:0 0 12px #ff4fa366}to{transform:scale(1.012);box-shadow:0 0 28px #ff4fa3cc}}
 </style>
 </head>
 <body>
@@ -105,6 +109,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#020617;color:#e2e8f0}but
  <div class="fs-wrap">
   <div class="flex items-center justify-between gap-3 flex-wrap mb-5"><div><div class="font-bold text-lg sm:text-2xl">THE WINNER PADEL</div><div id="fsRoundTitle" class="muted text-sm mt-1">RONDE</div></div><button id="fsExit" class="btn">✕ Keluar Layar Penuh</button></div>
   <div class="flex items-center justify-between gap-3 flex-wrap mb-4 p-4 rounded-xl border border-slate-700 bg-slate-900"><div><div class="muted small">SISA WAKTU RONDE</div><div id="fsTimer" class="font-mono text-amber-400 font-bold" style="font-size:clamp(34px,7vw,60px)">00:00</div></div><div class="flex gap-2 flex-wrap"><button id="fsStart" class="btn primary">▶ Mulai Timer</button><button id="fsPause" class="btn">Ⅱ Jeda</button></div></div>
+  <div id="fsBallNotice" class="fs-ball-notice hidden" role="status" aria-live="assertive">● PINDAH BOLA</div>
   <div id="fsMatches"></div>
   <div id="fsNextMatch" class="panel mb-4" style="border-color:#0f766e;background:#042f2e">
    <div class="text-xs font-bold" style="color:#5eead4">⏭ PERTANDINGAN SELANJUTNYA</div>
@@ -232,7 +237,17 @@ const FILLER_PLAYER_ID='__PEMAIN_PENGISI__';
 function playerDisplayName(id){return id===FILLER_PLAYER_ID?'Pemain Pengisi':(playerById(id)?.name||'?')}
 function firstBallTeam(m){if(m.firstBallTeam!==1&&m.firstBallTeam!==2)m.firstBallTeam=Math.random()<.5?1:2;return m.firstBallTeam}
 function currentBallTeam(m){const swaps=Math.floor(((Number.isFinite(m.s1)?m.s1:0)+(Number.isFinite(m.s2)?m.s2:0))/5);const first=firstBallTeam(m);return swaps%2===0?first:(first===1?2:1)}
-function notifyBallChange(before,after){if(before!==after)toast('PINDAH BOLA',5000)}
+let fullscreenBallNoticeTimer=null;
+function notifyBallChange(before,after){
+ if(before===after)return;
+ toast('PINDAH BOLA',5000);
+ const notice=$('fsBallNotice');
+ if(notice && $('roundFullscreen').classList.contains('open')){
+  notice.classList.remove('hidden');
+  clearTimeout(fullscreenBallNoticeTimer);
+  fullscreenBallNoticeTimer=setTimeout(()=>notice.classList.add('hidden'),5000);
+ }
+}
 function ballIndicator(m,team){return currentBallTeam(m)===team?'<span class="ball-dot" title="Bola di tim ini" aria-label="Bola di tim ini"></span>':''}
 function generate(){if(started)return toast('Timer berjalan.');let ps=sessionPlayers();if(ps.length<courtCount*4)return toast(`Minimal ${courtCount*4} pemain untuk ${courtCount} lapangan.`);let d=Math.max(15,Math.min(180,Number($('duration').value)||60));d=Math.round(d/5)*5;$('duration').value=d;state.duration=d;secondsLeft=d*60;$('globalTimer').textContent=fmt(secondsLeft);let plannedRounds=ps.length<=8?6:8,plays=Object.fromEntries(ps.map(p=>[p.id,0]));state.rounds=[];const slotsPerRound=courtCount*4,targetPerPlayer=Math.floor((plannedRounds*slotsPerRound)/ps.length);const realSlots=targetPerPlayer*ps.length;const count=Math.ceil(realSlots/slotsPerRound);let assigned=0;for(let r=1;r<=count;r++){let remainingReal=realSlots-assigned;let realThisRound=Math.min(slotsPerRound,remainingReal);let sorted=[...ps].filter(p=>plays[p.id]<targetPerPlayer).sort((a,b)=>plays[a.id]-plays[b.id]||Math.random()-.5);let active=sorted.slice(0,realThisRound).map(p=>p.id);active.forEach(id=>plays[id]++);assigned+=active.length;while(active.length<slotsPerRound)active.push(FILLER_PLAYER_ID);for(let i=active.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[active[i],active[j]]=[active[j],active[i]]}let matches=[];for(let c=0;c<courtCount;c++){let a=active.slice(c*4,c*4+4);matches.push({court:c+1,team1:a.slice(0,2),team2:a.slice(2,4),s1:null,s2:null,firstBallTeam:Math.random()<.5?1:2})}let activeReal=new Set(active.filter(id=>id!==FILLER_PLAYER_ID));let rest=ps.filter(p=>!activeReal.has(p.id)).map(p=>p.id);state.rounds.push({number:r,matches,rest,seconds:Math.floor(d*60/count),locked:false,running:false})}renderRounds();saveLocal();switchTab('rounds');let counts=Object.values(plays);let same=counts.every(n=>n===counts[0]);toast(same?`Jadwal dibuat. Semua pemain mendapat ${counts[0]} ronde bermain yang sama.`:'Jadwal dibuat dengan pembagian waktu main paling merata.')}
 $('generate').onclick=generate;$('regen').onclick=generate;
@@ -244,6 +259,7 @@ $('roundList').querySelectorAll('[data-score]').forEach(inp=>inp.onchange=()=>{l
 let fullscreenRoundIndex=null;
 function openRoundFullscreen(i){
  const r=state.rounds[i];if(!r)return;fullscreenRoundIndex=i;
+ const ballNotice=$('fsBallNotice');if(ballNotice)ballNotice.classList.add('hidden');clearTimeout(fullscreenBallNoticeTimer);
  $('fsRoundTitle').textContent='RONDE #'+r.number+(r.locked?' • TERKUNCI':' • '+(r.running?'SEDANG MAIN':'SIAP'));
  renderFullscreenRound();$('roundFullscreen').classList.add('open');document.body.classList.add('fs-open');
  try{if($('roundFullscreen').requestFullscreen)$('roundFullscreen').requestFullscreen().catch(()=>{});}catch(e){}
