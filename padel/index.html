@@ -260,7 +260,43 @@ function switchTab(t){document.querySelectorAll('[data-tab]').forEach(b=>b.class
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 function renderPlayers(){$('sessionCount').textContent=state.sessionPlayerIds.length;$('sessionPlayers').innerHTML=sessionPlayers().map(p=>`<div class="player"><span class="truncate">🟢 ${esc(p.name)}</span><button class="muted" data-remove="${p.id}" title="Hapus dari sesi">×</button></div>`).join('')||'<p class="muted small col-span-full py-4 text-center">Belum ada pemain dalam sesi.</p>';$('sessionPlayers').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{if(started)return toast('Timer berjalan.');state.sessionPlayerIds=state.sessionPlayerIds.filter(id=>id!==b.dataset.remove);renderPlayers();saveLocal()});$('masterPlayers').innerHTML=state.players.map(p=>`<div class="player"><span class="truncate">${esc(p.name)}</span><button class="btn" data-join="${p.id}">${state.sessionPlayerIds.includes(p.id)?'Dipilih':'+ Sesi'}</button></div>`).join('')||'<p class="muted small col-span-full">Master pemain masih kosong.</p>';$('masterPlayers').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{if(started)return toast('Sesi sedang berjalan.');if(!state.sessionPlayerIds.includes(b.dataset.join))state.sessionPlayerIds.push(b.dataset.join);renderPlayers();saveLocal()})}
 function globalPlayerStats(){normalizeArchivePoints();const pts={...(state.cumulativePoints||{})};const ranked=[...state.players].map(p=>({id:p.id,name:p.name,points:Number(pts[p.id]||0)})).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));return {pts,ranked}}
-function renderPlayerEntryCards(){const count=Math.max(2,Math.min(32,Number($('playerCountInput').value)||2));$('playerCountInput').value=count;const {pts,ranked}=globalPlayerStats();const existing=sessionPlayers();const options=state.players.slice().sort((a,b)=>a.name.localeCompare(b.name));$('playerEntryCards').innerHTML=Array.from({length:count},(_,i)=>{const selected=existing[i]?.id||'';return `<div class="card" style="margin-top:0"><label class="small muted block mb-1">Pemain ${i+1}</label><select class="field player-existing" data-slot="${i}"><option value="">+ Pemain baru</option>${options.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?'selected':''}>${esc(p.name)}</option>`).join('')}</select><input class="field mt-2 player-new-name ${selected?'hidden':''}" data-slot="${i}" placeholder="Nama pemain baru" maxlength="60"><div class="small mt-2 player-info" data-info="${i}">${selected?(()=>{let r=ranked.findIndex(x=>x.id===selected);return `Total poin: <b>${pts[selected]||0}</b> · Peringkat global: <b>${r>=0?r+1:'—'}</b>`})():'<span style="color:#34d399;font-weight:700">New Comer</span>'}</div></div>`}).join('');$('playerEntryCards').querySelectorAll('.player-existing').forEach(sel=>sel.onchange=()=>{const i=+sel.dataset.slot;const inp=$('playerEntryCards').querySelector(`.player-new-name[data-slot="${i}"]`);const info=$('playerEntryCards').querySelector(`[data-info="${i}"]`);if(sel.value){inp.classList.add('hidden');const r=ranked.findIndex(x=>x.id===sel.value);info.innerHTML=`Total poin: <b>${pts[sel.value]||0}</b> · Peringkat global: <b>${r>=0?r+1:'—'}</b>`}else{inp.classList.remove('hidden');info.innerHTML='<span style="color:#34d399;font-weight:700">New Comer</span>'}})}
+function updatePlayerEntryOptions(){
+ const selects=[...$('playerEntryCards').querySelectorAll('.player-existing')];
+ const options=state.players.slice().sort((a,b)=>a.name.localeCompare(b.name));
+ const selectedIds=selects.map(sel=>sel.value).filter(Boolean);
+ selects.forEach(sel=>{
+  const own=sel.value;
+  const usedByOthers=new Set(selectedIds.filter(id=>id!==own));
+  sel.innerHTML='<option value="">+ Pemain baru</option>'+options.filter(p=>!usedByOthers.has(p.id)||p.id===own).map(p=>`<option value="${esc(p.id)}" ${p.id===own?'selected':''}>${esc(p.name)}</option>`).join('');
+  sel.value=own;
+ });
+}
+function renderPlayerEntryCards(){
+ const count=Math.max(2,Math.min(32,Number($('playerCountInput').value)||2));
+ $('playerCountInput').value=count;
+ const {pts,ranked}=globalPlayerStats();
+ const existing=sessionPlayers();
+ const options=state.players.slice().sort((a,b)=>a.name.localeCompare(b.name));
+ $('playerEntryCards').innerHTML=Array.from({length:count},(_,i)=>{
+  const selected=existing[i]?.id||'';
+  return `<div class="card" style="margin-top:0"><label class="small muted block mb-1">Pemain ${i+1}</label><select class="field player-existing" data-slot="${i}"><option value="">+ Pemain baru</option>${options.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?'selected':''}>${esc(p.name)}</option>`).join('')}</select><input class="field mt-2 player-new-name ${selected?'hidden':''}" data-slot="${i}" placeholder="Nama pemain baru" maxlength="60"><div class="small mt-2 player-info" data-info="${i}">${selected?(()=>{let r=ranked.findIndex(x=>x.id===selected);return `Total poin: <b>${pts[selected]||0}</b> · Peringkat global: <b>${r>=0?r+1:'—'}</b>`})():'<span style="color:#34d399;font-weight:700">New Comer</span>'}</div></div>`;
+ }).join('');
+ $('playerEntryCards').querySelectorAll('.player-existing').forEach(sel=>sel.onchange=()=>{
+  const i=+sel.dataset.slot;
+  const inp=$('playerEntryCards').querySelector(`.player-new-name[data-slot="${i}"]`);
+  const info=$('playerEntryCards').querySelector(`[data-info="${i}"]`);
+  if(sel.value){
+   inp.classList.add('hidden');
+   const r=ranked.findIndex(x=>x.id===sel.value);
+   info.innerHTML=`Total poin: <b>${pts[sel.value]||0}</b> · Peringkat global: <b>${r>=0?r+1:'—'}</b>`;
+  }else{
+   inp.classList.remove('hidden');
+   info.innerHTML='<span style="color:#34d399;font-weight:700">New Comer</span>';
+  }
+  updatePlayerEntryOptions();
+ });
+ updatePlayerEntryOptions();
+}
 $('buildPlayerCards').onclick=renderPlayerEntryCards;$('playerCountInput').onchange=renderPlayerEntryCards;
 $('applyPlayerCards').onclick=()=>{if(started)return toast('Reset sesi sebelum mengubah pemain.');const sels=[...$('playerEntryCards').querySelectorAll('.player-existing')],used=new Set(),ids=[];for(const sel of sels){let p=null;if(sel.value)p=state.players.find(x=>x.id===sel.value);else{const input=$('playerEntryCards').querySelector(`.player-new-name[data-slot="${sel.dataset.slot}"]`);const name=(input?.value||'').trim();if(!name)return toast(`Isi nama pemain baru pada slot ${Number(sel.dataset.slot)+1}, atau pilih pemain lama.`);p=addPlayer(name,false)}if(!p)continue;if(used.has(p.id))return toast(`Pemain ${p.name} dipilih lebih dari sekali.`);used.add(p.id);ids.push(p.id)}if(ids.length<2)return toast('Pilih minimal dua pemain.');state.sessionPlayerIds=ids;renderPlayers();renderPlayerEntryCards();saveLocal();toast(`${ids.length} pemain dipilih untuk sesi.`)};
 $('topConnectCloud').onclick=()=>{switchTab('settings');$('connectFirebase').click()};
