@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Order Skinsuit | D.VA SKATE</title>
+<style>
+:root{--bg:#0d0d10;--panel:#17171c;--panel2:#202027;--ink:#f7f7fa;--muted:#a6a6b2;--pink:#f06aa5;--line:#34343d;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% -10%,#49223b 0,transparent 38%),var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+.wrap{max-width:760px;margin:auto;padding:24px 16px 48px}
+header{text-align:center;padding:22px 10px 28px}
+.logo{font-size:clamp(34px,9vw,54px);font-weight:950;letter-spacing:.11em;line-height:1;color:#fff}
+.logo span{color:var(--pink)}
+.kicker{margin-top:10px;color:#d5a6bd;font-size:11px;letter-spacing:.24em;font-weight:800}
+.intro{color:var(--muted);font-size:14px;max-width:520px;margin:15px auto 0}
+.progress{display:flex;gap:7px;justify-content:center;margin:22px auto 0}
+.progress i{height:4px;width:42px;border-radius:10px;background:#444}
+.progress i:first-child{background:var(--pink)}
+.card{background:rgba(23,23,28,.96);border:1px solid var(--line);border-radius:20px;padding:22px;margin:14px 0;box-shadow:0 12px 35px #0003}
+.section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.num{width:30px;height:30px;border-radius:10px;background:#3b2432;color:#ff9fc8;display:grid;place-items:center;font-weight:900;font-size:13px}
+h2{font-size:16px;margin:0;font-weight:800}
+.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:750;color:#e8e8ed}
+.optional{font-weight:500;color:var(--muted)}
+input,textarea,select{width:100%;border:1px solid #3a3a45;background:#101014;color:var(--ink);border-radius:11px;padding:13px 14px;font:inherit;font-size:14px;outline:none;transition:.2s}
+input:focus,textarea:focus,select:focus{border-color:var(--pink);box-shadow:0 0 0 3px #f06aa522}
+input::placeholder,textarea::placeholder{color:#777783}
+textarea{resize:vertical;min-height:82px}
+.helper{font-size:11px;color:var(--muted)}
+.terms{display:grid;gap:13px}
+.term{display:flex;gap:11px;align-items:flex-start;font-size:13px;color:#d9d9e0}
+.term b{color:#fff}
+.dot{flex:0 0 23px;height:23px;border-radius:8px;background:#30222b;color:#ff9fc8;display:grid;place-items:center;font-size:11px;font-weight:900}
+.bank{margin-top:17px;padding:14px;border:1px dashed #75435d;background:#281c25;border-radius:13px}
+.bank small{display:block;color:#c7a7b7;font-size:11px}
+.bank strong{display:block;font-size:16px;letter-spacing:.04em;margin-top:3px}
+.bank .owner{font-size:12px;color:#e5cbd8}
+.agree{display:flex;gap:11px;align-items:flex-start;font-size:13px;color:#dedee5;margin-top:18px}
+.agree input{width:18px;height:18px;flex:0 0 18px;margin:1px 0 0;accent-color:var(--pink)}
+button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linear-gradient(100deg,#ed5f9c,#ff8ab8);color:#220d18;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 9px 25px #e95b9633;margin-top:18px}
+button:active{transform:translateY(1px)}
+.foot{text-align:center;color:#777783;font-size:11px;margin-top:20px}
+.required{color:#ff8ab8}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:18px}.wrap{padding:16px 13px 35px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <div class="logo">D.VA <span>SKATE</span></div>
+  <div class="kicker">CUSTOM SKINSUIT ORDER FORM</div>
+  <p class="intro">Isi formulir di bawah ini untuk memulai pemesanan skinsuit custom. Pastikan data ukuran dan alamat sudah benar.</p>
+  <div class="progress" aria-hidden="true"><i></i><i></i><i></i></div>
+</header>
 
+<form id="orderForm">
+  <section class="card">
+    <div class="section-head"><div class="num">01</div><div><h2>Data Pemesan</h2><div class="sub">Informasi kontak pelanggan</div></div></div>
+    <div class="grid">
+      <div class="field">
+        <label for="nama">Nama lengkap <span class="required">*</span></label>
+        <input id="nama" name="nama" placeholder="Nama pemesan" required>
+      </div>
+      <div class="field">
+        <label for="hp">No. HP / WhatsApp <span class="required">*</span></label>
+        <input id="hp" name="hp" type="tel" placeholder="08xxxxxxxxxx" required>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-head"><div class="num">02</div><div><h2>Ukuran Skinsuit</h2><div class="sub">Masukkan ukuran untuk setiap pemesan</div></div></div>
+    <div class="grid">
+      <div class="field full">
+        <label for="ukuran">Ukuran Skinsuit <span class="required">*</span></label>
+        <textarea id="ukuran" name="ukuran" placeholder="Contoh:&#10;1. Nama – 2S (lengan pendek)&#10;2. Nama – XS (lengan panjang)" required></textarea>
+        <div class="helper">Jika memesan lebih dari satu, tuliskan setiap nama, ukuran, dan model lengan.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-head"><div class="num">03</div><div><h2>Alamat Pengiriman</h2><div class="sub">Tuliskan alamat tujuan pengiriman selengkap mungkin</div></div></div>
+    <div class="field">
+      <label for="alamat">Alamat lengkap <span class="required">*</span></label>
+      <textarea id="alamat" name="alamat" placeholder="Nama jalan, nomor rumah, RT/RW, Kelurahan/Desa, Kecamatan, Kota/Kabupaten, Kode Pos, dan patokan alamat" required></textarea>
+      <div class="helper">Mohon cantumkan Kelurahan/Desa, Kecamatan, Kota/Kabupaten, dan Kode Pos di dalam kotak alamat ini.</div>
+    </div>
+    <button type="submit">KIRIM PESANAN VIA WHATSAPP <span aria-hidden="true">↗</span></button>
+    <div class="helper" style="text-align:center;margin-top:10px">Pesanan akan dikirim ke WhatsApp admin D.VA SKATE untuk dikonfirmasi.</div>
+  </section>
+</form>
+<div class="foot">© D.VA SKATE · CUSTOM INLINE SKATE SKINSUIT</div>
+</main>
+<script>
+const ADMIN_WA = "628561902897";
+document.getElementById("orderForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  if(!this.reportValidity()) return;
+  const v = id => document.getElementById(id).value.trim();
+  const lines = [
+    "*FORMAT ORDER PEMESANAN D.VA SKATE*",
+    "",
+    `Nama: ${v("nama")}`,
+    `No. HP: ${v("hp")}`,
+    `Ukuran Skinsuit:\n${v("ukuran")}`,
+    "",
+    "*ALAMAT PENGIRIMAN*",
+    `Nama Penerima: ${v("nama")}`,
+    `No. HP Penerima: ${v("hp")}`,
+    `Alamat: ${v("alamat")}`,
+    "",
+    "*KETENTUAN PEMESANAN*",
+    "1. Konsultasi desain.",
+    "2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.",
+    "3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.",
+    "4. Skinsuit selesai proses produksi akan dikirim ke customer.",
+    "5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.",
+    "",
+    "*REKENING PEMBAYARAN*",
+    "Bank: BCA",
+    "No. Rekening: 5260526296",
+    "Atas Nama: Rifki Debi"
+  ].filter(x => x !== "");
+  const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\n"))}`;
+  window.open(url,"_blank","noopener,noreferrer");
+});
+</script>
+</body>
+</html>
