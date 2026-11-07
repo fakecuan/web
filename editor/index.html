@@ -52,23 +52,22 @@ function pkSync(){const h=colOf(pkk),n=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16
 const rc=new THREE.Raycaster(),mp=new THREE.Vector2();let d3=0,sx=0,sy=0;const hit=(e,objs)=>{const r=R.domElement.getBoundingClientRect();mp.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);rc.setFromCamera(mp,cam);return rc.intersectObjects(objs)[0]};R.domElement.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;const p=P[st.sel],h=hit(e,[p.m]);if(st.mv&&h&&p.layers[st.li]){d3=1;ctl.enabled=false;const L=p.layers[st.li];L.x=h.uv.x;L.y=1-h.uv.y;draw(st.sel)}});R.domElement.addEventListener('pointermove',e=>{if(!d3)return;const h=hit(e,[P[st.sel].m]);if(h){const L=P[st.sel].layers[st.li];L.x=h.uv.x;L.y=1-h.uv.y;draw(st.sel)}});addEventListener('pointerup',e=>{if(d3){d3=0;ctl.enabled=!lock3d;ui();return} if(e.target==R.domElement&&Math.hypot(e.clientX-sx,e.clientY-sy)<5){const h=hit(e,grp.children.filter(o=>o.visible));if(h&&h.object.userData.id!=st.sel){st.sel=h.object.userData.id;st.li=P[st.sel].layers.length-1;ui()}}});$('#mv').onclick=e=>{st.mv=!st.mv;e.target.classList.toggle('on',st.mv)};$('#rot').onclick=e=>{ctl.autoRotate=!ctl.autoRotate;e.target.classList.toggle('on',ctl.autoRotate)};const lockBtn=$('#lock3d'),set3DLock=locked=>{lock3d=locked;ctl.enabled=!locked;R.domElement.style.touchAction=locked?'pan-y':'none';lockBtn.textContent=locked?'🔒 3D terkunci':'🔓 Putar 3D';lockBtn.setAttribute('aria-pressed',String(locked));lockBtn.classList.toggle('on',locked);if(locked){ctl.autoRotate=false;$('#rot').classList.remove('on')}};lockBtn.onclick=()=>set3DLock(!lock3d);set3DLock(lock3d);const lockMedia=matchMedia('(max-width:900px)');if(lockMedia.addEventListener)lockMedia.addEventListener('change',e=>set3DLock(e.matches));$('#th').onclick=()=>{const r=document.documentElement;r.dataset.theme=(r.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))=='dark'?'light':'dark'};const VP=[[0,.05,1.7],[0,.05,-1.7],[1.7,.05,0]];document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{cam.position.set(...VP[+b.dataset.v]);ctl.target.set(0,0,0)});const dl=(u,n)=>{const a=document.createElement('a');a.href=u;a.download=n;a.click()};
 let pvBlob=null;
 async function makePreview(){
- const btn=$('#snap'),H=1600,mg=1.1,fov=14,t=Math.tan(fov*Math.PI/360),bb=new THREE.Box3();btn.disabled=true;btn.textContent='Membuat…';
+ const btn=$('#snap'),OW=1800,OH=3200,mg=1.08,fov=14,t=Math.tan(fov*Math.PI/360),bb=new THREE.Box3();btn.disabled=true;btn.textContent='Membuat…';
  const sv={pos:cam.position.clone(),tg:ctl.target.clone(),fov:cam.fov,asp:cam.aspect,pr:R.getPixelRatio(),w:box.clientWidth,h:box.clientHeight,bg:sc.background,ar:ctl.autoRotate},
   dls=sc.children.filter(o=>o.isDirectionalLight),ls=dls.map(l=>({p:l.position.clone(),i:l.intensity}));let out=null;
  try{
   await new Promise(r=>setTimeout(r,30));
   grp.children.forEach(m=>{if(!m.visible)return;m.geometry.computeBoundingBox();bb.union(m.geometry.boundingBox)});
-  const c=bb.getCenter(new THREE.Vector3()),z=bb.getSize(new THREE.Vector3()),wx=z.x*mg,ws=Math.max(z.z*mg,.4*wx),W=[wx,wx,ws,ws],sw=W.reduce((a,b)=>a+b,0);
-  const asp=Math.min(2.2,Math.max(1.5,sw/(z.y*mg))),Wt=Math.round(H*asp),px=W.map(w=>Math.round(Wt*w/sw));px[3]=Wt-px[0]-px[1]-px[2];
-  const Hv=Math.max(z.y*mg,sw/asp),d=Hv/(2*t),views=[[0,0,1],[0,0,-1],[-1,0,0],[1,0,0]];
-  out=document.createElement('canvas');out.width=Wt;out.height=H;const g=out.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,Wt,H);
+  const c=bb.getCenter(new THREE.Vector3()),z=bb.getSize(new THREE.Vector3()),rh=Math.floor(OH/3);
+  const S=[[0,0,OW,rh,[0,0,1]],[0,rh,OW,rh,[0,0,-1]],[0,2*rh,OW/2,OH-2*rh,[-1,0,0]],[OW/2,2*rh,OW/2,OH-2*rh,[1,0,0]]];
+  const Hv=Math.max(z.y*mg,z.x*mg/(OW/rh),z.z*mg/((OW/2)/rh)),d=Hv/(2*t);
+  out=document.createElement('canvas');out.width=OW;out.height=OH;const g=out.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,OW,OH);
   ctl.autoRotate=false;sc.background=new THREE.Color(0xffffff);R.setPixelRatio(1);cam.fov=fov;cam.up.set(0,1,0);
-  let x0=0;
-  views.forEach((v,i)=>{const dir=new THREE.Vector3(...v),up=new THREE.Vector3(0,1,0),rt=up.clone().cross(dir);
-   R.setSize(px[i],H,false);cam.aspect=px[i]/H;cam.updateProjectionMatrix();cam.position.copy(c).addScaledVector(dir,d);cam.lookAt(c);
+  S.forEach(([x0,y0,w,h,v])=>{const dir=new THREE.Vector3(...v),up=new THREE.Vector3(0,1,0),rt=up.clone().cross(dir);
+   R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();cam.position.copy(c).addScaledVector(dir,d);cam.lookAt(c);
    if(dls[0]){dls[0].position.copy(dir).multiplyScalar(3).addScaledVector(up,2).addScaledVector(rt,1.2);dls[0].intensity=.5}
    if(dls[1]){dls[1].position.copy(dir).multiplyScalar(-3);dls[1].intensity=.1}
-   R.render(sc,cam);g.drawImage(R.domElement,x0,0,px[i],H);x0+=px[i]});
+   R.render(sc,cam);g.drawImage(R.domElement,x0,y0,w,h)});
   out.d=1;
  }catch(e){console.error(e);alert('Gagal membuat preview: '+e.message)}
  finally{
