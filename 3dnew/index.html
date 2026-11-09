@@ -1535,13 +1535,12 @@ let cloverOrders=[{...CLOVER_DEFAULT}];
 const cloverScene=new THREE.Group();cloverScene.position.y=3.85;cloverScene.visible=false;scene.add(cloverScene);
 const cloverBodyGeometry=geo(C.body),cloverCapGeometry=geo(C.cap);
 function cloverCleanText(text){return [...String(text||'')].filter(c=>!!FT.g[c]).slice(0,8).join('')}
-function cloverShown(o){const t=o.text;return o.mode==='upper'?t.toUpperCase():t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()}
+function cloverShown(o){return String(o.text||'')}
 function cloverSelect(k,v){return `<select data-clover-color="${k}" aria-label="Warna ${k}">${MULTI_COLORS.map(([n,c])=>`<option value="${c}" ${c.toLowerCase()===v.toLowerCase()?'selected':''}>${n}</option>`).join('')}</select>`}
 function cloverRender(){
  cloverList.innerHTML=cloverOrders.map((o,i)=>`<div class="clover-order-card" data-clover-row="${i}">
   <div class="clover-order-top">
-   <input type="text" class="cooper-in" data-clover-text="1" maxlength="8" value="${o.text.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" placeholder="Tulisan ${i+1}" aria-label="Tulisan Clover ${i+1}" autocomplete="off" spellcheck="false">
-   <select data-clover-mode="1" aria-label="Gaya tulisan"><option value="first" ${o.mode==='first'?'selected':''}>Awal kapital</option><option value="upper" ${o.mode==='upper'?'selected':''}>HURUF BESAR</option></select>
+   <input type="text" class="cooper-in" data-clover-text="1" maxlength="8" value="${o.text.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" placeholder="Tulisan ${i+1}" aria-label="Tulisan Clover ${i+1}" autocomplete="off" autocapitalize="off" spellcheck="false">
    <button type="button" class="multi-remove" data-clover-remove="${i}" ${cloverOrders.length===1?'disabled':''} aria-label="Hapus pesanan ${i+1}">×</button>
   </div>
   <div class="clover-colors"><label>BODY ${cloverSelect('body',o.body)}</label><label>TOMBOL ${cloverSelect('cap',o.cap)}</label><label>HURUF ${cloverSelect('ft',o.ft)}</label></div>
@@ -1678,7 +1677,7 @@ const bkG={base:creasedGeo(BK.base,40),top:creasedGeo(BK.top,40),seam:creasedGeo
 const BK_DEFAULT={text:"Dipta",mode:"first",size:SIZE_DEF,base:"#23262B",ball:"#D93636",seam:"#23262B",ft:"#F2F2EF"};
 let bkOrders=[{...BK_DEFAULT}];
 const bkList=$("basketOrders");
-const bkShown=o=>{const t=o.text;return o.mode==="upper"?t.toUpperCase():t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()};
+const bkShown=o=>String(o.text||'');
 const bkMax=o=>sizeMax(bkShown(o),"basket");
 const bkEff=o=>clampN(o.size==null?SIZE_DEF:o.size,bkMax(o));
 window.bkEff=bkEff;
@@ -1695,8 +1694,7 @@ const esc=t=>String(t).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g
 function bkRender(){
  bkList.innerHTML=bkOrders.map((o,i)=>`<div class="clover-order-card" data-bk-row="${i}">
   <div class="clover-order-top">
-   <input type="text" class="cooper-in" data-bk-text maxlength="12" value="${esc(o.text)}" placeholder="Tulisan ${i+1}" aria-label="Tulisan Basket ${i+1}" autocomplete="off" spellcheck="false">
-   <select data-bk-mode aria-label="Gaya tulisan"><option value="first" ${o.mode==="first"?"selected":""}>Awal kapital</option><option value="upper" ${o.mode==="upper"?"selected":""}>HURUF BESAR</option></select>
+   <input type="text" class="cooper-in" data-bk-text maxlength="12" value="${esc(o.text)}" placeholder="Tulisan ${i+1}" aria-label="Tulisan Basket ${i+1}" autocomplete="off" autocapitalize="off" spellcheck="false">
    <button type="button" class="multi-remove" data-bk-remove="${i}" ${bkOrders.length===1?"disabled":""} aria-label="Hapus pesanan ${i+1}">×</button>
   </div>
   <div class="clover-colors bk-colors">
