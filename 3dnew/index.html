@@ -548,7 +548,11 @@ const target=new THREE.Vector3(0,6,0);
 const dir=new THREE.Vector3(.35,.66,.75).normalize();
 cam.position.copy(target).addScaledVector(dir,200);
 const controls=new THREE.OrbitControls(cam,renderer.domElement);
-Object.assign(controls,{enableDamping:true,enablePan:false,minPolarAngle:.15,maxPolarAngle:1.45,minDistance:60,maxDistance:1400});
+Object.assign(controls,{enableDamping:true,enablePan:true,minPolarAngle:.15,maxPolarAngle:1.45,minDistance:25,maxDistance:1800});
+controls.mouseButtons.LEFT=THREE.MOUSE.ROTATE;
+controls.mouseButtons.MIDDLE=THREE.MOUSE.DOLLY;
+controls.mouseButtons.RIGHT=THREE.MOUSE.PAN;
+renderer.domElement.addEventListener("contextmenu",e=>e.preventDefault());
 controls.target.copy(target);
 
 scene.add(new THREE.HemisphereLight(0xffffff,0x9aa4b5,.85));
@@ -1190,23 +1194,28 @@ function previewMultiOrders(){
  root2.clear();held=-1;
  const rows=[];
  const count=multiOrders.length;
+ const cols=Math.ceil(Math.sqrt(count)),gridRows=Math.ceil(count/cols);
  // Each order is copied as contents only. Cloning root2 itself would duplicate
  // its -90 degree rotation and turn the glyphs upside down.
- const rowGap=Math.max(S2.version===3?28:22,32-Math.max(0,count-1)*0.8);
+ const maxChars=Math.max(...multiOrders.map(o=>(o.name||"NAMA").length),2);
+ const cellX=S2.version===3?Math.max(190,maxChars*24+48):Math.max(118,maxChars*12+42);
+ const cellY=S2.version===3?150:78;
  multiOrders.forEach((o,index)=>{
   const name=validateMultiOrder({...o,name:o.name||"NAMA"},index);
   Object.assign(S2,{name,base:o.base,kc:o.cap,ft:o.letter,mode:o.model==="2"?"alt":"same"});
   legacyRebuildMulti();
   const row=new THREE.Group();
   root2.children.forEach(child=>row.add(child.clone(true)));
-  row.position.y=-(index-(count-1)/2)*rowGap;
+  const col=index%cols,r=Math.floor(index/cols);
+  row.position.set((col-(cols-1)/2)*cellX,-(r-(gridRows-1)/2)*cellY,0);
   rows.push(row);
  });
  root2.clear();rows.forEach(row=>root2.add(row));
  P2.keys=[];P2.st=[];P2.body=null;P2.mats=[];
  const ks=[];root2.traverse(o=>{if(o.userData&&typeof o.userData.i==="number")ks.push(o)});regLive(P2,ks);
- const maxChars=Math.max(...multiOrders.map(o=>o.name.length),2);
- half=Math.max(32,S2.version===3?(maxChars*23.5+32)/2+12:(maxChars*11.1+18)/2+12,count*rowGap*0.55);
+ const spanX=(cols-1)*cellX/2+(S2.version===3?(maxChars*23.5+32)/2: (maxChars*11.1+18)/2);
+ const spanY=(gridRows-1)*cellY/2+(S2.version===3?62:42);
+ half=Math.max(32,spanX,spanY);
  shadowBox(half+8);
  controls.target.set(0,0,0);
  fit();
@@ -1414,7 +1423,8 @@ function renderMcOrders(){
 function mcBuildPreview(){
  if(active===P1){mcRoot.visible=true;root.visible=false;root2.visible=false;root3.visible=false;}
  mcRoot.clear();const mcKeys=[];
- const rowStep=mcOrders.length>1?Math.max(76,88-Math.min(24,mcOrders.length*2)):0;
+ const cols=Math.ceil(Math.sqrt(mcOrders.length)),rows=Math.ceil(mcOrders.length/cols);
+ const cell=88;
  mcOrders.forEach((o,ri)=>{
   const group=new THREE.Group();
   const body=shade(new THREE.Mesh(mcBaseGeo,mcMat(o.base)));group.add(body);
@@ -1424,11 +1434,12 @@ function mcBuildPreview(){
    key.position.set((i%3-1)*PITCH,(Math.floor(i/3)-1)*PITCH,12.6);
    group.add(key);mcKeys.push(key);
   });
-  group.position.y=-(ri-(mcOrders.length-1)/2)*rowStep;
+  const col=ri%cols,row=Math.floor(ri/cols);
+  group.position.set((col-(cols-1)/2)*cell,-(row-(rows-1)/2)*cell,0);
   mcRoot.add(group);
  });
- const totalSpan=Math.max(66,(mcOrders.length-1)*rowStep+66);
- half=Math.max(48,totalSpan*.58);
+ const spanX=(cols-1)*cell/2+42,spanY=(rows-1)*cell/2+42;
+ half=Math.max(48,spanX,spanY);
  shadowBox(half);
  controls.target.set(0,0,0);
  const d=Math.max(120,(half+5)/(Math.tan(cam.fov*Math.PI/360)*Math.min(cam.aspect||1,1.6)));
@@ -1555,10 +1566,12 @@ function cloverSummary(){
 }
 function cloverPreview(){
  cloverScene.clear();const clvKeys=[];
- const count=cloverOrders.length;
- const gap=Math.max(34,48-Math.max(0,count-1)*1.5);
+ const count=cloverOrders.length,cols=Math.ceil(Math.sqrt(count)),rows=Math.ceil(count/cols);
+ const gapX=58,gapY=58;
  cloverOrders.forEach((o,i)=>{
-  const row=new THREE.Group();row.position.y=-(i-(count-1)/2)*gap;
+  const row=new THREE.Group();
+  const col=i%cols,r=Math.floor(i/cols);
+  row.position.set((col-(cols-1)/2)*gapX,-(r-(rows-1)/2)*gapY,0);
   row.add(shade(new THREE.Mesh(cloverBodyGeometry,mat(o.body))));
   const cap=shade(new THREE.Mesh(cloverCapGeometry,mat(o.cap)));
   cap.position.set(0,-3.85,P3.rest);row.add(cap);clvKeys.push(cap);
@@ -1566,7 +1579,7 @@ function cloverPreview(){
   if(txt){const letter=shade(new THREE.Mesh(txt,mat(o.ft)));letter.position.set(0,.5,3);cap.add(letter)}
   cloverScene.add(row);
  });
- half=Math.max(32,Math.max(1,count-1)*gap*.55+27);
+ half=Math.max(32,(cols-1)*gapX/2+28,(rows-1)*gapY/2+28);
  shadowBox(half+8);
  if(active===P3){cloverScene.visible=true;root3.visible=false;controls.target.set(0,0,0);fit()}
  regLive(P3,clvKeys);cloverSummary();
@@ -1715,7 +1728,7 @@ function bkSummary(){
 function bkPreview(){
  bkTextGeos.splice(0).forEach(g=>g.dispose());
  basketScene.clear();
- const n=bkOrders.length,cols=n<=3?1:2,rows=Math.ceil(n/cols),GX=50,GY=58,keys=[];
+ const n=bkOrders.length,cols=Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols),GX=50,GY=58,keys=[];
  bkOrders.forEach((o,i)=>{
   const c=i%cols,r=Math.floor(i/cols);
   const row=new THREE.Group();row.position.set((c-(cols-1)/2)*GX,-(r-(rows-1)/2)*GY,0);
@@ -1882,7 +1895,7 @@ cloverExport=function(){
  return bambuPack(groups,"Kliker Clover");
 };
 
-window.__ds={randPalette,randomizeAll,resetAll,sizeMax,textMetrics,P4,bkRender,bkPreview,bkEff,bkShown,BK_DEFAULT,get bkOrders(){return bkOrders},set bkOrders(v){bkOrders=v}};
+window.__ds={randPalette,randomizeAll,resetAll,sizeMax,textMetrics,P4,bkRender,bkPreview,bkEff,bkShown,bkExport,BK_DEFAULT,get bkOrders(){return bkOrders},set bkOrders(v){bkOrders=v}};
 
 bkRender();
 refresh();
@@ -1923,7 +1936,7 @@ refresh();
   if(active===P1)return {label:"CLICKER_3X3",qty:mcOrders.length,price:40000};
   if(active===P2)return {label:"CLICKER_NAMA",qty:multiOrders.length,price:null};
   if(active===P3)return {label:"CLICKER_CLOVER",qty:cloverOrders.length,price:25000};
-  if(active===P4)return {label:"CLICKER_BASKET",qty:bkOrders.length,price:25000};
+  if(window.__ds && active===window.__ds.P4)return {label:"CLICKER_BASKET",qty:bkOrders.length,price:25000};
   throw new Error("Pilih produk terlebih dahulu.");
  };
  const namePrice=n=>({1:18000,2:22000,3:25000,4:28000,5:32000,6:36000,7:40000,8:44000,9:48000,10:52000})[n]||0;
@@ -1974,7 +1987,7 @@ refresh();
   if(active===P1)return await buildMultiClicker3MF();
   if(active===P2)return await buildMultiNames3MF();
   if(active===P3)return await cloverExport();
-  if(active===P4)return await bkExport();
+  if(window.__ds && active===window.__ds.P4)return await window.__ds.bkExport();
   throw new Error("Produk belum dipilih.");
  };
  const downloadBlob=(blob,customerName)=>{
