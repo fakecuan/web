@@ -381,6 +381,14 @@ main .panel .multi-order-head{grid-template-columns:1fr minmax(96px,136px) 34px}
 <meta name="twitter:title" content="DIVALICIOUS STUDIO - ORDER">
 <meta name="twitter:description" content="Custom 3D Printing Merchandise — Pesan produk Divalicious Studio.">
 
+
+<style id="ds-project-tools-style">
+#dsProjectTools{margin-top:18px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ds-project-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.ds-project-actions .btn{flex:1;min-width:130px}
+#dsProjectStatus{min-height:1.3em;margin-top:8px}
+</style>
+
 </head>
 <body>
 <main>
@@ -493,6 +501,18 @@ main .panel .multi-order-head{grid-template-columns:1fr minmax(96px,136px) 34px}
    <p class="sum" id="dlMsg"></p>
   </section>
 
+
+
+<section id="dsProjectTools">
+ <h2>Projek pesanan</h2>
+ <p class="help">Simpan seluruh daftar pesanan dan data pelanggan ke file proyek. Anda bisa membukanya kembali nanti.</p>
+ <div class="ds-project-actions">
+  <button class="btn" type="button" id="dsSaveProject">Simpan Projek</button>
+  <button class="btn" type="button" id="dsOpenProject">Buka Projek</button>
+  <input id="dsProjectFile" type="file" accept=".json,application/json" hidden>
+ </div>
+ <p class="sum" id="dsProjectStatus" aria-live="polite"></p>
+</section>
 
   <section id="dsCustomerOrder">
    <h2>Data pelanggan</h2>
@@ -2030,6 +2050,83 @@ refresh();
  });
  // Hide the legacy direct WA link so all orders pass through the customer form.
  const oldWa=$id("wa");if(oldWa)oldWa.hidden=true;
+})();
+</script>
+
+
+<script id="ds-project-save-open">
+(()=>{
+ const $=id=>document.getElementById(id);
+ const status=$("dsProjectStatus"),fileInput=$("dsProjectFile");
+ const clone=x=>JSON.parse(JSON.stringify(x));
+ const activeId=()=>active===P1?"clicker3x3":active===P2?"clickerNama":active===P3?"clover":(window.__ds&&active===window.__ds.P4)?"basket":"clicker3x3";
+ const saveProject=()=>{
+  const project={
+   app:"Divalicious Studio Order",
+   formatVersion:1,
+   savedAt:new Date().toISOString(),
+   activeProduct:activeId(),
+   nameVersion:typeof S2!=="undefined"?S2.version:1,
+   customer:{
+    name:$("dsCustomerName").value,
+    phone:$("dsCustomerPhone").value,
+    address:$("dsCustomerAddress").value
+   },
+   orders:{
+    clicker3x3:clone(mcOrders),
+    clickerNama:clone(multiOrders),
+    clover:clone(cloverOrders),
+    basket:clone(window.__ds.bkOrders)
+   }
+  };
+  const blob=new Blob([JSON.stringify(project,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="DIVALICIOUS_STUDIO_PROJEK_PESANAN.json";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+  status.textContent="Projek berhasil disimpan. Simpan file JSON ini untuk dibuka kembali.";
+ };
+ const validArray=(v,label)=>{
+  if(!Array.isArray(v)||!v.length||v.length>100)throw new Error("Data "+label+" tidak valid (jumlah pesanan 1–100).");
+  return v.map(x=>{
+   if(!x||typeof x!=="object"||Array.isArray(x))throw new Error("Format data "+label+" tidak valid.");
+   return x;
+  });
+ };
+ const openProject=async file=>{
+  if(!file)return;
+  if(file.size>2*1024*1024)throw new Error("Ukuran file proyek terlalu besar.");
+  const data=JSON.parse(await file.text());
+  if(data.app!=="Divalicious Studio Order"||data.formatVersion!==1||!data.orders)throw new Error("File bukan proyek Divalicious Studio yang didukung.");
+  const next={
+   mc:validArray(data.orders.clicker3x3,"Clicker 3×3"),
+   names:validArray(data.orders.clickerNama,"Clicker Nama"),
+   clover:validArray(data.orders.clover,"Clover"),
+   basket:validArray(data.orders.basket,"Basket")
+  };
+  const c=data.customer||{};
+  $("dsCustomerName").value=String(c.name||"");
+  $("dsCustomerPhone").value=String(c.phone||"");
+  $("dsCustomerAddress").value=String(c.address||"");
+  mcOrders=clone(next.mc);renderMcOrders();mcBuildPreview();
+  multiOrders=clone(next.names);
+  applyVersionMulti([1,2,3].includes(Number(data.nameVersion))?Number(data.nameVersion):1);
+  cloverOrders=clone(next.clover);cloverRender();cloverPreview();
+  window.__ds.bkOrders=clone(next.basket);window.__ds.bkRender();window.__ds.bkPreview();
+  const productMap={clicker3x3:P1,clickerNama:P2,clover:P3,basket:window.__ds.P4};
+  const selected=productMap[data.activeProduct]||P1;
+  setProduct(selected);
+  status.textContent="Projek berhasil dibuka. Semua daftar pesanan dan data pelanggan sudah dipulihkan.";
+ };
+ $("dsSaveProject").addEventListener("click",()=>{
+  try{saveProject()}catch(e){status.textContent="Gagal menyimpan proyek: "+(e.message||e)}
+ });
+ $("dsOpenProject").addEventListener("click",()=>fileInput.click());
+ fileInput.addEventListener("change",async()=>{
+  try{await openProject(fileInput.files&&fileInput.files[0])}
+  catch(e){status.textContent="Gagal membuka proyek: "+(e.message||e)}
+  finally{fileInput.value=""}
+ });
 })();
 </script>
 
