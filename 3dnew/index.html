@@ -1936,7 +1936,7 @@ refresh();
   if(active===P1)return {label:"CLICKER_3X3",qty:mcOrders.length,price:40000};
   if(active===P2)return {label:"CLICKER_NAMA",qty:multiOrders.length,price:null};
   if(active===P3)return {label:"CLICKER_CLOVER",qty:cloverOrders.length,price:25000};
-  if(window.__ds && active===window.__ds.P4)return {label:"CLICKER_BASKET",qty:bkOrders.length,price:25000};
+  if(window.__ds && active===window.__ds.P4)return {label:"CLICKER_BASKET",qty:window.__ds.bkOrders.length,price:25000};
   throw new Error("Pilih produk terlebih dahulu.");
  };
  const namePrice=n=>({1:18000,2:22000,3:25000,4:28000,5:32000,6:36000,7:40000,8:44000,9:48000,10:52000})[n]||0;
@@ -1961,8 +1961,8 @@ refresh();
     total+=price;
    });
   }else{
-   bkOrders.forEach((o,i)=>{
-    const nm=bkShown(o),price=25000;
+   window.__ds.bkOrders.forEach((o,i)=>{
+    const nm=window.__ds.bkShown(o),price=25000;
     lines.push(`${i+1}. ${nm}\n   Base: ${colorLabel(o.base)}\n   Bola: ${colorLabel(o.ball)}\n   Garis: ${colorLabel(o.seam)}\n   Tulisan: ${colorLabel(o.ft)}\n   1 pcs — ${money(price)}`);
     total+=price;
    });
@@ -1991,9 +1991,13 @@ refresh();
   throw new Error("Produk belum dipilih.");
  };
  const downloadBlob=(blob,customerName)=>{
-  const p=productInfo(),filename=`${safeName(customerName)}_${p.label}_${p.qty}_PCS.3mf`;
-  const url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  const p=productInfo();
+  const filename=`${safeName(customerName)}_${p.label}_${p.qty}_PCS.3mf`;
+  // 3MF is a ZIP-based package; always download with the 3MF MIME type and extension.
+  const modelBlob=new Blob([blob],{type:"application/vnd.ms-package.3dmanufacturing-3dmodel+zip"});
+  const url=URL.createObjectURL(modelBlob),a=document.createElement("a");
+  a.href=url;a.download=filename;a.type="application/vnd.ms-package.3dmanufacturing-3dmodel+zip";
+  document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),10000);
   return filename;
  };
