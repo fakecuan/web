@@ -252,8 +252,8 @@ function speedCap(){return MAX_SPEED*(energy>=ENERGY_GREEN?1:energy>=ENERGY_YELL
 // Spam tap di top speed hanya membuang energi.
 let foulCards=0,olSeenFoulAt=0,individualOnline=false,soloIndex=0,soloResults=[];
 function resetHeatAfterFoul(){
- for(const r of racers){r.s=Number.isFinite(r._startS)?r._startS:raceStartS-12;r.d=Number.isFinite(r._startD)?r._startD:0;r.v=0;r.fall=0;r.finished=false;r.finishTime=null;r.alive=true}
- if(player){player.v=0}energy=100;energyZone='g';smoothSpeedCap=MAX_SPEED;lastTapAt=0;elapsed=0;countdown=3.9;state='count';steer=0;steerValue=0;updateSteerUI();
+ for(const r of racers){r.s=Number.isFinite(r._startS)?r._startS:raceStartS-12;r.d=Number.isFinite(r._startD)?r._startD:0;r.v=0;r.fall=0;r.finished=false;r.finishTime=null;r.alive=true;r._validStartS=r.s;r._validNetSeen=Date.now()}
+ if(player){player.v=0;player.alive=true;player.finished=false}energy=100;energyZone='g';smoothSpeedCap=MAX_SPEED;lastTapAt=0;elapsed=0;countdown=3.9;state='count';olInvalidRace=false;olInvalidReason='';olValidityStartedAt=Date.now();steer=0;steerValue=0;updateSteerUI();renderLeaderboard();
 }
 function restartAfterFoul(){
  if(!player)return;
@@ -266,7 +266,7 @@ function restartAfterFoul(){
  }
  resetHeatAfterFoul();
  setToast('KARTU KUNING','FOUL START • ULANG START');sfx('crash');
- if(online&&olRoom){olSeenFoulAt=Date.now();olRoom.presence({s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,fc:foulCards,ff:olSeenFoulAt})}
+ if(online&&olRoom){olSeenFoulAt=Date.now();olRoom.presence({ph:'race',s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,fc:foulCards,ff:olSeenFoulAt,red:false,f:0,fn:null})}
 }
 function tap(){
  if(!player||!player.alive||player.fall>0)return;
@@ -1031,7 +1031,7 @@ function renderLobby(force){
  let action;
  if(host)action=`${individual?'<div class="mini">Nomor individual: peserta akan berlari bergantian. Tidak ada komputer.</div>':`<label class="chk"><input type="checkbox" id="lFill" ${fill?'checked':''}> Isi slot kosong dengan komputer (sampai ${max} pemain)</label>`}<button class="primary" id="lStart" ${canStart?'':'disabled style="opacity:.5"'}>MULAI ${individual?'GILIRAN INDIVIDUAL':'BALAP'} • ${humans.length} pemain${bots?' + '+bots+' komputer':''}</button>${waiting>0?`<div class="mini" style="margin-top:6px">${waiting} pemain berstatus BELUM tidak akan ikut balapan ini.</div>`:''}`;
  else action=`<button class="primary" id="lReady" ${idle?'':'disabled style="opacity:.5"'}>${!idle?'BALAPAN BERLANGSUNG...':(olMyReady?'BATAL SIAP':'SIAP!')}</button><div class="mini" style="margin-top:6px">Menunggu 👑 host memulai balapan.</div>`;
- olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave">KELUAR ROOM</button>`,force);
+ olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave" title="Keluar room" aria-label="Keluar room" style="width:48px;height:42px;margin:8px auto 0;display:block;font-size:22px;padding:4px">↪</button>`,force);
  $('dialog').querySelectorAll('[data-pf]').forEach(d=>d.onclick=()=>showProfile(d.dataset.pf));
  const colorBtn=$('myColorBtn'),colorDrop=$('myColorDrop');
  if(colorBtn&&colorDrop)colorBtn.onclick=e=>{e.stopPropagation();colorDrop.style.display=colorDrop.style.display==='grid'?'none':'grid'};
@@ -1061,11 +1061,11 @@ function hostStart(){
   const participants=ps.filter(p=>p.presence.ph==='lobby'||p.sameTab);
   if(!participants.length)return;
   const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,parts:participants.map(p=>[p.peer,olNameOf(p),p.sameTab?olMyColor:(p.presence.cc||COLORS[0])]),bots:0,individual:true};
-  olLastGo=go.id;olRoom.presence({go,ph:'race',solo:{idx:0,results:[],started:Date.now()},b:null,eo:null,fn:null});startOnlineRace(go);return;
+  olLastGo=go.id;olRoom.presence({go,ph:'race',solo:{idx:0,results:[],started:Date.now()},b:null,eo:null,fn:null,ff:null,fc:0,red:false,f:0,v:0});startOnlineRace(go);return;
  }
  const humans=ps.filter(p=>p.sameTab||(p.presence.rd===true&&p.presence.ph==='lobby')).slice(0,max),total=olMeta.fill!==false?max:humans.length;if(total<2)return;
  const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,parts:humans.map(p=>[p.peer,olNameOf(p),p.sameTab?olMyColor:(p.presence.cc||COLORS[0])]),bots:total-humans.length};
- olLastGo=go.id;olRoom.presence({go,ph:'race',b:null,eo:null,fn:null});startOnlineRace(go)}
+ olLastGo=go.id;olRoom.presence({go,ph:'race',b:null,eo:null,fn:null,ff:null,fc:0,red:false,f:0,v:0});startOnlineRace(go)}
 function olGrid(n,rc,baseS){
  if(rc==='elim'){const lanes=[-53.75,-32.25,-10.75,10.75,32.25,53.75];return Array.from({length:n},(_,i)=>({s:baseS-12-Math.floor(i/6)*34,d:lanes[i%6],row:Math.floor(i/6)+1}))}
  if(rc==='300'||rc==='500'){const lanes=[-53.75,-32.25,-10.75,10.75,32.25,53.75];return Array.from({length:n},(_,i)=>({s:baseS-12,d:lanes[i],row:1}))}
@@ -1079,7 +1079,7 @@ function startOnlineRace(go){
  const mk=(i,name,extra)=>Object.assign({id:i,name,color:COLORS[i%COLORS.length],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:false,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:1,stamina:1},extra);
  go.parts.forEach(([peer,name,color],i)=>racers.push(mk(i,name,{color:COLORS.includes(color)?color:COLORS[i%COLORS.length],remote:peer!==me,peer})));
  for(let k=0;k<go.bots;k++){const i=go.parts.length+k;racers.push(mk(i,(NAMES[1+k]||'CPU')+' (PC)',{bot:true,bi:k,ai:true,remote:!hostNow,skill:.99+((i*7)%2)*.01}))}
- player=racers.find(r=>!r.bot&&!r.remote);foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});
+ player=racers.find(r=>!r.bot&&!r.remote);foulCards=0;olSeenFoulAt=Math.max(0,...(olRoom?olRoom.peers():[]).map(pe=>Number(pe.presence&&pe.presence.ff)||0));if(olRoom)olRoom.presence({ff:null,fc:0,red:false,f:0});racers.forEach(r=>{r._startS=r.s;r._startD=r.d;r._validStartS=r.s});
  if(go.individual){
   const solo=olHostP(olViewers())?.presence?.solo||{idx:0,results:[]};
   individualOnline=true;soloResults=Array.isArray(solo.results)?solo.results:[];soloIndex=Number(solo.idx)||0;
@@ -1096,7 +1096,7 @@ function onlineTick(now){
  if(!online||!olRoom)return;
  const foulPeers=olRoom.peers();let newest=0,who='';
  for(const pe of foulPeers){const q=pe.presence||{};if(typeof q.ff==='number'&&q.ff>olSeenFoulAt){newest=q.ff;who=q.n||'Pemain'}}
- if(newest){olSeenFoulAt=newest;resetHeatAfterFoul();setToast('FOUL START','KARTU KUNING • ULANG START');sfx('crash')}
+ if(newest&&newest>olSeenFoulAt&&['count','race'].includes(state)){olSeenFoulAt=newest;resetHeatAfterFoul();setToast('FOUL START','KARTU KUNING • ULANG START');sfx('crash')}else if(newest>olSeenFoulAt){olSeenFoulAt=newest}
  if(individualOnline&&olRoom){
   const host=olHostP(olViewers()),hp=host&&host.presence,go=hp&&hp.go;
   if(host&&host.sameTab&&go&&go.individual){
@@ -1189,7 +1189,7 @@ function showIndividualOnlineResults(){
  const h=olHostP(olViewers()),solo=h&&h.presence&&h.presence.solo;
  const results=(solo&&solo.results||[]).slice().sort((a,b)=>(a.dq?1:0)-(b.dq?1:0)||a.time-b.time);
  state='done';$('overlay').style.display='flex';
- $('dialog').innerHTML=`<h1>🏁 HASIL ${spec().label}</h1><div class="sub">PERINGKAT WAKTU</div>${results.map((r,i)=>`<div class="rowItem"><b>#${i+1}</b><span style="flex:1">${escapeHTML(r.name||'Pemain')}</span><strong>${r.dq?'DISKUALIFIKASI':formatTime(r.time)}</strong></div>`).join('')||'<p>Belum ada catatan waktu.</p>'}<button class="primary" id="soloBack">KEMBALI KE ROOM</button>`;
+ $('dialog').innerHTML=`<h1>🏁 HASIL ${spec().label}</h1><div class="sub">PERINGKAT WAKTU</div>${results.map((r,i)=>`<div class="rowItem"><b>#${i+1}</b><span style="flex:1">${escapeHTML(r.name||'Pemain')}</span><strong>${r.dq?'DISKUALIFIKASI':formatTime(r.time)}</strong></div>`).join('')||'<p>Belum ada catatan waktu.</p>'}<button class="primary" id="soloBack">🔁 MAIN LAGI</button>`;
  $('soloBack').onclick=()=>roomListScreen();
 }
 function onlineFinish(won){
@@ -1201,7 +1201,7 @@ function showOnlineResults(){
  const rk=ranking(),done=rk.every(r=>r.finished||!r.alive),won=player.finished;
  if(olRecPending&&(!player.alive||done||Date.now()-olFinAt>25000))olRecordNow();
  const rec=olRecState==='invalid'?'<div class="mini" style="margin-top:8px;color:#b42318;font-weight:900">🚫 LOMBA TIDAK SAH — Statistik semua peserta tidak dihitung karena ada pemain yang tidak bergerak selama minimal satu putaran.</div>':(olRecState==='ok'?'<div class="mini" style="margin-top:8px">📊 Statistik akunmu sudah diperbarui.</div>':(olRecState==='excluded'?'<div class="mini" style="margin-top:8px">ℹ️ Statistik tidak dihitung karena 50% atau lebih peserta adalah komputer.</div>':(olRecState==='fail'?'<div class="mini" style="margin-top:8px">Statistik gagal disimpan (koneksi).</div>':'')));
- const html=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${done?'Semua pembalap sudah selesai.':'Menunggu pembalap lain menyelesaikan balapan...'}</p><div class="sub">HASIL • ${escapeHTML(spec().label)}</div>${rk.map((r,i)=>`<div class="rowItem" style="${r===player?'background:#ffe9e2':''}"><b style="width:26px">#${i+1}</b><span style="width:12px;height:12px;border-radius:50%;background:${r.color};flex:none"></span><b style="flex:1;font-size:13px;min-width:0">${escapeHTML(r.name)}${r===player?' (kamu)':''}</b><span style="font-size:12px;font-variant-numeric:tabular-nums">${r.finished?formatTime(r.finishTime):(r.alive?Math.floor(meters(r))+' m':'keluar')}</span></div>`).join('')}${rec}<button class="primary" id="olLobby">KEMBALI KE LOBI</button><button class="secondary" id="olExit">KELUAR ROOM</button>`;
+ const html=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${done?'Semua pembalap sudah selesai.':'Menunggu pembalap lain menyelesaikan balapan...'}</p><div class="sub">HASIL • ${escapeHTML(spec().label)}</div>${rk.map((r,i)=>`<div class="rowItem" style="${r===player?'background:#ffe9e2':''}"><b style="width:26px">#${i+1}</b><span style="width:12px;height:12px;border-radius:50%;background:${r.color};flex:none"></span><b style="flex:1;font-size:13px;min-width:0">${escapeHTML(r.name)}${r===player?' (kamu)':''}</b><span style="font-size:12px;font-variant-numeric:tabular-nums">${r.finished?formatTime(r.finishTime):(r.alive?Math.floor(meters(r))+' m':'keluar')}</span></div>`).join('')}${rec}<button class="primary" id="olLobby">🔁 MAIN LAGI</button><button class="secondary" id="olExit" title="Keluar room" aria-label="Keluar room" style="width:48px;height:42px;margin:8px auto 0;display:block;font-size:22px;padding:4px">↪</button>`;
  if(html!==olLastHTML){olLastHTML=html;olDialog(html,true);bind('olLobby',backToLobby);bind('olExit',()=>roomListScreen())}}
 function backToLobby(){
  if(olRes){clearInterval(olRes);olRes=null}
