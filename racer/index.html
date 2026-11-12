@@ -121,7 +121,7 @@ const SEND_EVERY_MS=110;                            // makin besar = makin hemat
 (function(){
  if(window.claude&&window.claude.use)return;
  let sb=null;
- function client(){if(!sb)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{realtime:{params:{eventsPerSecond:20}}});return sb}
+ function client(){if(!sb)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'diva-skate-room-realtime'},realtime:{params:{eventsPerSecond:20}}});return sb}
  const room={async join(name){
   const id=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
   const mine={},table=new Map(),subs=new Set();let lastSend=0,timer=null,pend=false,hb=null,closed=false;
@@ -1010,7 +1010,7 @@ function chooseRoomColor(color){
 function renderLobby(force){
  if(!olRoom||state!=='lobby'||olView!=='lobby'||!olMeta)return;
  const ps=olViewers(),h=olHostP(ps);if(!h)return;
- const host=!!h.sameTab,m=olMeta,rc=OL_FORMATS.includes(m.rc)?m.rc:'1000',max=OL_MAX[rc],idle=h.presence.ph==='lobby';
+ const host=!!h.sameTab,m=olMeta,rc=OL_FORMATS.includes(m.rc)?m.rc:'1000',max=OL_MAX[rc],idle=h.presence.ph==='lobby',individual=(rc==='ds200'||rc==='dtt200');
  ensureProfiles(ps.map(olNameOf)).then(ch=>{if(ch&&state==='lobby'&&olView==='lobby')renderLobby()});
  const rows=ps.map(p=>{const racing=p.presence.ph&&p.presence.ph!=='lobby',isH=p===h,nm=olNameOf(p),pr=profOf(nm),lbl=racing?'BALAPAN':(isH?'HOST':(p.presence.rd?'SIAP':'BELUM')),col=racing?'#b5762c':(isH?'#b5762c':(p.presence.rd?'#1a8f5b':'#8a97a6'));
   return `<div class="rowItem" data-pf="${escapeHTML(nm)}" style="cursor:pointer">${avHTML(pr&&pr.avatar,36,nm)}<div style="flex:1;min-width:0"><b style="font-size:13px">${escapeHTML(nm)}${p.sameTab?' (kamu)':''}${isH?' 👑':''}</b><div class="mini" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pr?infoLine(pr):'…'}</div></div><span style="font-size:11px;font-weight:900;color:${col}">${lbl}</span></div>`}).join('');
