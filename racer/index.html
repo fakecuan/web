@@ -380,6 +380,7 @@ function authScreen(mode,msg){
 ${reg?`<div class="sub">ULANGI PASSWORD</div><input id="aPass2" type="password" class="playerNameInput" maxlength="30" autocomplete="new-password" placeholder="Ulangi password">`:''}
 <div id="aMsg">${msg?`<div class="err">⚠ ${escapeHTML(msg)}</div>`:''}</div>
 <button class="primary" id="aGo" style="margin-top:10px">${reg?'DAFTAR & MASUK':'MASUK'}</button>
+${reg?'':`<button class="secondary" id="aForgot" style="margin-top:7px">🔑 LUPA PASSWORD? HUBUNGI ADMIN</button>`}
 ${reg?'':`<div class="sub">PEMAIN TERDAFTAR</div><input id="aSearch" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Cari nama pemain..."><div id="aList" style="margin-top:7px"><div class="mini">Memuat daftar...</div></div>`}
 <button class="secondary" id="aBack">⬅ KEMBALI</button>`,true);
  const say=t=>{const e=$('aMsg');if(e)e.innerHTML=t?`<div class="err">⚠ ${escapeHTML(t)}</div>`:''};
@@ -394,7 +395,9 @@ ${reg?'':`<div class="sub">PEMAIN TERDAFTAR</div><input id="aSearch" class="play
   busy=false;if(state!=='auth')return;
   if(r.ok){setAcct(r,r.token);roomListScreen();return}
   $('aGo').textContent=reg?'DAFTAR & MASUK':'MASUK';say(errText(r,name))};
- bind('aGo',go);['aName','aPass','aPass2'].forEach(id=>{const e=$(id);if(e)e.addEventListener('keydown',ev=>{if(ev.key==='Enter')go()})});
+ bind('aGo',go);
+ if(!reg)bind('aForgot',()=>{const nm=cleanTxt($('aName')?.value||'',16);const msg='Halo Admin DIVA SKATE, saya lupa password akun game saya. Nama pemain: '+(nm||'(belum diisi)')+'. Mohon bantuan reset password.';window.open('https://wa.me/628561902897?text='+encodeURIComponent(msg),'_blank','noopener');});
+ ['aName','aPass','aPass2'].forEach(id=>{const e=$(id);if(e)e.addEventListener('keydown',ev=>{if(ev.key==='Enter')go()})});
  if(!reg){let tm=null;const load=async q=>{const r=await rpc('skate_list_players',{p_q:q});const el=$('aList');if(state!=='auth'||!el)return;
    if(!r.ok){el.innerHTML=`<div class="mini">${escapeHTML(errText(r))}</div>`;return}
    const L=(r.list||[]).map(x=>({name:cleanTxt(x.name,16),avatar:x.avatar,club:cleanTxt(x.club,24)})).filter(x=>x.name);
@@ -423,11 +426,34 @@ function renderRooms(){
   return `<div class="rowItem"><div style="flex:1;min-width:0"><b style="font-size:13px">${r.pw?'🔒 ':''}${escapeHTML(r.nm)}</b><div class="mini">${OL_LBL[r.rc]} • ${r.n}/${r.mx} pemain • ${racing?'🏁 BALAPAN':'⏳ MENUNGGU'}</div></div><button class="btnS" data-join="${r.c}" ${can?'':'disabled style="opacity:.45"'}>${full?'PENUH':racing?'MAIN':'GABUNG'}</button></div>`}).join('');
  olDialog(`<h1>🌐 Multiplayer Online</h1>
 <div class="card">${avHTML(p.avatar,58,p.name)}<div style="flex:1;min-width:0"><b style="font-size:16px">${escapeHTML(p.name)}</b><div class="mini">${infoLine(p)}</div></div><button class="btnS" id="rEdit">✏️ EDIT</button></div>${statsHTML(p)}
+${p.name.toLowerCase()==='fakecuan'?'<button class="secondary" id="rAdmin" style="border:1px solid #e0b44c;color:#f5d36b">🛡️ ADMIN • RESET PASSWORD</button>':''}
 <div class="sub">ROOM TERSEDIA <span style="color:#1a8f5b">• 🟢 ${on} online</span></div>${roomMsg?`<div class="err">⚠ ${escapeHTML(roomMsg)}</div>`:''}
 ${rows||'<div class="mini" style="padding:8px 2px">Belum ada room. Buat room baru dan ajak temanmu!</div>'}
 <button class="primary" id="rNew">➕ BUAT ROOM</button><button class="secondary" id="rOut">KELUAR AKUN (LOG OUT)</button><button class="secondary" id="rBack">⬅ MENU UTAMA</button>`);
  bind('rEdit',editProfileScreen);bind('rNew',createRoomScreen);bind('rBack',menu);bind('rOut',logout);
+ if(p.name.toLowerCase()==='fakecuan')bind('rAdmin',adminResetScreen);
  $('dialog').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{const r=rooms.find(x=>x.c===b.dataset.join);if(!r)return;if(r.pw)joinPwScreen(r);else joinRoom(r.c,'')})}
+function adminResetScreen(msg){
+ if(!acct||acct.name.toLowerCase()!=='fakecuan'){roomListScreen();return}
+ state='adminreset';
+ olDialog(`<h1>🛡️ ADMIN DIVA SKATE</h1><p>Reset password akun pemain. Password lama tidak dapat dilihat.</p>
+ <div class="sub">NAMA AKUN PEMAIN</div><input id="adName" class="playerNameInput" maxlength="16" placeholder="Nama akun yang akan direset">
+ <div class="sub">PASSWORD BARU SEMENTARA</div><input id="adPass" type="password" class="playerNameInput" maxlength="30" placeholder="Minimal 4 karakter">
+ <div id="adMsg">${msg?`<div class="err">${escapeHTML(msg)}</div>`:''}</div>
+ <button class="primary" id="adGo">RESET PASSWORD</button><button class="secondary" id="adBack">⬅ KEMBALI</button>`,true);
+ bind('adBack',roomListScreen);
+ bind('adGo',async()=>{const target=cleanTxt($('adName').value,16),pw=$('adPass').value,el=$('adMsg');
+  const say=t=>{if(el)el.innerHTML=t?`<div class="err">${escapeHTML(t)}</div>`:''};
+  if(!validName(target)){say('Nama akun pemain tidak valid.');return}
+  if(target.toLowerCase()==='fakecuan'){say('Password admin tidak dapat direset melalui panel ini.');return}
+  if(pw.length<4){say('Password minimal 4 karakter.');return}
+  const b=$('adGo');b.disabled=true;b.textContent='Memproses...';
+  const r=await rpc('skate_admin_reset_password',{p_admin_name:acct.name,p_admin_token:acct.token,p_target_name:target,p_new_hash:passHash(target,pw)});
+  b.disabled=false;b.textContent='RESET PASSWORD';
+  if(r.ok){say('Password akun '+target+' berhasil diganti. Berikan password sementara secara pribadi kepada pemain.');$('adPass').value='';}
+  else say(r.err==='notfound'?'Nama akun tidak ditemukan.':r.err==='session'?'Sesi admin tidak valid. Silakan login ulang.':'Reset gagal. Pastikan SQL admin sudah dijalankan di Supabase.');
+ });
+}
 async function logout(){const a=acct;acct=null;lsDel('skate_session');navSeq++;leaveOnline();if(a)rpc('skate_logout',{p_name:a.name,p_token:a.token});authScreen('login')}
 function joinPwScreen(r){state='joinpw';
  olDialog(`<h1>🔒 ${escapeHTML(r.nm)}</h1><p>Room ini private. Masukkan password room.</p><input id="jPw" type="password" class="playerNameInput" maxlength="12" autocomplete="off" placeholder="Password room"><button class="primary" id="jGo">GABUNG</button><button class="secondary" id="jBack">BATAL</button>`,true);
