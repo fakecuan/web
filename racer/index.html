@@ -125,14 +125,24 @@ const SEND_EVERY_MS=110;                            // makin besar = makin hemat
  const room={async join(name){
   const id=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
   const mine={},table=new Map(),subs=new Set();let lastSend=0,timer=null,pend=false,hb=null,closed=false;
-  const ch=client().channel('skate:'+name,{config:{broadcast:{self:false,ack:false}}});
+  if(!window.supabase||typeof window.supabase.createClient!=='function')throw {code:'supabase_sdk_missing'};
+  const sb=client();if(!sb||typeof sb.channel!=='function')throw {code:'supabase_client_unavailable'};
+  const ch=sb.channel('skate:'+name,{config:{broadcast:{self:false,ack:false}}});
   const notify=()=>{if(pend||closed)return;pend=true;setTimeout(()=>{pend=false;if(closed)return;const c={peers:api.peers(),joined:[],left:[],updated:[]};subs.forEach(f=>{try{f(c)}catch(e){}})},120)};
   ch.on('broadcast',{event:'st'},({payload})=>{if(!payload||!payload.id||payload.id===id||typeof payload.p!=='object')return;const now=Date.now(),cur=table.get(payload.id),js=JSON.stringify(payload.p);
    if(!cur||cur.js!==js){table.set(payload.id,{id:payload.id,st:Object.freeze(payload.p),js,upd:now,seen:now});notify()}else cur.seen=now});
   ch.on('broadcast',{event:'bye'},({payload})=>{if(payload&&table.delete(payload.id))notify()});
   const chatSubs=new Set();
   ch.on('broadcast',{event:'chat'},({payload})=>{if(!payload||typeof payload.n!=='string'||typeof payload.t!=='string')return;chatSubs.forEach(fn=>{try{fn(payload)}catch(e){}})});
-  await new Promise((res,rej)=>{const t=setTimeout(()=>rej({code:'upstream_error'}),10000);ch.subscribe(st=>{if(st==='SUBSCRIBED'){clearTimeout(t);res()}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){clearTimeout(t);rej({code:'upstream_error'})}})});
+  await new Promise((res,rej)=>{
+   let settled=false;
+   const finish=(fn,v)=>{if(settled)return;settled=true;clearTimeout(t);fn(v)};
+   const t=setTimeout(()=>finish(rej,{code:'realtime_timeout'}),12000);
+   try{ch.subscribe(st=>{
+    if(st==='SUBSCRIBED')finish(res);
+    else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED')finish(rej,{code:'realtime_'+String(st).toLowerCase()});
+   })}catch(e){finish(rej,{code:'realtime_subscribe_error',detail:String(e&&e.message||e)})}
+  }).catch(async e=>{try{await sb.removeChannel(ch)}catch(_){}throw e});
   const send=()=>{lastSend=Date.now();timer=null;if(!closed)ch.send({type:'broadcast',event:'st',payload:{id,p:Object.assign({},mine)}})};
   hb=setInterval(()=>{send();const now=Date.now();let ch2=false;for(const [k,v] of table)if(now-v.seen>5000){table.delete(k);ch2=true}if(ch2)notify()},1000);
   const api={
@@ -938,7 +948,23 @@ async function joinRoom(code,pw,opt){
  opt=opt||{};const my=++navSeq;state='joining';olDialog(`<h1>🌐 Menghubungkan...</h1><p>Masuk ke room, mohon tunggu.</p>`,true);
  let room=null;try{room=await Promise.race([roomApi(),new Promise((_,rej)=>setTimeout(()=>rej({code:'adapter_timeout'}),5000))])}catch(e){if(my===navSeq)roomListScreen('Koneksi room gagal: '+((e&&e.code)||'timeout')+'. Periksa internet lalu coba lagi.');return}
  if(my!==navSeq)return;if(!room){roomListScreen('Fitur online tidak tersedia. Adapter room tidak siap.');return}
- leaveRoom();let rm=null;try{rm=await room.join('skate-'+code)}catch(e){if(my===navSeq)roomListScreen('Gagal masuk room ('+((e&&e.code)||'error')+'). Periksa koneksi Supabase/Realtime.');return}
+ leaveRoom();let rm=null;try{
+  rm=await Promise.race([
+   room.join('skate-'+code),
+   new Promise((_,rej)=>setTimeout(()=>rej({code:'join_timeout'}),15000))
+  ]);
+ }catch(e){
+  if(my===navSeq){
+   const detail=(e&&e.code)||'error';
+   const msg=detail==='supabase_sdk_missing'?'Library Supabase tidak termuat. Periksa koneksi internet/CDN.':
+    detail==='realtime_timeout'?'Supabase Realtime tidak merespons dalam 12 detik. Periksa pengaturan Realtime project.':
+    detail==='realtime_channel_error'?'Supabase menolak koneksi Realtime (CHANNEL_ERROR). Periksa konfigurasi project/API key.':
+    detail==='join_timeout'?'Proses masuk room melewati batas waktu. Koneksi Realtime kemungkinan terblokir.':
+    'Gagal masuk room ('+detail+'). Periksa koneksi Supabase/Realtime.';
+   roomListScreen(msg);
+  }
+  return;
+ }
  if(my!==navSeq){try{rm.leave()}catch(e){}return}
  olRoom=rm;online=true;olCode=code;olMyReady=false;olElims=[];olChatMessages=[];olChatLastSent=0;if(olChatUnsub){olChatUnsub();olChatUnsub=null}if(olRoom.onChat)olChatUnsub=olRoom.onChat(addLobbyChatMessage);olLastGo='';olView='lobby';olMeta=null;olLbLast='';
  olMyPw=pw?sha256('rm|'+code+'|'+pw):'';
