@@ -203,7 +203,7 @@ applyAudioSettings();
 $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.playerName='SKATER';cfg.race=b.dataset.race;menu()});
 $('start').onclick=()=>{cfg.playerName='SKATER';audioReady();initRace()};
 $('online').onclick=()=>{audioReady();onlineMenu()};}
-$('menuBtn').addEventListener('click',()=>{audioReady();steer=0;steerValue=0;updateSteerUI();menu()});
+const menuBtnEl=$('menuBtn');if(menuBtnEl)menuBtnEl.addEventListener('click',()=>{audioReady();steer=0;steerValue=0;updateSteerUI();menu()});
 function formatTime(s){let m=Math.floor(s/60),sec=(s%60).toFixed(2).padStart(5,'0');return m+':'+sec}
 function currentLap(r){return Math.min(spec().laps,Math.floor(Math.max(0,r.s-raceStartS)/TRACK.perimeter)+1)}
 function meters(r){return Math.min(spec().meters,Math.max(0,(r.s-raceStartS)/TRACK.perimeter*LAP_METERS))}
@@ -949,8 +949,22 @@ function olDialog(html,force){const d=$('dialog');if(!force&&d.dataset.olhtml===
 {const s0=loadSession();cfg.playerName=lsGet('skate_name')||(s0&&s0.name)||''}
 $('accountChip').addEventListener('click',headerAccountClick);
 $('notifChip')?.addEventListener('click',showNotifications);
-renderHeaderAccount();
-refreshNotifications();notifTimer=setInterval(refreshNotifications,5000);
-if(acct){presenceState='online';startPresence()}menu();resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
+try{renderHeaderAccount()}catch(e){console.error('Header init:',e)}
+try{refreshNotifications()}catch(e){console.error('Notification init:',e)}
+notifTimer=setInterval(()=>{try{refreshNotifications()}catch(e){console.warn(e)}},5000);
+if(acct){presenceState='online';try{startPresence()}catch(e){console.warn('Presence init:',e)}}
+try{menu()}catch(e){
+ console.error('Menu init failed:',e);
+ const d=$('dialog'),o=$('overlay');
+ if(d&&o){
+  d.innerHTML='<h1 class="menuBrand"><span>🛼 DIVA SKATE</span></h1><p>Pilih nomor balapan.</p><div class="sub">PILIH JARAK BALAP</div><div class="choices"><button class="choice sel" data-race="1000">1.000 M</button><button class="choice" data-race="300">300 M</button><button class="choice" data-race="500">500 M</button><button class="choice" data-race="elim">ELIMINATION</button></div><button class="primary" id="start">MAIN BALAP (OFFLINE)</button><button class="secondary" id="online">🌐 MAIN ONLINE</button>';
+  o.style.display='flex';d.querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.race=b.dataset.race});$('start').onclick=()=>{cfg.playerName='SKATER';initRace()};$('online').onclick=()=>onlineMenu();
+ }
+}
+if($('dialog')&&!$('dialog').innerHTML.trim()){
+ const d=$('dialog');d.innerHTML='<h1>🛼 DIVA SKATE</h1><p>Pilih nomor balapan.</p><button class="primary" id="start">MAIN BALAP (OFFLINE)</button><button class="secondary" id="online">MAIN ONLINE</button>';
+ $('start').onclick=()=>{cfg.playerName='SKATER';initRace()};$('online').onclick=()=>onlineMenu();
+}
+resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
 </script></body></html>
