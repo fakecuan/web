@@ -7,6 +7,14 @@
 #controls{flex:none;background:#172331;border-top:1px solid #ffffff20;padding:5px 8px calc(5px + env(safe-area-inset-bottom));display:grid;grid-template-columns:minmax(95px,1fr) minmax(105px,1.15fr);gap:8px;align-items:center;min-height:0}.steerBox{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}.steerTitle{font-size:10px;color:#aab7c7;font-weight:900;text-align:center;letter-spacing:.7px}#steerPad{width:100%;height:44px;border-radius:14px;background:linear-gradient(90deg,#357ee9,#344558 48%,#344558 52%,#357ee9);position:relative;touch-action:none;border:1px solid #ffffff25}#steerThumb{position:absolute;top:4px;left:calc(50% - 18px);width:36px;height:34px;border-radius:11px;background:#4288ff;box-shadow:0 3px 0 #173d82;pointer-events:none}#steerLabels{display:flex;justify-content:space-between;font-size:9px;color:#aab7c7;font-weight:800}.tapWrap{display:flex;flex-direction:column;gap:5px}.tap{width:100%;height:58px;border-radius:14px;background:linear-gradient(145deg,#ff784e,#e54836);font-size:20px;box-shadow:0 4px 0 #8e3026;min-height:52px}.tap small{display:block;font-size:9px;letter-spacing:.7px}button{border:0;color:white;font-weight:900;cursor:pointer;touch-action:none}button:active,button.down{transform:translateY(2px);filter:brightness(1.2)}
 #overlay{position:absolute;inset:0;z-index:10;background:#07101bdc;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto}#dialog{background:#f7f8fb;color:#182433;width:min(440px,100%);max-height:100%;overflow:auto;border-radius:20px;padding:19px;box-shadow:0 15px 50px #0008}#dialog h1{font-size:24px;margin:0 0 5px}#dialog p{font-size:13px;line-height:1.45;color:#536171;margin:5px 0 12px}#dialog .sub{font-weight:900;color:#25374a;margin:13px 0 7px;font-size:12px;letter-spacing:.8px}.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.choice{padding:11px 7px;border-radius:11px;background:#dce3eb;color:#27374a;font-size:13px;border:2px solid transparent}.choice.sel{background:#e4efff;border-color:#3479df;color:#164b9c}.playerNameInput{width:100%;border:1px solid #c7d0da;border-radius:10px;padding:11px 12px;font:700 14px system-ui;color:#243447;background:#fff;outline:none}.playerNameInput:focus{border-color:#3479df;box-shadow:0 0 0 3px #3479df22}.primary{width:100%;margin-top:15px;background:#f05a3c;border-radius:12px;padding:14px;font-size:16px}.secondary{width:100%;margin-top:7px;background:#53677f;border-radius:12px;padding:11px;font-size:13px}.legend{font-size:11px;color:#667586;line-height:1.5;margin-top:10px}
 @media(max-height:620px){#top{padding:4px 8px 2px}#brand{margin-bottom:2px}.racer{padding:3px 6px;min-width:60px}#controls{padding-top:3px;gap:5px}#steerPad{height:38px}#steerThumb{height:29px;top:3px}.tap{height:50px}}
+.card{display:flex;gap:10px;align-items:center;background:#eef2f7;border-radius:14px;padding:10px;margin-bottom:6px}.av{flex:none;border-radius:50%;background:#cfd9e6;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;font-weight:900;color:#27374a}.av img{width:100%;height:100%;object-fit:cover}.mini{font-size:11px;color:#667586;line-height:1.4}
+.err{background:#ffe3df;color:#a5321f;border-radius:10px;padding:9px 11px;font-size:12px;font-weight:800;margin-top:9px}.tabs{display:flex;gap:6px}.tab{flex:1;padding:10px;border-radius:10px;background:#dce3eb;color:#27374a;font-size:13px}.tab.sel{background:#3479df;color:#fff}
+.rowItem{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:11px;background:#eef2f7;margin-bottom:5px}.btnS{padding:9px 12px;border-radius:9px;background:#3479df;font-size:12px;flex:none}
+.statTop{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.statTop div{background:#e4efff;border-radius:10px;text-align:center;padding:7px 2px}.statTop b{display:block;font-size:18px;color:#164b9c}.statTop small{font-size:9px;font-weight:800;color:#536171;letter-spacing:.5px}
+.statGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}.statGrid div{background:#f0f3f7;border-radius:10px;padding:7px 9px;font-size:11px;color:#536171}.statGrid b{color:#25374a;font-size:12px;display:block}
+.emoGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.emo{font-size:22px;background:#dce3eb;border-radius:10px;padding:6px 0}.chk{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:#25374a;margin-top:12px}.chk input{width:18px;height:18px}
+button[disabled]{cursor:not-allowed}
+#dialog input{user-select:text;-webkit-user-select:text}
 </style></head><body><div id="app">
 <header id="top"><div id="brand"><strong>🛼 INLINE SKATE RACE</strong><button id="menuBtn" type="button">⌂ MENU UTAMA</button></div><div id="leaderboard"></div></header>
 <main id="stage"><canvas id="track"></canvas><div id="centerHud"><div class="pill"><small>JARAK</small><b id="distance">0 m</b></div><div class="pill"><small>LAP</small><b id="lap">0/1</b></div><div class="pill"><small>WAKTU</small><b id="clock">0:00.00</b></div></div><div id="toast"></div><div id="minimap"><canvas id="mapCanvas"></canvas></div>
@@ -74,9 +82,12 @@ function spec(){return raceSpecs[cfg.race]}
 function startGrid(count,baseS){if(count===18){const lanes=[-53.75,-32.25,-10.75,10.75,32.25,53.75];return Array.from({length:18},(_,i)=>{const row=Math.floor(i/6),lane=i%6;return{s:baseS-row*34,d:lanes[lane],row:row+1}})}const front=count===8?4:3,back=count-front,ds=[];for(let i=0;i<front;i++)ds.push((i-(front-1)/2)*29);for(let i=0;i<back;i++)ds.push((i-(back-1)/2)*29);return Array.from({length:count},(_,i)=>({s:baseS-(i<front?0:38),d:ds[i],row:i<front?1:2}))}
 function initRace(){const sp=spec();const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;const grid=startGrid(sp.count,raceStartS);racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';renderLeaderboard();$('overlay').style.display='none';}
 function escapeHTML(v){return String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-function menu(){leaveOnline();state='menu';$('overlay').style.display='flex';$('dialog').innerHTML=`<h1>🛼 Inline Skate Race</h1><p>Pilih nomor balapan. Semua lawan menggunakan kemampuan AI paling sulit dan memiliki top speed yang sama.</p><div class="sub">NAMA PEMAIN (OPSIONAL)</div><input id="playerNameInput" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Kosongkan jika ingin memakai nama Kamu" value="${escapeHTML(cfg.playerName)}"><div class="sub">PILIH JARAK BALAP • 1 PUTARAN = 200 METER</div><div class="choices">${Object.entries(raceSpecs).map(([k,v])=>`<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.count} PEMBALAP • ${v.laps} LAP</small></button>`).join('')}</div><div class="legend"><b>Level lawan: PALING SULIT</b><br>Kontrol: Tekan TAP berulang untuk menambah kecepatan. Gunakan slider KIRI–TENGAH–KANAN untuk mengarahkan skater. Mode Elimination 2,5 km: 18 pembalap start dalam 3 baris (6 per baris). Setiap lap, 3 pembalap terbawah tereliminasi sampai tersisa 3.</div><button class="primary" id="start">MULAI BALAP</button><button class="secondary" id="online">🌐 MAIN ONLINE (HP vs HP)</button>`;
-$('playerNameInput').addEventListener('input',e=>{cfg.playerName=e.target.value});
-$('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.playerName=$('playerNameInput').value;cfg.race=b.dataset.race;menu()});$('start').onclick=()=>{cfg.playerName=$('playerNameInput').value.trim();audioReady();initRace()};$('online').onclick=()=>{cfg.playerName=$('playerNameInput').value.trim();audioReady();onlineMenu()};}
+function menu(){navSeq++;leaveOnline();state='menu';$('dialog').dataset.olhtml='';$('overlay').style.display='flex';const locked=!!acct;
+$('dialog').innerHTML=`<h1>🛼 Inline Skate Race</h1><p>Pilih nomor balapan. Semua lawan menggunakan kemampuan AI paling sulit dan memiliki top speed yang sama.</p><div class="sub">NAMA PEMAIN (WAJIB DIISI)</div><input id="playerNameInput" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Isi nama pemain" value="${escapeHTML(cfg.playerName)}" ${locked?'readonly':''}>${locked?'<div class="mini">Memakai nama akun online. Keluar akun untuk mengganti.</div>':''}<div id="nameErr"></div><div class="sub">PILIH JARAK BALAP • 1 PUTARAN = 200 METER</div><div class="choices">${Object.entries(raceSpecs).map(([k,v])=>`<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.count} PEMBALAP • ${v.laps} LAP</small></button>`).join('')}</div><div class="legend"><b>Level lawan: PALING SULIT</b><br>Kontrol: Tekan TAP berulang untuk menambah kecepatan. Gunakan slider KIRI–TENGAH–KANAN untuk mengarahkan skater. Mode Elimination 2,5 km: 18 pembalap start dalam 3 baris (6 per baris). Setiap lap, 3 pembalap terbawah tereliminasi sampai tersisa 3.</div><button class="primary" id="start">MULAI BALAP</button><button class="secondary" id="online">🌐 MAIN ONLINE (HP vs HP)</button>`;
+const inp=$('playerNameInput');inp.addEventListener('input',e=>{cfg.playerName=e.target.value});
+$('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.playerName=inp.value;cfg.race=b.dataset.race;menu()});
+$('start').onclick=()=>{const n=cleanTxt(inp.value,16);if(!n){$('nameErr').innerHTML='<div class="err">⚠ Nama pemain wajib diisi sebelum bermain.</div>';inp.focus();return}cfg.playerName=n;lsSet('skate_name',n);audioReady();initRace()};
+$('online').onclick=()=>{if(!locked)cfg.playerName=inp.value;audioReady();onlineMenu()};}
 $('menuBtn').addEventListener('click',()=>{audioReady();steer=0;steerValue=0;updateSteerUI();menu()});
 function formatTime(s){let m=Math.floor(s/60),sec=(s%60).toFixed(2).padStart(5,'0');return m+':'+sec}
 function currentLap(r){return Math.min(spec().laps,Math.floor(Math.max(0,r.s-raceStartS)/TRACK.perimeter)+1)}
@@ -96,19 +107,13 @@ steerPad.addEventListener('pointerdown',e=>{e.preventDefault();audioReady();stee
 steerPad.addEventListener('pointermove',e=>{if(steerDrag)steerSet(e)});
 ['pointerup','pointercancel','lostpointercapture'].forEach(k=>steerPad.addEventListener(k,()=>{steerDrag=false}));
 $('tap').addEventListener('pointerdown',e=>{e.preventDefault();audioReady();$('tap').classList.add('down');tap()});['pointerup','pointercancel','pointerleave'].forEach(k=>$('tap').addEventListener(k,()=>$('tap').classList.remove('down')));
-window.addEventListener('keydown',e=>{if(e.repeat)return;audioReady();if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setSteer(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setSteer(1);if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setSteer(0);if(e.code==='Space'){e.preventDefault();tap()}});
-function eliminateLap(lap){if(!spec().elim||lap<=eliminations||racers.filter(r=>r.alive).length<=3)return;const alive=racers.filter(r=>r.alive).sort((a,b)=>a.s-b.s);const remove=Math.min(3,alive.length-3);const out=alive.slice(0,remove);out.forEach(r=>{r.alive=false;r.eliminatedAt=lap});eliminations=lap;setToast('ELIMINATION','3 PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}
-function update(dt){if(state==='count'){const old=Math.ceil(countdown);countdown-=dt;const now=Math.ceil(countdown);if(now!==old&&now>0)sfx('count');if(countdown<=0){state='race';elapsed=0;setToast('GO!');sfx('go');if(online&&olRoom)olRoom.presence({ph:'race'})}return}if(state!=='race')return;elapsed+=dt;const sp=spec();if(online)syncRemotes(dt);
+window.addEventListener('keydown',e=>{const tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;if(e.repeat)return;audioReady();if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setSteer(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setSteer(1);if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setSteer(0);if(e.code==='Space'){e.preventDefault();tap()}});
+function eliminateLap(lap){if(!spec().elim||lap<=eliminations)return;const alive=racers.filter(r=>r.alive);if(alive.length<=3)return;const cand=alive.filter(r=>!r.finished).sort((a,b)=>a.s-b.s),remove=Math.min(3,alive.length-3,cand.length);cand.slice(0,remove).forEach(r=>{r.alive=false;r.eliminatedAt=lap;if(online)olElims.push([r.id,lap])});eliminations=lap;setToast('ELIMINATION','PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}
+function update(dt){if(state==='count'){const old=Math.ceil(countdown);countdown-=dt;const now=Math.ceil(countdown);if(now!==old&&now>0)sfx('count');if(countdown<=0){state='race';elapsed=0;setToast('GO!');sfx('go')}return}if(!(state==='race'||(state==='done'&&online)))return;elapsed+=dt;const sp=spec();if(online)syncRemotes(dt);
+const endS=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter,aliveN=racers.filter(r=>r.alive).length;
 for(const r of racers){if(r.remote)continue;if(!r.alive||r.finished)continue;if(r.crashCooldown>0)r.crashCooldown=Math.max(0,r.crashCooldown-dt);if(r.fall>0){r.fall-=dt;r.v*=Math.max(0,1-3.5*dt);if(r.fall<=0){r.fall=0;r.imm=0;}continue}
 if(r===player){
- // Saat tombol TAP tidak ditekan, skater meluncur lalu kehilangan kecepatan secara bertahap hingga berhenti.
- // Hambatan sedikit lebih besar pada kecepatan tinggi dan tetap halus saat mendekati nol.
  r.v=Math.max(0,r.v-(2.5+r.v*0.018)*dt);
- // Mekanisme belok asli: slider mengarahkan posisi skater secara lateral.
- // Kiri = sisi kiri lintasan, tengah = jalur tengah, kanan = sisi kanan.
- // Respons mengikuti kecepatan, sama seperti kontrol pada HTML awal.
- // Slider mengarahkan skater seperti versi awal. Gerakan bisa mencapai garis
- // merah di tepi lintasan; menyentuh garis merah langsung menyebabkan jatuh.
  const targetD=steerValue*(TRACK.width/2+10);
  const steerRate=28*Math.min(1.3,r.v/180);
  const delta=targetD-r.d;
@@ -120,14 +125,11 @@ if(r===player){
    setToast('MENABRAK GARIS MERAH!','SKATER TERJATUH');sfx('red');
  }
 }else{const accelFactor=.58;const target=MAX_SPEED;r.v+=(target-r.v)*accelFactor*r.skill*dt;const ahead=racers.find(o=>o!==r&&o.alive&&o.s>r.s&&o.s-r.s<45&&Math.abs(o.d-r.d)<20);let desired=r.d;if(ahead)desired+=r.d>=ahead.d?25:-25;const laneBias=Math.sin(elapsed*.55+r.id*2.1)*12;r.d+=(Math.max(-55,Math.min(55,desired+laneBias))-r.d)*Math.min(1,1.3*dt)}
-r.s+=r.v*dt*(trackPos(r.s,r.d).arc?TRACK.radius/(TRACK.radius+r.d):1);r.phase+=r.v*dt*.055;if(r.s>=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter&&!sp.elim){r.finished=true;r.finishTime=elapsed;finishOrder.push(r)}
+r.s+=r.v*dt*(trackPos(r.s,r.d).arc?TRACK.radius/(TRACK.radius+r.d):1);r.phase+=r.v*dt*.055;if(r.s>=endS&&(!sp.elim||aliveN<=3)){r.finished=true;r.finishTime=elapsed;finishOrder.push(r)}
 }
-// Deteksi tabrakan antarpembalap: jarak longitudinal dan samping harus berdekatan.
 let collisionSound=false,playerHit=false;
-for(let i=0;i<racers.length;i++)for(let j=i+1;j<racers.length;j++){
+if(state==='race')for(let i=0;i<racers.length;i++)for(let j=i+1;j<racers.length;j++){
  const a=racers[i],b=racers[j];if(!a.alive||!b.alive||a.finished||b.finished)continue;
- // Pembalap yang sudah jatuh tetap dapat menjatuhkan pembalap lain
- // yang menyentuhnya. Ini membuat benturan berantai terasa alami.
  if((a.fall<=0&&a.crashCooldown>0)||(b.fall<=0&&b.crashCooldown>0))continue;
  const collisionProtection=50/LAP_METERS*TRACK.perimeter;
  if(Math.min(a.s,b.s)<collisionProtection)continue;
@@ -136,18 +138,22 @@ for(let i=0;i<racers.length;i++)for(let j=i+1;j<racers.length;j++){
   let newlyHit=false;
   for(const r of [a,b])if(r.fall<=0&&!r.remote){r.fall=1.25;r.v*=.22;r.imm=0;r.crashCooldown=1.05;newlyHit=true;if(r===player)playerHit=true}
   if(newlyHit){collisionSound=true;
-   // Beri ruang pada pembalap yang masih berdiri; yang sudah jatuh
-   // tetap menjadi pemicu benturan berantai untuk skater di dekatnya.
    const sign=a.s<=b.s?1:-1;if(a.fall>0&&b.fall>0){a.s-=sign*8;b.s+=sign*8}
    const sideSign=a.d<=b.d?1:-1;if(a.fall>0&&b.fall>0){a.d=Math.max(-54,Math.min(54,a.d-sideSign*5));b.d=Math.max(-54,Math.min(54,b.d+sideSign*5))}
   }
  }
 }
 if(collisionSound){sfx('crash');if(playerHit)setToast('TABRAKAN BERANTAI!','SKATER YANG TERKENA IKUT TERJATUH')}
-if(sp.elim){const lap=Math.floor(Math.max(0,player.s-raceStartS)/TRACK.perimeter);if(lap>eliminations)eliminateLap(lap);if(racers.filter(r=>r.alive).length<=3&&player.alive&&player.s>=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter){player.finished=true;player.finishTime=elapsed;finishOrder.push(player)}}
-if(!player.alive){endRace(false);return}if(player.finished){endRace(true);return}
+if(sp.elim&&state==='race'){
+ if(online){if(iAmHost()){const al=racers.filter(r=>r.alive&&!r.finished);if(al.length){const lead=Math.max(...al.map(r=>r.s)),lap=Math.floor(Math.max(0,lead-raceStartS)/TRACK.perimeter);if(lap>eliminations)eliminateLap(lap)}}}
+ else{const lap=Math.floor(Math.max(0,player.s-raceStartS)/TRACK.perimeter);if(lap>eliminations)eliminateLap(lap)}
+}
+if(state==='race'){
+ if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
+ else{if(!player.alive){endRace(false);return}if(player.finished){endRace(true);return}}
+}
 $('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);renderLeaderboard();}
-function endRace(won){if(online){onlineFinish(won);return}state='done';steer=0;if(won)sfx('finish');const place=[...racers].filter(r=>r.alive||r.finished).sort((a,b)=>b.s-a.s).indexOf(player)+1;$('overlay').style.display='flex';$('dialog').innerHTML=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${won?'Kamu menyelesaikan '+spec().label+'.':'Kamu keluar dari balapan.'}</p><div class="sub">HASIL BALAP</div><p><b>Posisi akhir: ${place}</b><br>Waktu: ${formatTime(elapsed)}<br>Jarak: ${Math.floor(meters(player))} meter</p><button class="primary" id="again">BALAP LAGI</button><button class="secondary" id="change">GANTI FORMAT BALAP</button>`;$('again').onclick=initRace;$('change').onclick=menu;}
+function endRace(won){if(online){onlineFinish(won);return}state='done';steer=0;if(won)sfx('finish');const place=ranking().indexOf(player)+1;$('overlay').style.display='flex';$('dialog').innerHTML=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${won?'Kamu menyelesaikan '+spec().label+'.':'Kamu keluar dari balapan.'}</p><div class="sub">HASIL BALAP</div><p><b>Posisi akhir: ${place}</b><br>Waktu: ${formatTime(elapsed)}<br>Jarak: ${Math.floor(meters(player))} meter</p><button class="primary" id="again">BALAP LAGI</button><button class="secondary" id="change">GANTI FORMAT BALAP</button>`;$('again').onclick=initRace;$('change').onclick=menu;}
 function drawSkater(r){const q=trackPos(r.s,r.d);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.h);if(!r.alive)ctx.globalAlpha=.25;if(r.fall>0)ctx.rotate(1.25);let sw=Math.sin(r.phase)*5;ctx.fillStyle='#10151b';ctx.fillRect(-10+sw,-8,13,4);ctx.fillRect(-10-sw,5,13,4);ctx.fillStyle=r.color;ctx.beginPath();ctx.ellipse(0,0,10,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8f8f8';ctx.beginPath();ctx.arc(5,-1,4.2,0,Math.PI*2);ctx.fill();if(r===player){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);ctx.stroke()}ctx.restore()}
 function drawMinimap(){
  const w=mapCanvas.clientWidth,h=mapCanvas.clientHeight;if(!w||!h)return;
@@ -169,84 +175,292 @@ ctx.fillStyle='#a8584a';ctx.beginPath();ctx.roundRect(-L/2-o-14,-o-14,L+2*o+28,2
 if(state==='count'){ctx.fillStyle='#fff';ctx.font='1000 76px system-ui';ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=9;ctx.fillText(Math.ceil(countdown),W/2,H*.43);ctx.shadowBlur=0}if(toast&&performance.now()<toastUntil){const [a,b]=toast.split('|');ctx.textAlign='center';ctx.font='1000 28px system-ui';ctx.lineWidth=4;ctx.strokeStyle='#17202b';ctx.strokeText(a,W/2,H*.43);ctx.fillStyle='#fff';ctx.fillText(a,W/2,H*.43);if(b){ctx.font='800 12px system-ui';ctx.fillText(b,W/2,H*.43+23)}}}
 function frame(now){drawMinimap();const dt=Math.min(.045,(now-lastFrame)/1000||.016);lastFrame=now;onlineTick(now);update(dt);draw();requestAnimationFrame(frame)}
 
-// ===== MULTIPLAYER ONLINE (presence room) =====
-let online=false,olRoom=null,olCode='',olUnsub=null,olLastSend=0,olReadySince=0,olRc='1000',olName='',olRes=null,olLastHTML='',olMyReady=false;
-const OL_FORMATS=['300','500','1000'];
-function olViewers(){return olRoom?olRoom.peers().filter(p=>p.kind==='viewer').slice().sort((a,b)=>a.peer<b.peer?-1:1):[]}
-function olNameOf(p){return String((p.presence&&p.presence.n)||'Pemain').replace(/[\u0000-\u001f<>]/g,'').slice(0,16)||'Pemain'}
-function leaveOnline(){$('dialog').dataset.olhtml='';if(olRes){clearInterval(olRes);olRes=null}if(olUnsub){try{olUnsub()}catch(e){}olUnsub=null}if(olRoom){try{olRoom.leave()}catch(e){}olRoom=null}online=false;olReadySince=0}
-function olDialog(html,force){const d=$('dialog');if(!force&&d.dataset.olhtml===html&&$('overlay').style.display==='flex')return;d.dataset.olhtml=html;$('overlay').style.display='flex';d.innerHTML=html}
-function onlineMenu(){leaveOnline();state='menu';
- olDialog(`<h1>🌐 Multiplayer Online</h1><p>Balapan melawan teman lewat HP masing-masing. Buat room, bagikan <b>kode room</b>, lalu semua pemain tekan SIAP.</p><p style="color:#b4542f"><b>Catatan:</b> semua pemain harus membuka halaman ini lewat akun claude.ai yang punya akses (pemilik atau diundang). Link publik tanpa login belum bisa ikut.</p><div class="sub">KODE ROOM</div><input id="olCode" class="playerNameInput" maxlength="8" autocomplete="off" placeholder="mis. AB12" style="text-transform:uppercase"><button class="primary" id="olJoin">MASUK ROOM</button><button class="secondary" id="olNew">BUAT ROOM BARU</button><div id="olStatus" class="legend"></div><button class="secondary" id="olBack">⬅ KEMBALI</button>`,true);
- $('olJoin').onclick=()=>joinOnline($('olCode').value);
- $('olNew').onclick=()=>joinOnline((Math.random().toString(36)+'abcd').replace(/[^a-z0-9]/g,'').slice(1,5));
- $('olBack').onclick=menu}
-async function joinOnline(raw){
- const code=String(raw||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8),say=t=>{const e=$('olStatus');if(e)e.textContent=t};
- if(code.length<3){say('Isi kode room minimal 3 huruf/angka.');return}
- say('Menghubungkan...');let room=null;
- try{room=(window.claude&&window.claude.use)?await window.claude.use('room'):null}catch(e){}
- if(!room){say('Fitur online tidak tersedia di tampilan ini. Buka halaman lewat akun claude.ai yang punya akses.');return}
- try{olRoom=await room.join('skate-'+code)}catch(e){olRoom=null;say('Gagal masuk room ('+((e&&e.code)||'error')+'). Coba lagi.');return}
- online=true;olCode=code;olMyReady=false;olName=(cfg.playerName||'').trim()||('Pemain'+(10+Math.floor(Math.random()*90)));
- olUnsub=olRoom.onPeers(()=>{if(state==='lobby')renderLobby()});
- olRoom.presence({n:olName,rd:false,rc:olRc,ph:'lobby'});state='lobby';renderLobby()}
-function renderLobby(){
- if(!olRoom||state!=='lobby')return;
- const ps=olViewers(),host=ps[0],hostRc=host&&OL_FORMATS.includes(host.presence.rc)?host.presence.rc:'1000',iAmHost=!!(host&&host.sameTab);
- const rows=ps.map((p,i)=>{const racing=p.presence.ph&&p.presence.ph!=='lobby',lbl=racing?'BALAPAN':(p.presence.rd?'SIAP':'BELUM'),col=racing?'#b5762c':(p.presence.rd?'#1a8f5b':'#8a97a6');
-  return `<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;background:#eef2f7;margin-bottom:5px"><span style="width:12px;height:12px;border-radius:50%;background:${COLORS[i%COLORS.length]}"></span><b style="flex:1;font-size:13px">${escapeHTML(olNameOf(p))}${p.sameTab?' (kamu)':''}${i===0?' 👑':''}</b><span style="font-size:11px;font-weight:900;color:${col}">${lbl}</span></div>`}).join('');
- olDialog(`<h1>🌐 Room ${olCode.toUpperCase()}</h1><p>Bagikan kode ini ke temanmu. Balapan mulai otomatis saat semua pemain (minimal 2) menekan SIAP.</p><div class="sub">PEMAIN (${ps.length}/8)</div>${rows}<div class="sub">JARAK BALAP ${iAmHost?'(kamu 👑 yang memilih)':'(dipilih 👑 pembuat room)'}</div><div class="choices" style="grid-template-columns:repeat(3,1fr)">${OL_FORMATS.map(k=>`<button class="choice ${hostRc===k?'sel':''}" data-rc="${k}" ${iAmHost?'':'disabled style="opacity:.65"'}>${raceSpecs[k].meters} M</button>`).join('')}</div><button class="primary" id="olReady">${olMyReady?'BATAL SIAP':'SIAP!'}</button><button class="secondary" id="olLeave">KELUAR ROOM</button>`);
- $('dialog').querySelectorAll('[data-rc]').forEach(b=>b.onclick=()=>{if(!iAmHost)return;olRc=b.dataset.rc;olRoom.presence({rc:olRc});renderLobby()});
- $('olReady').onclick=()=>{audioReady();olMyReady=!olMyReady;olRoom.presence({rd:olMyReady});renderLobby()};
- $('olLeave').onclick=menu}
+// ===== AKUN, ROOM & MULTIPLAYER ONLINE =====
+const OL_FORMATS=['300','500','1000','elim'];
+const OL_MAX={'300':6,'500':6,'1000':8,'elim':16};
+const OL_LBL={'300':'300 M','500':'500 M','1000':'1.000 M','elim':'ELIM'};
+const EMOJIS=['🛼','🏁','🔥','⚡','🦊','🐯','🦅','🐬','🚀','👑','🌟','😎'];
+let online=false,olRoom=null,olCode='',olUnsub=null,olLastSend=0,olRes=null,olLastHTML='',olMyReady=false,olMeta=null,olMyPw='',olLastGo='',olElims=[],olRecPending=false,olRecState='',olFinAt=0,olView='lobby',olSyncAt=0,olLbLast='';
+let acct=null,navSeq=0,lbRoom=null,lbUnsub=null,lbBusy=null,roomApiP=null,roomMsg='',createRc='1000';
+const profCache=new Map();
+
+/* ---------- util ---------- */
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+const cleanTxt=(s,n)=>String(s==null?'':s).replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,n);
+const validName=n=>/^[\p{L}\p{N}][\p{L}\p{N} _.\-]{1,15}$/u.test(n);
+const bind=(id,fn)=>{const e=$(id);if(e)e.onclick=fn};
+const waitFor=(fn,ms)=>new Promise(res=>{const t0=Date.now();(function p(){let v=null;try{v=fn()}catch(e){}if(v)return res(v);if(Date.now()-t0>ms)return res(null);setTimeout(p,100)})()});
+// SHA-256 murni JS (tidak bergantung pada https/crypto.subtle)
+const SK=[],SH=[];(function(){let n=2,c=0;while(c<64){let p=true;for(let i=2;i*i<=n;i++)if(n%i===0){p=false;break}if(p){if(c<8)SH.push(Math.floor((Math.pow(n,.5)%1)*4294967296));SK.push(Math.floor((Math.pow(n,1/3)%1)*4294967296));c++}n++}})();
+function sha256(s){const b=new TextEncoder().encode(s),l=b.length,n=((l+8)>>6)+1,w=new Uint32Array(n*16);for(let i=0;i<l;i++)w[i>>2]|=b[i]<<(24-(i%4)*8);w[l>>2]|=0x80<<(24-(l%4)*8);w[n*16-1]=l*8;
+ const h=SH.slice(),x=new Uint32Array(64),R=(v,k)=>(v>>>k)|(v<<(32-k));
+ for(let o=0;o<n*16;o+=16){for(let i=0;i<16;i++)x[i]=w[o+i];for(let i=16;i<64;i++){const a=x[i-15],c=x[i-2];x[i]=(x[i-16]+(R(a,7)^R(a,18)^(a>>>3))+x[i-7]+(R(c,17)^R(c,19)^(c>>>10)))>>>0}
+  let a=h[0],b2=h[1],c=h[2],d=h[3],e=h[4],f=h[5],g=h[6],hh=h[7];
+  for(let i=0;i<64;i++){const t1=(hh+(R(e,6)^R(e,11)^R(e,25))+((e&f)^(~e&g))+SK[i]+x[i])>>>0,t2=((R(a,2)^R(a,13)^R(a,22))+((a&b2)^(a&c)^(b2&c)))>>>0;hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b2;b2=a;a=(t1+t2)>>>0}
+  h[0]=(h[0]+a)>>>0;h[1]=(h[1]+b2)>>>0;h[2]=(h[2]+c)>>>0;h[3]=(h[3]+d)>>>0;h[4]=(h[4]+e)>>>0;h[5]=(h[5]+f)>>>0;h[6]=(h[6]+g)>>>0;h[7]=(h[7]+hh)>>>0}
+ return h.map(v=>v.toString(16).padStart(8,'0')).join('')}
+const passHash=(name,pw)=>sha256('skate1|'+name.toLowerCase()+'|'+pw);
+
+/* ---------- server akun (Supabase RPC) ---------- */
+let sbApi=null;
+function api(){if(!sbApi&&window.supabase&&!/^GANTI_/.test(SUPABASE_URL)&&!/^GANTI_/.test(SUPABASE_KEY))sbApi=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});return sbApi}
+async function rpc(fn,args){const c=api();if(!c)return{ok:false,err:'nosb'};
+ try{const{data,error}=await c.rpc(fn,args);if(error){const m=String(error.message||'');if(error.code==='PGRST202'||error.code==='42883'||/could not find the function|schema cache/i.test(m))return{ok:false,err:'nosetup'};return{ok:false,err:'net'}}return data||{ok:false,err:'net'}}catch(e){return{ok:false,err:'net'}}}
+function errText(r,name){const e=r&&r.err;
+ if(e==='taken')return 'Nama akun "'+name+'" sudah digunakan. Pilih nama lain.';
+ if(e==='badpass')return 'Password salah.';
+ if(e==='notfound')return 'Nama akun tidak ditemukan. Daftar dulu di tab DAFTAR.';
+ if(e==='invalid')return 'Nama 2–16 karakter (huruf, angka, spasi, _ . -) dan password minimal 4 karakter.';
+ if(e==='nosetup')return 'Database akun belum disiapkan. Jalankan supabase_setup.sql di Supabase (SQL Editor).';
+ if(e==='nosb')return 'Server belum terhubung. Periksa SUPABASE_URL & SUPABASE_KEY dan koneksi internet.';
+ if(e==='toolarge')return 'Foto terlalu besar.';
+ return 'Gagal terhubung ke server. Coba lagi.'}
+function loadSession(){try{return JSON.parse(lsGet('skate_session')||'null')}catch(e){return null}}
+function setAcct(r,token){const p=normProfile(r.profile);acct={name:p.name,token,profile:p};profCache.set(p.name.toLowerCase(),p);lsSet('skate_session',JSON.stringify({name:p.name,token}));cfg.playerName=p.name;lsSet('skate_name',p.name)}
+function normProfile(p){p=p||{};const st=p.stats&&typeof p.stats==='object'?p.stats:{};return{name:cleanTxt(p.name,16),avatar:safeAv(p.avatar),club:cleanTxt(p.club,24),location:cleanTxt(p.location,24),stats:{plays:st.plays||{},wins:st.wins||{},pod:st.pod||{}}}}
+
+/* ---------- tampilan profil ---------- */
+function safeAv(a){a=String(a||'');if(a.length<20000&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(a))return a;if(a.startsWith('e:')&&[...a.slice(2)].length>0&&[...a.slice(2)].length<=3)return a;return ''}
+function avHTML(a,size,name){a=safeAv(a);const st=`width:${size}px;height:${size}px;font-size:${Math.round(size*.5)}px`;let inner;if(a.startsWith('data:'))inner=`<img src="${a}" alt="">`;else if(a)inner=escapeHTML(a.slice(2));else inner=escapeHTML((String(name||'?')[0]||'?').toUpperCase());return `<span class="av" style="${st}">${inner}</span>`}
+function sumObj(o){let t=0;for(const k of OL_FORMATS)t+=Number((o||{})[k])||0;return t}
+function statsHTML(p){const s=p.stats||{};
+ return `<div class="statTop"><div><b>${sumObj(s.plays)}</b><small>TOTAL MAIN</small></div><div><b>${sumObj(s.wins)}</b><small>TOTAL JUARA</small></div><div><b>${sumObj(s.pod)}</b><small>PODIUM</small></div></div><div class="statGrid">${OL_FORMATS.map(k=>`<div><b>${OL_LBL[k]}</b>Main ${Number((s.plays||{})[k])||0} • 🏆 Juara ${Number((s.wins||{})[k])||0}</div>`).join('')}</div>`}
+function infoLine(p){return `${p.club?escapeHTML(p.club):'<i>Belum ada club</i>'} • 📍 ${p.location?escapeHTML(p.location):'<i>belum ada lokasi</i>'}`}
+async function ensureProfiles(names){const need=[...new Set(names.map(n=>String(n).toLowerCase()))].filter(k=>!profCache.has(k));if(!need.length)return false;need.forEach(k=>profCache.set(k,null));
+ const r=await rpc('skate_get_profiles',{p_names:names.filter(n=>need.includes(String(n).toLowerCase())).slice(0,20)});
+ if(r.ok&&Array.isArray(r.list)){r.list.forEach(p=>{const q=normProfile(p);profCache.set(q.name.toLowerCase(),q)});return true}return false}
+const profOf=n=>profCache.get(String(n).toLowerCase())||null;
+
+/* ---------- menu online: login / daftar ---------- */
+async function onlineMenu(){
+ const my=++navSeq;leaveOnline();state='menu';$('dialog').dataset.olhtml='';
+ if(!api()){olDialog(`<h1>🌐 Multiplayer Online</h1><div class="err">${escapeHTML(errText({err:'nosb'}))}</div><button class="secondary" id="aBack">⬅ KEMBALI</button>`,true);bind('aBack',menu);return}
+ if(acct){roomListScreen();return}
+ const s=loadSession();
+ if(s&&s.name&&s.token){olDialog(`<h1>🌐 Multiplayer Online</h1><p>Memuat akun ${escapeHTML(s.name)}...</p>`,true);
+  const r=await rpc('skate_resume',{p_name:s.name,p_token:s.token});if(my!==navSeq)return;
+  if(r.ok){setAcct(r,s.token);roomListScreen();return}
+  if(r.err==='session'||r.err==='notfound'){lsDel('skate_session')}else{authScreen('login',errText(r));return}}
+ authScreen('login')}
+function authScreen(mode,msg){
+ state='auth';const reg=mode==='reg',s0=loadSession();
+ olDialog(`<h1>🌐 Multiplayer Online</h1><p>${reg?'Buat akun baru. Nama akun harus unik.':'Pilih nama dari daftar pemain atau ketik namamu, lalu isi password.'}</p><div class="tabs"><button class="tab ${reg?'':'sel'}" id="tLogin">MASUK</button><button class="tab ${reg?'sel':''}" id="tReg">DAFTAR</button></div>
+<div class="sub">NAMA AKUN</div><input id="aName" class="playerNameInput" maxlength="16" autocomplete="username" placeholder="Nama akun" value="${s0&&!reg?escapeHTML(s0.name):''}">
+<div class="sub">PASSWORD</div><input id="aPass" type="password" class="playerNameInput" maxlength="30" autocomplete="${reg?'new-password':'current-password'}" placeholder="Password">
+${reg?`<div class="sub">ULANGI PASSWORD</div><input id="aPass2" type="password" class="playerNameInput" maxlength="30" autocomplete="new-password" placeholder="Ulangi password">`:''}
+<div id="aMsg">${msg?`<div class="err">⚠ ${escapeHTML(msg)}</div>`:''}</div>
+<button class="primary" id="aGo" style="margin-top:10px">${reg?'DAFTAR & MASUK':'MASUK'}</button>
+${reg?'':`<div class="sub">PEMAIN TERDAFTAR</div><input id="aSearch" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Cari nama pemain..."><div id="aList" style="margin-top:7px"><div class="mini">Memuat daftar...</div></div>`}
+<button class="secondary" id="aBack">⬅ KEMBALI</button>`,true);
+ const say=t=>{const e=$('aMsg');if(e)e.innerHTML=t?`<div class="err">⚠ ${escapeHTML(t)}</div>`:''};
+ bind('tLogin',()=>authScreen('login'));bind('tReg',()=>authScreen('reg'));bind('aBack',menu);
+ let busy=false;
+ const go=async()=>{if(busy)return;const name=cleanTxt($('aName').value,16),pw=$('aPass').value;
+  if(!validName(name)){say('Nama akun 2–16 karakter: huruf, angka, spasi, _ . -');return}
+  if(pw.length<4){say('Password minimal 4 karakter.');return}
+  if(reg&&pw!==$('aPass2').value){say('Ulangi password tidak sama.');return}
+  busy=true;$('aGo').textContent='Memproses...';say('');
+  const r=await rpc(reg?'skate_register':'skate_login',{p_name:name,p_hash:passHash(name,pw)});
+  busy=false;if(state!=='auth')return;
+  if(r.ok){setAcct(r,r.token);roomListScreen();return}
+  $('aGo').textContent=reg?'DAFTAR & MASUK':'MASUK';say(errText(r,name))};
+ bind('aGo',go);['aName','aPass','aPass2'].forEach(id=>{const e=$(id);if(e)e.addEventListener('keydown',ev=>{if(ev.key==='Enter')go()})});
+ if(!reg){let tm=null;const load=async q=>{const r=await rpc('skate_list_players',{p_q:q});const el=$('aList');if(state!=='auth'||!el)return;
+   if(!r.ok){el.innerHTML=`<div class="mini">${escapeHTML(errText(r))}</div>`;return}
+   const L=(r.list||[]).map(x=>({name:cleanTxt(x.name,16),avatar:x.avatar,club:cleanTxt(x.club,24)})).filter(x=>x.name);
+   el.innerHTML=L.length?L.map(x=>`<div class="rowItem" data-pick="${escapeHTML(x.name)}" style="cursor:pointer">${avHTML(x.avatar,34,x.name)}<div style="flex:1;min-width:0"><b style="font-size:13px">${escapeHTML(x.name)}</b><div class="mini">${x.club?escapeHTML(x.club):'—'}</div></div></div>`).join(''):'<div class="mini">Belum ada pemain terdaftar. Buat akun di tab DAFTAR.</div>';
+   el.querySelectorAll('[data-pick]').forEach(d=>d.onclick=()=>{$('aName').value=d.dataset.pick;$('aPass').focus()})};
+  load('');$('aSearch').addEventListener('input',e=>{clearTimeout(tm);const q=e.target.value;tm=setTimeout(()=>load(q),250)})}}
+
+/* ---------- koneksi room & lobi ---------- */
+async function roomApi(){if(roomApiP)return roomApiP;roomApiP=(async()=>{try{return(window.claude&&window.claude.use)?await window.claude.use('room'):null}catch(e){return null}})();const r=await roomApiP;if(!r)roomApiP=null;return r}
+async function ensureLobby(){if(lbRoom)return true;if(lbBusy)return lbBusy;
+ lbBusy=(async()=>{const room=await roomApi();if(!room)return false;try{lbRoom=await room.join('skate-lobby')}catch(e){lbRoom=null;return false}
+  lbRoom.presence({u:acct?acct.name:'?'});lbUnsub=lbRoom.onPeers(()=>{if(state==='rooms')renderRooms()});olLbLast='';return true})();
+ const ok=await lbBusy;lbBusy=null;return ok}
+function lobbyRooms(){const seen=new Map();let on=0;if(lbRoom)for(const p of lbRoom.peers()){const q=p.presence||{};if(q.u)on++;const r=q.r;if(r&&typeof r.c==='string'&&/^[a-z0-9]{3,8}$/.test(r.c)&&OL_FORMATS.includes(r.rc)&&!seen.has(r.c))seen.set(r.c,{c:r.c,nm:cleanTxt(r.nm,20)||'Room',pw:r.pw?1:0,rc:r.rc,n:Math.max(0,Number(r.n)||0),mx:OL_MAX[r.rc],ph:r.ph==='lobby'?'lobby':'race'})}
+ return{rooms:[...seen.values()].sort((a,b)=>(a.ph==='lobby'?0:1)-(b.ph==='lobby'?0:1)||b.n-a.n),online:on}}
+function leaveRoom(){olRecordNow();if(olRes){clearInterval(olRes);olRes=null}if(olUnsub){try{olUnsub()}catch(e){}olUnsub=null}if(olRoom){try{olRoom.leave()}catch(e){}olRoom=null}online=false;olMeta=null;olElims=[];olLbLast='';olRecState='';if(lbRoom){try{lbRoom.presence({r:null})}catch(e){}}$('dialog').dataset.olhtml=''}
+function leaveOnline(){leaveRoom();if(lbUnsub){try{lbUnsub()}catch(e){}lbUnsub=null}if(lbRoom){try{lbRoom.leave()}catch(e){}lbRoom=null}}
+
+/* ---------- daftar room + kotak pemain ---------- */
+async function roomListScreen(msg){
+ const my=++navSeq;leaveRoom();state='rooms';olView='rooms';roomMsg=msg||'';renderRooms();
+ const ok=await ensureLobby();if(my!==navSeq)return;if(!ok)roomMsg='Fitur online (server room) tidak tersedia di tampilan ini.';renderRooms()}
+function renderRooms(){
+ if(state!=='rooms'||!acct)return;const p=acct.profile,{rooms,online:on}=lobbyRooms();
+ const rows=rooms.map(r=>{const full=r.n>=r.mx,racing=r.ph!=='lobby',can=!full&&!racing;
+  return `<div class="rowItem"><div style="flex:1;min-width:0"><b style="font-size:13px">${r.pw?'🔒 ':''}${escapeHTML(r.nm)}</b><div class="mini">${OL_LBL[r.rc]} • ${r.n}/${r.mx} pemain • ${racing?'🏁 BALAPAN':'⏳ MENUNGGU'}</div></div><button class="btnS" data-join="${r.c}" ${can?'':'disabled style="opacity:.45"'}>${full?'PENUH':racing?'MAIN':'GABUNG'}</button></div>`}).join('');
+ olDialog(`<h1>🌐 Multiplayer Online</h1>
+<div class="card">${avHTML(p.avatar,58,p.name)}<div style="flex:1;min-width:0"><b style="font-size:16px">${escapeHTML(p.name)}</b><div class="mini">${infoLine(p)}</div></div><button class="btnS" id="rEdit">✏️ EDIT</button></div>${statsHTML(p)}
+<div class="sub">ROOM TERSEDIA <span style="color:#1a8f5b">• 🟢 ${on} online</span></div>${roomMsg?`<div class="err">⚠ ${escapeHTML(roomMsg)}</div>`:''}
+${rows||'<div class="mini" style="padding:8px 2px">Belum ada room. Buat room baru dan ajak temanmu!</div>'}
+<button class="primary" id="rNew">➕ BUAT ROOM</button><button class="secondary" id="rOut">KELUAR AKUN (LOG OUT)</button><button class="secondary" id="rBack">⬅ MENU UTAMA</button>`);
+ bind('rEdit',editProfileScreen);bind('rNew',createRoomScreen);bind('rBack',menu);bind('rOut',logout);
+ $('dialog').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{const r=rooms.find(x=>x.c===b.dataset.join);if(!r)return;if(r.pw)joinPwScreen(r);else joinRoom(r.c,'')})}
+async function logout(){const a=acct;acct=null;lsDel('skate_session');navSeq++;leaveOnline();if(a)rpc('skate_logout',{p_name:a.name,p_token:a.token});authScreen('login')}
+function joinPwScreen(r){state='joinpw';
+ olDialog(`<h1>🔒 ${escapeHTML(r.nm)}</h1><p>Room ini private. Masukkan password room.</p><input id="jPw" type="password" class="playerNameInput" maxlength="12" autocomplete="off" placeholder="Password room"><button class="primary" id="jGo">GABUNG</button><button class="secondary" id="jBack">BATAL</button>`,true);
+ bind('jGo',()=>joinRoom(r.c,$('jPw').value));bind('jBack',()=>roomListScreen());$('jPw').addEventListener('keydown',e=>{if(e.key==='Enter')joinRoom(r.c,$('jPw').value)})}
+
+/* ---------- buat room ---------- */
+function createRoomScreen(){state='create';createRc=OL_FORMATS.includes(createRc)?createRc:'1000';
+ olDialog(`<h1>➕ Buat Room</h1><div class="sub">NAMA ROOM</div><input id="cName" class="playerNameInput" maxlength="20" autocomplete="off" placeholder="Room ${escapeHTML(acct.name)}"><div class="sub">PASSWORD (OPSIONAL — ISI JIKA INGIN PRIVATE)</div><input id="cPw" type="text" class="playerNameInput" maxlength="12" autocomplete="off" placeholder="Kosongkan = room publik"><div class="sub">JARAK BALAP</div><div class="choices">${OL_FORMATS.map(k=>`<button class="choice ${createRc===k?'sel':''}" data-f="${k}">${raceSpecs[k].label.replace('ELIMINATION 2,5 KM','ELIMINATION')}<br><small>maks ${OL_MAX[k]} pemain</small></button>`).join('')}</div><div id="cMsg"></div><button class="primary" id="cGo">BUAT ROOM</button><button class="secondary" id="cBack">BATAL</button>`,true);
+ $('dialog').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{createRc=b.dataset.f;$('dialog').querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('sel',x===b))});
+ bind('cBack',()=>roomListScreen());
+ bind('cGo',()=>{const nm=cleanTxt($('cName').value,20)||('Room '+acct.name),pw=cleanTxt($('cPw').value,12);let code='';const used=new Set(lobbyRooms().rooms.map(r=>r.c));do{code=(Math.random().toString(36)+'abcde').replace(/[^a-z0-9]/g,'').slice(1,6)}while(used.has(code));
+  joinRoom(code,pw,{create:true,nm,rc:createRc})})}
+
+/* ---------- edit profil ---------- */
+function fileToAvatar(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),s=Math.min(im.width,im.height);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,96,96);res(c.toDataURL('image/jpeg',.8))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+function editProfileScreen(){state='edit';const p=acct.profile;let av=p.avatar;
+ olDialog(`<h1>✏️ Edit Profil</h1><div class="card" style="justify-content:center"><span id="avPrev">${avHTML(av,84,p.name)}</span></div>
+<div style="display:flex;gap:7px;margin-top:8px"><button class="btnS" id="eUp" style="flex:1">📷 UNGGAH FOTO</button><button class="btnS" id="eDel" style="flex:1;background:#8a97a6">HAPUS</button></div><input type="file" id="eFile" accept="image/*" style="display:none">
+<div class="sub">ATAU PILIH EMOJI</div><div class="emoGrid">${EMOJIS.map(e=>`<button class="emo" data-em="${e}">${e}</button>`).join('')}</div>
+<div class="sub">NAMA</div><input class="playerNameInput" value="${escapeHTML(p.name)}" readonly style="opacity:.7"><div class="mini">Nama akun tidak bisa diubah.</div>
+<div class="sub">CLUB</div><input id="eClub" class="playerNameInput" maxlength="24" autocomplete="off" placeholder="mis. Jakarta Speed Club" value="${escapeHTML(p.club)}">
+<div class="sub">LOKASI</div><input id="eLoc" class="playerNameInput" maxlength="24" autocomplete="off" placeholder="mis. Jakarta" value="${escapeHTML(p.location)}">
+<div id="eMsg"></div><button class="primary" id="eSave">SIMPAN</button><button class="secondary" id="eBack">BATAL</button>`,true);
+ const prev=()=>{$('avPrev').innerHTML=avHTML(av,84,p.name)},say=t=>{$('eMsg').innerHTML=t?`<div class="err">⚠ ${escapeHTML(t)}</div>`:''};
+ bind('eUp',()=>$('eFile').click());bind('eDel',()=>{av='';prev()});
+ $('eFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{av=await fileToAvatar(f);prev();say('')}catch(x){say('Gagal membaca gambar.')}};
+ $('dialog').querySelectorAll('[data-em]').forEach(b=>b.onclick=()=>{av='e:'+b.dataset.em;prev()});
+ bind('eBack',()=>roomListScreen());
+ bind('eSave',async()=>{$('eSave').textContent='Menyimpan...';const r=await rpc('skate_save_profile',{p_name:acct.name,p_token:acct.token,p_avatar:av,p_club:cleanTxt($('eClub').value,24),p_location:cleanTxt($('eLoc').value,24)});
+  if(state!=='edit')return;if(r.ok){acct.profile=normProfile(r.profile);profCache.set(acct.name.toLowerCase(),acct.profile);roomListScreen();return}
+  $('eSave').textContent='SIMPAN';say(r.err==='session'?'Sesi berakhir. Keluar akun lalu masuk lagi.':errText(r))})}
+
+/* ---------- gabung / buat room (channel) ---------- */
+const olAll=()=>olRoom?olRoom.peers().filter(p=>p.kind==='viewer'&&p.presence&&typeof p.presence.jt==='number'):[];
+const olHostP=l=>l.slice().sort((a,b)=>a.presence.jt-b.presence.jt||(a.peer<b.peer?-1:1))[0];
+function olViewers(){const all=olAll(),h=olHostP(all);if(!h)return[];const m=h.presence.m;return all.filter(p=>p===h||!(m&&m.pwh)||p.presence.pw===m.pwh).sort((a,b)=>(a===h?-1:b===h?1:0)||a.presence.jt-b.presence.jt||(a.peer<b.peer?-1:1))}
+const olNameOf=p=>cleanTxt(p.presence&&p.presence.n,16)||'Pemain';
+const iAmHost=()=>{const h=olHostP(olViewers());return !!(h&&h.sameTab)};
+const myPeer=()=>{const m=olAll().find(p=>p.sameTab);return m?m.peer:null};
+async function joinRoom(code,pw,opt){
+ opt=opt||{};const my=++navSeq;state='joining';olDialog(`<h1>🌐 Menghubungkan...</h1><p>Masuk ke room, mohon tunggu.</p>`,true);
+ const room=await roomApi();if(my!==navSeq)return;if(!room){roomListScreen('Fitur online tidak tersedia di tampilan ini.');return}
+ leaveRoom();let rm=null;try{rm=await room.join('skate-'+code)}catch(e){if(my===navSeq)roomListScreen('Gagal masuk room ('+((e&&e.code)||'error')+'). Coba lagi.');return}
+ if(my!==navSeq){try{rm.leave()}catch(e){}return}
+ olRoom=rm;online=true;olCode=code;olMyReady=false;olElims=[];olLastGo='';olView='lobby';olMeta=null;olLbLast='';
+ olMyPw=pw?sha256('rm|'+code+'|'+pw):'';
+ const base={n:acct.name,jt:Date.now(),pw:olMyPw,rd:false,ph:'lobby'};
+ if(opt.create){olMeta={nm:opt.nm,pwh:olMyPw,rc:opt.rc,fill:true};base.m=olMeta}
+ olRoom.presence(base);olUnsub=olRoom.onPeers(()=>{olSync();if(state==='lobby')renderLobby()});
+ if(!opt.create){
+  const h=await waitFor(()=>{const x=olHostP(olAll());return x&&!x.sameTab&&x.presence.m?x:null},4500);if(my!==navSeq)return;
+  const fail=t=>{leaveRoom();roomListScreen(t)};
+  if(!h)return fail('Room tidak ditemukan atau host sudah keluar.');
+  const m=h.presence.m;if(m.pwh&&m.pwh!==olMyPw)return fail('Password room salah.');
+  if(h.presence.ph!=='lobby')return fail('Room sedang balapan. Coba lagi nanti.');
+  if(olAll().filter(p=>!p.sameTab).length>=(OL_MAX[m.rc]||6))return fail('Room sudah penuh.');
+  olMeta=m;olLastGo=h.presence.go?h.presence.go.id:''}
+ state='lobby';olSync();renderLobby(true)}
+function olSync(){
+ if(!olRoom)return;const h=olHostP(olAll());if(!h)return;if(h.presence.m)olMeta=h.presence.m;
+ const meHost=!!h.sameTab;if(meHost&&olMeta&&!h.presence.m)olRoom.presence({m:olMeta});
+ if(!lbRoom)return;let r=null;
+ if(meHost&&olMeta)r={c:olCode,nm:olMeta.nm,pw:olMeta.pwh?1:0,rc:olMeta.rc,n:olViewers().length,mx:OL_MAX[olMeta.rc]||6,ph:h.presence.ph==='lobby'?'lobby':'race'};
+ const js=JSON.stringify(r);if(js!==olLbLast){olLbLast=js;lbRoom.presence({r})}}
+
+/* ---------- lobi room ---------- */
+function renderLobby(force){
+ if(!olRoom||state!=='lobby'||olView!=='lobby'||!olMeta)return;
+ const ps=olViewers(),h=olHostP(ps);if(!h)return;
+ const host=!!h.sameTab,m=olMeta,rc=OL_FORMATS.includes(m.rc)?m.rc:'1000',max=OL_MAX[rc],idle=h.presence.ph==='lobby';
+ ensureProfiles(ps.map(olNameOf)).then(ch=>{if(ch&&state==='lobby'&&olView==='lobby')renderLobby()});
+ const rows=ps.map(p=>{const racing=p.presence.ph&&p.presence.ph!=='lobby',isH=p===h,nm=olNameOf(p),pr=profOf(nm),lbl=racing?'BALAPAN':(isH?'HOST':(p.presence.rd?'SIAP':'BELUM')),col=racing?'#b5762c':(isH?'#b5762c':(p.presence.rd?'#1a8f5b':'#8a97a6'));
+  return `<div class="rowItem" data-pf="${escapeHTML(nm)}" style="cursor:pointer">${avHTML(pr&&pr.avatar,36,nm)}<div style="flex:1;min-width:0"><b style="font-size:13px">${escapeHTML(nm)}${p.sameTab?' (kamu)':''}${isH?' 👑':''}</b><div class="mini" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pr?infoLine(pr):'…'}</div></div><span style="font-size:11px;font-weight:900;color:${col}">${lbl}</span></div>`}).join('');
+ const humans=ps.filter(p=>p.sameTab||(p.presence.rd===true&&p.presence.ph==='lobby')),fill=m.fill!==false,total=fill?max:humans.length,bots=Math.max(0,total-humans.length),waiting=ps.length-humans.length;
+ const canStart=host&&idle&&total>=2;
+ const fmt=OL_FORMATS.map(k=>{const dis=!host||OL_MAX[k]<ps.length;return `<button class="choice ${rc===k?'sel':''}" data-rc="${k}" ${dis?'disabled style="opacity:.55"':''}>${OL_LBL[k]}<br><small>maks ${OL_MAX[k]}</small></button>`}).join('');
+ let action;
+ if(host)action=`<label class="chk"><input type="checkbox" id="lFill" ${fill?'checked':''}> Isi slot kosong dengan komputer (sampai ${max} pemain)</label><button class="primary" id="lStart" ${canStart?'':'disabled style="opacity:.5"'}>MULAI BALAP • ${humans.length} pemain${bots?' + '+bots+' komputer':''}</button>${waiting>0?`<div class="mini" style="margin-top:6px">${waiting} pemain berstatus BELUM tidak akan ikut balapan ini.</div>`:''}`;
+ else action=`<button class="primary" id="lReady" ${idle?'':'disabled style="opacity:.5"'}>${!idle?'BALAPAN BERLANGSUNG...':(olMyReady?'BATAL SIAP':'SIAP!')}</button><div class="mini" style="margin-top:6px">Menunggu 👑 host memulai balapan.</div>`;
+ olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave">KELUAR ROOM</button>`,force);
+ $('dialog').querySelectorAll('[data-pf]').forEach(d=>d.onclick=()=>showProfile(d.dataset.pf));
+ $('dialog').querySelectorAll('[data-rc]').forEach(b=>b.onclick=()=>{if(!host)return;olMeta=Object.assign({},olMeta,{rc:b.dataset.rc});olRoom.presence({m:olMeta});olSync();renderLobby()});
+ const f=$('lFill');if(f)f.onchange=()=>{olMeta=Object.assign({},olMeta,{fill:f.checked});olRoom.presence({m:olMeta});renderLobby()};
+ bind('lStart',()=>{audioReady();hostStart()});
+ bind('lReady',()=>{audioReady();olMyReady=!olMyReady;olRoom.presence({rd:olMyReady});renderLobby()});
+ bind('lLeave',()=>roomListScreen())}
+async function showProfile(name){
+ olView='profile';olDialog(`<h1>Profil</h1><p>Memuat...</p>`,true);
+ profCache.delete(String(name).toLowerCase());await ensureProfiles([name]);
+ if(olView!=='profile'||state!=='lobby')return;const p=profOf(name)||{name,avatar:'',club:'',location:'',stats:{}};
+ olDialog(`<div class="card" style="flex-direction:column;text-align:center">${avHTML(p.avatar,92,p.name)}<b style="font-size:20px">${escapeHTML(p.name)}</b><div class="mini">${infoLine(p)}</div></div>${statsHTML(p)}<button class="secondary" id="pBack">⬅ KEMBALI KE ROOM</button>`,true);
+ bind('pBack',()=>{olView='lobby';renderLobby(true)})}
+
+/* ---------- mulai & jalannya balapan online ---------- */
+function hostStart(){
+ if(!olRoom||!iAmHost()||!olMeta)return;const ps=olViewers(),max=OL_MAX[olMeta.rc];
+ const humans=ps.filter(p=>p.sameTab||(p.presence.rd===true&&p.presence.ph==='lobby')).slice(0,max),total=olMeta.fill!==false?max:humans.length;if(total<2)return;
+ const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,parts:humans.map(p=>[p.peer,olNameOf(p)]),bots:total-humans.length};
+ olLastGo=go.id;olRoom.presence({go,ph:'race',b:null,eo:null,fn:null});startOnlineRace(go)}
+function olGrid(n,rc,baseS){
+ if(rc==='elim'){const lanes=[-53.75,-32.25,-10.75,10.75,32.25,53.75];return Array.from({length:n},(_,i)=>({s:baseS-Math.floor(i/6)*34,d:lanes[i%6],row:Math.floor(i/6)+1}))}
+ const front=n>=8?4:Math.min(3,n),back=n-front,ds=[];for(let i=0;i<front;i++)ds.push((i-(front-1)/2)*29);for(let i=0;i<back;i++)ds.push((i-(back-1)/2)*29);
+ return Array.from({length:n},(_,i)=>({s:baseS-(i<front?0:38),d:ds[i],row:i<front?1:2}))}
+function startOnlineRace(go){
+ cfg.race=go.rc;const me=myPeer(),hostNow=iAmHost();
+ const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65,yellowStart=blueStart-TRACK.perimeter/2;
+ raceStartS=(go.rc==='300'||go.rc==='500')?yellowStart:blueStart;
+ const n=go.parts.length+go.bots,grid=olGrid(n,go.rc,raceStartS);racers=[];
+ const mk=(i,name,extra)=>Object.assign({id:i,name,color:COLORS[i%COLORS.length],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:false,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:1,stamina:1},extra);
+ go.parts.forEach(([peer,name],i)=>racers.push(mk(i,name,{remote:peer!==me,peer})));
+ for(let k=0;k<go.bots;k++){const i=go.parts.length+k;racers.push(mk(i,(NAMES[1+k]||'CPU')+' (PC)',{bot:true,bi:k,ai:true,remote:!hostNow,skill:.99+((i*7)%2)*.01}))}
+ player=racers.find(r=>!r.bot&&!r.remote);
+ elapsed=0;countdown=3.9;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';olLastHTML='';olElims=[];olRecPending=false;olRecState='';olView='lobby';$('dialog').dataset.olhtml='';
+ renderLeaderboard();$('overlay').style.display='none';audioReady();
+ olRoom.presence({ph:'race',s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,f:0,fn:null})}
 function onlineTick(now){
  if(!online||!olRoom)return;
- if(state==='lobby'){
-  const ps=olViewers().slice(0,8);
-  const ok=ps.length>=2&&ps.some(p=>p.sameTab)&&ps.every(p=>p.presence.rd===true&&p.presence.ph==='lobby');
-  if(ok){if(!olReadySince)olReadySince=now;else if(now-olReadySince>1200){olReadySince=0;const rc=OL_FORMATS.includes(ps[0].presence.rc)?ps[0].presence.rc:'1000';startOnlineRace(ps.map(p=>({peer:p.peer,isMe:p.sameTab,name:olNameOf(p)})),rc)}}else olReadySince=0;
-  return}
- if((state==='count'||state==='race')&&player&&now-olLastSend>70){olLastSend=now;olRoom.presence({s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:Math.round(player.v),f:player.fall>0?1:0})}}
-function startOnlineRace(parts,rc){
- cfg.race=rc;if(olResetTimer())return;
- const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65,yellowStart=blueStart-TRACK.perimeter/2;
- raceStartS=(rc==='300'||rc==='500')?yellowStart:blueStart;
- const n=parts.length,per=4;
- racers=parts.map((pt,i)=>{const row=Math.floor(i/per),inRow=Math.min(per,n-row*per),k=i%per;
-  return{id:i,name:pt.name,color:COLORS[i%COLORS.length],s:raceStartS-row*38,d:(k-(inRow-1)/2)*29,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:false,row:row+1,finishTime:null,eliminatedAt:null,skill:1,stamina:1,remote:!pt.isMe,peer:pt.peer}});
- player=racers.find(r=>!r.remote);
- elapsed=0;countdown=3.9;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';olLastHTML='';$('dialog').dataset.olhtml='';
- renderLeaderboard();$('overlay').style.display='none';audioReady();
- olRoom.presence({s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,f:0,fn:null})}
-function olResetTimer(){if(olRes){clearInterval(olRes);olRes=null}return false}
+ if(now-olSyncAt>400){olSyncAt=now;olSync()}
+ if(state==='lobby'){const ps=olViewers(),h=olHostP(ps),g=h&&h.presence.go;
+  if(g&&g.id!==olLastGo){olLastGo=g.id;const me=myPeer();if(!h.sameTab&&h.presence.ph==='race'&&Array.isArray(g.parts)&&g.parts.some(x=>x[0]===me)&&olView==='lobby')startOnlineRace(g)}return}
+ if((state==='count'||state==='race'||state==='done')&&player&&now-olLastSend>70){olLastSend=now;const patch={};
+  if(state!=='done'){patch.s=+player.s.toFixed(1);patch.d=+player.d.toFixed(1);patch.v=Math.round(player.v);patch.f=player.fall>0?1:0}
+  if(racers.some(r=>r.bot)&&iAmHost()){patch.b=racers.filter(r=>r.bot).map(r=>[+r.s.toFixed(1),+r.d.toFixed(1),Math.round(r.v),r.fall>0?1:0,r.finished&&r.finishTime?+r.finishTime.toFixed(2):0]);patch.eo=olElims.length?olElims:null}
+  if(Object.keys(patch).length)olRoom.presence(patch)}}
+function applyRemote(r,s,d,v,f,upd,dt){const age=Math.min(.35,Math.max(0,(Date.now()-upd)/1000)),ts=s+(f?0:v*age),k=Math.min(1,12*dt);r.s+=(ts-r.s)*k;r.d+=(d-r.d)*k;r.v=v;r.fall=f?1:0;r.phase+=v*dt*.055}
+function applyElims(eo){let ch=false;for(const e of eo){const r=racers[e[0]];if(r&&r.alive&&!r.finished){r.alive=false;r.eliminatedAt=e[1];eliminations=Math.max(eliminations,e[1]);ch=true}}if(ch){setToast('ELIMINATION','PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}}
 function syncRemotes(dt){
- if(!olRoom)return;const ps=olRoom.peers();
- for(const r of racers){if(!r.remote)continue;
+ if(!olRoom)return;const ps=olRoom.peers(),h=olHostP(olViewers()),meHost=!!(h&&h.sameTab),hp=h?h.presence:null;
+ for(const r of racers){
+  if(r.bot){r.remote=!meHost;if(meHost||!h)continue;const b=hp.b&&hp.b[r.bi];if(!b)continue;applyRemote(r,b[0],b[1],b[2],b[3],h.updatedAt,dt);if(b[4]&&!r.finished){r.finished=true;r.finishTime=b[4]}continue}
+  if(!r.remote)continue;
   const pe=ps.find(p=>p.peer===r.peer);
-  if(!pe){if(!r.finished)r.alive=false;continue}
+  if(!pe){if(!r.finished&&r.alive)r.alive=false;continue}
   const q=pe.presence;
-  if(typeof q.s==='number'&&typeof q.d==='number'){
-   const age=Math.min(.35,Math.max(0,(Date.now()-pe.updatedAt)/1000)),v=typeof q.v==='number'?q.v:0,ts=q.s+(q.f?0:v*age);
-   r.s+=(ts-r.s)*Math.min(1,12*dt);r.d+=(q.d-r.d)*Math.min(1,12*dt);r.v=v;r.fall=q.f?1:0;r.phase+=v*dt*.055;
-   if(typeof q.fn==='number'&&!r.finished){r.finished=true;r.finishTime=q.fn}}}}
+  if(typeof q.s==='number'&&typeof q.d==='number')applyRemote(r,q.s,q.d,typeof q.v==='number'?q.v:0,q.f,pe.updatedAt,dt);
+  if(typeof q.fn==='number'&&!r.finished){r.finished=true;r.finishTime=q.fn}}
+ if(!meHost&&hp&&Array.isArray(hp.eo))applyElims(hp.eo)}
+function ranking(){return racers.slice().sort((a,b)=>{if(a.finished&&b.finished)return a.finishTime-b.finishTime;if(a.finished)return -1;if(b.finished)return 1;if(a.alive!==b.alive)return a.alive?-1:1;if(!a.alive&&!b.alive)return(b.eliminatedAt||0)-(a.eliminatedAt||0)||b.s-a.s;return b.s-a.s})}
+function olRecordNow(){
+ if(!olRecPending||!acct||!player)return;olRecPending=false;const place=ranking().indexOf(player)+1,race=cfg.race;olRecState='saving';
+ rpc('skate_record',{p_name:acct.name,p_token:acct.token,p_race:race,p_place:place}).then(r=>{if(r&&r.ok&&r.profile&&acct){acct.profile=normProfile(r.profile);profCache.set(acct.name.toLowerCase(),acct.profile);olRecState='ok'}else olRecState='fail';if(state==='done'&&online)showOnlineResults()})}
 function onlineFinish(won){
- state='done';steer=0;if(won)sfx('finish');
- if(olRoom)olRoom.presence({ph:'fin',fn:+player.finishTime.toFixed(2),f:0,v:0,s:+player.s.toFixed(1),d:+player.d.toFixed(1)});
+ state='done';steer=0;if(won)sfx('finish');olFinAt=Date.now();olRecPending=true;olRecState='';
+ if(olRoom)olRoom.presence({ph:'fin',fn:won&&player.finishTime?+player.finishTime.toFixed(2):null,f:0,v:0,s:+player.s.toFixed(1),d:+player.d.toFixed(1)});
  olLastHTML='';showOnlineResults();if(olRes)clearInterval(olRes);olRes=setInterval(showOnlineResults,600)}
 function showOnlineResults(){
  if(state!=='done'||!online){if(olRes){clearInterval(olRes);olRes=null}return}
- syncRemotes(.016);
- const rows=racers.map(r=>({r,fin:r.finished?r.finishTime:null})).sort((a,b)=>{if(a.fin!=null&&b.fin!=null)return a.fin-b.fin;if(a.fin!=null)return -1;if(b.fin!=null)return 1;return b.r.s-a.r.s});
- const done=rows.every(x=>x.fin!=null||!x.r.alive);
- const html=`<h1>🏁 FINISH!</h1><p>${done?'Semua pembalap sudah selesai.':'Menunggu pembalap lain menyelesaikan balapan...'}</p><div class="sub">HASIL</div>${rows.map((x,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;background:${x.r===player?'#ffe9e2':'#eef2f7'};margin-bottom:5px"><b style="width:26px">#${i+1}</b><span style="width:12px;height:12px;border-radius:50%;background:${x.r.color}"></span><b style="flex:1;font-size:13px">${escapeHTML(x.r.name)}${x.r===player?' (kamu)':''}</b><span style="font-size:12px;font-variant-numeric:tabular-nums">${x.fin!=null?formatTime(x.fin):(x.r.alive?Math.floor(meters(x.r))+' m':'keluar')}</span></div>`).join('')}<button class="primary" id="olLobby">KEMBALI KE LOBI</button><button class="secondary" id="olExit">KELUAR ROOM</button>`;
- if(html!==olLastHTML){olLastHTML=html;olDialog(html,true);$('olLobby').onclick=backToLobby;$('olExit').onclick=menu}}
+ const rk=ranking(),done=rk.every(r=>r.finished||!r.alive),won=player.finished;
+ if(olRecPending&&(!player.alive||done||Date.now()-olFinAt>25000))olRecordNow();
+ const rec=olRecState==='ok'?'<div class="mini" style="margin-top:8px">📊 Statistik akunmu sudah diperbarui.</div>':(olRecState==='fail'?'<div class="mini" style="margin-top:8px">Statistik gagal disimpan (koneksi).</div>':'');
+ const html=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${done?'Semua pembalap sudah selesai.':'Menunggu pembalap lain menyelesaikan balapan...'}</p><div class="sub">HASIL • ${escapeHTML(spec().label)}</div>${rk.map((r,i)=>`<div class="rowItem" style="${r===player?'background:#ffe9e2':''}"><b style="width:26px">#${i+1}</b><span style="width:12px;height:12px;border-radius:50%;background:${r.color};flex:none"></span><b style="flex:1;font-size:13px;min-width:0">${escapeHTML(r.name)}${r===player?' (kamu)':''}</b><span style="font-size:12px;font-variant-numeric:tabular-nums">${r.finished?formatTime(r.finishTime):(r.alive?Math.floor(meters(r))+' m':'keluar')}</span></div>`).join('')}${rec}<button class="primary" id="olLobby">KEMBALI KE LOBI</button><button class="secondary" id="olExit">KELUAR ROOM</button>`;
+ if(html!==olLastHTML){olLastHTML=html;olDialog(html,true);bind('olLobby',backToLobby);bind('olExit',()=>roomListScreen())}}
 function backToLobby(){
  if(olRes){clearInterval(olRes);olRes=null}
- if(!olRoom){menu();return}
- olMyReady=false;olLastHTML='';state='lobby';
- olRoom.presence({ph:'lobby',rd:false,fn:null,s:null,d:null,v:null,f:null});renderLobby()}
+ if(!olRoom){roomListScreen();return}
+ olRecordNow();olMyReady=false;olLastHTML='';state='lobby';olView='lobby';
+ const patch={ph:'lobby',rd:false,fn:null,s:null,d:null,v:null,f:null};if(iAmHost()){patch.go=null;patch.b=null;patch.eo=null}
+ olRoom.presence(patch);olSync();renderLobby(true)}
+function olDialog(html,force){const d=$('dialog');if(!force&&d.dataset.olhtml===html&&$('overlay').style.display==='flex')return;d.dataset.olhtml=html;$('overlay').style.display='flex';d.innerHTML=html}
 
+{const s0=loadSession();cfg.playerName=lsGet('skate_name')||(s0&&s0.name)||''}
 menu();resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
 </script></body></html>
