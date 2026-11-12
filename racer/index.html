@@ -148,7 +148,11 @@ const SEND_EVERY_MS=110;                            // makin besar = makin hemat
   };
   window.addEventListener('pagehide',()=>{api.leave()});
   api.presence({});return api}};
- window.claude={use:async n=>{if(n!=='room')return null;if(!window.supabase||/^GANTI_/.test(SUPABASE_URL)||/^GANTI_/.test(SUPABASE_KEY))return null;return room}};
+ window.DivaRoomAdapter=room;
+ if(!window.claude||typeof window.claude.use!=='function'){
+  window.claude=window.claude||{};
+  window.claude.use=async n=>n==='room'?room:null;
+ }
 })();
 </script>
 <script>
@@ -616,7 +620,22 @@ ${reg?'':`<div class="sub">PEMAIN TERDAFTAR</div><input id="aSearch" class="play
   load('');$('aSearch').addEventListener('input',e=>{clearTimeout(tm);const q=e.target.value;tm=setTimeout(()=>load(q),250)})}}
 
 /* ---------- koneksi room & lobi ---------- */
-async function roomApi(){if(roomApiP)return roomApiP;roomApiP=(async()=>{try{return(window.claude&&window.claude.use)?await window.claude.use('room'):null}catch(e){return null}})();const r=await roomApiP;if(!r)roomApiP=null;return r}
+async function roomApi(){
+ if(window.DivaRoomAdapter)return window.DivaRoomAdapter;
+ if(roomApiP)return roomApiP;
+ roomApiP=(async()=>{
+  try{
+   if(!window.supabase||!window.supabase.createClient)return null;
+   if(window.claude&&typeof window.claude.use==='function'){
+    const timeout=new Promise(resolve=>setTimeout(()=>resolve(null),2500));
+    const external=await Promise.race([window.claude.use('room'),timeout]);
+    if(external&&typeof external.join==='function')return external;
+   }
+   return window.DivaRoomAdapter||null;
+  }catch(e){return window.DivaRoomAdapter||null}
+ })();
+ const r=await roomApiP;if(!r)roomApiP=null;return r
+}
 async function ensureLobby(){if(lbRoom)return true;if(lbBusy)return lbBusy;
  lbBusy=(async()=>{const room=await roomApi();if(!room)return false;try{lbRoom=await room.join('skate-lobby')}catch(e){lbRoom=null;return false}
   lbRoom.presence({u:acct?acct.name:'?',status:acct?.profile?.status||'',avatar:acct?.profile?.avatar||''});lbUnsub=lbRoom.onPeers(()=>{if(state==='rooms'){renderRooms();renderOnlineFriends()}});olLbLast='';return true})();
@@ -917,8 +936,9 @@ const iAmHost=()=>{const h=olHostP(olViewers());return !!(h&&h.sameTab)};
 const myPeer=()=>{const m=olAll().find(p=>p.sameTab);return m?m.peer:null};
 async function joinRoom(code,pw,opt){
  opt=opt||{};const my=++navSeq;state='joining';olDialog(`<h1>🌐 Menghubungkan...</h1><p>Masuk ke room, mohon tunggu.</p>`,true);
- const room=await roomApi();if(my!==navSeq)return;if(!room){roomListScreen('Fitur online tidak tersedia di tampilan ini.');return}
- leaveRoom();let rm=null;try{rm=await room.join('skate-'+code)}catch(e){if(my===navSeq)roomListScreen('Gagal masuk room ('+((e&&e.code)||'error')+'). Coba lagi.');return}
+ let room=null;try{room=await Promise.race([roomApi(),new Promise((_,rej)=>setTimeout(()=>rej({code:'adapter_timeout'}),5000))])}catch(e){if(my===navSeq)roomListScreen('Koneksi room gagal: '+((e&&e.code)||'timeout')+'. Periksa internet lalu coba lagi.');return}
+ if(my!==navSeq)return;if(!room){roomListScreen('Fitur online tidak tersedia. Adapter room tidak siap.');return}
+ leaveRoom();let rm=null;try{rm=await room.join('skate-'+code)}catch(e){if(my===navSeq)roomListScreen('Gagal masuk room ('+((e&&e.code)||'error')+'). Periksa koneksi Supabase/Realtime.');return}
  if(my!==navSeq){try{rm.leave()}catch(e){}return}
  olRoom=rm;online=true;olCode=code;olMyReady=false;olElims=[];olChatMessages=[];olChatLastSent=0;if(olChatUnsub){olChatUnsub();olChatUnsub=null}if(olRoom.onChat)olChatUnsub=olRoom.onChat(addLobbyChatMessage);olLastGo='';olView='lobby';olMeta=null;olLbLast='';
  olMyPw=pw?sha256('rm|'+code+'|'+pw):'';
