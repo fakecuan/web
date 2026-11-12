@@ -62,6 +62,8 @@ const SEND_EVERY_MS=110;                            // makin besar = makin hemat
   ch.on('broadcast',{event:'st'},({payload})=>{if(!payload||!payload.id||payload.id===id||typeof payload.p!=='object')return;const now=Date.now(),cur=table.get(payload.id),js=JSON.stringify(payload.p);
    if(!cur||cur.js!==js){table.set(payload.id,{id:payload.id,st:Object.freeze(payload.p),js,upd:now,seen:now});notify()}else cur.seen=now});
   ch.on('broadcast',{event:'bye'},({payload})=>{if(payload&&table.delete(payload.id))notify()});
+  const chatSubs=new Set();
+  ch.on('broadcast',{event:'chat'},({payload})=>{if(!payload||typeof payload.n!=='string'||typeof payload.t!=='string')return;chatSubs.forEach(fn=>{try{fn(payload)}catch(e){}})});
   await new Promise((res,rej)=>{const t=setTimeout(()=>rej({code:'upstream_error'}),10000);ch.subscribe(st=>{if(st==='SUBSCRIBED'){clearTimeout(t);res()}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){clearTimeout(t);rej({code:'upstream_error'})}})});
   const send=()=>{lastSend=Date.now();timer=null;if(!closed)ch.send({type:'broadcast',event:'st',payload:{id,p:Object.assign({},mine)}})};
   hb=setInterval(()=>{send();const now=Date.now();let ch2=false;for(const [k,v] of table)if(now-v.seen>5000){table.delete(k);ch2=true}if(ch2)notify()},1000);
@@ -71,6 +73,8 @@ const SEND_EVERY_MS=110;                            // makin besar = makin hemat
    peers(){const out=[{peer:id,by:null,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:Object.assign({},mine),updatedAt:Date.now()}];
     for(const v of table.values())out.push({peer:v.id,by:null,isMe:false,sameTab:false,kind:'viewer',guest:false,presence:v.st,updatedAt:v.upd});return out},
    onPeers(fn){subs.add(fn);return()=>subs.delete(fn)},
+   sendChat(payload){if(closed)return Promise.resolve();return ch.send({type:'broadcast',event:'chat',payload:{n:String(payload.n||'Pemain').slice(0,16),t:String(payload.t||'').slice(0,180),at:Date.now()}})},
+   onChat(fn){chatSubs.add(fn);return()=>chatSubs.delete(fn)},
    emit(){return Promise.resolve()},on(){return()=>{}},connected(){return !closed},onConnection(fn){fn(true);return()=>{}},
    async leave(){if(closed)return;try{await ch.send({type:'broadcast',event:'bye',payload:{id}})}catch(e){}closed=true;clearInterval(hb);if(timer)clearTimeout(timer);try{client().removeChannel(ch)}catch(e){}}
   };
@@ -247,8 +251,24 @@ const OL_MAX={'300':6,'500':6,'1000':8,'elim':16};
 const OL_LBL={'300':'300 M','500':'500 M','1000':'1.000 M','elim':'ELIM'};
 const EMOJIS=['🛼','🏁','🔥','⚡','🦊','🐯','🦅','🐬','🚀','👑','🌟','😎'];
 let online=false,olRoom=null,olCode='',olUnsub=null,olLastSend=0,olRes=null,olLastHTML='',olMyReady=false,olMeta=null,olMyPw='',olLastGo='',olElims=[],olRecPending=false,olRecState='',olFinAt=0,olView='lobby',olSyncAt=0,olLbLast='';
-let acct=null,navSeq=0,lbRoom=null,lbUnsub=null,lbBusy=null,roomApiP=null,roomMsg='',createRc='1000';
+let acct=null,navSeq=0,lbRoom=null,lbUnsub=null,lbBusy=null,roomApiP=null,roomMsg='',createRc='1000'; let olInvalidRace=false,olInvalidReason='',olValidityStartedAt=0;
+let olChatMessages=[],olChatUnsub=null,olChatLastSent=0;
 const profCache=new Map();
+function addLobbyChatMessage(m){
+ const msg={n:cleanTxt(m&&m.n,16)||'Pemain',t:String(m&&m.t||'').replace(/[\\u0000-\\u001f]/g,'').slice(0,180),at:Number(m&&m.at)||Date.now()};
+ if(!msg.t)return;
+ olChatMessages.push(msg);if(olChatMessages.length>60)olChatMessages.shift();
+ const box=$('lChatMessages');if(box){const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<48;box.insertAdjacentHTML('beforeend',`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(msg.n)}</b> <span style="opacity:.55">${new Date(msg.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(msg.t)}</div></div>`);while(box.children.length>60)box.removeChild(box.firstChild);if(nearBottom)box.scrollTop=box.scrollHeight}
+}
+function sendLobbyChat(){
+ const input=$('lChatInput');if(!input||!olRoom||state!=='lobby')return;
+ const t=String(input.value||'').trim().slice(0,180);if(!t)return;
+ const now=Date.now();if(now-olChatLastSent<700){setToast('TUNGGU SEBENTAR','Kirim pesan terlalu cepat');return}
+ olChatLastSent=now;input.value='';
+ const payload={n:acct&&acct.name||'Pemain',t,at:now};
+ addLobbyChatMessage(payload);
+ if(olRoom.sendChat)olRoom.sendChat(payload);
+}
 
 /* ---------- util ---------- */
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -285,14 +305,15 @@ function errText(r,name){const e=r&&r.err;
  return 'Gagal terhubung ke server. Coba lagi.'}
 function loadSession(){try{return JSON.parse(lsGet('skate_session')||'null')}catch(e){return null}}
 function setAcct(r,token){const p=normProfile(r.profile);acct={name:p.name,token,profile:p};profCache.set(p.name.toLowerCase(),p);lsSet('skate_session',JSON.stringify({name:p.name,token}));cfg.playerName=p.name;lsSet('skate_name',p.name)}
-function normProfile(p){p=p||{};const st=p.stats&&typeof p.stats==='object'?p.stats:{};return{name:cleanTxt(p.name,16),avatar:safeAv(p.avatar),club:cleanTxt(p.club,24),location:cleanTxt(p.location,24),stats:{plays:st.plays||{},wins:st.wins||{},pod:st.pod||{}}}}
+function normProfile(p){p=p||{};const st=p.stats&&typeof p.stats==='object'?p.stats:{};return{name:cleanTxt(p.name,16),avatar:safeAv(p.avatar),club:cleanTxt(p.club,24),location:cleanTxt(p.location,24),stats:{plays:st.plays||{},wins:st.wins||{},pod:st.pod||{},gold:st.gold||{},silver:st.silver||{},bronze:st.bronze||{}}}}
 
 /* ---------- tampilan profil ---------- */
 function safeAv(a){a=String(a||'');if(a.length<20000&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(a))return a;if(a.startsWith('e:')&&[...a.slice(2)].length>0&&[...a.slice(2)].length<=3)return a;return ''}
 function avHTML(a,size,name){a=safeAv(a);const st=`width:${size}px;height:${size}px;font-size:${Math.round(size*.5)}px`;let inner;if(a.startsWith('data:'))inner=`<img src="${a}" alt="">`;else if(a)inner=escapeHTML(a.slice(2));else inner=escapeHTML((String(name||'?')[0]||'?').toUpperCase());return `<span class="av" style="${st}">${inner}</span>`}
 function sumObj(o){let t=0;for(const k of OL_FORMATS)t+=Number((o||{})[k])||0;return t}
-function statsHTML(p){const s=p.stats||{};
- return `<div class="statTop"><div><b>${sumObj(s.plays)}</b><small>TOTAL MAIN</small></div><div><b>${sumObj(s.wins)}</b><small>TOTAL JUARA</small></div><div><b>${sumObj(s.pod)}</b><small>PODIUM</small></div></div><div class="statGrid">${OL_FORMATS.map(k=>`<div><b>${OL_LBL[k]}</b>Main ${Number((s.plays||{})[k])||0} • 🏆 Juara ${Number((s.wins||{})[k])||0}</div>`).join('')}</div>`}
+function statsHTML(p){const s=p.stats||{},gold=s.gold||{},silver=s.silver||{},bronze=s.bronze||{};
+ const medals=(obj,legacy)=>OL_FORMATS.reduce((n,k)=>n+(Number(obj[k])||0),0)||legacy;
+ return `<div class="statTop"><div><b>${sumObj(s.plays)}</b><small>TOTAL MAIN</small></div><div><b>${medals(gold,sumObj(s.wins))}</b><small>🥇 EMAS</small></div><div><b>${medals(silver,0)}</b><small>🥈 PERAK</small></div><div><b>${medals(bronze,Math.max(0,sumObj(s.pod)-sumObj(s.wins)-sumObj(silver)))}</b><small>🥉 PERUNGGU</small></div></div><div class="mini">Hanya pertandingan dengan lebih dari 50% pemain manusia yang dihitung ke statistik.</div><div class="statGrid">${OL_FORMATS.map(k=>`<div><b>${OL_LBL[k]}</b><br>Main ${Number((s.plays||{})[k])||0} • 🥇 ${Number(gold[k]??(s.wins||{})[k])||0} • 🥈 ${Number(silver[k])||0} • 🥉 ${Number(bronze[k])||0}</div>`).join('')}</div>`}
 function infoLine(p){return `${p.club?escapeHTML(p.club):'<i>Belum ada club</i>'} • 📍 ${p.location?escapeHTML(p.location):'<i>belum ada lokasi</i>'}`}
 async function ensureProfiles(names){const need=[...new Set(names.map(n=>String(n).toLowerCase()))].filter(k=>!profCache.has(k));if(!need.length)return false;need.forEach(k=>profCache.set(k,null));
  const r=await rpc('skate_get_profiles',{p_names:names.filter(n=>need.includes(String(n).toLowerCase())).slice(0,20)});
@@ -348,7 +369,7 @@ async function ensureLobby(){if(lbRoom)return true;if(lbBusy)return lbBusy;
  const ok=await lbBusy;lbBusy=null;return ok}
 function lobbyRooms(){const seen=new Map();let on=0;if(lbRoom)for(const p of lbRoom.peers()){const q=p.presence||{};if(q.u)on++;const r=q.r;if(r&&typeof r.c==='string'&&/^[a-z0-9]{3,8}$/.test(r.c)&&OL_FORMATS.includes(r.rc)&&!seen.has(r.c))seen.set(r.c,{c:r.c,nm:cleanTxt(r.nm,20)||'Room',pw:r.pw?1:0,rc:r.rc,n:Math.max(0,Number(r.n)||0),mx:OL_MAX[r.rc],ph:r.ph==='lobby'?'lobby':'race'})}
  return{rooms:[...seen.values()].sort((a,b)=>(a.ph==='lobby'?0:1)-(b.ph==='lobby'?0:1)||b.n-a.n),online:on}}
-function leaveRoom(){olRecordNow();if(olRes){clearInterval(olRes);olRes=null}if(olUnsub){try{olUnsub()}catch(e){}olUnsub=null}if(olRoom){try{olRoom.leave()}catch(e){}olRoom=null}online=false;olMeta=null;olElims=[];olLbLast='';olRecState='';if(lbRoom){try{lbRoom.presence({r:null})}catch(e){}}$('dialog').dataset.olhtml=''}
+function leaveRoom(){olRecordNow();if(olChatUnsub){try{olChatUnsub()}catch(e){}olChatUnsub=null}if(olRes){clearInterval(olRes);olRes=null}if(olUnsub){try{olUnsub()}catch(e){}olUnsub=null}if(olRoom){try{olRoom.leave()}catch(e){}olRoom=null}online=false;olMeta=null;olElims=[];olLbLast='';olRecState='';if(lbRoom){try{lbRoom.presence({r:null})}catch(e){}}$('dialog').dataset.olhtml=''}
 function leaveOnline(){leaveRoom();if(lbUnsub){try{lbUnsub()}catch(e){}lbUnsub=null}if(lbRoom){try{lbRoom.leave()}catch(e){}lbRoom=null}}
 
 /* ---------- daftar room + kotak pemain ---------- */
@@ -410,7 +431,7 @@ async function joinRoom(code,pw,opt){
  const room=await roomApi();if(my!==navSeq)return;if(!room){roomListScreen('Fitur online tidak tersedia di tampilan ini.');return}
  leaveRoom();let rm=null;try{rm=await room.join('skate-'+code)}catch(e){if(my===navSeq)roomListScreen('Gagal masuk room ('+((e&&e.code)||'error')+'). Coba lagi.');return}
  if(my!==navSeq){try{rm.leave()}catch(e){}return}
- olRoom=rm;online=true;olCode=code;olMyReady=false;olElims=[];olLastGo='';olView='lobby';olMeta=null;olLbLast='';
+ olRoom=rm;online=true;olCode=code;olMyReady=false;olElims=[];olChatMessages=[];olChatLastSent=0;if(olChatUnsub){olChatUnsub();olChatUnsub=null}if(olRoom.onChat)olChatUnsub=olRoom.onChat(addLobbyChatMessage);olLastGo='';olView='lobby';olMeta=null;olLbLast='';
  olMyPw=pw?sha256('rm|'+code+'|'+pw):'';
  const base={n:acct.name,jt:Date.now(),pw:olMyPw,rd:false,ph:'lobby'};
  if(opt.create){olMeta={nm:opt.nm,pwh:olMyPw,rc:opt.rc,fill:true};base.m=olMeta}
@@ -445,13 +466,17 @@ function renderLobby(force){
  let action;
  if(host)action=`<label class="chk"><input type="checkbox" id="lFill" ${fill?'checked':''}> Isi slot kosong dengan komputer (sampai ${max} pemain)</label><button class="primary" id="lStart" ${canStart?'':'disabled style="opacity:.5"'}>MULAI BALAP • ${humans.length} pemain${bots?' + '+bots+' komputer':''}</button>${waiting>0?`<div class="mini" style="margin-top:6px">${waiting} pemain berstatus BELUM tidak akan ikut balapan ini.</div>`:''}`;
  else action=`<button class="primary" id="lReady" ${idle?'':'disabled style="opacity:.5"'}>${!idle?'BALAPAN BERLANGSUNG...':(olMyReady?'BATAL SIAP':'SIAP!')}</button><div class="mini" style="margin-top:6px">Menunggu 👑 host memulai balapan.</div>`;
- olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave">KELUAR ROOM</button>`,force);
+ olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave">KELUAR ROOM</button>`,force);
  $('dialog').querySelectorAll('[data-pf]').forEach(d=>d.onclick=()=>showProfile(d.dataset.pf));
  $('dialog').querySelectorAll('[data-rc]').forEach(b=>b.onclick=()=>{if(!host)return;olMeta=Object.assign({},olMeta,{rc:b.dataset.rc});olRoom.presence({m:olMeta});olSync();renderLobby()});
  const f=$('lFill');if(f)f.onchange=()=>{olMeta=Object.assign({},olMeta,{fill:f.checked});olRoom.presence({m:olMeta});renderLobby()};
  bind('lStart',()=>{audioReady();hostStart()});
  bind('lReady',()=>{audioReady();olMyReady=!olMyReady;olRoom.presence({rd:olMyReady});renderLobby()});
- bind('lLeave',()=>roomListScreen())}
+ bind('lLeave',()=>roomListScreen());
+ bind('lChatSend',sendLobbyChat);
+ const chatInput=$('lChatInput');if(chatInput)chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendLobbyChat()}});
+ const chatBox=$('lChatMessages');if(chatBox)chatBox.scrollTop=chatBox.scrollHeight;
+}
 async function showProfile(name){
  olView='profile';olDialog(`<h1>Profil</h1><p>Memuat...</p>`,true);
  profCache.delete(String(name).toLowerCase());await ensureProfiles([name]);
@@ -478,6 +503,8 @@ function startOnlineRace(go){
  go.parts.forEach(([peer,name],i)=>racers.push(mk(i,name,{remote:peer!==me,peer})));
  for(let k=0;k<go.bots;k++){const i=go.parts.length+k;racers.push(mk(i,(NAMES[1+k]||'CPU')+' (PC)',{bot:true,bi:k,ai:true,remote:!hostNow,skill:.99+((i*7)%2)*.01}))}
  player=racers.find(r=>!r.bot&&!r.remote);
+ olInvalidRace=false;olInvalidReason='';olValidityStartedAt=Date.now();
+ for(const r of racers){r._validStartS=r.s;r._validNetSeen=Date.now()}
  elapsed=0;countdown=3.9;smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';olLastHTML='';olElims=[];olRecPending=false;olRecState='';olView='lobby';$('dialog').dataset.olhtml='';
  renderLeaderboard();$('overlay').style.display='none';audioReady();
  olRoom.presence({ph:'race',s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,f:0,fn:null})}
@@ -502,10 +529,43 @@ function syncRemotes(dt){
   const q=pe.presence;
   if(typeof q.s==='number'&&typeof q.d==='number')applyRemote(r,q.s,q.d,typeof q.v==='number'?q.v:0,q.f,pe.updatedAt,dt);
   if(typeof q.fn==='number'&&!r.finished){r.finished=true;r.finishTime=q.fn}}
- if(!meHost&&hp&&Array.isArray(hp.eo))applyElims(hp.eo)}
+ checkOnlineRaceValidity();if(!meHost&&hp&&Array.isArray(hp.eo))applyElims(hp.eo)}
+function markOnlineRaceInvalid(reason){
+ if(olInvalidRace)return;
+ olInvalidRace=true;olInvalidReason=reason||'Ada peserta manusia yang tidak bergerak selama satu putaran.';
+ if(olRoom)olRoom.presence({iv:1});
+ olRecPending=false;olRecState='invalid';
+ setToast('LOMBA TIDAK SAH','ADA PEMAIN TIDAK BERGERAK 1 PUTARAN');
+}
+function checkOnlineRaceValidity(){
+ if(!online||!olRoom||!racers.length||olInvalidRace)return;
+ const peers=olRoom.peers();
+ // A validity flag from any participant invalidates the entire shared race.
+ if(peers.some(pe=>pe.presence&&pe.presence.iv===1)){markOnlineRaceInvalid('Peserta menandai lomba tidak sah.');return}
+ const humans=racers.filter(r=>!r.bot);
+ if(humans.length<2)return;
+ const progress=r=>Math.max(0,(r.s-(r._validStartS??r.s))*LAP_METERS/TRACK.perimeter);
+ const moving=humans.filter(r=>r.alive&&!r.finished);
+ if(!moving.length)return;
+ const furthest=Math.max(...humans.map(progress));
+ if(furthest<LAP_METERS)return;
+ for(const r of moving){
+  // Ignore stale remote presence briefly so temporary network lag is not treated as cheating.
+  if(r.remote){
+   const pe=peers.find(x=>x.peer===r.peer);
+   if(!pe||Date.now()-(pe.updatedAt||0)>4500)continue;
+  }
+  if(progress(r)<5){markOnlineRaceInvalid('Ada peserta manusia yang tidak bergerak selama satu putaran.');return}
+ }
+}
 function ranking(){return racers.slice().sort((a,b)=>{if(a.finished&&b.finished)return a.finishTime-b.finishTime;if(a.finished)return -1;if(b.finished)return 1;if(a.alive!==b.alive)return a.alive?-1:1;if(!a.alive&&!b.alive)return(b.eliminatedAt||0)-(a.eliminatedAt||0)||b.s-a.s;return b.s-a.s})}
 function olRecordNow(){
- if(!olRecPending||!acct||!player)return;olRecPending=false;const place=ranking().indexOf(player)+1,race=cfg.race;olRecState='saving';
+ if(!olRecPending||!acct||!player)return;
+ if(olInvalidRace){olRecPending=false;olRecState='invalid';return}
+ olRecPending=false;
+ const humanCount=racers.filter(r=>!r.bot).length,totalCount=racers.length;
+ if(totalCount===0||humanCount/totalCount<=.5){olRecState='excluded';if(state==='done'&&online)showOnlineResults();return}
+ const place=ranking().indexOf(player)+1,race=cfg.race;olRecState='saving';
  rpc('skate_record',{p_name:acct.name,p_token:acct.token,p_race:race,p_place:place}).then(r=>{if(r&&r.ok&&r.profile&&acct){acct.profile=normProfile(r.profile);profCache.set(acct.name.toLowerCase(),acct.profile);olRecState='ok'}else olRecState='fail';if(state==='done'&&online)showOnlineResults()})}
 function onlineFinish(won){
  state='done';steer=0;if(won)sfx('finish');olFinAt=Date.now();olRecPending=true;olRecState='';
@@ -515,7 +575,7 @@ function showOnlineResults(){
  if(state!=='done'||!online){if(olRes){clearInterval(olRes);olRes=null}return}
  const rk=ranking(),done=rk.every(r=>r.finished||!r.alive),won=player.finished;
  if(olRecPending&&(!player.alive||done||Date.now()-olFinAt>25000))olRecordNow();
- const rec=olRecState==='ok'?'<div class="mini" style="margin-top:8px">📊 Statistik akunmu sudah diperbarui.</div>':(olRecState==='fail'?'<div class="mini" style="margin-top:8px">Statistik gagal disimpan (koneksi).</div>':'');
+ const rec=olRecState==='invalid'?'<div class="mini" style="margin-top:8px;color:#b42318;font-weight:900">🚫 LOMBA TIDAK SAH — Statistik semua peserta tidak dihitung karena ada pemain yang tidak bergerak selama minimal satu putaran.</div>':(olRecState==='ok'?'<div class="mini" style="margin-top:8px">📊 Statistik akunmu sudah diperbarui.</div>':(olRecState==='excluded'?'<div class="mini" style="margin-top:8px">ℹ️ Statistik tidak dihitung karena 50% atau lebih peserta adalah komputer.</div>':(olRecState==='fail'?'<div class="mini" style="margin-top:8px">Statistik gagal disimpan (koneksi).</div>':'')));
  const html=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${done?'Semua pembalap sudah selesai.':'Menunggu pembalap lain menyelesaikan balapan...'}</p><div class="sub">HASIL • ${escapeHTML(spec().label)}</div>${rk.map((r,i)=>`<div class="rowItem" style="${r===player?'background:#ffe9e2':''}"><b style="width:26px">#${i+1}</b><span style="width:12px;height:12px;border-radius:50%;background:${r.color};flex:none"></span><b style="flex:1;font-size:13px;min-width:0">${escapeHTML(r.name)}${r===player?' (kamu)':''}</b><span style="font-size:12px;font-variant-numeric:tabular-nums">${r.finished?formatTime(r.finishTime):(r.alive?Math.floor(meters(r))+' m':'keluar')}</span></div>`).join('')}${rec}<button class="primary" id="olLobby">KEMBALI KE LOBI</button><button class="secondary" id="olExit">KELUAR ROOM</button>`;
  if(html!==olLastHTML){olLastHTML=html;olDialog(html,true);bind('olLobby',backToLobby);bind('olExit',()=>roomListScreen())}}
 function backToLobby(){
