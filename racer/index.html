@@ -221,7 +221,7 @@ let individualStarted=false,individualTimer=0,individualPhase='';
 function initRace(){const sp=spec();if(sp.individual){online=false;racers=[{id:0,name:cfg.playerName||'SKATER',color:COLORS[0],s:0,d:0,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,phase:0,ai:false,row:1}];player=racers[0];setupIndividualHeat(true);return}const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;const grid=startGrid(sp.count,raceStartS);racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();}
 function updateOfflineRaceTools(){
  const el=$('offlineRaceTools');
- if(el)el.style.display=(!online&&(state==='race'||state==='count'))?'flex':'none';
+ if(el)el.style.display=(!online&&(state==='race'||state==='count'||state==='runup'))?'flex':'none';
 }
 $('offlineRestart')?.addEventListener('click',()=>{if(!online){audioReady();initRace()}});
 $('offlineExit')?.addEventListener('click',()=>{if(!online){audioReady();menu()}});
@@ -268,11 +268,22 @@ function restartAfterFoul(){
  setToast('KARTU KUNING','FOUL START • ULANG START');sfx('crash');
  if(online&&olRoom){olSeenFoulAt=Date.now();olRoom.presence({s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,fc:foulCards,ff:olSeenFoulAt})}
 }
-function tap(){if((state==='runup'||state==='count')&&player&&player.alive){const cap=MAX_SPEED,r=player.v/cap;energy=Math.max(0,energy-(0.55+1.7*Math.pow(Math.min(1,r),2)));player.v=Math.min(cap,player.v+Math.max(0,15*(1.06-r)));lastTapAt=performance.now();const now=performance.now();if(now-lastTapSound>75){sfx('tap');lastTapSound=now}return}if(state!=='race'||!player||!player.alive||player.fall>0)return;
- const cap=smoothSpeedCap,r=player.v/cap,abs=Math.min(1,player.v/MAX_SPEED);
+function tap(){
+ if(!player||!player.alive||player.fall>0)return;
+ if(state==='runup'||state==='count'){
+  const cap=Math.max(1,smoothSpeedCap||MAX_SPEED),ratio=Math.min(1,player.v/cap),abs=Math.min(1,player.v/MAX_SPEED);
+  energy=Math.max(0,energy-(0.55+1.7*abs*abs));
+  player.v=Math.min(cap,player.v+Math.max(0,15*(1.06-ratio)));
+  lastTapAt=performance.now();updateEnergyUI();
+  const now=performance.now();if(now-lastTapSound>75){sfx('tap');lastTapSound=now}return;
+ }
+ if(state!=='race')return;
+ const cap=Math.max(1,smoothSpeedCap),ratio=player.v/cap,abs=Math.min(1,player.v/MAX_SPEED);
  energy=Math.max(0,energy-(0.55+1.7*abs*abs));
- player.v=Math.min(cap,player.v+Math.max(0,15*(1.06-r)));lastTapAt=performance.now();
- const now=performance.now();if(now-lastTapSound>75){sfx('tap');lastTapSound=now}}
+ player.v=Math.min(cap,player.v+Math.max(0,15*(1.06-ratio)));
+ lastTapAt=performance.now();updateEnergyUI();
+ const now=performance.now();if(now-lastTapSound>75){sfx('tap');lastTapSound=now}
+}
 function botEnergyStep(r,dt){
  // AI lebih sulit dengan pacing bertahap: start tetap terkontrol, lalu menjaga tekanan kecepatan sepanjang balapan.
  if(r.en===undefined){const k=r.id;r.en=100;r.lastTap=-9;r.tapT=0;r.rate=13.5+((k*37)%5)*0.35;r.thr=.985+((k*13)%3)*.005}
@@ -309,35 +320,46 @@ steerPad.addEventListener('pointermove',e=>{if(steerDrag)steerSet(e)});
 $('tap').addEventListener('pointerdown',e=>{e.preventDefault();audioReady();$('tap').classList.add('down');tap()});['pointerup','pointercancel','pointerleave'].forEach(k=>$('tap').addEventListener(k,()=>$('tap').classList.remove('down')));
 window.addEventListener('keydown',e=>{const tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;if(e.repeat)return;audioReady();if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setSteer(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setSteer(1);if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setSteer(0);if(e.code==='Space'){e.preventDefault();tap()}});
 function eliminateLap(lap){if(!spec().elim||lap<=eliminations)return;const alive=racers.filter(r=>r.alive);if(alive.length<=3)return;const cand=alive.filter(r=>!r.finished).sort((a,b)=>a.s-b.s),remove=Math.min(3,alive.length-3,cand.length);cand.slice(0,remove).forEach(r=>{r.alive=false;r.eliminatedAt=lap;if(online)olElims.push([r.id,lap])});eliminations=lap;setToast('ELIMINATION','PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}
+// Satu jalur fisika untuk semua nomor: dipakai oleh balapan reguler, Dobbin, dan DTT.
+function stepHumanPhysics(dt){
+ if(!player||!player.alive)return;
+ player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
+ if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
+ const targetCap=speedCap();
+ smoothSpeedCap += (targetCap-smoothSpeedCap)*(1-Math.exp(-dt*0.72));
+ player.v=Math.min(player.v,smoothSpeedCap);
+ const targetD=steerValue*(TRACK.width/2+10);
+ const steerRate=28*Math.min(1.3,player.v/180);
+ const delta=targetD-player.d;
+ player.d+=Math.max(-steerRate*dt,Math.min(steerRate*dt,delta));
+}
 function update(dt){
  if(spec().individual&&(state==='runup'||state==='count'||state==='soloWait')){
   if(state==='soloWait'){if(online)syncRemotes(dt);return}
   if(state==='runup'){
    if(player){
-    const targetCap=speedCap();smoothSpeedCap += (targetCap-smoothSpeedCap)*(1-Math.exp(-dt*0.72));player.v=Math.min(player.v,smoothSpeedCap);
-    if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
-    const targetD=steerValue*(TRACK.width/2-12),delta=targetD-player.d,steerRate=24*Math.min(1.2,Math.max(.2,player.v/110));player.d+=Math.max(-steerRate*dt,Math.min(steerRate*dt,delta));
+    stepHumanPhysics(dt);player.phase+=player.v*dt*.055;
     if(player.v>0){
-    const prev=player.s;player.s+=player.v*dt*(TRACK.perimeter/LAP_METERS);
+    const prev=player.s;player.s+=player.v*dt;
     if(prev<raceStartS&&player.s>=raceStartS){
      const over=player.s-raceStartS;individualTimer=0;individualStarted=true;state='race';player.s=raceStartS+over;elapsed=0;setToast('MULAI!','TIMER DOBBIN SPRINT');sfx('go');
     }
    }
    }
    player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
-   $('speedNum').textContent=kmh(player.v);return;
+   $('speedNum').textContent=kmh(player.v);updateEnergyUI();return;
   }
   if(state==='count'){
-   if(player){const targetD=steerValue*(TRACK.width/2-12),delta=targetD-player.d,steerRate=24*Math.min(1.2,Math.max(.2,player.v/110));player.d+=Math.max(-steerRate*dt,Math.min(steerRate*dt,delta));if(player.v>0){player.s+=player.v*dt*(TRACK.perimeter/LAP_METERS);if(player.s>=raceStartS){restartAfterFoul();return}player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt)}}
+   if(player){stepHumanPhysics(dt);player.phase+=player.v*dt*.055;if(player.v>0){player.s+=player.v*dt;if(player.s>=raceStartS){restartAfterFoul();return}}}
    const old=Math.ceil(countdown);countdown-=dt;const now=Math.ceil(countdown);if(now!==old&&now>0)sfx('count');
-   $('speedNum').textContent='0';
-   if(countdown<=0){state='race';elapsed=0;individualTimer=0;individualStarted=true;energy=100;setToast('GO!');sfx('go')}
+   $('speedNum').textContent='0';updateEnergyUI();
+   if(countdown<=0){state='race';elapsed=0;individualTimer=0;individualStarted=true;energy=100;energyZone='g';smoothSpeedCap=MAX_SPEED;lastTapAt=0;updateEnergyUI();setToast('GO!');sfx('go')}
    return;
   }
  }
  if(state==='count'){
  if(player&&player.alive&&player.v>0){
-  player.s+=player.v*dt*(TRACK.perimeter/LAP_METERS);
+  player.s+=player.v*dt;
   if(player.s>=raceStartS){restartAfterFoul();return}
   player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
  }
@@ -345,30 +367,18 @@ function update(dt){
 if(sp.individual){
  if(!individualStarted){individualStarted=true;individualTimer=0}
  individualTimer+=dt;
- const targetCap=speedCap();
- smoothSpeedCap += (targetCap-smoothSpeedCap)*(1-Math.exp(-dt*0.72));
- player.v=Math.min(player.v,smoothSpeedCap);
- player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
- if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
- const targetD=steerValue*(TRACK.width/2-12),steerRate=24*Math.min(1.2,Math.max(.2,player.v/110)),delta=targetD-player.d;
- player.d+=Math.max(-steerRate*dt,Math.min(steerRate*dt,delta));
+ stepHumanPhysics(dt);player.phase+=player.v*dt*.055;
  const edge=TRACK.width/2-3;if(Math.abs(player.d)>=edge){player.d=Math.sign(player.d)*(edge-10);player.v*=.55;setToast('HATI-HATI!','MENDEKATI BATAS LINTASAN')}
- player.s+=player.v*dt*(TRACK.perimeter/LAP_METERS);
+ player.s+=player.v*dt;
  const dist=(player.s-raceStartS)/TRACK.perimeter*LAP_METERS;
- $('distance').textContent=Math.max(0,Math.floor(dist))+' m';$('lap').textContent='1/1';$('clock').textContent=formatTime(individualTimer);$('speedNum').textContent=kmh(player.v);
+ $('distance').textContent=Math.max(0,Math.floor(dist))+' m';$('lap').textContent='1/1';$('clock').textContent=formatTime(individualTimer);$('speedNum').textContent=kmh(player.v);updateEnergyUI();
  if(dist>=200){player.s=raceStartS+TRACK.perimeter;player.finished=true;player.finishTime=individualTimer;elapsed=individualTimer;if(online)finishIndividualOnline();else endIndividualOffline()}
  return;
 }
 const endS=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter,aliveN=racers.filter(r=>r.alive).length;
 for(const r of racers){if(r.remote)continue;if(!r.alive||r.finished)continue;if(r.crashCooldown>0)r.crashCooldown=Math.max(0,r.crashCooldown-dt);if(r.fall>0){r.fall-=dt;r.v*=Math.max(0,1-3.5*dt);if(r.fall<=0){r.fall=0;r.imm=0;}continue}
 if(r===player){
- r.v=Math.max(0,r.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
- if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
- {const targetCap=speedCap();smoothSpeedCap += (targetCap-smoothSpeedCap)*(1-Math.exp(-dt*0.72));}
- const targetD=steerValue*(TRACK.width/2+10);
- const steerRate=28*Math.min(1.3,r.v/180);
- const delta=targetD-r.d;
- r.d+=Math.max(-steerRate*dt,Math.min(steerRate*dt,delta));
+ stepHumanPhysics(dt);
  const redLine=TRACK.width/2-3;
  if(Math.abs(r.d)>=redLine){
    r.fall=1.65;r.v*=.12;r.d=Math.sign(r.d)*(redLine-12);r.crashCooldown=.55;
@@ -445,7 +455,7 @@ function drawMinimap(){
 function draw(){if(!W||!H)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#cfc8b6';ctx.fillRect(0,0,W,H);const sc=Math.min(W,H)/300,focus=player?trackPos(player.s,player.d):{x:0,y:0,h:0};ctx.save();ctx.translate(W/2,H*.72);ctx.rotate(-Math.PI/2-focus.h);ctx.scale(sc,sc);ctx.translate(-focus.x,-focus.y);const L=TRACK.straight,R=TRACK.radius,o=R+TRACK.width/2,i=R-TRACK.width/2;
 ctx.fillStyle='#a8584a';ctx.beginPath();ctx.roundRect(-L/2-o-14,-o-14,L+2*o+28,2*o+28,o+14);ctx.fill();ctx.fillStyle='#86b6d6';ctx.beginPath();ctx.roundRect(-L/2-o,-o,L+2*o,2*o,o);ctx.fill();for(let j=0;j<6;j++){let r=i+(j+.5)*TRACK.width/6;ctx.strokeStyle=`rgba(255,255,255,${j*.045})`;ctx.lineWidth=TRACK.width/6+.5;ctx.beginPath();ctx.arc(L/2,0,r,-Math.PI/2,Math.PI/2);ctx.stroke();ctx.beginPath();ctx.arc(-L/2,0,r,Math.PI/2,Math.PI*1.5);ctx.stroke()}ctx.fillStyle='#a8584a';ctx.beginPath();ctx.roundRect(-L/2-i-10,-i-10,L+2*i+20,2*i+20,i+10);ctx.fill();ctx.fillStyle='#8a8f5a';ctx.beginPath();ctx.roundRect(-L/2-i,-i,L+2*i,2*i,i);ctx.fill();if(centerLogo.complete&&centerLogo.naturalWidth){const lw=230,lh=lw*centerLogo.naturalHeight/centerLogo.naturalWidth;ctx.save();ctx.globalAlpha=.94;ctx.drawImage(centerLogo,-lw/2,-lh/2,lw,lh);ctx.restore()}ctx.strokeStyle='#ffffff80';ctx.lineWidth=2;ctx.setLineDash([14,14]);ctx.beginPath();ctx.roundRect(-L/2-R,-R,L+2*R,2*R,R);ctx.stroke();ctx.setLineDash([]);const markFinish=(ss)=>{const q=trackPos(ss,0);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.h);const bands=12,band=TRACK.width/bands;for(let k=0;k<bands;k++){ctx.fillStyle=k%2===0?'#fff':'#111';ctx.fillRect(-5,-TRACK.width/2+k*band,10,band+0.4)}ctx.restore()};const markStart=(ss)=>{const q=trackPos(ss,0);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.h);ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(0,-TRACK.width/2);ctx.lineTo(0,TRACK.width/2);ctx.stroke();ctx.restore()};markFinish(TRACK.straight+TRACK.arc+TRACK.straight*0.65);if(cfg.race==='300'||cfg.race==='500')markStart(TRACK.straight+TRACK.arc+TRACK.straight*0.65-TRACK.perimeter/2);racers.slice().sort((a,b)=>a.s-b.s).forEach(drawSkater);ctx.restore();
 if(state==='count'){ctx.fillStyle='#fff';ctx.font='1000 76px system-ui';ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=9;ctx.fillText(Math.ceil(countdown),W/2,H*.43);ctx.shadowBlur=0}if(toast&&performance.now()<toastUntil){const [a,b]=toast.split('|');ctx.textAlign='center';ctx.font='1000 28px system-ui';ctx.lineWidth=4;ctx.strokeStyle='#17202b';ctx.strokeText(a,W/2,H*.43);ctx.fillStyle='#fff';ctx.fillText(a,W/2,H*.43);if(b){ctx.font='800 12px system-ui';ctx.fillText(b,W/2,H*.43+23)}}}
-function frame(now){drawMinimap();const dt=Math.min(.045,(now-lastFrame)/1000||.016);lastFrame=now;onlineTick(now);update(dt);$('app').classList.toggle('playing',state==='count'||state==='race'||state==='runup');$('app').classList.toggle('main-menu',state==='menu');draw();requestAnimationFrame(frame)}
+function frame(now){drawMinimap();updateOfflineRaceTools();const dt=Math.min(.045,(now-lastFrame)/1000||.016);lastFrame=now;onlineTick(now);update(dt);$('app').classList.toggle('playing',state==='count'||state==='race'||state==='runup');$('app').classList.toggle('main-menu',state==='menu');draw();requestAnimationFrame(frame)}
 
 // ===== AKUN, ROOM & MULTIPLAYER ONLINE =====
 const OL_FORMATS=['300','500','1000','elim','ds200','dtt200'];
@@ -1012,17 +1022,21 @@ function renderLobby(force){
  const ps=olViewers(),h=olHostP(ps);if(!h)return;
  const host=!!h.sameTab,m=olMeta,rc=OL_FORMATS.includes(m.rc)?m.rc:'1000',max=OL_MAX[rc],idle=h.presence.ph==='lobby',individual=(rc==='ds200'||rc==='dtt200');
  ensureProfiles(ps.map(olNameOf)).then(ch=>{if(ch&&state==='lobby'&&olView==='lobby')renderLobby()});
- const rows=ps.map(p=>{const racing=p.presence.ph&&p.presence.ph!=='lobby',isH=p===h,nm=olNameOf(p),pr=profOf(nm),lbl=racing?'BALAPAN':(isH?'HOST':(p.presence.rd?'SIAP':'BELUM')),col=racing?'#b5762c':(isH?'#b5762c':(p.presence.rd?'#1a8f5b':'#8a97a6'));
-  return `<div class="rowItem" data-pf="${escapeHTML(nm)}" style="cursor:pointer">${avHTML(pr&&pr.avatar,36,nm)}<div style="flex:1;min-width:0"><b style="font-size:13px">${escapeHTML(nm)}${p.sameTab?' (kamu)':''}${isH?' 👑':''}</b><div class="mini" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pr?infoLine(pr):'…'}</div></div><span style="font-size:11px;font-weight:900;color:${col}">${lbl}</span></div>`}).join('');
+ const rows=ps.map(p=>{const racing=p.presence.ph&&p.presence.ph!=='lobby',isH=p===h,nm=olNameOf(p),pr=profOf(nm),lbl=racing?'BALAPAN':(isH?'HOST':(p.presence.rd?'SIAP':'BELUM')),col=racing?'#b5762c':(isH?'#b5762c':(p.presence.rd?'#1a8f5b':'#8a97a6')),pc=COLORS.includes(p.presence.cc)?p.presence.cc:COLORS[0],taken=new Set(ps.filter(x=>!x.sameTab&&COLORS.includes(x.presence.cc)).map(x=>x.presence.cc));
+  const palette=p.sameTab?`<div class="colorDrop" id="myColorDrop" style="display:none;position:absolute;right:8px;top:42px;z-index:30;background:#fff;border:1px solid #d7dce3;border-radius:12px;padding:8px;box-shadow:0 8px 24px #0002;display:none;grid-template-columns:repeat(6,26px);gap:6px">${COLORS.map(c=>`<button type="button" data-color="${c}" title="${taken.has(c)?'Dipakai pemain lain':c}" ${taken.has(c)?'disabled':''} style="width:26px;height:26px;border-radius:50%;border:2px solid ${pc===c?'#17202b':'#ddd'};background:${c};opacity:${taken.has(c)?'.25':'1'};padding:0"></button>`).join('')}</div>`:'';
+  return `<div class="rowItem" data-pf="${escapeHTML(nm)}" style="cursor:pointer;position:relative">${avHTML(pr&&pr.avatar,36,nm)}<div style="flex:1;min-width:0"><b style="font-size:13px">${escapeHTML(nm)}${p.sameTab?' (kamu)':''}${isH?' 👑':''}</b><div class="mini" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${pr?infoLine(pr):'…'}</div></div><span style="font-size:11px;font-weight:900;color:${col}">${lbl}</span><button type="button" ${p.sameTab?'id="myColorBtn"':''} aria-label="Warna karakter" title="${p.sameTab?'Ubah warna karakter':'Warna karakter'}" style="margin-left:8px;flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #9aa3af;background:${pc};${p.sameTab?'cursor:pointer':'cursor:default'}" ${p.sameTab?'':'disabled'}></button>${palette}</div>`}).join('');
  const humans=ps.filter(p=>individual?(p.presence.ph==='lobby'||p.sameTab):(p.sameTab||(p.presence.rd===true&&p.presence.ph==='lobby'))),fill=!individual&&m.fill!==false,total=individual?humans.length:(fill?max:humans.length),bots=individual?0:Math.max(0,total-humans.length),waiting=individual?0:ps.length-humans.length;
  const canStart=host&&idle&&(individual?total>=1:total>=2);
  const fmt=OL_FORMATS.map(k=>{const dis=!host||OL_MAX[k]<ps.length;return `<button class="choice ${rc===k?'sel':''}" data-rc="${k}" ${dis?'disabled style="opacity:.55"':''}>${OL_LBL[k]}<br><small>maks ${OL_MAX[k]}</small></button>`}).join('');
  let action;
  if(host)action=`${individual?'<div class="mini">Nomor individual: peserta akan berlari bergantian. Tidak ada komputer.</div>':`<label class="chk"><input type="checkbox" id="lFill" ${fill?'checked':''}> Isi slot kosong dengan komputer (sampai ${max} pemain)</label>`}<button class="primary" id="lStart" ${canStart?'':'disabled style="opacity:.5"'}>MULAI ${individual?'GILIRAN INDIVIDUAL':'BALAP'} • ${humans.length} pemain${bots?' + '+bots+' komputer':''}</button>${waiting>0?`<div class="mini" style="margin-top:6px">${waiting} pemain berstatus BELUM tidak akan ikut balapan ini.</div>`:''}`;
  else action=`<button class="primary" id="lReady" ${idle?'':'disabled style="opacity:.5"'}>${!idle?'BALAPAN BERLANGSUNG...':(olMyReady?'BATAL SIAP':'SIAP!')}</button><div class="mini" style="margin-top:6px">Menunggu 👑 host memulai balapan.</div>`;
- olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">🎨 PILIH WARNA KARAKTER</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:8px 0 14px">${COLORS.map(c=>{const taken=ps.some(p=>!p.sameTab&&p.presence.cc===c),mine=olMyColor===c;return `<button type="button" data-color="${c}" title="${taken?'Sudah dipilih pemain lain':mine?'Warna kamu':'Pilih warna'}" ${taken?'disabled':''} style="height:34px;border-radius:9px;border:3px solid ${mine?'#17202b':'#ffffff'};background:${c};opacity:${taken?'.22':'1'};cursor:${taken?'not-allowed':'pointer'};position:relative">${mine?'✓':taken?'×':''}</button>`}).join('')}</div><div class="mini" style="margin:-7px 0 10px">Warna yang sudah dipilih pemain lain akan terkunci.</div><div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave">KELUAR ROOM</button>`,force);
+ olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave">KELUAR ROOM</button>`,force);
  $('dialog').querySelectorAll('[data-pf]').forEach(d=>d.onclick=()=>showProfile(d.dataset.pf));
- $('dialog').querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>chooseRoomColor(b.dataset.color));
+ const colorBtn=$('myColorBtn'),colorDrop=$('myColorDrop');
+ if(colorBtn&&colorDrop)colorBtn.onclick=e=>{e.stopPropagation();colorDrop.style.display=colorDrop.style.display==='grid'?'none':'grid'};
+ $('dialog').querySelectorAll('[data-color]').forEach(b=>b.onclick=e=>{e.stopPropagation();chooseRoomColor(b.dataset.color)});
+ $('dialog').addEventListener('click',e=>{if(colorDrop&&!colorDrop.contains(e.target)&&e.target!==colorBtn)colorDrop.style.display='none'});
  $('dialog').querySelectorAll('[data-rc]').forEach(b=>b.onclick=()=>{if(!host)return;olMeta=Object.assign({},olMeta,{rc:b.dataset.rc});olRoom.presence({m:olMeta});olSync();renderLobby()});
  const f=$('lFill');if(f)f.onchange=()=>{olMeta=Object.assign({},olMeta,{fill:f.checked});olRoom.presence({m:olMeta});renderLobby()};
  bind('lStart',()=>{audioReady();hostStart()});
