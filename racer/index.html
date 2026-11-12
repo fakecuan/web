@@ -14,13 +14,14 @@
 .statGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}.statGrid div{background:#f0f3f7;border-radius:10px;padding:7px 9px;font-size:11px;color:#536171}.statGrid b{color:#25374a;font-size:12px;display:block}
 .emoGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.emo{font-size:22px;background:#dce3eb;border-radius:10px;padding:6px 0}.chk{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:#25374a;margin-top:12px}.chk input{width:18px;height:18px}
 button[disabled]{cursor:not-allowed}
+#speedBox{position:absolute;right:10px;bottom:10px;pointer-events:none;background:#111923d9;border:1px solid #ffffff20;border-radius:12px;padding:6px 12px 5px;text-align:right;box-shadow:0 3px 10px #0004}#speedBox small{display:block;color:#aab7c7;font-size:9px;font-weight:800;letter-spacing:.7px}#speedBox b{font-size:30px;line-height:1;font-variant-numeric:tabular-nums}#speedBox span{font-size:11px;color:#aab7c7;font-weight:800;margin-left:3px}#energy{position:absolute;left:10px;top:62px;width:150px;pointer-events:none;background:#111923d9;border:1px solid #ffffff20;border-radius:10px;padding:5px 8px 6px;box-shadow:0 3px 10px #0004}#energy small{display:flex;justify-content:space-between;color:#aab7c7;font-size:9px;font-weight:800;letter-spacing:.7px;margin-bottom:4px}#energy small b{font-size:10px}#energyTrack{position:relative;height:9px;border-radius:5px;background:#2b3a4c;overflow:hidden}#energyBar{height:100%;width:100%;border-radius:5px;background:#2ecc71;transition:background .2s}#energyTrack i{position:absolute;top:0;bottom:0;width:2px;background:#111923}
 #dialog input{user-select:text;-webkit-user-select:text}
 </style></head><body><div id="app">
 <header id="top"><div id="brand"><strong>🛼 INLINE SKATE RACE</strong><button id="menuBtn" type="button">⌂ MENU UTAMA</button></div><div id="leaderboard"></div></header>
-<main id="stage"><canvas id="track"></canvas><div id="centerHud"><div class="pill"><small>JARAK</small><b id="distance">0 m</b></div><div class="pill"><small>LAP</small><b id="lap">0/1</b></div><div class="pill"><small>WAKTU</small><b id="clock">0:00.00</b></div></div><div id="toast"></div><div id="minimap"><canvas id="mapCanvas"></canvas></div>
+<main id="stage"><canvas id="track"></canvas><div id="centerHud"><div class="pill"><small>JARAK</small><b id="distance">0 m</b></div><div class="pill"><small>LAP</small><b id="lap">0/1</b></div><div class="pill"><small>WAKTU</small><b id="clock">0:00.00</b></div></div><div id="energy"><small><span>ENERGI</span><b id="energyTxt">TOP 100%</b></small><div id="energyTrack"><div id="energyBar"></div><i style="left:25%"></i><i style="left:50%"></i></div></div><div id="speedBox"><small>KECEPATAN</small><b id="speedNum">0</b><span>km/j</span></div><div id="toast"></div><div id="minimap"><canvas id="mapCanvas"></canvas></div>
 <div id="overlay"><div id="dialog"></div></div></main>
 <footer id="controls"><div class="steerBox"><div class="steerTitle">ARAHKAN SKATER</div><div id="steerPad"><div id="steerThumb"></div></div><div id="steerLabels"><span>◀ KIRI</span><span>TENGAH</span><span>KANAN ▶</span></div></div>
-<div class="tapWrap"><button class="tap" id="tap">TAP!<small>TAP BERULANG • TOP SPEED</small></button></div></footer></div>
+<div class="tapWrap"><button class="tap" id="tap">TAP!<small>AKSELERASI • HEMAT SAAT TOP SPEED</small></button></div></footer></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 /* ============ ISI DUA NILAI INI DARI DASHBOARD SUPABASE ============ */
@@ -83,7 +84,7 @@ function startGrid(count,baseS){if(count===18){const lanes=[-53.75,-32.25,-10.75
 function initRace(){const sp=spec();const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;const grid=startGrid(sp.count,raceStartS);racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';renderLeaderboard();$('overlay').style.display='none';}
 function escapeHTML(v){return String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 function menu(){navSeq++;leaveOnline();state='menu';$('dialog').dataset.olhtml='';$('overlay').style.display='flex';const locked=!!acct;
-$('dialog').innerHTML=`<h1>🛼 Inline Skate Race</h1><p>Pilih nomor balapan. Semua lawan menggunakan kemampuan AI paling sulit dan memiliki top speed yang sama.</p><div class="sub">NAMA PEMAIN (WAJIB DIISI)</div><input id="playerNameInput" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Isi nama pemain" value="${escapeHTML(cfg.playerName)}" ${locked?'readonly':''}>${locked?'<div class="mini">Memakai nama akun online. Keluar akun untuk mengganti.</div>':''}<div id="nameErr"></div><div class="sub">PILIH JARAK BALAP • 1 PUTARAN = 200 METER</div><div class="choices">${Object.entries(raceSpecs).map(([k,v])=>`<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.count} PEMBALAP • ${v.laps} LAP</small></button>`).join('')}</div><div class="legend"><b>Level lawan: PALING SULIT</b><br>Kontrol: Tekan TAP berulang untuk menambah kecepatan. Gunakan slider KIRI–TENGAH–KANAN untuk mengarahkan skater. Mode Elimination 2,5 km: 18 pembalap start dalam 3 baris (6 per baris). Setiap lap, 3 pembalap terbawah tereliminasi sampai tersisa 3.</div><button class="primary" id="start">MULAI BALAP</button><button class="secondary" id="online">🌐 MAIN ONLINE (HP vs HP)</button>`;
+$('dialog').innerHTML=`<h1>🛼 Inline Skate Race</h1><p>Pilih nomor balapan. Semua lawan menggunakan kemampuan AI paling sulit dan memiliki top speed yang sama.</p><div class="sub">NAMA PEMAIN (WAJIB DIISI)</div><input id="playerNameInput" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Isi nama pemain" value="${escapeHTML(cfg.playerName)}" ${locked?'readonly':''}>${locked?'<div class="mini">Memakai nama akun online. Keluar akun untuk mengganti.</div>':''}<div id="nameErr"></div><div class="sub">PILIH JARAK BALAP • 1 PUTARAN = 200 METER</div><div class="choices">${Object.entries(raceSpecs).map(([k,v])=>`<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.count} PEMBALAP • ${v.laps} LAP</small></button>`).join('')}</div><div class="legend"><b>Level lawan: PALING SULIT</b><br>Kontrol: Tap berulang untuk akselerasi dari 0, tetapi setiap tap menguras ENERGI. Saat sudah mendekati top speed, berhenti tap agar skater meluncur dan hemat energi; tap lagi hanya untuk menambah kecepatan. Energi kuning = top speed 70%, merah = 50%. Energi pulih saat kamu tidak tap. Lawan komputer memakai aturan energi yang sama. Gunakan slider KIRI–TENGAH–KANAN untuk mengarahkan skater. Mode Elimination 2,5 km: 18 pembalap start dalam 3 baris (6 per baris). Setiap lap, 3 pembalap terbawah tereliminasi sampai tersisa 3.</div><button class="primary" id="start">MULAI BALAP</button><button class="secondary" id="online">🌐 MAIN ONLINE (HP vs HP)</button>`;
 const inp=$('playerNameInput');inp.addEventListener('input',e=>{cfg.playerName=e.target.value});
 $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.playerName=inp.value;cfg.race=b.dataset.race;menu()});
 $('start').onclick=()=>{const n=cleanTxt(inp.value,16);if(!n){$('nameErr').innerHTML='<div class="err">⚠ Nama pemain wajib diisi sebelum bermain.</div>';inp.focus();return}cfg.playerName=n;lsSet('skate_name',n);audioReady();initRace()};
@@ -95,7 +96,28 @@ function meters(r){return Math.min(spec().meters,Math.max(0,(r.s-raceStartS)/TRA
 function gapMeters(r,leader){return (r.s-leader.s)/TRACK.perimeter*LAP_METERS}
 function renderLeaderboard(){const sorted=[...racers].sort((a,b)=>{if(a.alive!==b.alive)return a.alive?-1:1;return b.s-a.s});const leader=sorted.find(r=>r.alive)||sorted[0];$('leaderboard').innerHTML=sorted.map((r,i)=>{let gap=gapMeters(r,leader),g=i===0?'LEAD':(gap<0?'-':'+')+Math.abs(gap).toFixed(1)+' m';return `<div class="racer ${r===player?'me':''} ${!r.alive?'out':''}"><span class="rank">${r.alive?'#'+(i+1):'OUT'}</span><div class="name" style="color:${r.color}">${escapeHTML(r.name)}</div><div class="gap">${r.alive?g:'ELIMINASI'}</div></div>`}).join('')}
 function setToast(a,b=''){toast=a+(b?'|'+b:'');toastUntil=performance.now()+1100}
-function tap(){if(state!=='race'||!player||!player.alive||player.fall>0)return;player.v=Math.min(MAX_SPEED,player.v+ACCEL);player.stamina=Math.min(1,player.stamina+.002);const now=performance.now();if(now-lastTapSound>75){sfx('tap');lastTapSound=now}}
+const ENERGY_GREEN=50,ENERGY_YELLOW=25;let energy=100,lastTapAt=0,energyZone='g';
+function speedCap(){return MAX_SPEED*(energy>=ENERGY_GREEN?1:energy>=ENERGY_YELLOW?.7:.5)}
+// Fair play: biaya tap naik seiring kecepatan, sedangkan tambahan kecepatan mengecil mendekati top speed.
+// Spam tap di top speed hanya membuang energi.
+function tap(){if(state!=='race'||!player||!player.alive||player.fall>0)return;
+ const cap=speedCap(),r=player.v/cap,abs=Math.min(1,player.v/MAX_SPEED);
+ energy=Math.max(0,energy-(0.55+1.7*abs*abs));
+ player.v=Math.min(cap,player.v+Math.max(0,15*(1.06-r)));lastTapAt=performance.now();
+ const now=performance.now();if(now-lastTapSound>75){sfx('tap');lastTapSound=now}}
+function botEnergyStep(r,dt){
+ if(r.en===undefined){const k=r.id;r.en=100;r.lastTap=-9;r.tapT=0;r.rate=6.5+((k*37)%10)/10*2;r.thr=(k%4===3)?.985:.88+((k*13)%7)/100}
+ r.v=Math.max(0,r.v-(1.6+r.v*0.008)*dt);
+ if(elapsed-r.lastTap>.3)r.en=Math.min(100,r.en+6*dt);
+ const cap=MAX_SPEED*(r.en>=ENERGY_GREEN?1:r.en>=ENERGY_YELLOW?.7:.5);
+ if(r.v>cap)r.v=Math.max(cap,r.v-((r.v-cap)*2+1)*dt);
+ r.tapT-=dt;
+ if(r.tapT<=0){if(r.v<cap*r.thr){const a=Math.min(1,r.v/MAX_SPEED);r.en=Math.max(0,r.en-(0.55+1.7*a*a));r.v=Math.min(cap,r.v+Math.max(0,15*(1.06-r.v/cap)));r.lastTap=elapsed;r.tapT=1/r.rate}else r.tapT=0.04}}
+const kmh=v=>Math.round(v/(TRACK.perimeter/LAP_METERS)*3.6);
+function updateEnergyUI(){const z=energy>=ENERGY_GREEN?'g':energy>=ENERGY_YELLOW?'y':'r',bar=$('energyBar');if(!bar)return;
+ bar.style.width=energy.toFixed(1)+'%';bar.style.background=z==='g'?'#2ecc71':z==='y'?'#f1c40f':'#e74c3c';
+ $('energyTxt').textContent='TOP '+(z==='g'?100:z==='y'?70:50)+'%';
+ if(z!==energyZone){if(state==='race'&&player&&player.alive){if(z==='y'&&energyZone==='g')setToast('ENERGI KUNING','TOP SPEED TURUN KE 70%');else if(z==='r')setToast('ENERGI MERAH!','TOP SPEED TURUN KE 50% • JANGAN TAP')}energyZone=z}}
 function setSteer(v){steerValue=Math.max(-1,Math.min(1,v));steer=Math.abs(steerValue)<.18?0:(steerValue<0?-1:1);updateSteerUI();}
 const steerPad=$('steerPad'),steerThumb=$('steerThumb');
 // Kontrol dikembalikan ke slider asli: geser thumb ke kiri/tengah/kanan.
@@ -109,11 +131,13 @@ steerPad.addEventListener('pointermove',e=>{if(steerDrag)steerSet(e)});
 $('tap').addEventListener('pointerdown',e=>{e.preventDefault();audioReady();$('tap').classList.add('down');tap()});['pointerup','pointercancel','pointerleave'].forEach(k=>$('tap').addEventListener(k,()=>$('tap').classList.remove('down')));
 window.addEventListener('keydown',e=>{const tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;if(e.repeat)return;audioReady();if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setSteer(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setSteer(1);if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setSteer(0);if(e.code==='Space'){e.preventDefault();tap()}});
 function eliminateLap(lap){if(!spec().elim||lap<=eliminations)return;const alive=racers.filter(r=>r.alive);if(alive.length<=3)return;const cand=alive.filter(r=>!r.finished).sort((a,b)=>a.s-b.s),remove=Math.min(3,alive.length-3,cand.length);cand.slice(0,remove).forEach(r=>{r.alive=false;r.eliminatedAt=lap;if(online)olElims.push([r.id,lap])});eliminations=lap;setToast('ELIMINATION','PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}
-function update(dt){if(state==='count'){const old=Math.ceil(countdown);countdown-=dt;const now=Math.ceil(countdown);if(now!==old&&now>0)sfx('count');if(countdown<=0){state='race';elapsed=0;setToast('GO!');sfx('go')}return}if(!(state==='race'||(state==='done'&&online)))return;elapsed+=dt;const sp=spec();if(online)syncRemotes(dt);
+function update(dt){if(state==='count'){const old=Math.ceil(countdown);countdown-=dt;const now=Math.ceil(countdown);if(now!==old&&now>0)sfx('count');$('speedNum').textContent='0';if(countdown<=0){state='race';elapsed=0;energy=100;energyZone='g';lastTapAt=0;setToast('GO!');sfx('go')}return}if(!(state==='race'||(state==='done'&&online)))return;elapsed+=dt;const sp=spec();if(online)syncRemotes(dt);
 const endS=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter,aliveN=racers.filter(r=>r.alive).length;
 for(const r of racers){if(r.remote)continue;if(!r.alive||r.finished)continue;if(r.crashCooldown>0)r.crashCooldown=Math.max(0,r.crashCooldown-dt);if(r.fall>0){r.fall-=dt;r.v*=Math.max(0,1-3.5*dt);if(r.fall<=0){r.fall=0;r.imm=0;}continue}
 if(r===player){
- r.v=Math.max(0,r.v-(2.5+r.v*0.018)*dt);
+ r.v=Math.max(0,r.v-(1.6+r.v*0.008)*dt);
+ if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
+ {const cap=speedCap();if(r.v>cap)r.v=Math.max(cap,r.v-((r.v-cap)*2+1)*dt)}
  const targetD=steerValue*(TRACK.width/2+10);
  const steerRate=28*Math.min(1.3,r.v/180);
  const delta=targetD-r.d;
@@ -124,7 +148,7 @@ if(r===player){
    steerValue=0;steer=0;updateSteerUI();
    setToast('MENABRAK GARIS MERAH!','SKATER TERJATUH');sfx('red');
  }
-}else{const accelFactor=.58;const target=MAX_SPEED;r.v+=(target-r.v)*accelFactor*r.skill*dt;const ahead=racers.find(o=>o!==r&&o.alive&&o.s>r.s&&o.s-r.s<45&&Math.abs(o.d-r.d)<20);let desired=r.d;if(ahead)desired+=r.d>=ahead.d?25:-25;const laneBias=Math.sin(elapsed*.55+r.id*2.1)*12;r.d+=(Math.max(-55,Math.min(55,desired+laneBias))-r.d)*Math.min(1,1.3*dt)}
+}else{const accelFactor=.58;const target=MAX_SPEED;botEnergyStep(r,dt);const ahead=racers.find(o=>o!==r&&o.alive&&o.s>r.s&&o.s-r.s<45&&Math.abs(o.d-r.d)<20);let desired=r.d;if(ahead)desired+=r.d>=ahead.d?25:-25;const laneBias=Math.sin(elapsed*.55+r.id*2.1)*12;r.d+=(Math.max(-55,Math.min(55,desired+laneBias))-r.d)*Math.min(1,1.3*dt)}
 r.s+=r.v*dt*(trackPos(r.s,r.d).arc?TRACK.radius/(TRACK.radius+r.d):1);r.phase+=r.v*dt*.055;if(r.s>=endS&&(!sp.elim||aliveN<=3)){r.finished=true;r.finishTime=elapsed;finishOrder.push(r)}
 }
 let collisionSound=false,playerHit=false;
@@ -132,7 +156,7 @@ if(state==='race')for(let i=0;i<racers.length;i++)for(let j=i+1;j<racers.length;
  const a=racers[i],b=racers[j];if(!a.alive||!b.alive||a.finished||b.finished)continue;
  if((a.fall<=0&&a.crashCooldown>0)||(b.fall<=0&&b.crashCooldown>0))continue;
  const collisionProtection=50/LAP_METERS*TRACK.perimeter;
- if(Math.min(a.s,b.s)<collisionProtection)continue;
+ if(Math.min(a.s,b.s)-raceStartS<collisionProtection)continue;
  const ds=Math.abs(a.s-b.s),along=Math.abs(((ds+TRACK.perimeter/2)%TRACK.perimeter)-TRACK.perimeter/2),side=Math.abs(a.d-b.d);
  if(Math.hypot(along,side)<16){
   let newlyHit=false;
@@ -152,7 +176,7 @@ if(state==='race'){
  if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
  else{if(!player.alive){endRace(false);return}if(player.finished){endRace(true);return}}
 }
-$('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);renderLeaderboard();}
+$('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);updateEnergyUI();$('speedNum').textContent=kmh(player.v);renderLeaderboard();}
 function endRace(won){if(online){onlineFinish(won);return}state='done';steer=0;if(won)sfx('finish');const place=ranking().indexOf(player)+1;$('overlay').style.display='flex';$('dialog').innerHTML=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${won?'Kamu menyelesaikan '+spec().label+'.':'Kamu keluar dari balapan.'}</p><div class="sub">HASIL BALAP</div><p><b>Posisi akhir: ${place}</b><br>Waktu: ${formatTime(elapsed)}<br>Jarak: ${Math.floor(meters(player))} meter</p><button class="primary" id="again">BALAP LAGI</button><button class="secondary" id="change">GANTI FORMAT BALAP</button>`;$('again').onclick=initRace;$('change').onclick=menu;}
 function drawSkater(r){const q=trackPos(r.s,r.d);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.h);if(!r.alive)ctx.globalAlpha=.25;if(r.fall>0)ctx.rotate(1.25);let sw=Math.sin(r.phase)*5;ctx.fillStyle='#10151b';ctx.fillRect(-10+sw,-8,13,4);ctx.fillRect(-10-sw,5,13,4);ctx.fillStyle=r.color;ctx.beginPath();ctx.ellipse(0,0,10,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8f8f8';ctx.beginPath();ctx.arc(5,-1,4.2,0,Math.PI*2);ctx.fill();if(r===player){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);ctx.stroke()}ctx.restore()}
 function drawMinimap(){
