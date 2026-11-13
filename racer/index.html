@@ -365,6 +365,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #app.avatar-mode #overlay{touch-action:none;cursor:grab}
 
 /* ===== LAYAR FINISH ===== */
+@keyframes finBlink{0%,100%{opacity:1}50%{opacity:.35}}
+.finWrap.online .finBanner b{animation:finBlink 1.1s ease-in-out infinite}
 .finRankLeft{position:absolute;left:8px;top:calc(58px + 2vh + clamp(70px,16vw,130px));width:min(40vw,176px);max-height:36%;overflow:auto;background:rgba(12,36,92,.8);border:1.5px solid #78c3ffaa;border-radius:12px;padding:6px;color:#fff;font-size:11px;z-index:2;box-shadow:0 4px 12px #0006}
 .finRankLeft .frkRow{display:flex;align-items:center;gap:5px;padding:4px 4px;border-bottom:1px solid #ffffff22;min-width:0}
 .finRankLeft .frkRow.me{background:rgba(255,210,63,.22);border-radius:8px}
@@ -657,7 +659,7 @@ function updateOfflineRaceTools(){
  if(el)el.style.display=(!online&&(state==='race'||state==='count'||state==='runup'))?'flex':'none';
 }
 $('offlineRestart')?.addEventListener('click',()=>{if(!online){audioReady();initRace()}});
-$('offlineExit')?.addEventListener('click',()=>{if(!online){audioReady();menu()}});
+$('offlineExit')?.addEventListener('click',()=>{if(!online){audioReady();confirmExit('Balapan ini tidak akan disimpan.',()=>menu())}});
 function escapeHTML(v){return String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 const menuBtnEl=$('menuBtn');if(menuBtnEl)menuBtnEl.addEventListener('click',()=>{audioReady();steer=0;steerValue=0;updateSteerUI();menu()});
 function formatTime(s){let m=Math.floor(s/60),sec=(s%60).toFixed(2).padStart(5,'0');return m+':'+sec}
@@ -1001,7 +1003,7 @@ function finishIndividualOnline(){
  state='soloWait';player.finished=true;player.finishTime=time;player.v=0;steer=0;steerValue=0;player.s=raceStartS+TRACK.perimeter-1;sfx('finish');
  {const key='diva_record_'+cfg.race;let best=Number(localStorage.getItem(key)||0);const isBest=!best||time<best;if(isBest){best=time;try{localStorage.setItem(key,String(best))}catch(e){}}
   finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'🏆 REKOR BARU':'',time:formatTime(time),lapLbl:'JARAK',lap:'200 M',againLbl:'MENUNGGU HASIL…',changeLbl:'KELUAR'});
-  const ag=$('again'),ch=$('change');if(ag){ag.disabled=true;ag.style.opacity='.7';ag.onclick=null}if(ch)ch.onclick=()=>roomListScreen()}
+  const ag=$('again'),ch=$('change');if(ag){ag.disabled=true;ag.style.opacity='.7';ag.onclick=null}if(ch)ch.onclick=()=>confirmExit('Kamu akan keluar dari room ini.',()=>roomListScreen())}
 }
 function endRace(won){if(online){onlineFinish(won);return}state='done';updateOfflineRaceTools();steer=0;if(won)sfx('finish');const place=ranking().indexOf(player)+1;const LT=Math.ceil(spec().laps);finScreen({win:won,title:won?'FINISH':'TERELIMINASI',sub:won?'':'Jarak tempuh '+Math.floor(meters(player))+' m',place,time:formatTime(elapsed),lap:(won?LT:Math.min(LT,currentLap(player)))+'/'+LT});}
 function drawSkater(r){const q=trackPos(r.s,r.d);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.h);if(!r.alive)ctx.globalAlpha=.25;if(r.fall>0)ctx.rotate(1.25);let sw=Math.sin(r.phase)*5;ctx.fillStyle='#10151b';ctx.fillRect(-10+sw,-8,13,4);ctx.fillRect(-10-sw,5,13,4);ctx.fillStyle=r.color;ctx.beginPath();ctx.ellipse(0,0,10,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8f8f8';ctx.beginPath();ctx.arc(5,-1,4.2,0,Math.PI*2);ctx.fill();if(r===player){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);ctx.stroke()}ctx.restore()}
@@ -1675,7 +1677,7 @@ function finScreen(o){const pl=o.place||0,cls=pl===1?'gold':pl===2?'silver':pl==
  const badge=o.place?`<div class="finBadge ${cls}"><svg viewBox="0 0 120 120"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s1"/><stop offset="1" class="s2"/></linearGradient></defs>${leaf(1)}${leaf(-1)}<path d="M60 14l34 12v30c0 22-15 36-34 46C41 92 26 78 26 56V26z" fill="#13213f" stroke="url(#lg)" stroke-width="5"/><path d="M14 92h92l-8 10 8 10H14l8-10z" fill="#d61f26"/></svg><small>POSISI</small><b>${pl}</b></div>`:(o.badgeText?`<div class="finRecord">${o.badgeText}</div>`:'');
  let conf='';if(o.win)for(let i=0;i<46;i++){const c=['#ffd23f','#e8302a','#2f8bff','#22c55e','#ffffff','#ff5fb0'][i%6];conf+=`<i style="left:${(i*37)%100}%;background:${c};animation-delay:${(-(i*0.13)%3).toFixed(2)}s;animation-duration:${(2.4+(i%5)*.35).toFixed(2)}s"></i>`}
  $('overlay').style.display='flex';
- $('dialog').innerHTML=`<div class="finWrap ${o.win?'win':'lose'}"><div class="finConf">${conf}</div><div class="finBanner"><span class="chk"></span><b>${o.title}</b><span class="chk r"></span></div>${o.sub?`<div class="finSub">${o.sub}</div>`:''}${badge}${o.leftHtml?`<div class="finRankLeft">${o.leftHtml}</div>`:''}
+ $('dialog').innerHTML=`<div class="finWrap ${o.win?'win':'lose'}${o.online?' online':''}"><div class="finConf">${conf}</div><div class="finBanner"><span class="chk"></span><b>${o.title}</b><span class="chk r"></span></div>${o.sub?`<div class="finSub">${o.sub}</div>`:''}${badge}${o.leftHtml?`<div class="finRankLeft">${o.leftHtml}</div>`:''}
  <div class="finBottom"><div class="finBtns"><button class="primary" id="again">${o.againLbl||'BALAP LAGI'}</button><button class="secondary" id="change">${o.changeLbl||'GANTI MATA LOMBA'}</button></div>
  <div class="finBar"><span class="it"><i>⏱</i>WAKTU <b class="y">${o.time}</b></span><span class="sep"></span><span class="it"><i>🏁</i>${o.lapLbl||'LAP'} <b>${o.lap}</b></span></div></div></div>`;
  $('again').onclick=initRace;$('change').onclick=menu;}
@@ -1964,7 +1966,7 @@ function renderRooms(){
  ${isAdminAcct()?'<button class="secondary" id="rAdmin">🛡️ ADMIN: RESET PASSWORD PEMAIN</button>':''}<div style="display:flex;gap:7px"><button class="btnS" id="rFind" style="flex:1">🔎 CARI ROOM</button><button class="btnS" id="rRetry" style="flex:1">🔄 COBA LAGI</button></div><button class="primary" id="rNew">➕ BUAT ROOM</button>
  <div class="socialPanel"><h3>🟢 PEMAIN ONLINE</h3><div id="onlineFriends" class="mini">Memuat teman online...</div></div>
  <button class="secondary" id="rOut">LOGOUT</button><button class="secondary" id="rBack">⌂ MENU UTAMA</button>`);
- bind('rNew',createRoomScreen);bind('rFind',()=>roomSearchScreen());bind('rRetry',()=>{lbErr='';roomListScreen()});bind('rBack',menu);bind('rOut',logout);if(isAdminAcct())bind('rAdmin',()=>adminResetScreen());
+ bind('rNew',createRoomScreen);bind('rFind',()=>roomSearchScreen());bind('rRetry',()=>{lbErr='';roomListScreen()});bind('rBack',menu);bind('rOut',()=>confirmExit('Kamu akan keluar dari akun ini.',logout));if(isAdminAcct())bind('rAdmin',()=>adminResetScreen());
  $('dialog').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{const r=rooms.find(x=>x.c===b.dataset.join);if(!r)return;if(r.pw)joinPwScreen(r);else joinRoom(r.c,'')});
  renderOnlineFriends();
 }
@@ -2259,7 +2261,7 @@ async function viewPlayerProfile(name){
  if(isOwn){
   const statusBox=document.createElement('div');statusBox.className='socialPanel';statusBox.innerHTML=`<h3>🟢 STATUS KEHADIRAN</h3><div class="mini">Pilih status yang terlihat oleh teman. Default: Online.</div><div class="presenceChoice"><button type="button" data-presence="online" class="${presenceState==='online'?'active':''}">🟢 Online</button><button type="button" data-presence="away" class="${presenceState==='away'?'active':''}">🟡 Menjauh</button><button type="button" data-presence="offline" class="${presenceState==='offline'?'active':''}">🔴 Tidak online</button></div><div id="presenceMsg" class="mini"></div>`;
   el.appendChild(statusBox);statusBox.querySelectorAll('[data-presence]').forEach(b=>b.onclick=()=>{setPresenceStatus(b.dataset.presence);statusBox.querySelectorAll('[data-presence]').forEach(x=>x.classList.toggle('active',x===b))});
-  const logoutBtn=document.createElement('button');logoutBtn.className='secondary';logoutBtn.id='profileLogout';logoutBtn.textContent='LOGOUT';el.appendChild(logoutBtn);bind('profileLogout',logout);
+  const logoutBtn=document.createElement('button');logoutBtn.className='secondary';logoutBtn.id='profileLogout';logoutBtn.textContent='LOGOUT';el.appendChild(logoutBtn);bind('profileLogout',()=>confirmExit('Kamu akan keluar dari akun ini.',logout));
  }
  if(!isOwn){
  bind('viewFollow',async()=>{const z=await rpc('skate_follow',{p_name:acct.name,p_token:acct.token,p_target:p.name});if(z.ok){followingNames=null;if($('viewFollow')){$('viewFollow').textContent='✓ TEMAN';$('viewFollow').disabled=true}}});
@@ -2415,7 +2417,7 @@ function renderLobby(force){
  let action;
  if(host)action=`${individual?'<div class="mini">Nomor individual: peserta akan berlari bergantian. Tidak ada komputer.</div>':`<label class="chk"><input type="checkbox" id="lFill" ${fill?'checked':''}> Isi slot kosong dengan komputer (sampai ${max} pemain)</label>`}<button class="primary" id="lStart" ${canStart?'':'disabled style="opacity:.5"'}>MULAI ${individual?'GILIRAN INDIVIDUAL':'BALAP'} • ${humans.length} pemain${bots?' + '+bots+' komputer':''}</button>${waiting>0?`<div class="mini" style="margin-top:6px">${waiting} pemain berstatus BELUM tidak akan ikut balapan ini.</div>`:''}`;
  else action=`<button class="primary" id="lReady" ${idle?'':'disabled style="opacity:.5"'}>${!idle?'BALAPAN BERLANGSUNG...':(olMyReady?'BATAL SIAP':'SIAP!')}</button><div class="mini" style="margin-top:6px">Menunggu 👑 host memulai balapan.</div>`;
- olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave" title="Keluar room" aria-label="Keluar room" style="width:48px;height:42px;margin:8px auto 0;display:block;font-size:22px;padding:4px">↪</button>`,force);
+ olDialog(`<h1>${m.pwh?'🔒 ':''}${escapeHTML(m.nm)}</h1><p>Kode room: <b>${olCode.toUpperCase()}</b> • ${m.pwh?'Private':'Publik'}. Ketuk nama pemain untuk melihat profil & statistik.</p><div class="sub">PEMAIN (${ps.length}/${max})</div>${rows}<div class="sub">💬 CHAT ROOM</div><div id="lChatMessages" style="height:150px;overflow-y:auto;background:#f5f6f8;border:1px solid #e1e4e8;border-radius:10px;padding:8px;text-align:left">${olChatMessages.length?olChatMessages.map(x=>`<div class="mini" style="padding:4px 2px;overflow-wrap:anywhere"><b>${escapeHTML(x.n)}</b> <span style="opacity:.55">${new Date(x.at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span><div>${escapeHTML(x.t)}</div></div>`).join(''):'<div class="mini" style="opacity:.65;text-align:center;padding:48px 4px">Belum ada pesan. Sapa pemain lain!</div>'}</div><div style="display:flex;gap:6px;margin:7px 0 12px"><input id="lChatInput" class="playerNameInput" maxlength="180" autocomplete="off" placeholder="Tulis pesan..." style="flex:1;min-width:0;margin:0"><button class="btnS" id="lChatSend" style="flex:none">KIRIM</button></div><div class="sub">JARAK BALAP ${host?'(kamu 👑 yang memilih)':'(dipilih 👑 host)'}</div><div class="choices" style="grid-template-columns:repeat(4,1fr)">${fmt}</div>${action}<button class="secondary" id="lLeave" style="width:100%;margin-top:8px">🚪 KELUAR ROOM</button>`,force);
  $('dialog').querySelectorAll('[data-pf]').forEach(d=>d.onclick=()=>showProfile(d.dataset.pf));
  const colorBtn=$('myColorBtn'),colorDrop=$('myColorDrop');
  if(colorBtn&&colorDrop)colorBtn.onclick=e=>{e.stopPropagation();colorDrop.style.display=colorDrop.style.display==='grid'?'none':'grid'};
@@ -2425,7 +2427,7 @@ function renderLobby(force){
  const f=$('lFill');if(f)f.onchange=()=>{olMeta=Object.assign({},olMeta,{fill:f.checked});olRoom.presence({m:olMeta});renderLobby()};
  bind('lStart',()=>{audioReady();hostStart()});
  bind('lReady',()=>{audioReady();olMyReady=!olMyReady;olRoom.presence({rd:olMyReady});renderLobby()});
- bind('lLeave',()=>roomListScreen());
+ bind('lLeave',()=>confirmExit('Kamu akan keluar dari room ini.',()=>roomListScreen()));
  bind('lChatSend',sendLobbyChat);
  const chatInput=$('lChatInput');if(chatInput)chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendLobbyChat()}});
  const chatBox=$('lChatMessages');if(chatBox)chatBox.scrollTop=chatBox.scrollHeight;
@@ -2438,9 +2440,31 @@ async function showProfile(name){
  bind('pBack',()=>{olView='lobby';renderLobby(true)})}
 
 /* ---------- mulai & jalannya balapan online ---------- */
-function hostStart(){
+function confirmExit(msg,onYes){
+ closeModalById('exitConfirm');
+ const wrap=document.createElement('div');wrap.id='exitConfirm';
+ wrap.style.cssText='position:fixed;inset:0;z-index:10027;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px';
+ wrap.innerHTML=`<div style="width:min(340px,100%);background:linear-gradient(180deg,rgba(22,66,150,.97),rgba(10,36,98,.98));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:16px;box-shadow:0 12px 40px #0008;display:flex;flex-direction:column;gap:10px;text-align:center">
+ <div style="font-size:28px">🚪</div><b style="font-size:17px">YAKIN MAU KELUAR?</b><div style="font-size:14px">${escapeHTML(msg)}</div>
+ <button class="primary" id="exYes">✅ YA, KELUAR</button><button class="secondary" id="exNo">BATAL</button></div>`;
+ document.body.appendChild(wrap);
+ $('exYes').onclick=()=>{wrap.remove();onYes()};$('exNo').onclick=()=>wrap.remove();
+}
+function showReadyPrompt(names,onGo){
+ closeModalById('readyPrompt');
+ const wrap=document.createElement('div');wrap.id='readyPrompt';
+ wrap.style.cssText='position:fixed;inset:0;z-index:10026;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px';
+ wrap.innerHTML=`<div style="width:min(360px,100%);background:linear-gradient(180deg,rgba(22,66,150,.97),rgba(10,36,98,.98));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:16px;box-shadow:0 12px 40px #0008;display:flex;flex-direction:column;gap:10px;text-align:center">
+ <div style="font-size:28px">⏳</div><b style="font-size:16px">BELUM SEMUA SIAP</b>
+ <div style="font-size:14px">${names.length} pemain belum siap: <b>${names.map(x=>escapeHTML(x)).join(', ')}</b>.<br>Lanjut mulai tanpa mereka, atau tunggu sampai mereka siap?</div>
+ <button class="primary" id="rpGo">▶ LANJUT</button><button class="secondary" id="rpWait">⏳ TUNGGU SIAP</button></div>`;
+ document.body.appendChild(wrap);
+ $('rpGo').onclick=()=>{wrap.remove();onGo()};$('rpWait').onclick=()=>wrap.remove();
+}
+function hostStart(force){
  if(!olRoom||!iAmHost()||!olMeta)return;const ps=olViewers(),max=OL_MAX[olMeta.rc];
  const individual=olMeta.rc==='ds200'||olMeta.rc==='dtt200';
+ if(!force&&!individual){const wait=ps.filter(p=>!p.sameTab&&p.presence.ph==='lobby'&&p.presence.rd!==true);if(wait.length){showReadyPrompt(wait.map(olNameOf),()=>hostStart(true));return}}
  if(individual){
   const participants=ps.filter(p=>p.presence.ph==='lobby'||p.sameTab);
   if(!participants.length)return;
@@ -2571,8 +2595,11 @@ function olRecordNow(){
 function renderOnlineFinish(rows,won,o){
  const me=rows.findIndex(r=>r.me),place=won&&me>=0?me+1:0;
  const left=(o.sub?`<div class="mini" style="font-weight:900;margin-bottom:4px">${escapeHTML(o.sub)}</div>`:'')+rows.map((r,i)=>`<div class="frkRow${r.me?' me':''}"><b>#${i+1}</b><span class="frkDot" style="background:${escapeHTML(r.color||'#ffffff')}"></span><span class="frkName">${escapeHTML(r.name)}${r.me?' (kamu)':''}</span><span class="frkT">${r.text}</span></div>`).join('')+(o.rec||'')+(o.status?`<div class="mini">${o.status}</div>`:'');
- finScreen({win:won,title:won?'FINISH':'TERELIMINASI',sub:'',badgeText:o.badge||'',place,time:o.time,lapLbl:o.lapLbl,lap:o.lap,againLbl:o.againLbl||'MAIN LAGI',changeLbl:'KELUAR',leftHtml:left});
- $('again').onclick=o.onAgain;$('change').onclick=o.onExit;
+ const cur=document.querySelector('#dialog .finWrap.online');
+ const exitFn=()=>confirmExit('Kamu akan keluar dari room ini.',o.onExit);
+ if(cur&&cur.classList.contains(won?'win':'lose')){const L=document.querySelector('#dialog .finRankLeft');if(L)L.innerHTML=left;$('again').onclick=o.onAgain;$('change').onclick=exitFn;return}
+ finScreen({online:true,win:won,title:won?'FINISH':'TERELIMINASI',sub:'',badgeText:o.badge||'',place,time:o.time,lapLbl:o.lapLbl,lap:o.lap,againLbl:o.againLbl||'MAIN LAGI',changeLbl:'KELUAR',leftHtml:left});
+ $('again').onclick=o.onAgain;$('change').onclick=exitFn;
 }
 function showIndividualOnlineResults(){
  if(!online||!olRoom)return;
