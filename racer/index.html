@@ -459,6 +459,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #menuFriends .mfRow{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#ffffff14;border:1px solid #78c3ff66;border-radius:12px;padding:6px 8px;color:#fff;cursor:pointer;font:inherit}
 #menuFriends .mfDot{width:10px;height:10px;border-radius:50%;background:#2ecc40;box-shadow:0 0 6px #2ecc40;flex:0 0 auto}
 #menuFriends .mfName{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+#menuFriends .mfDot.away{background:#f5b301;box-shadow:0 0 6px #f5b301}
 #menuFriends .mfMsg{text-align:center;opacity:.85;font-size:11px;padding:4px 2px}
 #menuFriends .mfFind{width:100%;padding:8px 10px;border-radius:14px;background:linear-gradient(180deg,#3a9bff,#1257c9);border:2px solid #fff9;color:#fff;font-style:italic;font-weight:900;font-size:12px;cursor:pointer}
 @media(max-width:420px){#menuFriends{width:min(220px,50vw);padding:8px}}
@@ -1734,7 +1735,7 @@ const OL_MAX={'300':6,'500':6,'1000':8,'elim':16,'ds200':99,'dtt200':99};
 const OL_LBL={'300':'300 M','500':'500 M','1000':'1.000 M','elim':'ELIM','ds200':'DOBBIN SPRINT 200 M','dtt200':'DTT 200 M'};
 const EMOJIS=['🛼','🏁','🔥','⚡','🦊','🐯','🦅','🐬','🚀','👑','🌟','😎'];
 let online=false,olRoom=null,olCode='',olUnsub=null,olLastSend=0,olRes=null,olLastHTML='',olMyReady=false,olMeta=null,olMyPw='',olLastGo='',olElims=[],olRecPending=false,olRecState='',olFinAt=0,olView='lobby',olSyncAt=0,olLbLast='';
-let acct=null,navSeq=0,lbRoom=null,lbUnsub=null,lbBusy=null,roomApiP=null,roomMsg='',createRc='1000'; let olInvalidRace=false,olInvalidReason='',olValidityStartedAt=0;
+let acct=null,navSeq=0,lbRoom=null,lbUnsub=null,lbChatUnsub=null,lbBusy=null,roomApiP=null,roomMsg='',createRc='1000'; let olInvalidRace=false,olInvalidReason='',olValidityStartedAt=0;
 let olChatMessages=[],olChatUnsub=null,olChatLastSent=0;
 const profCache=new Map();
 function addLobbyChatMessage(m){
@@ -1928,32 +1929,33 @@ async function roomApi(){
  })();
  const r=await roomApiP;if(!r)roomApiP=null;return r
 }
+let lbErr='';
 async function ensureLobby(){if(lbRoom)return true;if(lbBusy)return lbBusy;
- lbBusy=(async()=>{const room=await roomApi();if(!room)return false;try{lbRoom=await room.join('skate-lobby')}catch(e){lbRoom=null;return false}
-  lbRoom.presence({u:acct?acct.name:'?',status:acct?.profile?.status||'',avatar:acct?.profile?.avatar||''});lbUnsub=lbRoom.onPeers(()=>{if(state==='rooms'){renderRooms();renderOnlineFriends()}if(state==='menu')renderMenuFriends()});olLbLast='';return true})();
+ lbBusy=(async()=>{const room=await roomApi();if(!room){lbErr='adapter_missing';return false}try{lbRoom=await room.join('skate-lobby')}catch(e){lbRoom=null;lbErr=String((e&&e.code)||(e&&e.message)||'gagal');return false}lbErr='';
+  lbRoom.presence({u:acct?acct.name:'?',status:acct?.profile?.status||'',avatar:acct?.profile?.avatar||''});if(lbRoom.onChat)lbChatUnsub=lbRoom.onChat(handleLobbyChat);lbUnsub=lbRoom.onPeers(()=>{if(state==='rooms'){renderRooms();renderOnlineFriends()}if(state==='menu')renderMenuFriends()});olLbLast='';return true})();
  const ok=await lbBusy;lbBusy=null;return ok}
 function lobbyRooms(){const seen=new Map();let on=0;if(lbRoom)for(const p of lbRoom.peers()){const q=p.presence||{};if(q.u)on++;const r=q.r;if(r&&typeof r.c==='string'&&/^[a-z0-9]{3,8}$/.test(r.c)&&OL_FORMATS.includes(r.rc)&&!seen.has(r.c))seen.set(r.c,{c:r.c,nm:cleanTxt(r.nm,20)||'Room',pw:r.pw?1:0,rc:r.rc,n:Math.max(0,Number(r.n)||0),mx:OL_MAX[r.rc],ph:r.ph==='lobby'?'lobby':'race'})}
  return{rooms:[...seen.values()].sort((a,b)=>(a.ph==='lobby'?0:1)-(b.ph==='lobby'?0:1)||b.n-a.n),online:on}}
 function leaveRoom(){olRecordNow();if(olChatUnsub){try{olChatUnsub()}catch(e){}olChatUnsub=null}if(olRes){clearInterval(olRes);olRes=null}if(olUnsub){try{olUnsub()}catch(e){}olUnsub=null}if(olRoom){try{olRoom.leave()}catch(e){}olRoom=null}online=false;olMyColor=COLORS[0];olMeta=null;olElims=[];olLbLast='';olRecState='';if(lbRoom){try{lbRoom.presence({r:null})}catch(e){}}$('dialog').dataset.olhtml=''}
-function leaveOnline(){leaveRoom();if(lbUnsub){try{lbUnsub()}catch(e){}lbUnsub=null}if(lbRoom){try{lbRoom.leave()}catch(e){}lbRoom=null}}
+function leaveOnline(){leaveRoom();if(lbChatUnsub){try{lbChatUnsub()}catch(e){}lbChatUnsub=null}if(lbUnsub){try{lbUnsub()}catch(e){}lbUnsub=null}if(lbRoom){try{lbRoom.leave()}catch(e){}lbRoom=null}}
 
 /* ---------- daftar room + kotak pemain ---------- */
 async function roomListScreen(msg){
  const my=++navSeq;leaveRoom();state='rooms';olView='rooms';roomMsg=msg||'';renderRooms();
- const ok=await ensureLobby();if(my!==navSeq)return;if(!ok)roomMsg='Fitur online (server room) tidak tersedia di tampilan ini.';renderRooms()}
+ const ok=await ensureLobby();if(my!==navSeq)return;if(!ok)roomMsg='Gagal tersambung ke lobi online ('+(lbErr||'tidak diketahui')+'). Ketuk COBA LAGI.';renderRooms()}
 function renderRooms(){
  if(state!=='rooms'||!acct)return;
  const {rooms,online:on}=lobbyRooms();
  const rows=rooms.map(r=>{const full=r.n>=r.mx,racing=r.ph!=='lobby',can=!full&&!racing;
-  return `<div class="rowItem"><div style="flex:1;min-width:0"><b style="font-size:13px">${r.pw?'🔒 ':''}${escapeHTML(r.nm)}</b><div class="mini">${OL_LBL[r.rc]} • ${r.n}/${r.mx} pemain • ${racing?'🏁 BALAPAN':'⏳ MENUNGGU'}</div></div><button class="btnS" data-join="${r.c}" ${can?'':'disabled style="opacity:.45"'}>${full?'PENUH':racing?'MAIN':'GABUNG'}</button></div>`}).join('');
+  return `<div class="rowItem"><div style="flex:1;min-width:0"><b style="font-size:13px">${r.pw?'🔒 ':''}${escapeHTML(r.nm)}</b><div class="mini">${OL_LBL[r.rc]} • Kode <b>${r.c}</b> • ${r.n}/${r.mx} pemain • ${racing?'🏁 BALAPAN':'⏳ MENUNGGU'}</div></div><button class="btnS" data-join="${r.c}" ${can?'':'disabled style="opacity:.45"'}>${full?'PENUH':racing?'MAIN':'GABUNG'}</button></div>`}).join('');
  olDialog(`<h1>🌐 Multiplayer Online</h1>
  <div class="sub">ROOM AKTIF <span style="color:#1a8f5b">• 🟢 ${on} pemain online</span></div>
  ${roomMsg?`<div class="err">⚠ ${escapeHTML(roomMsg)}</div>`:''}
  ${rows||'<div class="mini" style="padding:8px 2px">Belum ada room aktif. Buat room baru atau ajak temanmu online.</div>'}
- ${isAdminAcct()?'<button class="secondary" id="rAdmin">🛡️ ADMIN: RESET PASSWORD PEMAIN</button>':''}<button class="primary" id="rNew">➕ BUAT ROOM</button>
+ ${isAdminAcct()?'<button class="secondary" id="rAdmin">🛡️ ADMIN: RESET PASSWORD PEMAIN</button>':''}<div style="display:flex;gap:7px"><button class="btnS" id="rFind" style="flex:1">🔎 CARI ROOM</button><button class="btnS" id="rRetry" style="flex:1">🔄 COBA LAGI</button></div><button class="primary" id="rNew">➕ BUAT ROOM</button>
  <div class="socialPanel"><h3>🟢 PEMAIN ONLINE</h3><div id="onlineFriends" class="mini">Memuat teman online...</div></div>
  <button class="secondary" id="rOut">LOGOUT</button><button class="secondary" id="rBack">⌂ MENU UTAMA</button>`);
- bind('rNew',createRoomScreen);bind('rBack',menu);bind('rOut',logout);if(isAdminAcct())bind('rAdmin',()=>adminResetScreen());
+ bind('rNew',createRoomScreen);bind('rFind',()=>roomSearchScreen());bind('rRetry',()=>{lbErr='';roomListScreen()});bind('rBack',menu);bind('rOut',logout);if(isAdminAcct())bind('rAdmin',()=>adminResetScreen());
  $('dialog').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>{const r=rooms.find(x=>x.c===b.dataset.join);if(!r)return;if(r.pw)joinPwScreen(r);else joinRoom(r.c,'')});
  renderOnlineFriends();
 }
@@ -1973,25 +1975,96 @@ async function renderOnlineFriends(){
  if(!list.length){el.textContent='Belum ada pemain lain yang online.';return}
  const fol=await loadFollowingNames();
  if(state!=='rooms'||!$('onlineFriends'))return;
- el.innerHTML=list.map(x=>`<button class="onlineFriendBtn" data-prof="${escapeHTML(x.name)}" style="width:100%;text-align:left;cursor:pointer">${avHTML(x.avatar,42,x.name)}<span style="flex:1;min-width:0"><b><i class="presenceDot online"></i> ${escapeHTML(x.name)}${fol.has(x.name.toLowerCase())?' <small>• TEMAN</small>':''}</b><div class="mini">${x.status?escapeHTML(x.status):'Online'}</div><small>Ketuk untuk lihat profil</small></span></button>`).join('');
- el.querySelectorAll('[data-prof]').forEach(b=>b.onclick=()=>viewPlayerProfile(b.dataset.prof));
+ el.innerHTML=list.map(x=>`<button class="onlineFriendBtn" data-prof="${escapeHTML(x.name)}" data-av="${escapeHTML(x.avatar||'')}" style="width:100%;text-align:left;cursor:pointer">${avHTML(x.avatar,42,x.name)}<span style="flex:1;min-width:0"><b><i class="presenceDot online"></i> ${escapeHTML(x.name)}${fol.has(x.name.toLowerCase())?' <small>• TEMAN</small>':''}</b><div class="mini">${x.status?escapeHTML(x.status):'Online'}</div><small>Ketuk untuk lihat profil</small></span></button>`).join('');
+ el.querySelectorAll('[data-prof]').forEach(b=>b.onclick=()=>showFriendAction(b.dataset.prof,b.dataset.av));
 }
 async function renderMenuFriends(){
  const el=$('menuFriends');if(!el)return;
  if(state!=='menu'||!acct){el.innerHTML='';return}
- el.innerHTML='<div class="mfTitle">👥 TEMAN ONLINE</div><div class="mfList"><div class="mfMsg">Memuat...</div></div><button class="mfFind" id="mfFind">🔎 CARI TEMAN</button>';
- bind('mfFind',()=>{audioReady();friendSearchScreen()});
- const list=$('menuFriends')?.querySelector('.mfList');
- if(!list)return;
- if(!lbRoom){list.innerHTML='<div class="mfMsg">Lobi online belum tersambung.</div>';return}
+ if(!el.querySelector('.mfList')){el.innerHTML='<div class="mfTitle">👥 TEMAN ONLINE</div><div class="mfList"><div class="mfMsg">Memuat...</div></div><button class="mfFind" id="mfFind">🔎 CARI TEMAN</button>';bind('mfFind',()=>{audioReady();friendSearchScreen()})}
  const fol=await loadFollowingNames();
- if(state!=='menu'||!acct||!$('menuFriends'))return;
  const me=acct.name.toLowerCase(),seen=new Map();
- for(const p of lbRoom.peers()){const q=p.presence||{};const nm=cleanTxt(q.u,16);if(!nm)continue;const k=nm.toLowerCase();if(k===me||seen.has(k)||!fol.has(k))continue;seen.set(k,{name:nm,avatar:q.avatar})}
+ const r=await rpc('skate_presence_friends',{p_name:acct.name,p_token:acct.token});
+ if(r.ok)for(const x of (r.list||[])){const nm=cleanTxt(x.name,16),k=nm.toLowerCase();if(!nm||k===me||(x.status||'offline')==='offline')continue;seen.set(k,{name:nm,avatar:x.avatar,away:x.status==='away'})}
+ if(lbRoom)for(const p of lbRoom.peers()){const q=p.presence||{};const nm=cleanTxt(q.u,16),k=nm.toLowerCase();if(!nm||k===me||seen.has(k)||!fol.has(k))continue;seen.set(k,{name:nm,avatar:q.avatar,away:false})}
+ if(state!=='menu'||!acct||!$('menuFriends'))return;
+ const box=$('menuFriends').querySelector('.mfList');if(!box)return;
  const L=[...seen.values()];
- const box=$('menuFriends')?.querySelector('.mfList');if(!box)return;
- box.innerHTML=L.length?L.map(x=>`<button class="mfRow" data-mfprof="${escapeHTML(x.name)}">${avHTML(x.avatar,34,x.name)}<span class="mfDot"></span><span class="mfName">${escapeHTML(x.name)}</span></button>`).join(''):'<div class="mfMsg">Belum ada teman yang online.</div>';
- box.querySelectorAll('[data-mfprof]').forEach(b=>b.onclick=()=>{audioReady();viewPlayerProfile(b.dataset.mfprof)});
+ box.innerHTML=L.length?L.map(x=>`<button class="mfRow" data-mfprof="${escapeHTML(x.name)}" data-mfav="${escapeHTML(x.avatar||'')}">${avHTML(x.avatar,34,x.name)}<span class="mfDot${x.away?' away':''}"></span><span class="mfName">${escapeHTML(x.name)}</span></button>`).join(''):'<div class="mfMsg">Belum ada teman yang online.</div>';
+ box.querySelectorAll('[data-mfprof]').forEach(b=>b.onclick=()=>{audioReady();showFriendAction(b.dataset.mfprof,b.dataset.mfav)});
+}
+function menuToast(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10040;background:#0b1d45ee;color:#fff;border:2px solid #78c3ff;border-radius:14px;padding:10px 14px;font-weight:700;font-size:13px;max-width:88vw;text-align:center';document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+function closeModalById(id){const e=$(id);if(e)e.remove()}
+function showFriendAction(name,av){
+ closeModalById('friendActionModal');
+ const wrap=document.createElement('div');wrap.id='friendActionModal';
+ wrap.style.cssText='position:fixed;inset:0;z-index:10025;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px';
+ wrap.innerHTML=`<div style="width:min(340px,100%);background:linear-gradient(180deg,rgba(22,66,150,.97),rgba(10,36,98,.98));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:14px;box-shadow:0 12px 40px #0008;display:flex;flex-direction:column;gap:9px">
+ <div style="display:flex;align-items:center;gap:10px">${avHTML(av,48,name)}<div style="min-width:0"><b style="font-size:16px">${escapeHTML(name)}</b><div style="font-size:12px;opacity:.85"><span class="presenceDot online"></span> Online</div></div></div>
+ <button class="primary" data-fa="profil">👤 LIHAT PROFIL</button>
+ <button class="secondary" data-fa="chat">💬 CHAT</button>
+ <button class="secondary" data-fa="main">🎮 AJAK MAIN</button>
+ <button class="secondary" data-fa="close">BATAL</button></div>`;
+ document.body.appendChild(wrap);
+ wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove()});
+ wrap.querySelectorAll('[data-fa]').forEach(b=>b.onclick=()=>{const a=b.dataset.fa;wrap.remove();audioReady();if(a==='profil')viewPlayerProfile(name);else if(a==='chat')openDirectChat(name);else if(a==='main')inviteFriend(name)});
+}
+async function inviteFriend(name){
+ if(!acct)return;
+ if(['race','count','runup','done','soloWait'].includes(state)){menuToast('Selesaikan permainanmu dulu sebelum mengajak main.');return}
+ if(!(await ensureLobby())||!lbRoom){menuToast('Lobi online belum tersambung.');return}
+ let code=online&&olCode?olCode:'';
+ if(!code){
+  const used=new Set(lobbyRooms().rooms.map(r=>r.c));
+  do{code=(Math.random().toString(36)+'abcde').replace(/[^a-z0-9]/g,'').slice(1,6)}while(used.has(code));
+  joinRoom(code,'',{create:true,nm:('Room '+acct.name).slice(0,20),rc:'1000'});
+  await new Promise(res=>setTimeout(res,1500));
+ }
+ const to=name.replace(/\|/g,''),from=acct.name.replace(/\|/g,''),nm=(('Room '+acct.name).slice(0,20)).replace(/\|/g,'');
+ lbRoom.sendChat({n:acct.name,t:`[[INV]]${to}|${from}|${code}|${Date.now()}|${nm}`});
+ menuToast(`Undangan main dikirim ke ${name}.`);
+}
+function showInviteModal(from,code,nm){
+ closeModalById('inviteModal');
+ const wrap=document.createElement('div');wrap.id='inviteModal';
+ wrap.style.cssText='position:fixed;inset:0;z-index:10030;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px';
+ wrap.innerHTML=`<div style="width:min(340px,100%);background:linear-gradient(180deg,rgba(22,66,150,.97),rgba(10,36,98,.98));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:16px;box-shadow:0 12px 40px #0008;display:flex;flex-direction:column;gap:10px;text-align:center">
+ <div style="font-size:30px">🎮</div><b style="font-size:16px">UNDANGAN MAIN</b>
+ <div style="font-size:14px"><b>${escapeHTML(from)}</b> mengajak kamu main di room <b>${escapeHTML(nm||'Room')}</b>.<br>Mau ikut?</div>
+ <button class="primary" id="invYes">✅ IKUT</button><button class="secondary" id="invNo">TIDAK</button></div>`;
+ document.body.appendChild(wrap);
+ const answer=ok=>{wrap.remove();try{if(lbRoom)lbRoom.sendChat({n:acct?acct.name:'Pemain',t:`[[INVR]]${from.replace(/\|/g,'')}|${(acct?acct.name:'').replace(/\|/g,'')}|${ok?1:0}|${Date.now()}`})}catch(e){}if(ok){audioReady();joinRoom(code,'')}};
+ $('invYes').onclick=()=>answer(true);$('invNo').onclick=()=>answer(false);
+ setTimeout(()=>{if($('inviteModal'))wrap.remove()},60000);
+}
+function handleLobbyChat(m){
+ const t=String(m&&m.t||'');if(!acct)return;
+ if(t.startsWith('[[INVR]]')){const [to,who,ok,at]=t.slice(8).split('|');if(!to||to.toLowerCase()!==acct.name.toLowerCase())return;if(Date.now()-Number(at)>120000)return;menuToast(ok==='1'?`${who} ikut bergabung ke room.`:`${who} menolak ajakan main.`);return}
+ if(!t.startsWith('[[INV]]'))return;
+ const [to,from,code,at,nm]=t.slice(7).split('|');
+ if(!to||to.toLowerCase()!==acct.name.toLowerCase()||!from||!code)return;
+ if(Date.now()-Number(at)>120000)return;
+ if(!(state==='menu'||state==='rooms'))return;
+ if(online&&olCode===code)return;
+ showInviteModal(from,code,nm);
+}
+function roomSearchScreen(){
+ state='roomsearch';
+ olDialog(`<h1>🔎 CARI ROOM</h1><p>Ketik kode room (5 huruf) atau sebagian nama room.</p><div class="sub">KODE / NAMA ROOM</div><input id="rsQ" class="playerNameInput" maxlength="20" autocomplete="off" placeholder="mis. ab3xk atau Room Budi"><button class="primary" id="rsGo">CARI</button><div id="rsRes" style="margin-top:8px"></div><button class="secondary" id="rsBack">⬅ KEMBALI</button>`,true);
+ bind('rsBack',()=>roomListScreen());
+ const run=async()=>{
+  const q=cleanTxt($('rsQ').value,20).toLowerCase().trim(),box=$('rsRes');if(!box)return;
+  if(!q){box.innerHTML='<div class="mini">Isi kode atau nama room dulu.</div>';return}
+  const {rooms}=lobbyRooms();
+  const hit=rooms.filter(r=>r.c===q||r.nm.toLowerCase().includes(q));
+  const rowsHtml=hit.map(r=>`<div class="rowItem"><div style="flex:1;min-width:0"><b style="font-size:13px">${r.pw?'🔒 ':''}${escapeHTML(r.nm)}</b><div class="mini">Kode <b>${r.c}</b> • ${OL_LBL[r.rc]} • ${r.n}/${r.mx} pemain</div></div><button class="btnS" data-rsj="${r.c}">MASUK</button></div>`).join('');
+  let direct='';
+  if(!hit.length&&/^[a-z0-9]{3,8}$/.test(q))direct=`<div class="mini" style="margin:6px 0">Room ${escapeHTML(q)} tidak terlihat di daftar. Coba masuk langsung lewat kode.</div><button class="secondary" id="rsDirect">MASUK LANGSUNG KE ${escapeHTML(q.toUpperCase())}</button>`;
+  box.innerHTML=rowsHtml||direct||'<div class="mini">Room tidak ditemukan. Pastikan nama atau kode benar, lalu coba lagi.</div>';
+  box.querySelectorAll('[data-rsj]').forEach(b=>b.onclick=()=>{const r=hit.find(x=>x.c===b.dataset.rsj);if(!r)return;if(r.pw)joinPwScreen(r);else joinRoom(r.c,'')});
+  const d=$('rsDirect');if(d)d.onclick=()=>joinRoom(q,'');
+ };
+ bind('rsGo',run);const qi=$('rsQ');if(qi)qi.addEventListener('keydown',e=>{if(e.key==='Enter')run()});
 }
 function friendSearchScreen(){state='friendsearch';
  olDialog(`<h1>🔎 CARI TEMAN</h1><div class="sub">NAMA PEMAIN</div><input id="friendSearch" class="playerNameInput" maxlength="16" autocomplete="off" placeholder="Ketik nama pemain (min. 2 huruf)"><button class="primary" id="friendFind">CARI</button><div id="friendResults" class="mini" style="margin-top:8px"></div><button class="secondary" id="friendBack">⬅ KEMBALI</button>`,true);
@@ -2518,6 +2591,7 @@ $('accountChip').addEventListener('click',headerAccountClick);
 $('notifChip')?.addEventListener('click',showNotifications);
 try{renderHeaderAccount()}catch(e){console.error('Header init:',e)}
 try{refreshNotifications()}catch(e){console.error('Notification init:',e)}
+setInterval(()=>{if(state==='menu'&&acct)renderMenuFriends()},20000);
 notifTimer=setInterval(()=>{try{refreshNotifications()}catch(e){console.warn(e)}},5000);
 if(acct){presenceState='online';try{startPresence()}catch(e){console.warn('Presence init:',e)}}
 try{menu()}catch(e){
