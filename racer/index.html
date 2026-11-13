@@ -483,7 +483,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .bestCol .t3m{font-size:12px;line-height:1.3}
 .bestList{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow:auto}
 .bestList button.bRow{background:none;border:0;border-bottom:1px solid #ffffff22;color:inherit;width:100%;text-align:left;font:inherit;padding:6px 0;cursor:pointer}
-.bestList .bRow{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:baseline;font-size:14px;padding:4px 0;border-bottom:1px solid #ffffff22}
+.bestList .bRow{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:5px;align-items:baseline;font-size:11px;padding:3px 0;border-bottom:1px solid #ffffff22}
 .bestList .bRow b{font-weight:900}
 .bestList .bRow span{white-space:normal;overflow-wrap:anywhere;min-width:0;font-weight:700}
 .bestList .bRow strong{white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -1049,7 +1049,7 @@ function endIndividualOffline(){
  const key='diva_record_'+cfg.race;let best=Number(localStorage.getItem(key)||0);const isBest=!best||t<best;if(isBest){best=t;localStorage.setItem(key,String(best))}
  const pname=cfg.playerName||(acct?acct.name:'Pemain');top3Add(cfg.race,pname,t);if(acct)submitBest200(cfg.race,acct.name,t);
  elapsed=t;sfx('finish');
- finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'🏆 REKOR BARU':'',time:formatTime(t),lapLbl:'JARAK',lap:'200 M',againLbl:'ULANGI',changeLbl:'GANTI MATA LOMBA',leftHtml:top3Html(cfg.race)});
+ finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'NEW RECORD':'',time:formatTime(t),lapLbl:'JARAK',lap:'200 M',againLbl:'ULANGI',changeLbl:'GANTI MATA LOMBA',leftHtml:top3Html(cfg.race)});
 }
 function finishIndividualOnline(){
  if(!olRoom||!player)return;
@@ -1057,7 +1057,7 @@ function finishIndividualOnline(){
  olRoom.presence({ph:'fin',fn:time,soloFinish:{peer,name:acct.name,time,at:Date.now()},v:0,s:+player.s.toFixed(1)});
  state='soloWait';player.finished=true;player.finishTime=time;player.v=0;steer=0;steerValue=0;player.s=raceStartS+TRACK.perimeter-1;sfx('finish');
  {const key='diva_record_'+cfg.race;let best=Number(localStorage.getItem(key)||0);const isBest=!best||time<best;if(isBest){best=time;try{localStorage.setItem(key,String(best))}catch(e){}}
-  finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'🏆 REKOR BARU':'',time:formatTime(time),lapLbl:'JARAK',lap:'200 M',againLbl:'MENUNGGU HASIL…',changeLbl:'KELUAR'});
+  finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'NEW RECORD':'',time:formatTime(time),lapLbl:'JARAK',lap:'200 M',againLbl:'MENUNGGU HASIL…',changeLbl:'KELUAR'});
   const ag=$('again'),ch=$('change');if(ag){ag.disabled=true;ag.style.opacity='.7';ag.onclick=null}if(ch)ch.onclick=()=>confirmExit('Kamu akan keluar dari room ini.',()=>roomListScreen())}
 }
 function endRace(won){if(online){onlineFinish(won);return}state='done';updateOfflineRaceTools();steer=0;if(won)sfx('finish');const place=ranking().indexOf(player)+1;const LT=Math.ceil(spec().laps);finScreen({win:won,title:won?'FINISH':'TERELIMINASI',sub:won?'':'Jarak tempuh '+Math.floor(meters(player))+' m',place,time:formatTime(elapsed),lap:(won?LT:Math.min(LT,currentLap(player)))+'/'+LT});}
