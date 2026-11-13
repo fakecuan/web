@@ -1992,7 +1992,7 @@ async function renderOnlineFriends(){
 async function renderMenuFriends(){
  const el=$('menuFriends');if(!el)return;
  if(state!=='menu'||!acct){el.innerHTML='';return}
- if(!el.querySelector('.mfList')){el.innerHTML='<div class="mfTitle">👥 TEMAN ONLINE</div><div class="mfList"><div class="mfMsg">Memuat...</div></div><button class="mfFind" id="mfFind">🔎 CARI TEMAN</button>';bind('mfFind',()=>{audioReady();friendSearchScreen()})}
+ if(!el.querySelector('.mfList')){const needNotif='Notification' in window&&Notification.permission==='default';el.innerHTML='<div class="mfTitle">👥 TEMAN ONLINE</div><div class="mfList"><div class="mfMsg">Memuat...</div></div><button class="mfFind" id="mfFind">🔎 CARI TEMAN</button>'+(needNotif?'<button class="mfFind" id="mfNotif" style="background:linear-gradient(180deg,#2fbf6a,#1a7a43)">🔔 AKTIFKAN NOTIF</button>':'');bind('mfFind',()=>{audioReady();friendSearchScreen()});const nb=$('mfNotif');if(nb){nb.onclick=()=>{try{Notification.requestPermission().then(pm=>{if(pm==='granted'){nb.remove();menuToast('Notifikasi aktif. Undangan main akan muncul walaupun kamu di aplikasi lain.')}else menuToast('Notifikasi belum diizinkan.')})}catch(e){}}}}
  const fol=await loadFollowingNames();
  const me=acct.name.toLowerCase(),seen=new Map();
  const r=await rpc('skate_presence_friends',{p_name:acct.name,p_token:acct.token});
@@ -2005,6 +2005,26 @@ async function renderMenuFriends(){
  box.querySelectorAll('[data-mfprof]').forEach(b=>b.onclick=()=>{audioReady();showFriendAction(b.dataset.mfprof,b.dataset.mfav)});
 }
 function menuToast(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10040;background:#0b1d45ee;color:#fff;border:2px solid #78c3ff;border-radius:14px;padding:10px 14px;font-weight:700;font-size:13px;max-width:88vw;text-align:center';document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+const VAPID_PUBLIC_KEY='GANTI_DENGAN_VAPID_PUBLIC_KEY';
+const PUSH_SUB_FN=SUPABASE_URL+'/functions/v1/push-subscribe';
+const PUSH_INV_FN=SUPABASE_URL+'/functions/v1/push-invite';
+const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+function b64ToU8(b){const pad='='.repeat((4-b.length%4)%4);const raw=atob((b+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,c=>c.charCodeAt(0))}
+async function enablePush(askPerm){
+ if(!pushSupported()||!acct||VAPID_PUBLIC_KEY.startsWith('GANTI'))return false;
+ let perm=Notification.permission;
+ if(perm==='default'&&askPerm)perm=await Notification.requestPermission();
+ if(perm!=='granted')return false;
+ const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+ let sub=await reg.pushManager.getSubscription();
+ if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToU8(VAPID_PUBLIC_KEY)});
+ const j=sub.toJSON();
+ return fetch(PUSH_SUB_FN,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_KEY},body:JSON.stringify({name:acct.name,token:acct.token,endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth})}).then(x=>x.ok).catch(()=>false);
+}
+function pushInvite(to,code,nm){
+ if(!acct||VAPID_PUBLIC_KEY.startsWith('GANTI'))return;
+ fetch(PUSH_INV_FN,{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_KEY},body:JSON.stringify({name:acct.name,token:acct.token,to,code,nm})}).catch(()=>{});
+}
 function closeModalById(id){const e=$(id);if(e)e.remove()}
 function showFriendAction(name,av){
  closeModalById('friendActionModal');
@@ -2032,7 +2052,7 @@ async function inviteFriend(name){
   await new Promise(res=>setTimeout(res,1500));
  }
  const to=name.replace(/\|/g,''),from=acct.name.replace(/\|/g,''),nm=(('Room '+acct.name).slice(0,20)).replace(/\|/g,'');
- lbRoom.sendChat({n:acct.name,t:`[[INV]]${to}|${from}|${code}|${Date.now()}|${nm}`});
+ lbRoom.sendChat({n:acct.name,t:`[[INV]]${to}|${from}|${code}|${Date.now()}|${nm}`});pushInvite(name,code,nm);
  menuToast(`Undangan main dikirim ke ${name}.`);
 }
 function showInviteModal(from,code,nm){
@@ -2044,6 +2064,7 @@ function showInviteModal(from,code,nm){
  <div style="font-size:14px"><b>${escapeHTML(from)}</b> mengajak kamu main di room <b>${escapeHTML(nm||'Room')}</b>.<br>Mau ikut?</div>
  <button class="primary" id="invYes">✅ IKUT</button><button class="secondary" id="invNo">TIDAK</button></div>`;
  document.body.appendChild(wrap);
+ try{if(document.hidden&&'Notification' in window&&Notification.permission==='granted'){const n=new Notification('🎮 Undangan main DIVA SKATE',{body:`${from} mengajak kamu main di room ${nm||'Room'}`,tag:'diva-invite'});n.onclick=()=>{window.focus();n.close()}}}catch(e){}
  const answer=ok=>{wrap.remove();try{if(lbRoom)lbRoom.sendChat({n:acct?acct.name:'Pemain',t:`[[INVR]]${from.replace(/\|/g,'')}|${(acct?acct.name:'').replace(/\|/g,'')}|${ok?1:0}|${Date.now()}`})}catch(e){}if(ok){audioReady();joinRoom(code,'')}};
  $('invYes').onclick=()=>answer(true);$('invNo').onclick=()=>answer(false);
  setTimeout(()=>{if($('inviteModal'))wrap.remove()},60000);
@@ -2055,7 +2076,7 @@ function handleLobbyChat(m){
  const [to,from,code,at,nm]=t.slice(7).split('|');
  if(!to||to.toLowerCase()!==acct.name.toLowerCase()||!from||!code)return;
  if(Date.now()-Number(at)>120000)return;
- if(!(state==='menu'||state==='rooms'))return;
+ if(['race','count','runup','done','soloWait'].includes(state))return;
  if(online&&olCode===code)return;
  showInviteModal(from,code,nm);
 }
