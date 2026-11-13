@@ -365,6 +365,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #app.avatar-mode #overlay{touch-action:none;cursor:grab}
 
 /* ===== LAYAR FINISH ===== */
+.finRankLeft{position:absolute;left:8px;top:calc(58px + 2vh + clamp(70px,16vw,130px));width:min(40vw,176px);max-height:36%;overflow:auto;background:rgba(12,36,92,.8);border:1.5px solid #78c3ffaa;border-radius:12px;padding:6px;color:#fff;font-size:11px;z-index:2;box-shadow:0 4px 12px #0006}
+.finRankLeft .frkRow{display:flex;align-items:center;gap:5px;padding:4px 4px;border-bottom:1px solid #ffffff22;min-width:0}
+.finRankLeft .frkRow.me{background:rgba(255,210,63,.22);border-radius:8px}
+.finRankLeft .frkRow b{font-weight:900;flex:none}
+.finRankLeft .frkDot{width:9px;height:9px;border-radius:50%;flex:none}
+.finRankLeft .frkName{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.finRankLeft .frkT{font-variant-numeric:tabular-nums;flex:none;font-size:10.5px;opacity:.9}
+.finRankLeft .mini{font-size:10px;margin-top:4px;opacity:.9}
+
 #app.finish-mode #overlay{background:linear-gradient(180deg,rgba(8,30,90,.25),transparent 30%,transparent 62%,rgba(6,20,60,.55));padding:0;align-items:stretch;justify-content:stretch}
 #app.finish-mode #dialog{width:100%;max-width:none;max-height:none;height:100%;background:none;border:0;box-shadow:none;padding:0;border-radius:0;overflow:hidden;-webkit-backdrop-filter:none;backdrop-filter:none}
 .finWrap{position:relative;height:100%;width:100%;display:flex;flex-direction:column;align-items:center;pointer-events:none}
@@ -864,7 +873,7 @@ function menuBrutal(){menuMain=false;cfg.mode='brutal';if(cfg.race!=='1000'&&cfg
  $('dialog').querySelectorAll('[data-track]').forEach(b=>b.onclick=()=>{trackPick=b.dataset.track;menuBrutal()});
  $('bStart').onclick=()=>{cfg.playerName='SKATER';cfg.mode='brutal';audioReady();setTrack(trackPick);initRace()};
  $('bBack').onclick=()=>menu()}
-function menu(){navSeq++;try{leaveOnline()}catch(e){console.warn('Cleanup online:',e)}state='menu';menuMain=true;updateOfflineRaceTools();$('dialog').dataset.olhtml='';$('overlay').style.display='flex';
+function menu(){navSeq++;try{leaveRoom()}catch(e){console.warn('Cleanup room:',e)}state='menu';menuMain=true;updateOfflineRaceTools();$('dialog').dataset.olhtml='';$('overlay').style.display='flex';
  $('dialog').innerHTML=`${menuHeader()}<p class="menuIntro">Pilih mode permainan.</p><div class="modeGrid">
   <button class="modeCard kasual" id="mKasual" type="button"><i>🛼</i><b>KASUAL</b><small>300 m, 500 m, 1.000 m, Elimination, Dobbin &amp; DTT</small></button>
   <div class="modeCard ranked" aria-disabled="true"><span class="soon">SEGERA</span><i>🏆</i><b>RANKED</b><small>Peringkat resmi musim</small></div>
@@ -1666,7 +1675,7 @@ function finScreen(o){const pl=o.place||0,cls=pl===1?'gold':pl===2?'silver':pl==
  const badge=o.place?`<div class="finBadge ${cls}"><svg viewBox="0 0 120 120"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s1"/><stop offset="1" class="s2"/></linearGradient></defs>${leaf(1)}${leaf(-1)}<path d="M60 14l34 12v30c0 22-15 36-34 46C41 92 26 78 26 56V26z" fill="#13213f" stroke="url(#lg)" stroke-width="5"/><path d="M14 92h92l-8 10 8 10H14l8-10z" fill="#d61f26"/></svg><small>POSISI</small><b>${pl}</b></div>`:(o.badgeText?`<div class="finRecord">${o.badgeText}</div>`:'');
  let conf='';if(o.win)for(let i=0;i<46;i++){const c=['#ffd23f','#e8302a','#2f8bff','#22c55e','#ffffff','#ff5fb0'][i%6];conf+=`<i style="left:${(i*37)%100}%;background:${c};animation-delay:${(-(i*0.13)%3).toFixed(2)}s;animation-duration:${(2.4+(i%5)*.35).toFixed(2)}s"></i>`}
  $('overlay').style.display='flex';
- $('dialog').innerHTML=`<div class="finWrap ${o.win?'win':'lose'}"><div class="finConf">${conf}</div><div class="finBanner"><span class="chk"></span><b>${o.title}</b><span class="chk r"></span></div>${o.sub?`<div class="finSub">${o.sub}</div>`:''}${badge}
+ $('dialog').innerHTML=`<div class="finWrap ${o.win?'win':'lose'}"><div class="finConf">${conf}</div><div class="finBanner"><span class="chk"></span><b>${o.title}</b><span class="chk r"></span></div>${o.sub?`<div class="finSub">${o.sub}</div>`:''}${badge}${o.leftHtml?`<div class="finRankLeft">${o.leftHtml}</div>`:''}
  <div class="finBottom"><div class="finBtns"><button class="primary" id="again">${o.againLbl||'BALAP LAGI'}</button><button class="secondary" id="change">${o.changeLbl||'GANTI MATA LOMBA'}</button></div>
  <div class="finBar"><span class="it"><i>⏱</i>WAKTU <b class="y">${o.time}</b></span><span class="sep"></span><span class="it"><i>🏁</i>${o.lapLbl||'LAP'} <b>${o.lap}</b></span></div></div></div>`;
  $('again').onclick=initRace;$('change').onclick=menu;}
@@ -1870,7 +1879,7 @@ const profOf=n=>profCache.get(String(n).toLowerCase())||null;
 
 /* ---------- menu online: login / daftar ---------- */
 async function onlineMenu(){setTrack('oval');
- const my=++navSeq;leaveOnline();state='menu';$('dialog').dataset.olhtml='';
+ const my=++navSeq;leaveRoom();state='menu';$('dialog').dataset.olhtml='';
  if(!api()){olDialog(`<h1>🌐 Multiplayer Online</h1><div class="err">${escapeHTML(errText({err:'nosb'}))}</div><button class="secondary" id="aBack">⬅ KEMBALI</button>`,true);bind('aBack',menu);return}
  if(acct){roomListScreen();return}
  const s=loadSession();
@@ -2012,7 +2021,7 @@ function showFriendAction(name,av){
 async function inviteFriend(name){
  if(!acct)return;
  if(['race','count','runup','done','soloWait'].includes(state)){menuToast('Selesaikan permainanmu dulu sebelum mengajak main.');return}
- if(!(await ensureLobby())||!lbRoom){menuToast('Lobi online belum tersambung.');return}
+ if(!(await ensureLobby())||!lbRoom){menuToast('Lobi online belum tersambung ('+(lbErr||'coba lagi')+'). Coba ajak main lagi.');return}
  let code=online&&olCode?olCode:'';
  if(!code){
   const used=new Set(lobbyRooms().rooms.map(r=>r.c));
@@ -2559,13 +2568,22 @@ function olRecordNow(){
  if(totalCount===0||humanCount/totalCount<=.5){olRecState='excluded';if(state==='done'&&online)showOnlineResults();return}
  const place=ranking().indexOf(player)+1,race=cfg.race;olRecState='saving';
  rpc('skate_record',{p_name:acct.name,p_token:acct.token,p_race:race,p_place:place}).then(r=>{if(r&&r.ok&&r.profile&&acct){acct.profile=normProfile(r.profile);profCache.set(acct.name.toLowerCase(),acct.profile);olRecState='ok'}else olRecState='fail';if(state==='done'&&online)showOnlineResults()})}
+function renderOnlineFinish(rows,won,o){
+ const me=rows.findIndex(r=>r.me),place=won&&me>=0?me+1:0;
+ const left=(o.sub?`<div class="mini" style="font-weight:900;margin-bottom:4px">${escapeHTML(o.sub)}</div>`:'')+rows.map((r,i)=>`<div class="frkRow${r.me?' me':''}"><b>#${i+1}</b><span class="frkDot" style="background:${escapeHTML(r.color||'#ffffff')}"></span><span class="frkName">${escapeHTML(r.name)}${r.me?' (kamu)':''}</span><span class="frkT">${r.text}</span></div>`).join('')+(o.rec||'')+(o.status?`<div class="mini">${o.status}</div>`:'');
+ finScreen({win:won,title:won?'FINISH':'TERELIMINASI',sub:'',badgeText:o.badge||'',place,time:o.time,lapLbl:o.lapLbl,lap:o.lap,againLbl:o.againLbl||'MAIN LAGI',changeLbl:'KELUAR',leftHtml:left});
+ $('again').onclick=o.onAgain;$('change').onclick=o.onExit;
+}
 function showIndividualOnlineResults(){
  if(!online||!olRoom)return;
  const h=olHostP(olViewers()),solo=h&&h.presence&&h.presence.solo;
  const results=(solo&&solo.results||[]).slice().sort((a,b)=>(a.dq?1:0)-(b.dq?1:0)||a.time-b.time);
  state='done';$('overlay').style.display='flex';
- $('dialog').innerHTML=`<h1>🏁 HASIL ${spec().label}</h1><div class="sub">PERINGKAT WAKTU</div>${results.map((r,i)=>`<div class="rowItem"><b>#${i+1}</b><span style="flex:1">${escapeHTML(r.name||'Pemain')}</span><strong>${r.dq?'DISKUALIFIKASI':formatTime(r.time)}</strong></div>`).join('')||'<p>Belum ada catatan waktu.</p>'}<button class="primary" id="soloBack">🔁 MAIN LAGI</button>`;
- $('soloBack').onclick=()=>roomListScreen();
+ const rows=results.map(r=>({name:r.name||'Pemain',color:'#ffffff',text:r.dq?'DQ':formatTime(r.time),me:!!acct&&(r.name||'').toLowerCase()===acct.name.toLowerCase()}));
+ const won=!!(player&&player.finished);
+ const key=JSON.stringify(rows)+won;
+ if(key===olLastHTML)return;olLastHTML=key;
+ renderOnlineFinish(rows,won,{sub:'PERINGKAT WAKTU • '+spec().label,time:won&&player.finishTime?formatTime(player.finishTime):'—',lapLbl:'JARAK',lap:'200 M',againLbl:'MAIN LAGI',onAgain:roomListScreen,onExit:roomListScreen});
 }
 function onlineFinish(won){
  state='done';steer=0;if(won)sfx('finish');olFinAt=Date.now();olRecPending=true;olRecState='';
@@ -2575,9 +2593,13 @@ function showOnlineResults(){
  if(state!=='done'||!online){if(olRes){clearInterval(olRes);olRes=null}return}
  const rk=ranking(),done=rk.every(r=>r.finished||!r.alive),won=player.finished;
  if(olRecPending&&(!player.alive||done||Date.now()-olFinAt>25000))olRecordNow();
- const rec=olRecState==='invalid'?'<div class="mini" style="margin-top:8px;color:#b42318;font-weight:900">🚫 LOMBA TIDAK SAH — Statistik semua peserta tidak dihitung karena ada pemain yang tidak bergerak selama minimal satu putaran.</div>':(olRecState==='ok'?'<div class="mini" style="margin-top:8px">📊 Statistik akunmu sudah diperbarui.</div>':(olRecState==='excluded'?'<div class="mini" style="margin-top:8px">ℹ️ Statistik tidak dihitung karena 50% atau lebih peserta adalah komputer.</div>':(olRecState==='fail'?'<div class="mini" style="margin-top:8px">Statistik gagal disimpan (koneksi).</div>':'')));
- const html=`<h1>${won?'🏁 FINISH!':'💥 TERELIMINASI'}</h1><p>${done?'Semua pembalap sudah selesai.':'Menunggu pembalap lain menyelesaikan balapan...'}</p><div class="sub">HASIL • ${escapeHTML(spec().label)}</div>${rk.map((r,i)=>`<div class="rowItem" style="${r===player?'background:#ffe9e2':''}"><b style="width:26px">#${i+1}</b><span style="width:12px;height:12px;border-radius:50%;background:${r.color};flex:none"></span><b style="flex:1;font-size:13px;min-width:0">${escapeHTML(r.name)}${r===player?' (kamu)':''}</b><span style="font-size:12px;font-variant-numeric:tabular-nums">${r.finished?formatTime(r.finishTime):(r.alive?Math.floor(meters(r))+' m':'keluar')}</span></div>`).join('')}${rec}<button class="primary" id="olLobby">🔁 MAIN LAGI</button><button class="secondary" id="olExit" title="Keluar room" aria-label="Keluar room" style="width:48px;height:42px;margin:8px auto 0;display:block;font-size:22px;padding:4px">↪</button>`;
- if(html!==olLastHTML){olLastHTML=html;olDialog(html,true);bind('olLobby',backToLobby);bind('olExit',()=>roomListScreen())}}
+ const rec=olRecState==='invalid'?'<div class="mini" style="margin-top:6px;color:#ffb0a8;font-weight:900">🚫 LOMBA TIDAK SAH — statistik tidak dihitung.</div>':(olRecState==='ok'?'<div class="mini" style="margin-top:6px">📊 Statistik akunmu sudah diperbarui.</div>':(olRecState==='excluded'?'<div class="mini" style="margin-top:6px">ℹ️ Statistik tidak dihitung (50%+ peserta komputer).</div>':(olRecState==='fail'?'<div class="mini" style="margin-top:6px">Statistik gagal disimpan.</div>':'')));
+ const rows=rk.map(r=>({name:r.name,color:r.color,text:r.finished?formatTime(r.finishTime):(r.alive?Math.floor(meters(r))+' m':'keluar'),me:r===player}));
+ const LT=Math.ceil(spec().laps);
+ const key=JSON.stringify(rows)+won+done+rec;
+ if(key===olLastHTML)return;olLastHTML=key;
+ renderOnlineFinish(rows,won,{sub:done?'Semua pembalap sudah selesai':'Menunggu pembalap lain...',time:won&&player.finishTime?formatTime(player.finishTime):formatTime(elapsed),lapLbl:'LAP',lap:(won?LT:Math.min(LT,currentLap(player)))+'/'+LT,rec,onAgain:backToLobby,onExit:()=>roomListScreen()});
+}
 function backToLobby(){
  if(olRes){clearInterval(olRes);olRes=null}
  if(!olRoom){roomListScreen();return}
