@@ -3138,16 +3138,17 @@ function glBuildRouteWorld(){
 let maraVar='resmi';
 const MARA_TXT={resmi:'🏁 Start kota → 🕳️ jalan rusak → 🥤 pos minum → 🌉 jembatan berangin → ⛰️ turunan bukit → 🏆 finish.<br>Bentuk rute dan rintangan diacak setiap balapan. Awas lubang, kerikil, polisi tidur, genangan yang bikin oleng, angin samping, serta penonton, kucing, anjing dan kambing yang menyeberang.',
  brutal:'💥 Rute dan rintangan sama seperti Resmi, ditambah <b>kotak item ❓</b> di sepanjang jalan. Ambil kotak lalu tekan <b>ITEM</b> di atas tombol TAP: 🚀 rudal, 🛢️ oli, ⏱️ lempar waktu, ⚡ nitro, 🛡️ perisai. Lewati lantai <b>TURBO</b> untuk tambahan kecepatan.'};
-function menuKasual(){menuMain=false;cfg.mode='kasual';if(cfg.race==='mtt')cfg.race='mara';if(!['300','500','1000','elim','mara','battle'].includes(cfg.race))cfg.race='1000';
- $('overlay').style.display='flex';const isM=cfg.race==='mara';
- const panel=isM?`<div class="sub menuSub"><b>KESULITAN</b></div><div class="choices diffRow">${['mudah','normal','sulit'].map(k=>`<button class="choice ${maraDiff===k?'sel':''}" data-diff="${k}">${DIFF[k].lbl}</button>`).join('')}</div><div class="sub menuSub"><b>MARATHON • PILIH MODE</b></div><div class="choices"><button class="choice" data-var="resmi">▶ RESMI<br><small>TANPA ITEM</small></button><button class="choice" data-var="brutal">💥 BRUTAL<br><small>PAKAI ITEM</small></button><button class="choice" data-var="tt">⏱ TIME TRIAL<br><small>RUTE HARIAN • LAWAN HANTU REKORMU</small></button></div>`:'';
- const lbl=isM?(maraVar==='brutal'?'💥 MAIN MARATHON BRUTAL':'🏃 MAIN MARATHON RESMI'):'▶ MAIN BALAP';
- $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH JARAK</b><small>1 PUTARAN = 200 METER</small></div><div class="choices">${raceChoices(['300','500','1000','elim','mara','battle'])}</div>${panel}${isM?'':`<button class="primary" id="kStart">${lbl} (OFFLINE)</button>`}<button class="secondary" id="kBack">⬅ KEMBALI</button>`;
- $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.race=b.dataset.race;menuKasual()});
- $('dialog').querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{maraDiff=b.dataset.diff;try{localStorage.setItem('diva_mara_diff',maraDiff)}catch(e){}menuKasual()});
- $('dialog').querySelectorAll('[data-var]').forEach(b=>b.onclick=()=>{maraVar=b.dataset.var;startMarathon()});
- if($('kStart'))$('kStart').onclick=()=>{if(cfg.race==='mara'){startMarathon();return}cfg.playerName='SKATER';cfg.mode=cfg.race==='battle'?'brutal':'kasual';audioReady();setTrack('oval');initRace()};
+function menuKasual(){menuMain=false;cfg.mode='kasual';if(cfg.race==='mtt'||cfg.race==='mara')cfg.race='1000';if(!['300','500','1000','elim','battle'].includes(cfg.race))cfg.race='1000';
+ $('overlay').style.display='flex';
+ $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH MODE</b><small>1 PUTARAN = 200 METER</small></div><div class="choices kcompact">${raceChoices(['300','500','1000','elim','mara','battle'])}</div><button class="primary" id="kStart">▶ MAIN BALAP (OFFLINE)</button><button class="secondary" id="kBack">⬅ KEMBALI</button>`;
+ $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{if(b.dataset.race==='mara'){menuMarathon2();return}cfg.race=b.dataset.race;menuKasual()});
+ $('kStart').onclick=()=>{cfg.playerName='SKATER';cfg.mode=cfg.race==='battle'?'brutal':'kasual';audioReady();setTrack('oval');initRace()};
  $('kBack').onclick=()=>menu()}
+function menuMarathon2(){menuMain=false;$('overlay').style.display='flex';
+ $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>MARATHON 2 KM</b><small>RUTE A KE B • 6 CHECKPOINT</small></div><div class="sub menuSub mSmall"><b>KESULITAN</b></div><div class="choices diffRow">${['mudah','normal','sulit'].map(k=>`<button class="choice ${maraDiff===k?'sel':''}" data-diff="${k}">${DIFF[k].lbl}</button>`).join('')}</div><div class="sub menuSub mSmall"><b>PILIH & LANGSUNG MAIN</b></div><div class="choices kcompact mModes"><button class="choice" data-var="resmi">▶ RESMI<small>TANPA ITEM</small></button><button class="choice" data-var="brutal">💥 BRUTAL<small>PAKAI ITEM</small></button><button class="choice" data-var="tt">⏱ TIME TRIAL<small>LAWAN HANTU REKORMU</small></button></div><button class="secondary" id="mBack">⬅ KEMBALI</button>`;
+ $('dialog').querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{maraDiff=b.dataset.diff;try{localStorage.setItem('diva_mara_diff',maraDiff)}catch(e){}menuMarathon2()});
+ $('dialog').querySelectorAll('[data-var]').forEach(b=>b.onclick=()=>{maraVar=b.dataset.var;startMarathon()});
+ $('mBack').onclick=()=>menuKasual()}
 // kotak item & lantai turbo di sepanjang rute (Marathon Brutal)
 function maraItemsPlace(){const R=Math.random;
  for(let k=0,m=110;m<1960;k++,m+=142+R()*26){const ds=k%2?[-24,-8,8,24]:[-18,0,18];for(const d of ds)itemBoxes.push({s:mS(m),d,cool:0,mesh:null})}
@@ -3610,6 +3611,17 @@ function mfSync(){const st=$('stage');if(!st)return;let ic=$('mfIcon');
  const el=$('menuFriends');MF.n=el?el.querySelectorAll('.mfRow').length:0;const b=ic.querySelector('b');b.textContent=MF.n;b.classList.toggle('zero',!MF.n);mfApply()}
 setInterval(()=>{const ic=$('mfIcon'),on=state==='menu'&&menuMain;if(ic){const v=on?'':'none';if(ic.style.display!==v)ic.style.display=v}const el=$('menuFriends');if(el&&!on&&el.classList.contains('open'))el.classList.remove('open');else if(el&&on)mfApply()},250);
 function mfApply(){const el=$('menuFriends'),ic=$('mfIcon');const open=MF.open&&!!acct;if(el)el.classList.toggle('open',open);if(ic)ic.classList.toggle('on',open)}
+/* ===== menu kasual & marathon ringkas (muat 1 layar) ===== */
+(()=>{const st=document.createElement('style');st.textContent=`
+.choices.kcompact .choice[data-race=mara],.choices.kcompact .choice[data-race=battle]{grid-column:auto!important}
+.choices.kcompact .choice small{display:block}
+.choices.mModes .choice[data-var=tt]{grid-column:1/-1}
+.choices.mModes .choice small{display:block;margin-top:2px}
+.menuSub.mSmall{margin:8px 0 5px!important}.menuSub.mSmall b{font-size:.85em}
+#app.main-menu .choices.kcompact .choice{padding:min(1vh,9px) 3px}
+#app.main-menu .choices.kcompact .choice:before{height:clamp(10px,1.8vh,16px);margin-bottom:2px}
+@media(max-height:760px){#app.main-menu .choices.kcompact .choice:before{display:none}#app.main-menu .choice small{font-size:9px!important}#app.main-menu .menuSub small{display:none}}
+`;document.head.appendChild(st)})();
 
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
 raceSpecs.mtt={label:'TIME TRIAL 2 KM',count:1,meters:MARA_LEN,laps:1,elim:false,marathon:true,tt:true};
