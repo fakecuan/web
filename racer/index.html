@@ -2609,7 +2609,7 @@ function hostStart(force){
   olLastGo=go.id;olRoom.presence({go,ph:'race',solo:{idx:0,results:[],started:Date.now()},b:null,eo:null,fn:null,ff:null,fc:0,red:false,f:0,v:0});startOnlineRace(go);return;
  }
  const humans=ps.filter(p=>p.sameTab||(p.presence.rd===true&&p.presence.ph==='lobby')).slice(0,max),total=olMeta.fill!==false?max:humans.length;if(total<2)return;
- const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,seed:(Math.random()*2147483000|0)+1,parts:humans.map(p=>[p.peer,olNameOf(p),p.sameTab?olMyColor:(p.presence.cc||COLORS[0])]),bots:total-humans.length};
+ const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,seed:(Math.random()*2147483000|0)+1,parts:humans.map(p=>[p.peer,olNameOf(p),p.sameTab?olMyColor:(p.presence.cc||COLORS[0]),p.sameTab?olMyTeam:(p.presence.tm??-1)]),bots:total-humans.length};
  olLastGo=go.id;olRoom.presence({go,ph:'race',b:null,eo:null,fn:null,ff:null,fc:0,red:false,f:0,v:0});startOnlineRace(go)}
 function olGrid(n,rc,baseS){
  if(rc==='elim'){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:n},(_,i)=>({s:baseS-12-Math.floor(i/6)*34,d:lanes[i%6],row:Math.floor(i/6)+1}))}
@@ -3941,7 +3941,7 @@ function tsInitOnline(go){const sp=spec(),hostNow=iAmHost();TM.teams=[];TM.dq=nu
  if(olRoom){for(const pe of olRoom.peers()){const te=pe.presence&&pe.presence.te;if(Array.isArray(te))for(const e of te)TSO.seen[pe.peer]=Math.max(TSO.seen[pe.peer]||0,e[0]||0)}try{olRoom.presence({te:null})}catch(e){}}
  const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=blueStart-TRACK.perimeter/2;
  const humans=racers.filter(r=>!r.bot),bots=racers.filter(r=>r.bot);let nb=bots.length;
- const teams=[[],[]];humans.forEach((r,i)=>teams[i%2].push(r));let bi=0;
+ const teams=tsSplitTeams(humans,go,sp.size);let bi=0;
  for(let t=0;t<2;t++)while(teams[t].length<sp.size){let b=bots[bi++];if(!b){b={id:racers.length,name:(NAMES[1+nb]||'CPU')+' (PC)',bot:true,bi:nb++,ai:true,remote:!hostNow,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1};racers.push(b)}teams[t].push(b)}
  for(const b of bots.slice(bi)){b.alive=false;b.tsHold='rest'}
  const cols=[COLORS[1],COLORS[0]];
@@ -4019,6 +4019,25 @@ function tsOnlineEnd(){if(TM.ended)return;TM.ended=true;state='done';steer=0;tsB
  for(const T of TM.teams){const a=tsAct(T);if(T.leg===T.legs-1&&a.finished&&tsOwn(a)&&!T.finSent){T.finSent=true;tsDo(['fin',T.id,+(a.finishTime||elapsed).toFixed(2)])}}
  if(TM.dq){TM.dqT-=dt;if(TM.dqT<=0)tsOnlineEnd()}else if(TM.teams.some(T=>T.finT!=null))tsOnlineEnd();
  if(Math.floor(elapsed*4)!==TSO.lb){TSO.lb=Math.floor(elapsed*4);renderLeaderboard()}}}
+/* ===== LOBI: PILIH TIM (Biru / Merah) untuk Team Sprint & Relay ===== */
+let olMyTeam=-1;
+function tsLobbyTeams(){const ps=olViewers?olViewers():[],size=(raceSpecs[olMeta&&olMeta.rc]||{}).size||2,T=[[],[]],auto=[];
+ for(const p of ps){if(p.presence.ph&&p.presence.ph!=='lobby'&&!p.sameTab)continue;const t=p.sameTab?olMyTeam:(p.presence.tm??-1);if((t===0||t===1)&&T[t].length<size)T[t].push(p);else auto.push(p)}return{T,auto,size}}
+function tsLobbyPick(){const d=$('dialog');if(!d||state!=='lobby'||!olMeta)return;let el=$('tmPick');const rc=olMeta.rc;
+ {const f0=d.querySelector('[data-rc]');if(f0){const w=f0.parentElement;w.style.gridTemplateColumns='repeat(4,minmax(0,1fr))';w.style.gap='6px';w.querySelectorAll('[data-rc]').forEach(b=>{b.style.minWidth='0';b.style.padding='8px 2px';b.style.fontSize='clamp(10px,3vw,14px)';b.style.overflow='hidden';b.style.overflowWrap='anywhere'})}}
+ if(rc!=='ts'&&rc!=='relay'){if(el)el.remove();return}
+ const fw=d.querySelector('[data-rc]');if(!fw)return;const wrap=fw.parentElement;
+ if(!el){el=document.createElement('div');el.id='tmPick';wrap.insertAdjacentElement('afterend',el);
+  const st=document.createElement('style');st.textContent=`#tmPick{margin:10px 0 4px}#tmPick .tmRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}#tmPick button{border-radius:14px;padding:9px 6px;border:2px solid #fff6;font-style:italic;font-weight:900;font-size:14px;color:#fff;text-align:center}#tmPick button.b{background:linear-gradient(180deg,#3a9bff,#1257c9)}#tmPick button.r{background:linear-gradient(180deg,#ff5145,#b5121b)}#tmPick button.sel{border-color:#fff;box-shadow:0 0 0 3px #ffd23f}#tmPick button[disabled]{opacity:.5}#tmPick small{display:block;font-size:10px;font-style:normal;font-weight:700;opacity:.92;margin-top:2px;white-space:normal}#tmPick .tmAuto{font-size:11px;margin-top:6px;color:#cfe2ff;text-align:center}`;document.head.appendChild(st)}
+ const {T,auto,size}=tsLobbyTeams(),nm=p=>escapeHTML(olNameOf(p))+(p.sameTab?' (kamu)':''),list=a=>a.length?a.map(nm).join(', '):'-';
+ const btn=(t,cls,lbl)=>{const full=T[t].length>=size&&olMyTeam!==t;return `<button type="button" class="${cls} ${olMyTeam===t?'sel':''}" data-tm="${t}" ${full?'disabled':''}>${lbl} ${T[t].length}/${size}<small>${list(T[t])}${T[t].length<size?' + '+(size-T[t].length)+' komputer':''}</small></button>`};
+ const h=`<div class="sub menuSub" style="margin:8px 0 6px"><b>PILIH TIM</b><small>SLOT KOSONG DIISI KOMPUTER</small></div><div class="tmRow">${btn(0,'b','🔵 TIM BIRU')}${btn(1,'r','🔴 TIM MERAH')}</div>${auto.length?`<div class="tmAuto">Belum memilih (diatur otomatis): ${list(auto)}</div>`:''}`;
+ if(el._h!==h){el._h=h;el.innerHTML=h;el.querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{audioReady();const t=+b.dataset.tm;olMyTeam=olMyTeam===t?-1:t;try{olRoom.presence({tm:olMyTeam})}catch(e){}tsLobbyPick()})}}
+{const _rl=renderLobby;renderLobby=function(f){const r=_rl(f);try{tsLobbyPick()}catch(e){}return r}}
+/* penempatan tim dari pilihan pemain (sama di semua HP) */
+function tsSplitTeams(humans,go,size){const pref=new Map((go.parts||[]).map(p=>[p[0],p[3]]));const T=[[],[]],rest=[];
+ for(const r of humans){const t=pref.get(r.peer);if((t===0||t===1)&&T[t].length<size)T[t].push(r);else rest.push(r)}
+ for(const r of rest){const t=T[0].length<=T[1].length?0:1;if(T[t].length<size)T[t].push(r);else if(T[1-t].length<size)T[1-t].push(r)}return T}
 
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
