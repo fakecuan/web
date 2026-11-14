@@ -2543,7 +2543,7 @@ function chooseRoomColor(color){
 function renderLobby(force){
  if(!olRoom||state!=='lobby'||olView!=='lobby'||!olMeta)return;
  const ps=olViewers(),h=olHostP(ps);if(!h)return;
- const host=!!h.sameTab,m=olMeta,rc=OL_FORMATS.includes(m.rc)?m.rc:'1000',max=OL_MAX[rc],idle=h.presence.ph==='lobby',individual=(rc==='ds200'||rc==='dtt200');
+ const host=!!h.sameTab,m=olMeta,rc=OL_FORMATS.includes(m.rc)?m.rc:'1000',max=tsMaxFor(rc,olViewers().length),idle=h.presence.ph==='lobby',individual=(rc==='ds200'||rc==='dtt200');
  ensureProfiles(ps.map(olNameOf)).then(ch=>{if(ch&&state==='lobby'&&olView==='lobby')renderLobby()});
  const rows=ps.map(p=>{const racing=p.presence.ph&&p.presence.ph!=='lobby',isH=p===h,nm=olNameOf(p),pr=profOf(nm),lbl=racing?'BALAPAN':(isH?'HOST':(p.presence.rd?'SIAP':'BELUM')),col=racing?'#b5762c':(isH?'#b5762c':(p.presence.rd?'#1a8f5b':'#8a97a6')),pc=COLORS.includes(p.presence.cc)?p.presence.cc:COLORS[0],taken=new Set(ps.filter(x=>!x.sameTab&&COLORS.includes(x.presence.cc)).map(x=>x.presence.cc));
   const palette=p.sameTab?`<div class="colorDrop" id="myColorDrop" style="display:none;position:absolute;right:8px;top:42px;z-index:30;background:#fff;border:1px solid #d7dce3;border-radius:12px;padding:8px;box-shadow:0 8px 24px #0002;display:none;grid-template-columns:repeat(6,26px);gap:6px">${COLORS.map(c=>`<button type="button" data-color="${c}" title="${taken.has(c)?'Dipakai pemain lain':c}" ${taken.has(c)?'disabled':''} style="width:26px;height:26px;border-radius:50%;border:2px solid ${pc===c?'#17202b':'#ddd'};background:${c};opacity:${taken.has(c)?'.25':'1'};padding:0"></button>`).join('')}</div>`:'';
@@ -2599,7 +2599,7 @@ function showReadyPrompt(names,onGo){
  $('rpGo').onclick=()=>{wrap.remove();onGo()};$('rpWait').onclick=()=>wrap.remove();
 }
 function hostStart(force){
- if(!olRoom||!iAmHost()||!olMeta)return;const ps=olViewers(),max=OL_MAX[olMeta.rc];
+ if(!olRoom||!iAmHost()||!olMeta)return;const ps=olViewers(),max=tsMaxFor(olMeta.rc,ps.length);
  const individual=olMeta.rc==='ds200'||olMeta.rc==='dtt200';
  if(!force&&!individual){const wait=ps.filter(p=>!p.sameTab&&p.presence.ph==='lobby'&&p.presence.rd!==true);if(wait.length){showReadyPrompt(wait.map(olNameOf),()=>hostStart(true));return}}
  if(individual){
@@ -3754,11 +3754,11 @@ const tsAct=T=>T.order[T.leg%T.order.length];
 const tsRecv=T=>T.leg+1<T.legs?T.order[(T.leg+1)%T.order.length]:null;
 function tsMk(id,name,color,s,d,ai,team,hold){return{id,name,color,s,d,v:0,top:MAX_SPEED,alive:hold!=='rest',finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1,tsTeam:team,tsHold:hold,_startS:s,_startD:d}}
 function tsAiNew(T){T.aiGap=.9+Math.random()*1.2;T.aiTurun=18+Math.random()*6}
-function tsPlace(T,r){const k=tsK(),z=tsZone(T.leg+1),tgt=raceStartS+(z.f+(T.id?4:0))*k;if(r.tsHold==='queue'){r.s=tgt-6*k;r.qT=tgt}else{r.s=tgt;r.qT=undefined}r.alive=true;r.finished=false;r.fall=0;r.v=0;r.tsHold='fence';r.d=tsFenceD();r._h=undefined}
-function tsQueue(T,r){const k=tsK(),z=tsZone(T.leg+1);r.alive=true;r.finished=false;r.fall=0;r.v=0;r.tsHold='queue';r.qT=undefined;r.s=raceStartS+(z.f-6+(T.id?4:0))*k;r.d=tsFenceD();r._h=undefined}
+function tsPlace(T,r){const k=tsK(),z=tsZone(T.leg+1),tgt=raceStartS+(z.f+T.id*4)*k;if(r.tsHold==='queue'){r.s=tgt-6*k;r.qT=tgt}else{r.s=tgt;r.qT=undefined}r.alive=true;r.finished=false;r.fall=0;r.v=0;r.tsHold='fence';r.d=tsFenceD();r._h=undefined}
+function tsQueue(T,r){const k=tsK(),z=tsZone(T.leg+1);r.alive=true;r.finished=false;r.fall=0;r.v=0;r.tsHold='queue';r.qT=undefined;r.s=raceStartS+(z.f-6+T.id*4)*k;r.d=tsFenceD();r._h=undefined}
 function tsInit(){
  online=false;lapLabel('LAP');if(TRACK.route)exitMarathonWorld();
- const sp=spec(),blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=blueStart-TRACK.perimeter/2;
+ const sp=spec(),blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=sp.relay?blueStart:blueStart-TRACK.perimeter/2;
  itemsReset();
  const me=String(cfg.playerName||'').trim()||'Kamu',names=[[me,'Sari','Dio'],['Raka','Bima','Naya']],cols=[COLORS[1],COLORS[0]];
  racers=[];TM.teams=[];
@@ -3790,14 +3790,15 @@ function tsHoldStep(r,dt){
   else if(!out.ai&&gap<=.4&&Math.abs(r.d-out.d)<9)tsDQ('TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT',true);
   else if(!out.ai&&tsM(r)>=tsLine(z.f))tsDQ('REKAN MELEWATI GARIS','BELUM DIDORONG SAMPAI GARIS START/FINIS',false);
  }else if(r.tsHold==='out'){
-  r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=(r.tsTeam===0?-1:1)*(TRACK.width/2-10);
-  r.d+=(side-r.d)*Math.min(1,1.2*dt);tsMove(r,dt);
-  if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r)
+  r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=spec().relay?(r.tsTeam===0?-1:1)*(TRACK.width/2-10):tsFenceD();
+  r.d+=(side-r.d)*Math.min(1,(spec().relay?1.2:1.6)*dt);tsMove(r,dt);
+  if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r);
+  else if(!spec().relay&&(r.v<=.2*k||r.tOut>3.5)){r.tsHold='queue';r.v=0;r.qT=undefined;r.d=tsFenceD();r._h=undefined}
  }
 }
 function tsTurun(T){const nx=tsRecv(T);if(!nx||nx.tsHold!=='fence')return;nx.tsHold='glide';nx.v=.6*tsK();if(T.id===0){setToast('REKAN TURUN!','SIAP DORONG');sfx('ui')}tsBtnUI()}
 function tsDQ(title,sub,crash){
- if(TM.dq)return;TM.dq={title,sub};TM.dqT=crash?1.6:1.0;
+ if(TM.dq)return;TM.dq={title,sub};TM.dqT=crash?1.6:1.0;setTimeout(()=>tsDqStand(TM.teams[0]),crash?700:150);
  const T=TM.teams[0],out=tsAct(T),nx=tsRecv(T);
  if(crash&&nx){for(const r of [out,nx]){r.fall=1.6;r.v*=.15;r.crashCooldown=1}nx.tsHold='out';sfx('crash')}else sfx('elim');
  setToast('DISKUALIFIKASI',title);tsBtnUI();
@@ -3918,12 +3919,18 @@ function tsTuck(m){
  }
  tsBtnUI()}}
 
+/* tim yang didiskualifikasi menepi dan berdiri di pinggir pagar */
+function tsDqStand(T){if(!T)return;for(const r of T.order){if(r.finished)continue;r.fall=0;r.v=0;r.qT=undefined;r.tsHold='queue';r.d=tsFenceD();r._h=undefined}}
+
 /* ===== ONLINE: TEAM SPRINT & RELAY (beregu, campur manusia + komputer) ===== */
 if(!OL_FORMATS.includes('ts'))OL_FORMATS.push('ts');if(!OL_FORMATS.includes('relay'))OL_FORMATS.push('relay');
-OL_MAX.ts=4;OL_MAX.relay=6;OL_LBL.ts='TEAM SPRINT';OL_LBL.relay='RELAY';
+OL_MAX.ts=4;OL_MAX.relay=9;OL_LBL.ts='TEAM SPRINT';OL_LBL.relay='RELAY';
 const TSO={out:[],seq:0,gid:'',seen:{},spect:null};
 const tsTeamOnline=()=>online&&spec().team;
 const tsOwn=r=>!r.remote;
+const TCOL=()=>[COLORS[1],COLORS[0],'#2ecc71'],TNAME=['BIRU','MERAH','HIJAU'];
+function tsNT(rc,n){return rc==='relay'&&n>6?3:2}
+function tsMaxFor(rc,n){return rc==='relay'?(n>6?9:6):OL_MAX[rc]}
 function tsMyT(){return player&&player.tsTeam!=null?TM.teams[player.tsTeam]:null}
 /* kirim/terima kejadian estafet lewat presence (tersimpan beberapa detik, jadi tidak hilang) */
 function tsEmit(ev){if(!online||!olRoom)return;TSO.out.push([++TSO.seq,TSO.gid].concat(ev));if(TSO.out.length>12)TSO.out.shift();try{olRoom.presence({te:TSO.out.slice()})}catch(e){}}
@@ -3932,24 +3939,24 @@ function tsRecvEvents(){if(!olRoom)return;for(const pe of olRoom.peers()){if(pe.
 function tsApplyEvent(e,local){const T=TM.teams[e[1]];if(!T)return;
  if(e[0]==='turun'){if(T.leg===e[2])tsTurunApply(T)}
  else if(e[0]==='ex'){if(T.leg===e[2])tsExApply(T,e[3],e[4])}
- else if(e[0]==='dq'){if(!TM.dq){TM.dq={team:T.id,title:e[2],sub:e[3]};TM.dqT=1.4;const mine=tsMyT()===T;setToast('DISKUALIFIKASI',(mine?'TIMMU: ':'TIM LAWAN: ')+e[2]);sfx(mine?'elim':'go');tsBtnUI()}}
+ else if(e[0]==='dq'){if(!T.dq){T.dq={title:e[2],sub:e[3]};const mine=tsMyT()===T;setToast('DISKUALIFIKASI',(mine?'TIMMU: ':'TIM '+TNAME[T.id]+': ')+e[2]);sfx(mine?'elim':'go');setTimeout(()=>{if(tsTeamOnline())tsDqStand(T)},500);tsBtnUI()}}
  else if(e[0]==='fin'){if(T.finT==null)T.finT=e[2]}}
 function tsDo(ev){tsApplyEvent(ev,true);tsEmit(ev)}
 /* mulai balapan beregu online */
 function tsInitOnline(go){const sp=spec(),hostNow=iAmHost();TM.teams=[];TM.dq=null;TM.dqT=0;TM.cool=0;TM.zoneJ=0;TM.ended=false;
  TSO.out=[];TSO.seq=0;TSO.gid=String(go.id||'');TSO.seen={};
  if(olRoom){for(const pe of olRoom.peers()){const te=pe.presence&&pe.presence.te;if(Array.isArray(te))for(const e of te)TSO.seen[pe.peer]=Math.max(TSO.seen[pe.peer]||0,e[0]||0)}try{olRoom.presence({te:null})}catch(e){}}
- const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=blueStart-TRACK.perimeter/2;
- const humans=racers.filter(r=>!r.bot),bots=racers.filter(r=>r.bot);let nb=bots.length;
- const teams=tsSplitTeams(humans,go,sp.size);let bi=0;
- for(let t=0;t<2;t++)while(teams[t].length<sp.size){let b=bots[bi++];if(!b){b={id:racers.length,name:(NAMES[1+nb]||'CPU')+' (PC)',bot:true,bi:nb++,ai:true,remote:!hostNow,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1};racers.push(b)}teams[t].push(b)}
- for(const b of bots.slice(bi)){b.alive=false;b.tsHold='rest'}
- const cols=[COLORS[1],COLORS[0]];
- for(let t=0;t<2;t++){const T={id:t,order:teams[t],leg:0,legs:sp.legs,q:[],finT:null,finSent:false};tsAiNew(T);
-  T.order.forEach((r,i)=>{const d=t?12:-12;Object.assign(r,{tsTeam:t,tsHold:i===0?null:i===1?'fence':'queue',color:cols[t],alive:true,finished:false,finishTime:null,fall:0,v:0,s:raceStartS-12,d,_startS:raceStartS-12,_startD:d,_validStartS:raceStartS-12,ai:!!r.bot})});
+ const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=sp.relay?blueStart:blueStart-TRACK.perimeter/2;TSO.firstFin=null;
+ const humans=racers.filter(r=>!r.bot),bots=racers.filter(r=>r.bot),NT=tsNT(go.rc,humans.length);let nb=bots.length;
+ const teams=tsSplitTeams(humans,go,sp.size,NT);let bi=0;
+ for(let t=0;t<NT;t++)while(teams[t].length<sp.size){let b=bots[bi++];if(!b){b={id:racers.length,name:(NAMES[1+nb]||'CPU')+' (PC)',bot:true,bi:nb++,ai:true,remote:!hostNow,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1};racers.push(b)}teams[t].push(b)}
+ {const used=new Set(teams.flat());racers=racers.filter(r=>used.has(r));let k2=0;for(const r of racers)if(r.bot)r.bi=k2++}
+ const cols=TCOL();
+ for(let t=0;t<NT;t++){const T={id:t,order:teams[t],leg:0,legs:sp.legs,q:[],finT:null,finSent:false,dq:null};tsAiNew(T);
+  T.order.forEach((r,i)=>{const d=(t-(NT-1)/2)*14;Object.assign(r,{tsTeam:t,tsHold:i===0?null:i===1?'fence':'queue',color:cols[t],alive:true,finished:false,finishTime:null,fall:0,v:0,s:raceStartS-12,d,_startS:raceStartS-12,_startD:d,_validStartS:raceStartS-12,ai:!!r.bot})});
   TM.teams.push(T);if(T.order[1])tsPlace(T,T.order[1]);if(T.order[2])tsQueue(T,T.order[2])}
  const myT=tsMyT(),me=player,role=myT?myT.order.indexOf(me):0;
- setTimeout(()=>{if(!tsTeamOnline()||state==='done')return;setToast('TIM '+(me.tsTeam?'MERAH':'BIRU'),role===0?'KAMU PELARI PERTAMA':'TUNGGU DI PAGAR • TEKAN TURUN SAAT REKAN MENDEKAT')},700);
+ setTimeout(()=>{if(!tsTeamOnline()||state==='done')return;setToast('TIM '+TNAME[me.tsTeam],role===0?'KAMU PELARI PERTAMA':'TUNGGU DI PAGAR • TEKAN TURUN SAAT REKAN MENDEKAT')},700);
  if(olRoom)olRoom.presence({s:+player.s.toFixed(1),d:+player.d.toFixed(1)});renderLeaderboard();tsBtnUI()}
 {const _sor=startOnlineRace;startOnlineRace=function(go){_sor(go);if(go&&(go.rc==='ts'||go.rc==='relay'))tsInitOnline(go)}}
 /* transisi yang sama di semua HP */
@@ -3968,23 +3975,23 @@ function tsExApply(T,q,v){const out=tsAct(T),nx=tsRecv(T);if(!nx||nx.tsHold!=='g
  if(r.tsHold==='rest'){r.alive=false;r.v=0;return}
  if(r.tsHold==='queue'){r.v=0;r.d=tsFenceD();return}
  if(r.tsHold==='fence'){r.v=0;r.d=tsFenceD();if(r.qT!==undefined&&r.s<r.qT){const st=Math.min(r.qT-r.s,2.5*k*dt);r.s+=st;r.phase+=st*.055}
-  if(tsRecv(T)!==r||TM.dq)return;
+  if(tsRecv(T)!==r||T.dq)return;
   if(r.bot&&out.bot&&(r.s-out.s)/k<=T.aiTurun)tsDo(['turun',T.id,T.leg]);
   else if(tsM(out)>z.ze+3)tsDo(['dq',T.id,r.bot?'REKAN KOMPUTER TIDAK DISURUH TURUN':'PELARI TIDAK TURUN','TEKAN TURUN SAAT REKAN MENDEKAT']);
  }else if(r.tsHold==='glide'){r.v=Math.min(r.v+2.6*k*dt,7*k);const tgt=Math.max(-TRACK.width/2+8,Math.min(TRACK.width/2-8,out.d));r.d+=Math.max(-12*dt,Math.min(12*dt,tgt-r.d));tsMove(r,dt);
-  if(TM.dq||tsRecv(T)!==r)return;const gap=(r.s-out.s)/k;
+  if(T.dq||tsRecv(T)!==r)return;const gap=(r.s-out.s)/k;
   if(out.bot&&gap<=T.aiGap&&gap>0){const q=tsQual(gap);tsDo(['ex',T.id,T.leg,+q.toFixed(3),+Math.min(MAX_SPEED*1.12,Math.max(r.v,out.v*(.8+.38*q))).toFixed(1)])}
   else if(!out.bot&&gap<=.2&&Math.abs(r.d-out.d)<9)tsDo(['dq',T.id,'TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT']);
   else if(!out.bot&&tsM(r)>=tsLine(z.f)+1)tsDo(['dq',T.id,'REKAN MELEWATI GARIS','BELUM DIDORONG SAMPAI GARIS START/FINIS']);
- }else if(r.tsHold==='out'){r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=(r.tsTeam===0?-1:1)*(TRACK.width/2-10);r.d+=(side-r.d)*Math.min(1,1.2*dt);tsMove(r,dt);if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r)}}}
+ }else if(r.tsHold==='out'){r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=spec().relay?(r.tsTeam===0?-1:1)*(TRACK.width/2-10):tsFenceD();r.d+=(side-r.d)*Math.min(1,(spec().relay?1.2:1.6)*dt);tsMove(r,dt);if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r);else if(!spec().relay&&(r.v<=.2*k||r.tOut>3.5)){r.tsHold='queue';r.v=0;r.qT=undefined;r.d=tsFenceD();r._h=undefined}}}}
 /* tombol TURUN / DORONG online */
 {const _ta=tsAction;tsAction=function(){if(!tsTeamOnline())return _ta();
- if(state!=='race'||TM.dq)return;const T=tsMyT();if(!T)return;const out=tsAct(T),nx=tsRecv(T);if(!nx)return;
+ const T=tsMyT();if(state!=='race'||!T||T.dq)return;const out=tsAct(T),nx=tsRecv(T);if(!nx)return;
  if(nx.tsHold==='fence'&&(nx===player||(out===player&&nx.bot))){tsDo(['turun',T.id,T.leg]);return}
  if(out===player&&nx.tsHold==='glide'&&TM.cool<=0){const g=(nx.s-out.s)/tsK();if(g>4){TM.cool=.7;setToast('DORONG MELESET','TERLALU JAUH • TUNGGU LEBIH DEKAT');sfx('ui');return}
   const q=tsQual(g);tsDo(['ex',T.id,T.leg,+q.toFixed(3),+Math.min(MAX_SPEED*1.12,Math.max(nx.v,out.v*(.8+.38*q))).toFixed(1)])}}}
 {const _bu=tsBtnUI;tsBtnUI=function(){if(!tsTeamOnline())return _bu();const b=$('tsBtn');if(!b)return;let show=false,mode='turun',g=99;const T=tsMyT();
- if(T&&state==='race'&&!TM.dq){const out=tsAct(T),nx=tsRecv(T);
+ if(T&&state==='race'&&!T.dq){const out=tsAct(T),nx=tsRecv(T);
   if(nx){g=(nx.s-out.s)/tsK();
    if(nx.tsHold==='fence'){mode='turun';show=g<80&&(nx===player||(out===player&&nx.bot))}
    else if(nx.tsHold==='glide'&&out===player){mode='dorong';show=true}
@@ -3999,45 +4006,44 @@ function tsSpectHud(){let el=$('tsSpect');const T=tsMyT(),tg=tsCamTarget(),on=ts
  if(!el&&$('stage')){el=document.createElement('div');el.id='tsSpect';$('stage').appendChild(el);const st=document.createElement('style');st.textContent=`#tsSpect{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:6;pointer-events:none;display:none;white-space:nowrap;background:rgba(12,36,92,.82);border:1.5px solid rgba(120,190,255,.7);border-radius:14px;padding:6px 14px;color:#fff;font:italic 900 13px/1.2 'Exo 2',system-ui,sans-serif;text-align:center}#tsSpect small{display:block;font-size:10px;font-style:normal;opacity:.85}`;document.head.appendChild(st)}
  if(!el)return;el.style.display=on?'block':'none';if(!on)return;const h='👀 MENONTON '+escapeHTML(tg.name)+'<small>'+(player.tsHold==='fence'&&tsRecv(T)===player?'GILIRANMU BERIKUTNYA • TEKAN TURUN SAAT REKAN DEKAT':tsMoreLegs(T)?'TUNGGU GILIRANMU DI PAGAR':'TUGASMU SELESAI • DUKUNG REKANMU')+'</small>';if(el._h!==h){el._h=h;el.innerHTML=h}}
 /* akhir lomba online */
-function tsOnlineEnd(){if(TM.ended)return;TM.ended=true;state='done';steer=0;tsBtnUI();const sp=spec(),k=tsK(),mt=player.tsTeam,A=TM.teams[mt],B=TM.teams[1-mt];
- const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null,ql=q=>q===null?'-':q>=.9?'SEMPURNA':q>=.65?'BAGUS':'LEMAH',nm=T=>T.id===0?'TIM BIRU':'TIM MERAH',col=T=>T.id===0?COLORS[1]:COLORS[0];
+function tsOnlineEnd(){if(TM.ended)return;TM.ended=true;state='done';steer=0;tsBtnUI();const sp=spec(),k=tsK(),mt=player.tsTeam,cols=TCOL();
+ const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null,ql=q=>q===null?'-':q>=.9?'SEMPURNA':q>=.65?'BAGUS':'LEMAH';
  const est=T=>{if(T.finT!=null)return{t:T.finT,e:false};const r=tsAct(T);return{t:elapsed+Math.max(0,sp.meters-tsM(r))/Math.max(8,r.v/k),e:true}};
- let win,ra,rb;if(TM.dq){win=TM.dq.team!==mt;ra=TM.dq.team===mt?'DQ':formatTime(est(A).t);rb=TM.dq.team!==mt?'DQ':'~'+formatTime(est(B).t)}
- else{const ta=est(A),tb=est(B);win=ta.t<=tb.t;ra=(ta.e?'~':'')+formatTime(ta.t);rb=(tb.e?'~':'')+formatTime(tb.t)}
+ const R=TM.teams.map(T=>({T,dq:!!T.dq,...est(T)})).sort((a,b)=>(a.dq-b.dq)||(a.t-b.t));const myI=R.findIndex(x=>x.T.id===mt),me=R[myI],place=myI+1,win=place===1&&!me.dq;
  sfx(win?'finish':'elim');
- const row=(n,T,t,me)=>`<div class="frkRow ${me?'me':''}"><b>${n}</b><span class="frkDot" style="background:${col(T)}"></span><span class="frkName">${nm(T)}${me?' (kamu)':''}</span><span class="frkT">${t}</span></div><div class="mini">${T.order.map(r=>escapeHTML(r.name)).join(', ')} · dorongan ${ql(avg(T.q))}</div>`;
- const left=win?row(1,A,ra,true)+row(2,B,rb,false):row(1,B,rb,false)+row(2,A,ra,true);
- finScreen({win,title:TM.dq?(win?'LAWAN DISKUALIFIKASI':'DISKUALIFIKASI'):(win?'MENANG':'KALAH'),sub:sp.label+' • ONLINE'+(TM.dq?' • '+TM.dq.title:''),place:win?1:2,time:ra,lap:ql(avg(A.q)),lapLbl:'DORONGAN',leftHtml:left,againLbl:'KEMBALI KE ROOM',changeLbl:'KELUAR ROOM'});
+ const left=R.map((x,i)=>`<div class="frkRow ${x.T.id===mt?'me':''}"><b>${x.dq?'DQ':i+1}</b><span class="frkDot" style="background:${cols[x.T.id]}"></span><span class="frkName">TIM ${TNAME[x.T.id]}${x.T.id===mt?' (kamu)':''}</span><span class="frkT">${x.dq?'DQ':(x.e?'~':'')+formatTime(x.t)}</span></div><div class="mini">${x.T.order.map(r=>escapeHTML(r.name)).join(', ')}${x.dq?' · '+x.T.dq.title:' · dorongan '+ql(avg(x.T.q))}</div>`).join('');
+ finScreen({win,title:me.dq?'DISKUALIFIKASI':win?'MENANG':'PERINGKAT '+place,sub:sp.label+' • ONLINE • '+TM.teams.length+' TIM'+(me.dq?' • '+me.T.dq.title:''),place:me.dq?TM.teams.length:place,time:me.dq?'DQ':(me.e?'~':'')+formatTime(me.t),lap:ql(avg(me.T.q)),lapLbl:'DORONGAN',leftHtml:left,againLbl:'KEMBALI KE ROOM',changeLbl:'KELUAR ROOM'});
  const ag=$('again'),ch=$('change');if(ag)ag.onclick=()=>{audioReady();backToLobby()};if(ch)ch.onclick=()=>{audioReady();leaveRoom();menu()};
  if(olRoom)try{olRoom.presence({ph:'fin',v:0})}catch(e){}}
 {const _er2=endRace;endRace=function(won){if(tsTeamOnline())return tsOnlineEnd();return _er2(won)}}
 {const _rl=renderLeaderboard;renderLeaderboard=function(){if(!tsTeamOnline()||!TM.teams.length)return _rl();const mt=player?player.tsTeam:0;
- const sc=T=>{const r=tsAct(T);return T.finT!=null?1e9-T.finT:r.s};const rows=TM.teams.slice().sort((a,b)=>sc(b)-sc(a)),lead=tsAct(rows[0]);
- $('leaderboard').innerHTML=rows.map((T,i)=>{const r=tsAct(T),gap=i===0?'LEAD':T.finT!=null?'FINIS':'+'+((lead.s-r.s)/tsK()).toFixed(1)+' m';return `<div class="racer ${T.id===mt?'me':''}"><span class="rank">#${i+1}</span><div class="name">${T.id===0?'BIRU':'MERAH'} · ${escapeHTML(String(r.name).slice(0,8))}</div><div class="gap">${gap}</div></div>`}).join('')}}
+ const sc=T=>{const r=tsAct(T);return T.dq?-1e9:T.finT!=null?1e9-T.finT:r.s};const rows=TM.teams.slice().sort((a,b)=>sc(b)-sc(a)),lead=tsAct(rows[0]);
+ $('leaderboard').innerHTML=rows.map((T,i)=>{const r=tsAct(T),gap=i===0?'LEAD':T.finT!=null?'FINIS':'+'+((lead.s-r.s)/tsK()).toFixed(1)+' m';return `<div class="racer ${T.id===mt?'me':''}"><span class="rank">#${i+1}</span><div class="name">${TNAME[T.id]} · ${escapeHTML(String(r.name).slice(0,8))}</div><div class="gap">${T.dq?'DQ':gap}</div></div>`}).join('')}}
 {const _up2=update;update=function(dt){_up2(dt);if(!tsTeamOnline())return;tsRecvEvents();tsSpectHud();
  if(state!=='race')return;
  for(const T of TM.teams){const a=tsAct(T);if(T.leg===T.legs-1&&a.finished&&tsOwn(a)&&!T.finSent){T.finSent=true;tsDo(['fin',T.id,+(a.finishTime||elapsed).toFixed(2)])}}
- if(TM.dq){TM.dqT-=dt;if(TM.dqT<=0)tsOnlineEnd()}else if(TM.teams.some(T=>T.finT!=null))tsOnlineEnd();
+ const act=TM.teams.filter(T=>!T.dq);if(TSO.firstFin==null&&TM.teams.some(T=>T.finT!=null))TSO.firstFin=elapsed;
+ if(!act.length||act.every(T=>T.finT!=null)||(TSO.firstFin!=null&&elapsed-TSO.firstFin>25)){TSO.endT=(TSO.endT||0)+dt;if(TSO.endT>1.2)tsOnlineEnd()}else TSO.endT=0;
  if(Math.floor(elapsed*4)!==TSO.lb){TSO.lb=Math.floor(elapsed*4);renderLeaderboard()}}}
 /* ===== LOBI: PILIH TIM (Biru / Merah) untuk Team Sprint & Relay ===== */
 let olMyTeam=-1;
-function tsLobbyTeams(){const ps=olViewers?olViewers():[],size=(raceSpecs[olMeta&&olMeta.rc]||{}).size||2,T=[[],[]],auto=[];
- for(const p of ps){if(p.presence.ph&&p.presence.ph!=='lobby'&&!p.sameTab)continue;const t=p.sameTab?olMyTeam:(p.presence.tm??-1);if((t===0||t===1)&&T[t].length<size)T[t].push(p);else auto.push(p)}return{T,auto,size}}
+function tsLobbyTeams(){const ps=olViewers?olViewers():[],size=(raceSpecs[olMeta&&olMeta.rc]||{}).size||2,NT=tsNT(olMeta&&olMeta.rc,ps.length),T=Array.from({length:NT},()=>[]),auto=[];
+ for(const p of ps){if(p.presence.ph&&p.presence.ph!=='lobby'&&!p.sameTab)continue;const t=p.sameTab?olMyTeam:(p.presence.tm??-1);if(t>=0&&t<NT&&T[t].length<size)T[t].push(p);else auto.push(p)}return{T,auto,size,NT}}
 function tsLobbyPick(){const d=$('dialog');if(!d||state!=='lobby'||!olMeta)return;let el=$('tmPick');const rc=olMeta.rc;
  {const f0=d.querySelector('[data-rc]');if(f0){const w=f0.parentElement;w.style.gridTemplateColumns='repeat(4,minmax(0,1fr))';w.style.gap='6px';w.querySelectorAll('[data-rc]').forEach(b=>{b.style.minWidth='0';b.style.padding='8px 2px';b.style.fontSize='clamp(10px,3vw,14px)';b.style.overflow='hidden';b.style.overflowWrap='anywhere'})}}
  if(rc!=='ts'&&rc!=='relay'){if(el)el.remove();return}
  const fw=d.querySelector('[data-rc]');if(!fw)return;const wrap=fw.parentElement;
  if(!el){el=document.createElement('div');el.id='tmPick';wrap.insertAdjacentElement('afterend',el);
-  const st=document.createElement('style');st.textContent=`#tmPick{margin:10px 0 4px}#tmPick .tmRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}#tmPick button{border-radius:14px;padding:9px 6px;border:2px solid #fff6;font-style:italic;font-weight:900;font-size:14px;color:#fff;text-align:center}#tmPick button.b{background:linear-gradient(180deg,#3a9bff,#1257c9)}#tmPick button.r{background:linear-gradient(180deg,#ff5145,#b5121b)}#tmPick button.sel{border-color:#fff;box-shadow:0 0 0 3px #ffd23f}#tmPick button[disabled]{opacity:.5}#tmPick small{display:block;font-size:10px;font-style:normal;font-weight:700;opacity:.92;margin-top:2px;white-space:normal}#tmPick .tmAuto{font-size:11px;margin-top:6px;color:#cfe2ff;text-align:center}`;document.head.appendChild(st)}
- const {T,auto,size}=tsLobbyTeams(),nm=p=>escapeHTML(olNameOf(p))+(p.sameTab?' (kamu)':''),list=a=>a.length?a.map(nm).join(', '):'-';
+  const st=document.createElement('style');st.textContent=`#tmPick{margin:10px 0 4px}#tmPick .tmRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}#tmPick button{border-radius:14px;padding:9px 6px;border:2px solid #fff6;font-style:italic;font-weight:900;font-size:14px;color:#fff;text-align:center}#tmPick button.b{background:linear-gradient(180deg,#3a9bff,#1257c9)}#tmPick button.r{background:linear-gradient(180deg,#ff5145,#b5121b)}#tmPick button.g{background:linear-gradient(180deg,#3fd47f,#15884a)}#tmPick button.sel{border-color:#fff;box-shadow:0 0 0 3px #ffd23f}#tmPick button[disabled]{opacity:.5}#tmPick small{display:block;font-size:10px;font-style:normal;font-weight:700;opacity:.92;margin-top:2px;white-space:normal}#tmPick .tmAuto{font-size:11px;margin-top:6px;color:#cfe2ff;text-align:center}`;document.head.appendChild(st)}
+ const {T,auto,size,NT}=tsLobbyTeams(),nm=p=>escapeHTML(olNameOf(p))+(p.sameTab?' (kamu)':''),list=a=>a.length?a.map(nm).join(', '):'-';
  const btn=(t,cls,lbl)=>{const full=T[t].length>=size&&olMyTeam!==t;return `<button type="button" class="${cls} ${olMyTeam===t?'sel':''}" data-tm="${t}" ${full?'disabled':''}>${lbl} ${T[t].length}/${size}<small>${list(T[t])}${T[t].length<size?' + '+(size-T[t].length)+' komputer':''}</small></button>`};
- const h=`<div class="sub menuSub" style="margin:8px 0 6px"><b>PILIH TIM</b><small>SLOT KOSONG DIISI KOMPUTER</small></div><div class="tmRow">${btn(0,'b','🔵 TIM BIRU')}${btn(1,'r','🔴 TIM MERAH')}</div>${auto.length?`<div class="tmAuto">Belum memilih (diatur otomatis): ${list(auto)}</div>`:''}`;
+ const h=`<div class="sub menuSub" style="margin:8px 0 6px"><b>PILIH TIM</b><small>SLOT KOSONG DIISI KOMPUTER</small></div><div class="tmRow" style="grid-template-columns:repeat(${NT},minmax(0,1fr))">${btn(0,'b','🔵 BIRU')}${btn(1,'r','🔴 MERAH')}${NT>2?btn(2,'g','🟢 HIJAU'):''}</div>${NT>2?'<div class="tmAuto">Lebih dari 6 pemain: dimainkan 3 tim</div>':''}${auto.length?`<div class="tmAuto">Belum memilih (diatur otomatis): ${list(auto)}</div>`:''}`;
  if(el._h!==h){el._h=h;el.innerHTML=h;el.querySelectorAll('[data-tm]').forEach(b=>b.onclick=()=>{audioReady();const t=+b.dataset.tm;olMyTeam=olMyTeam===t?-1:t;try{olRoom.presence({tm:olMyTeam})}catch(e){}tsLobbyPick()})}}
 {const _rl=renderLobby;renderLobby=function(f){const r=_rl(f);try{tsLobbyPick()}catch(e){}return r}}
 /* penempatan tim dari pilihan pemain (sama di semua HP) */
-function tsSplitTeams(humans,go,size){const pref=new Map((go.parts||[]).map(p=>[p[0],p[3]]));const T=[[],[]],rest=[];
- for(const r of humans){const t=pref.get(r.peer);if((t===0||t===1)&&T[t].length<size)T[t].push(r);else rest.push(r)}
- for(const r of rest){const t=T[0].length<=T[1].length?0:1;if(T[t].length<size)T[t].push(r);else if(T[1-t].length<size)T[1-t].push(r)}return T}
+function tsSplitTeams(humans,go,size,NT){NT=NT||2;const pref=new Map((go.parts||[]).map(p=>[p[0],p[3]]));const T=Array.from({length:NT},()=>[]),rest=[];
+ for(const r of humans){const t=pref.get(r.peer);if(t>=0&&t<NT&&T[t].length<size)T[t].push(r);else rest.push(r)}
+ for(const r of rest){let best=-1;for(let t=0;t<NT;t++)if(T[t].length<size&&(best<0||T[t].length<T[best].length))best=t;if(best>=0)T[best].push(r)}return T}
 
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
