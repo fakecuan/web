@@ -1732,7 +1732,7 @@ function drawGL(){
   glPose(m,GL.t*2.2,'idle',0,0,dtc);
   // posisi karakter di layar (mengikuti tata letak mockup)
   let px=.5,py=.56,q=.62;
-  if(avm){if(portrait){px=.5;py=.24;q=.36}else{px=.25;py=.57;q=.74}}
+  if(avm){if(portrait){px=.185;py=.56;q=.37}else{px=.25;py=.57;q=.74}}
   else if(state==='menu'){px=portrait?.185:.26;py=portrait?.56:.5;q=portrait?.37:.64}
   else if(wide){px=.25;py=.58;q=.72}
   const fov=34,D=33/(q*2*Math.tan(fov*Math.PI/360)),fx=Math.cos(h),fz=Math.sin(h),rx=-fz,rz=fx,sw=avm?0:Math.sin(GL.t*.25)*3;
@@ -2444,7 +2444,7 @@ function joinPwScreen(r){state='joinpw';
 
 /* ---------- buat room ---------- */
 function createRoomScreen(){state='create';createRc=OL_FORMATS.includes(createRc)?createRc:'1000';
- olDialog(`<h1>➕ Buat Room</h1><div class="sub">NAMA ROOM</div><input id="cName" class="playerNameInput" maxlength="20" autocomplete="off" placeholder="Room ${escapeHTML(acct.name)}"><div class="sub">PASSWORD (OPSIONAL — ISI JIKA INGIN PRIVATE)</div><input id="cPw" type="text" class="playerNameInput" maxlength="12" autocomplete="off" placeholder="Kosongkan = room publik"><div class="sub">JARAK BALAP</div><div class="choices">${OL_FORMATS.map(k=>`<button class="choice ${createRc===k?'sel':''}" data-f="${k}">${raceSpecs[k].label.replace('ELIMINATION 2,5 KM','ELIMINATION')}<br><small>maks ${OL_MAX[k]} pemain</small></button>`).join('')}</div><div id="cMsg"></div><button class="primary" id="cGo">BUAT ROOM</button><button class="secondary" id="cBack">BATAL</button>`,true);
+ olDialog(`<h1>➕ Buat Room</h1><div class="sub">NAMA ROOM</div><input id="cName" class="playerNameInput" maxlength="20" autocomplete="off" placeholder="Room ${escapeHTML(acct.name)}"><div class="sub">PASSWORD (OPSIONAL)</div><input id="cPw" type="text" class="playerNameInput" maxlength="12" autocomplete="off" placeholder="Kosongkan = room publik"><div class="sub">PILIH LOMBA</div><div class="choices cfmt">${OL_FORMATS.map(k=>`<button class="choice ${createRc===k?'sel':''}" data-f="${k}">${(OL_LBL[k]||raceSpecs[k].label).replace('ELIMINATION 2,5 KM','ELIM')}<br><small>maks ${OL_MAX[k]}</small></button>`).join('')}</div><div id="cMsg"></div><button class="primary" id="cGo">BUAT ROOM</button><button class="secondary" id="cBack">BATAL</button>`,true);
  $('dialog').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{createRc=b.dataset.f;$('dialog').querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('sel',x===b))});
  bind('cBack',()=>roomListScreen());
  bind('cGo',()=>{const nm=cleanTxt($('cName').value,20)||('Room '+acct.name),pw=cleanTxt($('cPw').value,12);let code='';const used=new Set(lobbyRooms().rooms.map(r=>r.c));do{code=(Math.random().toString(36)+'abcde').replace(/[^a-z0-9]/g,'').slice(1,6)}while(used.has(code));
@@ -3637,6 +3637,48 @@ function mfApply(){const el=$('menuFriends'),ic=$('mfIcon');const open=MF.open&&
 #app.main-menu .choices.kcompact .choice:before{height:clamp(10px,1.8vh,16px);margin-bottom:2px}
 @media(max-height:760px){#app.main-menu .choices.kcompact .choice:before{display:none}#app.main-menu .choice small{font-size:9px!important}#app.main-menu .menuSub small{display:none}}
 `;document.head.appendChild(st)})();
+/* ===== layar Buat Room: pilihan lomba ringkas, muat 1 layar ===== */
+(()=>{const st=document.createElement('style');st.textContent=`
+.choices.cfmt{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
+.choices.cfmt .choice{min-width:0;padding:7px 1px!important;font-size:clamp(9px,2.7vw,13px)!important;line-height:1.1;overflow-wrap:normal;word-break:normal;border-radius:12px}
+.choices.cfmt .choice:before{height:10px!important;margin-bottom:2px!important}
+.choices.cfmt .choice br{display:none}.choices.cfmt .choice small{display:block;margin-top:2px;font-size:9px!important}
+.choices.cfmt .choice.sel:after{width:16px;height:16px;line-height:16px;font-size:10px;right:-4px;top:-5px}
+#dialog:has(.cfmt) h1{font-size:22px;margin:0 0 2px}#dialog:has(.cfmt) .sub{margin:8px 0 5px}#dialog:has(.cfmt) .playerNameInput{padding:9px 12px!important}
+#dialog:has(.cfmt) .primary{margin-top:10px}`;document.head.appendChild(st)})();
+/* ===== EDIT AVATAR: karakter besar di kiri, panel kanan dengan dropdown ===== */
+(()=>{const st=document.createElement('style');st.textContent=`
+@media(max-aspect-ratio:9/10){#app.avatar-mode #overlay{align-items:stretch!important;justify-content:flex-end!important;padding:66px 2.5vw calc(10px + env(safe-area-inset-bottom,0px)) 0!important}
+ #app.avatar-mode #dialog{width:63%!important;max-height:none!important;height:auto;padding:10px 8px!important}
+ .avTab{font-size:11px!important;padding:8px 3px!important}}
+.avRow.dd{grid-template-columns:minmax(0,1fr) auto;padding:4px 7px;margin-bottom:5px;gap:4px 6px}
+.avRow.dd .avLbl{font-size:12px}.avRow.dd .avLbl i{font-size:15px;width:18px}
+.avRow.dd .avOpts[data-hide]{display:none}
+.avDDBtn{display:flex;align-items:center;gap:5px;background:#eef4ff;border:0;border-radius:12px;padding:3px 7px 3px 3px;color:#123678;font-weight:900;font-size:11px;font-style:italic;max-width:100%}
+.avDDBtn .avOpt,.avDDBtn .avDot,.avDDBtn .avPill{width:28px!important;height:28px!important;min-width:28px;pointer-events:none;box-shadow:none!important;border-width:2px!important;flex:none;padding:0}
+.avDDBtn .avOpt em{display:none}.avDDBtn:after{content:'▾';font-size:13px;font-style:normal}
+.avDDBtn.open{background:#ffd23f}
+.avList[hidden]{display:none!important}
+#avPanel .avRow:not(.dd) .avPill{padding:5px 6px;font-size:12px}#avPanel .avRow:not(.dd){padding:5px 7px;margin-bottom:6px}#avPanel .avRow:not(.dd) .avLbl{font-size:12px}
+.avList{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding:6px 2px 2px;border-top:1px solid rgba(150,205,255,.25)}
+.avList .avOpt{width:44px;height:44px}.avList .avOpt.wide{width:62px}.avList .avDot{width:26px;height:26px}
+.avRow.dd .avSub{display:contents}
+.avRow.dd .avSubRow{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;border-top:1px solid rgba(150,205,255,.2);padding-top:3px;font-size:11px;font-weight:800;color:#cfe2ff}
+`;document.head.appendChild(st)})();
+let avOpenDD=null;
+function avDropdownify(){const p=$('avPanel');if(!p)return;let n=0;
+ const mk=(holder,items,key,row,after)=>{if(!items.length)return;const sel=items.find(x=>x.classList.contains('sel'))||items[0];
+  const b=document.createElement('button');b.type='button';b.className='avDDBtn'+(avOpenDD===key?' open':'');const c=sel.cloneNode(true);c.removeAttribute('data-k');b.appendChild(c);
+  const em=sel.querySelector('em');if(em){const t=document.createElement('span');t.textContent=em.textContent;b.appendChild(t)}
+  const list=document.createElement('div');list.className='avList';list.hidden=avOpenDD!==key;items.forEach(x=>list.appendChild(x));
+  b.onclick=()=>{avOpenDD=avOpenDD===key?null:key;avDropdownify2()};after(b);row.appendChild(list)};
+ p.querySelectorAll('.avRow').forEach(row=>{const opts=row.querySelector(':scope>.avOpts');if(!opts||opts.querySelector('input')||opts.querySelector('.avPill'))return;row.classList.add('dd');n++;
+  const items=[...opts.children];opts.setAttribute('data-hide','1');mk(opts,items,avTab+':'+n,row,b=>opts.insertAdjacentElement('afterend',b));
+  const sub=row.querySelector(':scope>.avSub');if(sub){const lbl=sub.querySelector('span'),dots=sub.querySelector('.avDots');const sr=document.createElement('div');sr.className='avSubRow';sr.appendChild(lbl);row.appendChild(sr);
+   const di=[...dots.children];sub.remove();mk(dots,di,avTab+':'+n+'s',row,b=>sr.appendChild(b))}})
+ p.querySelectorAll('[data-k]').forEach(b=>{const h=b.onclick;if(h&&!b._dd){b._dd=1;b.onclick=e=>{avOpenDD=null;h(e)}}})}
+function avDropdownify2(){const p=$('avPanel');if(!p)return;p.querySelectorAll('.avDDBtn').forEach((b,i)=>{});avRender()}
+{const _ar=avRender;avRender=function(){_ar();try{avDropdownify()}catch(e){}}}
 
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
 raceSpecs.mtt={label:'TIME TRIAL 2 KM',count:1,meters:MARA_LEN,laps:1,elim:false,marathon:true,tt:true};
