@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Diva Skate - Inline Skate Race 3D</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,600;0,800;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <style>
@@ -697,7 +698,7 @@ function setupIndividualHeat(active=true){
  if(active&&sp.runup)setToast('DOBBIN SPRINT','MULAI ANCANG-ANCANG 100 M');
 }
 let individualStarted=false,individualTimer=0,individualPhase='';
-function initRace(){const sp=spec();lapLabel(sp.battle?'NYAWA':sp.marathon?'CP':'LAP');if(sp.marathon)maraEnsureWorld(true,sp.tt?ttSeed():0);else if(TRACK.route)exitMarathonWorld();if(sp.individual){online=false;racers=[{id:0,name:cfg.playerName||'SKATER',color:COLORS[0],s:0,d:0,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,phase:0,ai:false,row:1}];player=racers[0];setupIndividualHeat(true);return}const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;if(sp.marathon)raceStartS=mS(0);const grid=startGrid(sp.count,raceStartS);itemsReset();racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(sp.marathon){marathonReset();pack2Reset();if(sp.tt)ttReset()}if(sp.battle)battleReset();state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();}
+function initRace(){const sp=spec();lapLabel(sp.battle?'HP':sp.marathon?'CP':'LAP');if(sp.marathon)maraEnsureWorld(true,sp.tt?ttSeed():0);else if(TRACK.route)exitMarathonWorld();if(sp.team){tsInit();return}if(sp.individual){online=false;racers=[{id:0,name:cfg.playerName||'SKATER',color:COLORS[0],s:0,d:0,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,phase:0,ai:false,row:1}];player=racers[0];setupIndividualHeat(true);return}const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;if(sp.marathon)raceStartS=mS(0);const grid=startGrid(sp.count,raceStartS);itemsReset();racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(sp.marathon){marathonReset();pack2Reset();if(sp.tt)ttReset()}if(sp.battle)battleReset();state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();}
 function updateOfflineRaceTools(){
  const el=$('offlineRaceTools');
  if(el)el.style.display=(!online&&(state==='race'||state==='count'||state==='runup'))?'flex':'none';
@@ -742,7 +743,7 @@ function restartAfterFoul(){
  setToast('KARTU KUNING','FOUL START • ULANG START');sfx('crash');
  if(online&&olRoom){olSeenFoulAt=Date.now();olRoom.presence({ph:'race',s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,fc:foulCards,ff:olSeenFoulAt,red:false,f:0,fn:null})}
 }
-function tap(){if(flowTap())return;
+function tap(){if(spec().team&&player&&player.tsHold)return;if(flowTap())return;
  if(!player||!player.alive||player.fall>0)return;
  if(state==='runup'||state==='count'){
   const cap=Math.max(1,smoothSpeedCap||MAX_SPEED),ratio=Math.min(1,player.v/cap),abs=Math.min(1,player.v/MAX_SPEED);
@@ -795,7 +796,7 @@ $('tap').addEventListener('pointerdown',e=>{e.preventDefault();audioReady();$('t
 window.addEventListener('keydown',e=>{const tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;if(e.repeat)return;audioReady();if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')setSteer(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')setSteer(1);if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')setSteer(0);if(e.code==='Space'){e.preventDefault();tap()}});
 function eliminateLap(lap){if(!spec().elim||lap<=eliminations)return;const alive=racers.filter(r=>r.alive);if(alive.length<=3)return;const cand=alive.filter(r=>!r.finished).sort((a,b)=>a.s-b.s),remove=Math.min(3,alive.length-3,cand.length);cand.slice(0,remove).forEach(r=>{r.alive=false;r.eliminatedAt=lap;if(online)olElims.push([r.id,lap])});eliminations=lap;setToast('ELIMINATION','PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}
 // Satu jalur fisika untuk semua nomor: dipakai oleh balapan reguler, Dobbin, dan DTT.
-function stepHumanPhysics(dt){
+function stepHumanPhysics(dt){if(spec().team&&player&&player.tsHold)return;
  if(!player||!player.alive)return;
  player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
  if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
@@ -811,7 +812,7 @@ const ITEM_DEF={rudal:{label:'RUDAL',icon:'🚀',w:.24},oli:{label:'OLI',icon:'�
 const HELP_RULES='Lawan komputer menggunakan AI tingkat kesulitan 5×: lebih agresif melakukan TAP, lebih cepat berakselerasi, dan menjaga kecepatan lebih konsisten. Top speed tetap sama dengan pemain. Energi kuning membatasi top speed 70%, energi merah 50%. Energi pulih saat kamu tidak melakukan TAP. Mode Elimination 2,5 km: 18 pembalap start dalam 3 baris (6 per baris). Setiap lap, 3 pembalap terbawah tereliminasi sampai tersisa 3.<br><br><b>Mode Brutal:</b> 6 kotak item tersebar di lintasan. Ambil satu kotak untuk mendapat item acak: rudal mengejar pembalap di depan, oli dijatuhkan di belakangmu, lempar waktu memperlambat pembalap di depan, nitro memberi dorongan, perisai menahan satu serangan. Lantai turbo memberi dorongan singkat.';
 const HELP_CONTROLS='Tekan tombol TAP berulang untuk akselerasi. Jika TAP dilepas, kecepatan turun perlahan sebesar 3 km/jam per detik. Gunakan slider KIRI–TENGAH–KANAN untuk mengarahkan skater. Saat mendekati top speed, kurangi TAP agar energi lebih hemat.<br><br>Di mode Brutal, tombol <b>ITEM</b> di atas TAP memakai item yang sedang kamu bawa.';
 let trackId='oval',trackPick='oval',menuMain=false,ITEMS_ON=false,itemBoxes=[],turboPads=[],missiles=[],oilSpots=[];
-function setTrack(id){if(TRACK.route){maraClearSpect();TRACK.route=null;trackId=''}const p=TRACK_PRESETS[id]||TRACK_PRESETS.oval;if(trackId===id&&TRACK.radius===p.radius)return;trackId=id;TRACK.radius=p.radius;TRACK.arc=Math.PI*TRACK.radius;TRACK.straight=(TRACK.perimeter-2*TRACK.arc)/2;rebuildWorld()}
+function setTrack(id){if(TRACK.route){maraClearSpect();TRACK.route=null;trackId=''}if(TRACK._w0!=null)TRACK.width=TRACK._w0;const p=TRACK_PRESETS[id]||TRACK_PRESETS.oval;if(trackId===id&&TRACK.radius===p.radius)return;trackId=id;TRACK.radius=p.radius;TRACK.arc=Math.PI*TRACK.radius;TRACK.straight=(TRACK.perimeter-2*TRACK.arc)/2;rebuildWorld()}
 function rebuildWorld(){if(!GL.ok||!GL.sc)return;const sc=GL.sc;for(const o of GL.worldObjs||[]){sc.remove(o);o.traverse(n=>{if(n.geometry)n.geometry.dispose()})}
  GL.worldObjs=[];GL.crowd=[];GL.flags=[];GL.stands=[];const before=new Set(sc.children);if(TRACK.route)glBuildRouteWorld();else glBuildWorld();GL.worldObjs=sc.children.filter(c=>!before.has(c));
  GL.worldObjs.forEach(o=>o.traverse(n=>{if(n.isMesh&&!n.isInstancedMesh)n.receiveShadow=true}));if(GL.arch)GL.arch.traverse(n=>{if(n.isMesh)n.castShadow=true})}
@@ -903,7 +904,7 @@ function ensureMenuTools(){if($('menuTools'))return;const d=document.createEleme
 function showHelp(kind){menuMain=false;$('overlay').style.display='flex';const aturan=kind==='aturan';
  $('dialog').innerHTML=`<h1>${aturan?'ATURAN':'KONTROL'}</h1><div class="helpBody">${aturan?HELP_RULES:HELP_CONTROLS}</div><button class="primary" id="hBack">⬅ KEMBALI</button>`;$('hBack').onclick=()=>menu()}
 function menuHeader(){return `<h1 class="menuBrand"><img src="${MENU_LOGO_SRC}" alt="DIVA SKATE"><span>Inline Skate Race</span></h1>`}
-function raceChoices(keys){return keys.map(k=>{const v=raceSpecs[k];return `<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.individual?'INDIVIDUAL • TANPA KOMPUTER':v.battle?v.count+' PEMBALAP • 3 NYAWA • ITEM':v.marathon?'RUTE A→B • '+v.count+' PEMBALAP':v.count+' PEMBALAP • '+v.laps+' LAP'}</small></button>`}).join('')}
+function raceChoices(keys){return keys.map(k=>{const v=raceSpecs[k];return `<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.individual?'INDIVIDUAL • TANPA KOMPUTER':v.team?(v.relay?'TIM 3 PELARI • ESTAFET':'TIM 2 PELARI • ESTAFET'):v.battle?v.count+' PEMBALAP • HP 100 • ITEM':v.marathon?'RUTE A→B • '+v.count+' PEMBALAP':v.count+' PEMBALAP • '+v.laps+' LAP'}</small></button>`}).join('')}
 function menuKasualOval(){menuMain=false;cfg.mode='kasual';if(!['300','500','1000','elim'].includes(cfg.race))cfg.race='1000';
  $('overlay').style.display='flex';
  $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH JARAK</b><small>1 PUTARAN = 200 METER</small></div><div class="choices">${raceChoices(['300','500','1000','elim'])}</div><button class="primary" id="kStart">▶ MAIN BALAP (OFFLINE)</button><button class="secondary" id="kBack">⬅ KEMBALI</button>`;
@@ -920,7 +921,7 @@ function menuBrutal(){menuMain=false;cfg.mode='brutal';if(cfg.race!=='1000'&&cfg
  $('bBack').onclick=()=>menu()}
 function menu(){navSeq++;$('dialog').style.removeProperty('width');try{leaveRoom()}catch(e){console.warn('Cleanup room:',e)}state='menu';menuMain=true;exitMarathonWorld();updateOfflineRaceTools();$('dialog').dataset.olhtml='';$('overlay').style.display='flex';
  $('dialog').innerHTML=`${menuHeader()}<p class="menuIntro">Pilih mode permainan.</p><div class="modeGrid">
-  <button class="modeCard kasual" id="mKasual" type="button"><i>🛼</i><b>KASUAL</b><small>300 m, 500 m, 1.000 m, Elimination &amp; Marathon</small></button>
+  <button class="modeCard kasual" id="mKasual" type="button"><i>🛼</i><b>KASUAL</b><small>300 m – Marathon, Battle, Team Sprint &amp; Relay</small></button>
   <div class="modeCard ranked" aria-disabled="true"><span class="soon">SEGERA</span><i>🏆</i><b>RANKED</b><small>Peringkat resmi musim</small></div>
  </div>
  <button class="secondary" id="online">🌐 MAIN ONLINE</button>
@@ -983,7 +984,7 @@ if(sp.individual){
  return;
 }
 const endS=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter,aliveN=racers.filter(r=>r.alive).length;
-for(const r of racers){if(r.remote)continue;if(!r.alive||r.finished)continue;if(r.crashCooldown>0)r.crashCooldown=Math.max(0,r.crashCooldown-dt);if(r.invT>0)r.invT-=dt;if(r.fall>0){r.fall-=dt;r.v*=Math.max(0,1-3.5*dt);if(r.fall<=0){r.fall=0;r.imm=0;if(TRACK.route||spec().battle)r.invT=spec().battle?2.5:1.5}continue}
+for(const r of racers){if(r.remote)continue;if(r.tsHold&&!r.finished){tsHoldStep(r,dt);continue}if(!r.alive||r.finished)continue;if(r.crashCooldown>0)r.crashCooldown=Math.max(0,r.crashCooldown-dt);if(r.invT>0)r.invT-=dt;if(r.fall>0){r.fall-=dt;r.v*=Math.max(0,1-3.5*dt);if(r.fall<=0){r.fall=0;r.imm=0;if(TRACK.route||spec().battle)r.invT=spec().battle?2.5:1.5}continue}
 if(r===player){
  stepHumanPhysics(dt);applyCentrifugal(player,dt);
  const redLine=TRACK.width/2-3;
@@ -1011,7 +1012,7 @@ if(TRACK.route&&state==='race'){marathonStep(dt);pack2Step(dt)}if(state==='race'
 if(ITEMS_ON&&state==='race')itemsStep(dt);
 let collisionSound=false,playerHit=false;
 if(state==='race')for(let i=0;i<racers.length;i++)for(let j=i+1;j<racers.length;j++){
- const a=racers[i],b=racers[j];if(!a.alive||!b.alive||a.finished||b.finished)continue;
+ const a=racers[i],b=racers[j];if(!a.alive||!b.alive||a.finished||b.finished)continue;if(a.tsHold||b.tsHold||(a.tsTeam!==undefined&&a.tsTeam===b.tsTeam))continue;
  if(a.wingT>0||b.wingT>0||a.invT>0||b.invT>0||a.airT>0||b.airT>0)continue;if((a.fall<=0&&a.crashCooldown>0)||(b.fall<=0&&b.crashCooldown>0))continue;
  const collisionProtection=50/LAP_METERS*TRACK.perimeter;
  if(Math.min(a.s,b.s)-raceStartS<collisionProtection)continue;
@@ -1031,10 +1032,10 @@ if(sp.elim&&state==='race'){
  else{const lap=Math.floor(Math.max(0,player.s-raceStartS)/TRACK.perimeter);if(lap>eliminations)eliminateLap(lap)}
 }
 if(state==='race'){
- if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
+ if(online&&spec().team){}else if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
  else{if(!player.alive){endRace(false);return}if(player.finished){endRace(true);return}}
 }
-$('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=sp.battle?String(player.lives??0):sp.marathon?maraCP()+'/'+MARA_ZONES.length:currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);updateEnergyUI();$('speedNum').textContent=kmh(player.v);lbThrottle();}
+$('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=sp.battle?String(Math.ceil(player.hp??0)):sp.marathon?maraCP()+'/'+MARA_ZONES.length:currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);updateEnergyUI();$('speedNum').textContent=kmh(player.v);lbThrottle();}
 function top3Get(race){try{return JSON.parse(localStorage.getItem('diva_top3_'+race)||'[]')||[]}catch(e){return[]}}
 function top3Add(race,name,t){const L=top3Get(race);L.push({n:String(name||'Pemain').slice(0,16),t});L.sort((a,b)=>a.t-b.t);const K=L.slice(0,3);try{localStorage.setItem('diva_top3_'+race,JSON.stringify(K))}catch(e){}return K}
 function top3Html(race){const L=top3Get(race),lbl=(raceSpecs[race]||{}).label||'';
@@ -1686,7 +1687,7 @@ function drawGL(){
  const blue=TRACK.straight+TRACK.arc+TRACK.straight*.65;
  let fx0=0,fz0=0;
  if(raceView){if(GL.show)GL.show.g.visible=false;GL.ringG.visible=false;cam.clearViewOffset();
-  const ps=player.s,pd=player.d,spd=Math.min(1,player.v/MAX_SPEED);
+  const CTg=(typeof tsCamTarget==='function'?tsCamTarget():player)||player,ps=CTg.s,pd=CTg.d,spd=Math.min(1,CTg.v/MAX_SPEED);
   GL.camD+=(pd*.92-GL.camD)*Math.min(1,dtc*6);
   const mode=GL.cameraMode||3,back=mode===1?33+spd*7:mode===2?51+spd*7:mode===3?76+spd*8:mode===4?175+spd*10:76+spd*8;
   tpos(ps-back,GL.camD,_t);const cx=_t.x,cz=_t.y,cy0=elevU(ps-back,GL.camD);tpos(ps+58,GL.camD*.85,_t);const ty0=elevU(ps+58,GL.camD*.85);GL.camY=(GL.camY??cy0)+(cy0-(GL.camY??cy0))*Math.min(1,dtc*5);GL.tgY=(GL.tgY??ty0)+(ty0-(GL.tgY??ty0))*Math.min(1,dtc*5);
@@ -2698,7 +2699,7 @@ function markOnlineRaceInvalid(reason){
  olRecPending=false;olRecState='invalid';
  setToast('LOMBA TIDAK SAH','ADA PEMAIN TIDAK BERGERAK 1 PUTARAN');
 }
-function checkOnlineRaceValidity(){
+function checkOnlineRaceValidity(){if(spec().team)return;
  if(!online||!olRoom||!racers.length||olInvalidRace)return;
  const peers=olRoom.peers();
  // A validity flag from any participant invalidates the entire shared race.
@@ -2817,7 +2818,7 @@ function maraRandSegs(rnd){const segs=[[MARA_PRE+150,0]];let m=150,hd=0;
  let a=(58+rnd()*22)*(hd>0?-1:hd<0?1:(rnd()<.5?1:-1));segs.push([90,a]);hd+=a;m=1690;
  wiggle(1880,40);segs.push([2300-m,0]);
  return segs.filter(q=>q[0]>.5)}
-const MARA_BRIDGE=[1130,1310],MARA_HILL=[1310,1480,1690];
+const MARA_BRIDGE=[1130,1310],MARA_HILL=[1310,1480,1690],MARA_WIDE=1.5;
 raceSpecs.mara={label:'MARATHON 2 KM',count:8,meters:MARA_LEN,laps:1,elim:false,marathon:true};
 const mS=m=>(m+MARA_PRE)*MU,sM=s=>s/MU-MARA_PRE;
 let MS={cp:1,spect:[],drank:false,g:null,toastAt:0,windDir:1,windT:0,slipAt:0,puddleAt:0};
@@ -2840,11 +2841,11 @@ function buildMaraRoute(seed){let sd=Math.max(1,Math.floor(seed||1))%2147483646|
  const cx=(x0+x1)/2,cy=(y0+y1)/2;for(let i=0;i<n;i++){x[i]-=cx;y[i]-=cy}
  // rintangan tetap (selalu sama setiap balapan agar adil)
  const HW=TRACK.width/2,rr=(a,b)=>a+rnd()*(b-a);
- const holes=[],nh=12+Math.floor(rnd()*8);for(let i=0;i<nh;i++){const m=350+(i+rnd()*.8)*(340/nh);holes.push({s:mS(m),d:(rnd()*2-1)*(HW-9)})}
- const gravel=[0,1,2].map(i=>{const m0=rr(380+i*110,430+i*110),sd=rnd()<.5?1:-1,w=rr(18,26);return{m0,m1:m0+rr(35,60),d0:sd>0?HW-2-w:-HW+2,d1:sd>0?HW-2:-HW+2+w}}).map(g=>({s0:mS(g.m0),s1:mS(g.m1),d0:g.d0,d1:g.d1}));
+ const holes=[],nh=18+Math.floor(rnd()*10);for(let i=0;i<nh;i++){const m=350+(i+rnd()*.8)*(340/nh);holes.push({s:mS(m),d:(rnd()*2-1)*(HW-9)})}
+ const gravel=[0,1,2].map(i=>{const m0=rr(380+i*110,430+i*110),sd=rnd()<.5?1:-1,w=rr(26,36);return{m0,m1:m0+rr(35,60),d0:sd>0?HW-2-w:-HW+2,d1:sd>0?HW-2:-HW+2+w}}).map(g=>({s0:mS(g.m0),s1:mS(g.m1),d0:g.d0,d1:g.d1}));
  const bumps=[rr(150,210),rr(240,310)].map(m=>mS(m));
- const puddles=[rr(740,800),rr(905,950),rr(1720,1760)].map(m0=>{const c=rr(-HW+16,HW-16);return{m0,m1:m0+rr(18,30),d0:c-rr(9,13),d1:c+rr(9,13)}}).map(g=>({s0:mS(g.m0),s1:mS(g.m1),d0:g.d0,d1:g.d1}));
- return{x,y,h,kU,n,step:st,len:(n-1)*st,w:x1-x0,hgt:y1-y0,hz:{holes,gravel,bumps,puddles,drink:{s0:mS(830),s1:mS(895),dMin:12},wind:{s0:mS(MARA_BRIDGE[0]),s1:mS(MARA_BRIDGE[1])}}}
+ const puddles=[rr(740,800),rr(905,950),rr(1720,1760)].map(m0=>{const c=rr(-HW+20,HW-20);return{m0,m1:m0+rr(18,30),d0:c-rr(12,17),d1:c+rr(12,17)}}).map(g=>({s0:mS(g.m0),s1:mS(g.m1),d0:g.d0,d1:g.d1}));
+ return{x,y,h,kU,n,step:st,len:(n-1)*st,w:x1-x0,hgt:y1-y0,hz:{holes,gravel,bumps,puddles,drinks:[{s0:mS(830),s1:mS(895),m0:830,dMin:HW*.33},{s0:mS(1370),s1:mS(1435),m0:1370,dMin:HW*.33}],wind:{s0:mS(MARA_BRIDGE[0]),s1:mS(MARA_BRIDGE[1])}}}
 }
 function routeInto(s,d,o){const R=TRACK.route,n=R.n;let x,y,h;
  if(s<=0){h=R.h[0];x=R.x[0]+Math.cos(h)*s;y=R.y[0]+Math.sin(h)*s}
@@ -2862,8 +2863,8 @@ function maraCentri(r,dt){if(r.wingT>0||r.airT>0)return;const k=routeK(r.s),ak=M
  r.d-=sg*Math.min(2,ex)*240*dt;const vLim=Math.sqrt(limit*Rl);if(r.v>vLim)r.v=vLim+(r.v-vLim)*Math.exp(-2.2*dt);
  if(r===player&&ex>.06&&performance.now()-MS.slipAt>2600){MS.slipAt=performance.now();setToast('TERLALU CEPAT!','KURANGI TAP DI TIKUNGAN')}}
 
-function maraEnsureWorld(fresh,seed){if(TRACK.route&&!fresh)return;maraClearSpect();MS.seed=Math.floor(seed||Math.random()*2147483646+1);TRACK.route=buildMaraRoute(MS.seed);trackId='marathon';rebuildWorld()}
-function exitMarathonWorld(){if(!TRACK.route)return;maraClearSpect();TRACK.route=null;trackId='';setTrack('oval');lapLabel('LAP')}
+function maraEnsureWorld(fresh,seed){if(TRACK.route&&!fresh)return;maraClearSpect();if(TRACK._w0==null)TRACK._w0=TRACK.width;TRACK.width=TRACK._w0*MARA_WIDE;MS.seed=Math.floor(seed||Math.random()*2147483646+1);TRACK.route=buildMaraRoute(MS.seed);trackId='marathon';rebuildWorld()}
+function exitMarathonWorld(){if(!TRACK.route)return;maraClearSpect();TRACK.route=null;if(TRACK._w0!=null)TRACK.width=TRACK._w0;trackId='';setTrack('oval');lapLabel('LAP')}
 function startMarathon(){cfg.race=maraVar==='tt'?'mtt':'mara';cfg.mode=maraVar==='brutal'?'brutal':'marathon';cfg.playerName='SKATER';audioReady();initRace()}
 
 function maraClearSpect(){if(typeof p2Clear==='function')p2Clear();if(MS.g&&GL.sc){GL.sc.remove(MS.g);MS.g.traverse(n=>{if(n.geometry)n.geometry.dispose()})}MS.g=null}
@@ -2901,7 +2902,7 @@ function maraAnimalSound(kind,k){if(!audioCtx||!sfxOn||k<=.04)return;try{aFx();c
  if(kind==='cat'){voice('sawtooth',620,t,.2,.09*k,'sfx',{to:980,glide:.18,bp:1500,q:2.2,a:.03});voice('sawtooth',980,t+.2,.32,.08*k,'sfx',{to:520,glide:.3,bp:1300,q:2.2});voice('sine',1240,t,.45,.03*k,'sfx',{to:900})}
  else if(kind==='dog'){for(const o of [0,.24]){noise(t+o,.08,.22*k,'sfx',{f:1100,fTo:500,q:1.4});voice('square',360,t+o,.11,.13*k,'sfx',{to:170,lp:1600});voice('sawtooth',250,t+o+.01,.1,.08*k,'sfx',{to:140,lp:900})}}
  else{for(let j=0;j<9;j++)voice('sawtooth',440+(j%2)*28-j*4,t+j*.065,.07,.075*k,'sfx',{bp:1150,q:1.6,a:.01});voice('sawtooth',300,t,.6,.04*k,'sfx',{to:270,lp:800})}}catch(e){}}
-function marathonReset(){const HW=TRACK.width/2;MS.cp=1;MS.drank=false;MS.toastAt=0;MS.windDir=Math.random()<.5?1:-1;MS.windT=0;MS.slipAt=0;MS.puddleAt=0;
+function marathonReset(){const HW=TRACK.width/2;MS.cp=1;MS.drank=false;MS.drunk={};MS.toastAt=0;MS.windDir=Math.random()<.5?1:-1;MS.windT=0;MS.slipAt=0;MS.puddleAt=0;
  maraClearSpect();const cols=['#e8302a','#2f7be0','#f2c230','#22b573','#e85e9c','#8a5cd6','#ff8a3c'];let sd=((MS.seed||7)*31+17)%2147483647||7;const R=()=>((sd=(sd*16807)%2147483647)/2147483647);
  // penonton menyeberang di zona kota
  const list=[110+R()*60,220+R()*80,1790+R()*40,1860+R()*40,1930+R()*40].filter(()=>R()<.85).map(m=>({m,kind:'person'}));
@@ -2940,7 +2941,7 @@ function marathonStep(dt){const R=TRACK.route;if(!R||!player)return;const hz=R.h
   }
   r._ps=r.s}
  // pos minum
- const dk=hz.drink;if(!MS.drank&&player.s>dk.s0&&player.s<dk.s1&&player.d>=dk.dMin&&player.fall<=0){MS.drank=true;energy=Math.min(100,energy+45);updateEnergyUI();MS.toastAt=0;maraToast('POS MINUM','ENERGI +45');sfx('finish')}
+ for(let i=0;i<hz.drinks.length;i++){const dk=hz.drinks[i];if(!(MS.drunk||(MS.drunk={}))[i]&&player.s>dk.s0&&player.s<dk.s1&&player.d>=dk.dMin&&player.fall<=0){MS.drunk[i]=true;energy=Math.min(100,energy+45);updateEnergyUI();MS.toastAt=0;maraToast(i?'POS MINUM TANJAKAN':'POS MINUM','ENERGI +45');sfx('finish')}}
  // penonton & binatang menyeberang
  const near=sp=>{const ds=Math.abs(sp.s-player.s)/MU;return Math.max(0,1-ds/90)};
  for(const sp of MS.spect){const A=MARA_ANIM[sp.kind],spd=A?A.spd:24,wt=A?A.warn:1.1,rad=A?A.r:6.5,who=A?A.name:'PENONTON';
@@ -3084,8 +3085,8 @@ function glBuildRouteWorld(){
  {const tex=glCanvasTex(128,128,(x,w,h)=>{const g=x.createRadialGradient(w/2,h/2,4,w/2,h/2,w/2);g.addColorStop(0,'rgba(140,200,255,.85)');g.addColorStop(.7,'rgba(110,170,230,.6)');g.addColorStop(1,'rgba(110,170,230,0)');x.fillStyle=g;x.fillRect(0,0,w,h)}),pm=new T.MeshLambertMaterial({map:tex,transparent:true,depthWrite:false});
   for(const g of hz.puddles)sc.add(new T.Mesh(maraQuad(g.s0,g.s1,g.d0,g.d1,.44),pm))}
  // pos minum: tenda, meja, gelas, lajur hijau
- {const dk=hz.drink;sc.add(new T.Mesh(maraQuad(dk.s0,dk.s1,dk.dMin,HW-3.5,.43),new T.MeshBasicMaterial({color:'#2ecc71',transparent:true,opacity:.28,depthWrite:false})));
-  for(const m of [845,875]){const s=mS(m),g=new T.Group();tpos(s,HW+20,_t);g.position.set(_t.x,elevU(s,0),_t.y);g.rotation.y=-_t.h;
+ for(const dk of hz.drinks){sc.add(new T.Mesh(maraQuad(dk.s0,dk.s1,dk.dMin,HW-3.5,.43),new T.MeshBasicMaterial({color:'#2ecc71',transparent:true,opacity:.28,depthWrite:false})));
+  for(const m of [dk.m0+15,dk.m0+45]){const s=mS(m),g=new T.Group();tpos(s,HW+20,_t);g.position.set(_t.x,elevU(s,0),_t.y);g.rotation.y=-_t.h;
    const roof=new T.Mesh(new T.ConeGeometry(17,9,4),tm('#ffffff'));roof.position.y=24;roof.rotation.y=Math.PI/4;g.add(roof);
    const val=new T.Mesh(new T.CylinderGeometry(12,12,3.2,4,1,true),new T.MeshToonMaterial({color:'#e8302a',gradientMap:GL.grad,side:T.DoubleSide}));val.position.y=18.4;val.rotation.y=Math.PI/4;g.add(val);
    for(const [x,z] of [[-8.3,-8.3],[8.3,-8.3],[-8.3,8.3],[8.3,8.3]]){const l=new T.Mesh(new T.CylinderGeometry(.5,.5,20,5),lm('#9aa4b1'));l.position.set(x,10,z);g.add(l)}
@@ -3093,7 +3094,7 @@ function glBuildRouteWorld(){
    const tb=new T.Group();tpos(s,HW+5,_t);tb.position.set(_t.x,elevU(s,0),_t.y);tb.rotation.y=-_t.h;const top=new T.Mesh(new T.BoxGeometry(26,1.2,5),lm('#2c5fbf'));top.position.y=7;tb.add(top);
    for(const x of [-11,11]){const l=new T.Mesh(new T.BoxGeometry(1,7,4),lm('#9aa4b1'));l.position.set(x,3.5,0);tb.add(l)}
    for(let i=0;i<7;i++){const cup=new T.Mesh(new T.CylinderGeometry(.9,.7,2.2,8),tm(i&1?'#ffffff':'#7fd8ff'));cup.position.set(-10+i*3.3,8.7,0);tb.add(cup)}sc.add(tb)}
-  maraSign(mS(810),HW+20,'POS MINUM','LAJUR KANAN →','#18a35b')}
+  maraSign(mS(dk.m0-20),HW+20,dk.m0>1300?'POS MINUM TANJAKAN':'POS MINUM','LAJUR KANAN →','#18a35b')}
  // jembatan: sungai, rel pengaman, sisi dek, bendera angin
  {const m0=MARA_BRIDGE[0],m1=MARA_BRIDGE[1],sm=mS((m0+m1)/2);tpos(sm,0,_t);
   const water=glCanvasTex(256,256,(x,w,h)=>{x.fillStyle='#3d8fd8';x.fillRect(0,0,w,h);for(let i=0;i<60;i++){x.strokeStyle='rgba(255,255,255,'+(.08+Math.random()*.12)+')';x.lineWidth=2;const y=Math.random()*h,x0=Math.random()*w;x.beginPath();x.moveTo(x0,y);x.lineTo(x0+20+Math.random()*30,y);x.stroke()}},true);water.repeat.set(2,30);GL.waterTex=water;
@@ -3137,11 +3138,11 @@ function glBuildRouteWorld(){
 let maraVar='resmi';
 const MARA_TXT={resmi:'🏁 Start kota → 🕳️ jalan rusak → 🥤 pos minum → 🌉 jembatan berangin → ⛰️ turunan bukit → 🏆 finish.<br>Bentuk rute dan rintangan diacak setiap balapan. Awas lubang, kerikil, polisi tidur, genangan yang bikin oleng, angin samping, serta penonton, kucing, anjing dan kambing yang menyeberang.',
  brutal:'💥 Rute dan rintangan sama seperti Resmi, ditambah <b>kotak item ❓</b> di sepanjang jalan. Ambil kotak lalu tekan <b>ITEM</b> di atas tombol TAP: 🚀 rudal, 🛢️ oli, ⏱️ lempar waktu, ⚡ nitro, 🛡️ perisai. Lewati lantai <b>TURBO</b> untuk tambahan kecepatan.'};
-function menuKasual(){menuMain=false;cfg.mode='kasual';if(cfg.race==='mtt'||cfg.race==='mara')cfg.race='1000';if(!['300','500','1000','elim','battle'].includes(cfg.race))cfg.race='1000';
+function menuKasual(){menuMain=false;cfg.mode='kasual';if(cfg.race==='mtt'||cfg.race==='mara')cfg.race='1000';if(!['300','500','1000','elim','battle','ts','relay'].includes(cfg.race))cfg.race='1000';
  $('overlay').style.display='flex';
- $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH MODE</b><small>1 PUTARAN = 200 METER</small></div><div class="choices kcompact">${raceChoices(['300','500','1000','elim','mara','battle'])}</div><button class="primary" id="kStart">▶ MAIN BALAP (OFFLINE)</button><button class="secondary" id="kBack">⬅ KEMBALI</button>`;
+ $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH MODE</b><small>1 PUTARAN = 200 METER</small></div><div class="choices kcompact">${raceChoices(['300','500','1000','elim','ts','relay','mara','battle'])}</div><button class="primary" id="kStart">▶ MAIN BALAP (OFFLINE)</button><button class="secondary" id="kBack">⬅ KEMBALI</button>`;
  $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{if(b.dataset.race==='mara'){menuMarathon2();return}cfg.race=b.dataset.race;menuKasual()});
- $('kStart').onclick=()=>{cfg.playerName='SKATER';cfg.mode=cfg.race==='battle'?'brutal':'kasual';audioReady();setTrack('oval');initRace()};
+ $('kStart').onclick=()=>{cfg.playerName=(cfg.race==='ts'||cfg.race==='relay')&&acct?acct.name:'SKATER';cfg.mode=cfg.race==='battle'?'brutal':'kasual';audioReady();setTrack('oval');initRace()};
  $('kBack').onclick=()=>menu()}
 function menuMarathon2(){menuMain=false;$('overlay').style.display='flex';
  $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>MARATHON 2 KM</b><small>RUTE A KE B • 6 CHECKPOINT</small></div><div class="sub menuSub mSmall"><b>KESULITAN</b></div><div class="choices diffRow">${['mudah','normal','sulit'].map(k=>`<button class="choice ${maraDiff===k?'sel':''}" data-diff="${k}">${DIFF[k].lbl}</button>`).join('')}</div><div class="sub menuSub mSmall"><b>PILIH & LANGSUNG MAIN</b></div><div class="choices kcompact mModes"><button class="choice" data-var="resmi">▶ RESMI<small>TANPA ITEM</small></button><button class="choice" data-var="brutal">💥 BRUTAL<small>PAKAI ITEM</small></button><button class="choice" data-var="tt">⏱ TIME TRIAL<small>LAWAN HANTU REKORMU</small></button></div><button class="secondary" id="mBack">⬅ KEMBALI</button>`;
@@ -3150,8 +3151,8 @@ function menuMarathon2(){menuMain=false;$('overlay').style.display='flex';
  $('mBack').onclick=()=>menuKasual()}
 // kotak item & lantai turbo di sepanjang rute (Marathon Brutal)
 function maraItemsPlace(){const R=p2Rand(23);
- for(let k=0,m=110;m<1960;k++,m+=142+R()*26){const ds=k%2?[-24,-8,8,24]:[-18,0,18];for(const d of ds)itemBoxes.push({s:mS(m),d,cool:0,mesh:null})}
- for(let k=0;k<10;k++){const m=170+k*180+R()*90;turboPads.push({s:mS(m),d:(R()*2-1)*20,mesh:null})}}
+ const W=TRACK.width/2-10;for(let k=0,m=110;m<1960;k++,m+=142+R()*26){const ds=k%2?[-W*.75,-W*.25,W*.25,W*.75]:[-W,-W/2,0,W/2,W];for(const d of ds)itemBoxes.push({s:mS(m),d,cool:0,mesh:null})}
+ for(let k=0;k<10;k++){const m=170+k*180+R()*90;turboPads.push({s:mS(m),d:(R()*2-1)*(TRACK.width/2-14),mesh:null})}}
 
 /* ================= ITEM BRUTAL v2: bom, tornado, listrik + efek & suara ================= */
 ITEM_DEF.rudal.w=.16;ITEM_DEF.oli.w=.11;ITEM_DEF.waktu.w=.09;ITEM_DEF.nitro.w=.14;ITEM_DEF.perisai.w=.10;
@@ -3275,7 +3276,7 @@ function hitRacer(t,kind,owner){if(!t||!t.alive||t.finished)return;if(online&&t.
  else if(kind==='waktu'){const D=owner&&owner.btl>=10?5:3.5;t.slowT=D;t.timeT=D;t._wob=D}
  else if(kind==='sayap'){t._wob=Math.max(t._wob||0,1.4);t.v*=.8}
  if(kind!=='waktu'&&kind!=='sayap'&&t.btl)t.btl=Math.max(0,t.btl-3);
- if(kind!=='waktu'&&kind!=='sayap')battleHit(t,owner);
+ if(kind!=='sayap')battleHit(t,owner,kind);
  const L={juara:'PEMBURU JUARA',rudal:'RUDAL',bom:'BOM',tornado:'TORNADO',listrik:'LISTRIK',oli:'OLI',waktu:'LEMPAR WAKTU',sayap:'SAYAP'};
  if(t===player){if(kind!=='waktu'&&kind!=='sayap'){steerValue=0;steer=0;updateSteerUI()}const m={juara:'DIBURU PEMBURU JUARA!',rudal:'KENA RUDAL!',bom:'KENA BOM!',tornado:'DISAPU TORNADO!',listrik:'KESETRUM!',oli:'TERGELINCIR OLI!',waktu:'WAKTU DILEMPAR!',sayap:'DISENGGOL SAYAP!'}[kind];setToast(m,kind==='waktu'?'OLENG & KECEPATAN TURUN':kind==='sayap'?'OLENG!':'SKATER TERJATUH')}
  else if(owner===player&&kind!=='waktu')setToast('TARGET TERKENA!',L[kind]||'');
@@ -3478,12 +3479,12 @@ function p2Clear(){if(typeof ttClear==='function')ttClear();if(P2.g&&GL.sc){GL.s
 function pack2Reset(){const D=DIFF[maraDiff]||DIFF.normal,HW=TRACK.width/2;p2Clear();hunters=[];bottles=[];ramps=[];SC=null;FL.v=0;FL.avg=0;FL.last=0;HOLD.pend=false;
  for(const r of racers){r.invT=0;r.draftT=0;r.draftB=0;r.flowB=0;r.landB=0;r.airT=0;r.btl=0;r.hold=null;r.scUse=false;r._p2s=r.s;if(r.ai&&!online)r.diffK=D.k*(.985+Math.random()*.03)}
  if(isBrutalMara()){const hz=TRACK.route.hz;
-  const clearAt=(m,pad)=>{const s=mS(m),P=pad*MU;if(hz.holes.some(h=>Math.abs(h.s-s)<P))return false;if(hz.puddles.some(g=>s>g.s0-P&&s<g.s1+P))return false;if(hz.gravel.some(g=>s>g.s0-P&&s<g.s1+P))return false;if(hz.bumps.some(b=>Math.abs(b-s)<P))return false;if(m>MARA_BRIDGE[0]-30&&m<MARA_BRIDGE[1]+20)return false;if(m>1575&&m<1710)return false;return true};
-  const RR=p2Rand(11);for(const base of [560,1010,1450,1530]){if(ramps.length>=3)break;for(let k=0;k<14;k++){const m=base+(RR()*2-1)*45;if(clearAt(m,22)&&!ramps.some(q=>Math.abs(q.m-m)<70)){ramps.push({m,s0:mS(m),s1:mS(m+4),hw:13});break}}}
+  const clearAt=(m,pad)=>{const s=mS(m),P=pad*MU;if(hz.holes.some(h=>Math.abs(h.s-s)<P))return false;if(hz.puddles.some(g=>s>g.s0-P&&s<g.s1+P))return false;if(hz.gravel.some(g=>s>g.s0-P&&s<g.s1+P))return false;if(hz.bumps.some(b=>Math.abs(b-s)<P))return false;if(m>MARA_BRIDGE[0]-30&&m<MARA_BRIDGE[1]+20)return false;if(m>1575&&m<1710)return false;if(hz.drinks&&hz.drinks.some(k=>s>k.s0-20*MU&&s<k.s1+10*MU))return false;return true};
+  const RR=p2Rand(11);for(const base of [560,1010,1450,1530]){if(ramps.length>=3)break;for(let k=0;k<14;k++){const m=base+(RR()*2-1)*45;if(clearAt(m,22)&&!ramps.some(q=>Math.abs(q.m-m)<70)){ramps.push({m,s0:mS(m),s1:mS(m+4),hw:Math.round(HW*.36)});break}}}
   SC=maraFindShortcut();
   if(SC){const sg=SC.sg;for(const [f,dd] of [[.3,8],[.62,20]])hz.holes.push({s:mS(SC.m0+(SC.m1-SC.m0)*f),d:sg*(HW+dd),sc:true});
    if(MS.g&&GL.ok)for(const f of [.45,.8]){const kind=RR()<.5?'cat':'dog',A=MARA_ANIM[kind],sp={s:mS(SC.m0+(SC.m1-SC.m0)*f),kind,side:1,d:sg*(HW+6+RR()*16),d0:0,st:'wait',t:0,ph:0,col:A.cols[(Math.random()*A.cols.length)|0],mesh:null,cried:false};sp.mesh=maraAnimalMesh(kind,sp.col);maraWarnSprite(sp.mesh,sp.mesh.userData.warnY);MS.g.add(sp.mesh);MS.spect.push(sp)}}
-  for(let m=80;m<1950;m+=55+RR()*20){if(ramps.some(q=>Math.abs(q.m-m)<16))continue;const d=(RR()*2-1)*20;for(let j=0;j<3;j++)bottles.push({s:mS(m+j*3),d,cool:0})}
+  for(let m=80;m<1950;m+=55+RR()*20){if(ramps.some(q=>Math.abs(q.m-m)<16))continue;const d=(RR()*2-1)*(HW-14);for(let j=0;j<3;j++)bottles.push({s:mS(m+j*3),d,cool:0})}
   for(const r of racers)if(r.ai&&!online&&Math.random()<.35)r.scUse=true;
   p2Build()}
  p2HudUpdate(true)}
@@ -3666,24 +3667,38 @@ function ttFinish(won){state='done';updateOfflineRaceTools();steer=0;const t=pla
  finScreen({win:won,title:won?'FINISH':'GAGAL',sub:'TIME TRIAL • RUTE HARIAN',badgeText:isBest?(prev?'REKOR BARU!':'REKOR PERTAMA!'):'',time:won?formatTime(t):'-',lapLbl:'REKOR',lap:best?formatTime(best):'-',againLbl:'COBA LAGI',changeLbl:'GANTI MATA LOMBA',leftHtml:left})}
 /* ---------- BATTLE ARENA (oval, 3 nyawa, 2 menit) ---------- */
 const BT={T:120,warn:{},tex:[]};
-function battleReset(){BT.warn={};for(const r of racers){r.lives=3;r.kos=0;r.invT=0;r._hs=null}setTimeout(()=>{if(spec().battle&&state!=='menu')setToast('BATTLE ARENA','3 NYAWA • BERTAHAN 2 MENIT')},900)}
+function battleReset(){BT.warn={};BT.pops=[];for(const r of racers){r.hp=100;r.kos=0;r.invT=0;if(r._hs&&r._hs.parent)r._hs.parent.remove(r._hs);r._hs=null;r._hpShown=-1}setTimeout(()=>{if(spec().battle&&state!=='menu')setToast('BATTLE ARENA','HP 100 • BERTAHAN 2 MENIT')},900)}
 function battlePlaceItems(){const P=TRACK.perimeter;for(let k=0;k<8;k++){const ds=k%2?[-24,-8,8,24]:[-18,0,18];for(const d of ds)itemBoxes.push({s:raceStartS+(k+.5)/8*P,d,cool:0,mesh:null})}
  for(let k=0;k<4;k++)turboPads.push({s:raceStartS+(k+.25)/4*P,d:(Math.random()*2-1)*20,mesh:null})}
-function battleHit(t,owner){if(!spec().battle||!t.alive)return;if(t.ai)t.invT=Math.max(t.invT||0,0);t.lives=Math.max(0,(t.lives??3)-1);if(owner&&owner!==t)owner.kos=(owner.kos||0)+1;
- if(t.lives<=0){t.alive=false;t.eliminatedAt=elapsed;t.v=0;if(t!==player)setToast(t.name+' KO!',(owner===player?'KAMU MENJATUHKANNYA':'TERSISA '+racers.filter(r=>r.alive).length+' PEMAIN'));sfx('elim')}
- else if(t===player)setTimeout(()=>{if(state==='race')setToast('NYAWA TERSISA '+t.lives,'❤'.repeat(t.lives))},700)}
+const BT_DMG={rudal:30,bom:35,tornado:28,listrik:22,oli:15,waktu:8,juara:30};
+function battleHit(t,owner,kind){if(!spec().battle||!t.alive)return;const dmg=BT_DMG[kind]||20;t.hp=Math.max(0,(t.hp??100)-dmg);battlePop(t,'-'+dmg,dmg>=28?'#ff4d3d':'#ffb03a');
+ if(t.hp<=0){t.alive=false;t.eliminatedAt=elapsed;t.v=0;if(owner&&owner!==t)owner.kos=(owner.kos||0)+1;if(t!==player)setToast(t.name+' KO!',(owner===player?'KAMU MENJATUHKANNYA':'TERSISA '+racers.filter(r=>r.alive).length+' PEMAIN'));sfx('elim')}
+ else if(t===player&&t.hp<=30)setTimeout(()=>{if(state==='race')setToast('HP KRITIS!',Math.ceil(t.hp)+' HP TERSISA')},600)}
 function battleStep(dt){const al=racers.filter(r=>r.alive);const left=BT.T-elapsed;
  for(const k of [60,30,10])if(left<=k&&!BT.warn[k]){BT.warn[k]=1;setToast(k+' DETIK LAGI','');sfx('count')}
  if(al.length<=1||left<=0)battleFinish()}
-function battleRank(){return racers.slice().sort((a,b)=>{if(a.alive!==b.alive)return a.alive?-1:1;if(a.alive)return (b.lives-a.lives)||((b.kos||0)-(a.kos||0));return (b.eliminatedAt||0)-(a.eliminatedAt||0)})}
+function battleRank(){return racers.slice().sort((a,b)=>{if(a.alive!==b.alive)return a.alive?-1:1;if(a.alive)return ((b.hp||0)-(a.hp||0))||((b.kos||0)-(a.kos||0));return (b.eliminatedAt||0)-(a.eliminatedAt||0)})}
 function battleFinish(){if(state==='done')return;state='done';updateOfflineRaceTools();steer=0;const R=battleRank(),place=R.indexOf(player)+1,win=place===1;if(win)sfx('finish');
- const left=R.map((r,i)=>`<div class="frkRow${r===player?' me':''}"><b>${i+1}</b><span class="frkDot" style="background:${r.color}"></span><span class="frkName">${escapeHTML(r.name)}</span><span class="frkT">${r.alive?'❤'.repeat(r.lives):'KO'} · ${r.kos||0} KO</span></div>`).join('');
- finScreen({win,title:win?'JUARA ARENA':player.alive?'WAKTU HABIS':'KO!',sub:'BATTLE ARENA • '+(player.kos||0)+' KO',place,time:formatTime(Math.min(elapsed,BT.T)),lapLbl:'NYAWA',lap:player.alive?String(player.lives):'0',againLbl:'MAIN LAGI',changeLbl:'GANTI MATA LOMBA',leftHtml:left})}
-function battleHeartTex(n){if(BT.tex[n])return BT.tex[n];const c=document.createElement('canvas');c.width=128;c.height=40;const x=c.getContext('2d');x.font='30px system-ui,"Apple Color Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(n>0?'❤️'.repeat(n):'💀',64,22);return BT.tex[n]=new THREE.CanvasTexture(c)}
-function battleRender(){if(!spec().battle||!GL.ok)return;const g=fxGroup();if(!g)return;
- for(const r of racers){if(!r._hs){r._hs=new THREE.Sprite(new THREE.SpriteMaterial({map:battleHeartTex(3),transparent:true,depthWrite:false}));r._hs.scale.set(12,3.8,1);g.add(r._hs);r._hl=3}
-  const n=r.alive?r.lives:0;if(r._hl!==n){r._hl=n;r._hs.material.map=battleHeartTex(n);r._hs.material.needsUpdate=true}
-  tpos(r.s,r.d,_t);r._hs.position.set(_t.x,elevU(r.s,r.d)+(r===player?27:25),_t.y);r._hs.visible=state==='race'&&(r.alive||elapsed-(r.eliminatedAt||0)<2)}}
+ const left=R.map((r,i)=>`<div class="frkRow${r===player?' me':''}"><b>${i+1}</b><span class="frkDot" style="background:${r.color}"></span><span class="frkName">${escapeHTML(r.name)}</span><span class="frkT">${r.alive?Math.ceil(r.hp)+' HP':'KO'} · ${r.kos||0} KO</span></div>`).join('');
+ finScreen({win,title:win?'JUARA ARENA':player.alive?'WAKTU HABIS':'KO!',sub:'BATTLE ARENA • '+(player.kos||0)+' KO',place,time:formatTime(Math.min(elapsed,BT.T)),lapLbl:'HP',lap:player.alive?String(Math.ceil(player.hp)):'0',againLbl:'MAIN LAGI',changeLbl:'GANTI MATA LOMBA',leftHtml:left})}
+function hpCol(h){return h>60?'#2ee06a':h>30?'#ffc72c':'#ff3b30'}
+function battleDrawHP(r){const c=r._hc,x=c.getContext('2d'),w=c.width,h=c.height,hp=Math.max(0,Math.ceil(r.alive?r.hp:0));x.clearRect(0,0,w,h);
+ x.fillStyle='rgba(8,20,52,.85)';x.beginPath();x.roundRect?x.roundRect(2,6,w-4,h-12,10):x.rect(2,6,w-4,h-12);x.fill();
+ const iw=(w-14)*hp/100;x.fillStyle=hpCol(hp);x.beginPath();x.roundRect?x.roundRect(7,11,Math.max(0,iw),h-22,7):x.rect(7,11,iw,h-22);x.fill();
+ x.fillStyle='rgba(255,255,255,.35)';x.fillRect(7,11,Math.max(0,iw),5);
+ x.font='900 22px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=4;x.strokeStyle='#0b1a3a';x.strokeText(hp>0?hp+' HP':'KO',w/2,h/2+1);x.fillStyle='#fff';x.fillText(hp>0?hp+' HP':'KO',w/2,h/2+1);r._ht.needsUpdate=true}
+function battlePop(r,txt,col){if(!GL.ok)return;const g=fxGroup();if(!g)return;const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');x.font='italic 900 44px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=7;x.strokeStyle='#1a0a00';x.strokeText(txt,64,34);x.fillStyle=col;x.fillText(txt,64,34);
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));sp.scale.set(12,6,1);tpos(r.s,r.d,_t);sp.position.set(_t.x+(Math.random()-.5)*4,elevU(r.s,r.d)+30,_t.y);g.add(sp);(BT.pops||(BT.pops=[])).push({sp,t:0})}
+function battleRender(){const dt=1/60;if(BT.pops)for(let i=BT.pops.length-1;i>=0;i--){const p=BT.pops[i];p.t+=dt;p.sp.position.y+=dt*14;p.sp.material.opacity=Math.max(0,1-p.t/1.1);if(p.t>1.1){if(p.sp.parent)p.sp.parent.remove(p.sp);p.sp.material.map.dispose();p.sp.material.dispose();BT.pops.splice(i,1)}}
+ btHud();if(!spec().battle||!GL.ok)return;const g=fxGroup();if(!g)return;
+ for(const r of racers){if(!r._hs||!r._hs.parent){r._hc=document.createElement('canvas');r._hc.width=160;r._hc.height=44;r._ht=new THREE.CanvasTexture(r._hc);r._hs=new THREE.Sprite(new THREE.SpriteMaterial({map:r._ht,transparent:true,depthWrite:false}));r._hs.scale.set(13,3.6,1);g.add(r._hs);r._hpShown=-1}
+  const n=r.alive?Math.ceil(r.hp):0;if(r._hpShown!==n){r._hpShown=n;battleDrawHP(r)}
+  tpos(r.s,r.d,_t);r._hs.position.set(_t.x,elevU(r.s,r.d)+(r===player?26:24),_t.y);r._hs.visible=state==='race'&&(r.alive||elapsed-(r.eliminatedAt||0)<2)}}
+function btHud(){let el=$('btHud');const on=spec().battle&&state==='race'&&!!player;
+ if(!el&&$('stage')){el=document.createElement('div');el.id='btHud';el.innerHTML='<i>HP</i><span><b></b></span><em>100</em>';$('stage').appendChild(el);
+  const st=document.createElement('style');st.textContent=`#btHud{position:absolute;left:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:6;display:none;align-items:center;gap:7px;pointer-events:none;background:rgba(12,36,92,.78);border:1.5px solid rgba(120,190,255,.6);border-radius:14px;padding:5px 10px;font:italic 900 13px/1 'Exo 2',system-ui,sans-serif;color:#fff}#btHud span{display:block;width:120px;height:12px;border-radius:7px;background:#0a1d48;overflow:hidden}#btHud b{display:block;height:100%;border-radius:7px;transition:width .25s,background .25s;box-shadow:inset 0 3px 0 #ffffff55}#btHud em{font-style:italic;min-width:30px;text-align:right}#btHud.low{animation:btLow .5s ease-in-out infinite alternate;border-color:#ff6b5e}@keyframes btLow{from{box-shadow:0 0 0 #ff3b30}to{box-shadow:0 0 16px #ff3b30}}`;document.head.appendChild(st)}
+ if(!el)return;if(el.style.display!==(on?'flex':'none'))el.style.display=on?'flex':'none';if(!on)return;
+ const hp=Math.max(0,Math.ceil(player.alive?player.hp:0));if(el._hp!==hp){el._hp=hp;const b=el.querySelector('b');b.style.width=hp+'%';b.style.background=hpCol(hp);el.querySelector('em').textContent=hp;el.classList.toggle('low',hp<=30&&hp>0)}}
 /* nearestAhead/behindNear dengan jarak memutar untuk lintasan oval */
 function nearestAhead(r,range){const P=TRACK.perimeter,W=!TRACK.route;let best=null,bg=1e9;for(const o of racers){if(o===r||!o.alive||o.finished)continue;let g=o.s-r.s;if(W)g=((g%P)+P)%P;if(g>0&&g<range&&g<bg){best=o;bg=g}}return best}
 function behindNear(r,range){const P=TRACK.perimeter,W=!TRACK.route;return racers.some(o=>{if(o===r||!o.alive||o.finished)return false;let g=r.s-o.s;if(W)g=((g%P)+P)%P;return g>0&&g<range})}
@@ -3725,6 +3740,288 @@ function p2ApplyBits(r,b){b=b|0;const set=(f,key,v)=>{if(b&f)r[key]=Math.max(r[k
  set(1,'shieldT',.3);set(2,'wingT',.3);set(4,'boostT',.3);set(8,'timeT',.3);set(16,'zapT',.3);set(128,'spinT',.3);
  r.hold=b&32?'oli':b&64?'bom':null;if(!r.wingHit)r.wingHit=new Map()}
 
+/* ===== RANKED BEREGU: TEAM SPRINT & RELAY — versi uji coba vs komputer ===== */
+raceSpecs.ts={label:'TEAM SPRINT 500 M',count:4,meters:500,laps:500/LAP_METERS,elim:false,team:true,size:2,legs:2};
+raceSpecs.relay={label:'RELAY 1.400 M',count:6,meters:1400,laps:1400/LAP_METERS,elim:false,team:true,relay:true,size:3,legs:7};
+const TM={teams:[],dq:null,dqT:0,cool:0,zoneJ:0};
+const tsK=()=>TRACK.perimeter/LAP_METERS;
+const tsM=r=>(r.s-raceStartS)/tsK();
+const tsQual=g=>Math.max(.3,Math.min(1,1-Math.abs(g-1.5)/2.5));
+const tsFenceD=()=>TRACK.width/2-5;
+function tsLine(fm){const fin=spec().meters%200;let best=1e9;for(let n=Math.floor(fm/200);n<=Math.floor(fm/200)+2;n++)for(const c of [n*200,n*200+fin])if(c>fm+1&&c<best)best=c;return best}
+function tsZone(j){if(spec().relay){const b=200*j;return{zs:b+35,ze:b+65,f:b+38}}return{zs:235,ze:265,f:238}}
+const tsAct=T=>T.order[T.leg%T.order.length];
+const tsRecv=T=>T.leg+1<T.legs?T.order[(T.leg+1)%T.order.length]:null;
+function tsMk(id,name,color,s,d,ai,team,hold){return{id,name,color,s,d,v:0,top:MAX_SPEED,alive:hold!=='rest',finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1,tsTeam:team,tsHold:hold,_startS:s,_startD:d}}
+function tsAiNew(T){T.aiGap=.9+Math.random()*1.2;T.aiTurun=18+Math.random()*6}
+function tsPlace(T,r){const k=tsK(),z=tsZone(T.leg+1),tgt=raceStartS+(z.f+(T.id?4:0))*k;if(r.tsHold==='queue'){r.s=tgt-6*k;r.qT=tgt}else{r.s=tgt;r.qT=undefined}r.alive=true;r.finished=false;r.fall=0;r.v=0;r.tsHold='fence';r.d=tsFenceD();r._h=undefined}
+function tsQueue(T,r){const k=tsK(),z=tsZone(T.leg+1);r.alive=true;r.finished=false;r.fall=0;r.v=0;r.tsHold='queue';r.qT=undefined;r.s=raceStartS+(z.f-6+(T.id?4:0))*k;r.d=tsFenceD();r._h=undefined}
+function tsInit(){
+ online=false;lapLabel('LAP');if(TRACK.route)exitMarathonWorld();
+ const sp=spec(),blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=blueStart-TRACK.perimeter/2;
+ itemsReset();
+ const me=String(cfg.playerName||'').trim()||'Kamu',names=[[me,'Sari','Dio'],['Raka','Bima','Naya']],cols=[COLORS[1],COLORS[0]];
+ racers=[];TM.teams=[];
+ for(let t=0;t<2;t++){const T={id:t,order:[],leg:0,legs:sp.legs,q:[]};tsAiNew(T);
+  for(let i=0;i<sp.size;i++){const r=tsMk(t*3+i,names[t][i],cols[t],raceStartS-12,t?12:-12,t===1,t,i===0?null:i===1?'fence':'queue');T.order.push(r);racers.push(r)}
+  TM.teams.push(T);tsPlace(T,T.order[1]);if(T.order[2])tsQueue(T,T.order[2])}
+ player=TM.teams[0].order[0];TM.dq=null;TM.dqT=0;TM.cool=0;TM.zoneJ=0;
+ foulCards=0;olSeenFoulAt=0;elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';
+ energy=100;energyZone='g';smoothSpeedCap=MAX_SPEED;lastTapAt=0;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';
+ state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();tsBtnUI();
+ setToast(sp.relay?'RELAY':'TEAM SPRINT',sp.relay?'3 PELARI • 6× DORONG • 1.400 M':'ESTAFET 2 PELARI • 500 M');
+}
+function tsMove(r,dt){r.s+=r.v*dt*(trackPos(r.s,r.d).arc?TRACK.radius/(TRACK.radius+r.d):1);r.phase+=r.v*dt*.055}
+function tsHoldStep(r,dt){
+ const k=tsK(),T=TM.teams[r.tsTeam],out=tsAct(T),z=tsZone(T.leg+1);
+ if(r.tsHold==='rest'){r.alive=false;r.v=0;return}
+ if(r.tsHold==='queue'){r.v=0;r.d=tsFenceD();return}
+ if(r.tsHold==='fence'){
+  r.v=0;r.d=tsFenceD();if(r.qT!==undefined&&r.s<r.qT){const st=Math.min(r.qT-r.s,2.5*k*dt);r.s+=st;r.phase+=st*.055}
+  if(out.ai&&(r.s-out.s)/k<=T.aiTurun)tsTurun(T);
+  else if(!out.ai&&!TM.dq&&tsM(out)>z.ze+3)tsDQ('REKAN TIDAK TURUN','TEKAN TURUN SAAT KAMU MENDEKAT',false);
+ }else if(r.tsHold==='glide'){
+  r.v=Math.min(r.v+2.6*k*dt,7*k);
+  const tgt=Math.max(-TRACK.width/2+8,Math.min(TRACK.width/2-8,out.d));r.d+=Math.max(-12*dt,Math.min(12*dt,tgt-r.d));
+  tsMove(r,dt);
+  if(TM.dq&&T.id===0)return;
+  const gap=(r.s-out.s)/k;
+  if(out.ai&&gap<=T.aiGap&&gap>0)tsExchange(T,tsQual(gap));
+  else if(!out.ai&&gap<=.4&&Math.abs(r.d-out.d)<9)tsDQ('TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT',true);
+  else if(!out.ai&&tsM(r)>=tsLine(z.f))tsDQ('REKAN MELEWATI GARIS','BELUM DIDORONG SAMPAI GARIS START/FINIS',false);
+ }else if(r.tsHold==='out'){
+  r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=(r.tsTeam===0?-1:1)*(TRACK.width/2-10);
+  r.d+=(side-r.d)*Math.min(1,1.2*dt);tsMove(r,dt);
+  if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r)
+ }
+}
+function tsTurun(T){const nx=tsRecv(T);if(!nx||nx.tsHold!=='fence')return;nx.tsHold='glide';nx.v=.6*tsK();if(T.id===0){setToast('REKAN TURUN!','SIAP DORONG');sfx('ui')}tsBtnUI()}
+function tsDQ(title,sub,crash){
+ if(TM.dq)return;TM.dq={title,sub};TM.dqT=crash?1.6:1.0;
+ const T=TM.teams[0],out=tsAct(T),nx=tsRecv(T);
+ if(crash&&nx){for(const r of [out,nx]){r.fall=1.6;r.v*=.15;r.crashCooldown=1}nx.tsHold='out';sfx('crash')}else sfx('elim');
+ setToast('DISKUALIFIKASI',title);tsBtnUI();
+}
+function tsExchange(T,q){
+ const out=tsAct(T),nx=tsRecv(T);
+ if(!nx||nx.tsHold!=='glide')return;
+ nx.v=Math.min(MAX_SPEED*1.12,Math.max(nx.v,out.v*(.8+.38*q)));
+ T.q.push(q);T.leg++;nx.tsHold=null;nx.en=undefined;nx.lastTap=-9;out.tsHold='out';out.tOut=0;tsAiNew(T);
+ const nr=tsRecv(T);if(nr)tsPlace(T,nr);
+ if(T.id===0){out.ai=true;nx.ai=false;player=nx;energy=100;energyZone='g';smoothSpeedCap=Math.max(MAX_SPEED,nx.v);lastTapAt=0;
+  steerValue=Math.max(-1,Math.min(1,nx.d/(TRACK.width/2+5)));steer=0;updateSteerUI();updateEnergyUI();
+  const last=T.leg===T.legs-1,lbl=q>=.9?'DORONGAN SEMPURNA!':q>=.65?'DORONGAN BAGUS':'DORONGAN LEMAH';
+  setToast(lbl,last?'FINISHER! KEJAR GARIS FINIS':spec().relay?'DORONG '+T.leg+'/'+(T.legs-1)+' • PELARI '+((T.leg%T.order.length)+1):'KAMU SEKARANG PELARI 2');sfx('go');
+ }else nx.ai=true;
+ tsBtnUI();renderLeaderboard();
+}
+function tsAction(){
+ if(!spec().team||state!=='race'||TM.dq)return;
+ const T=TM.teams[0],out=tsAct(T),nx=tsRecv(T);if(!nx)return;
+ if(nx.tsHold==='fence'){tsTurun(T);return}
+ if(nx.tsHold!=='glide'||TM.cool>0)return;
+ const g=(nx.s-out.s)/tsK();
+ if(g>4){TM.cool=.7;setToast('DORONG MELESET','TERLALU JAUH • TUNGGU LEBIH DEKAT');sfx('ui');return}
+ tsExchange(T,tsQual(g));
+}
+(function(){
+ const st=document.createElement('style');
+ st.textContent=`.modeCard.rankedOn{background:linear-gradient(180deg,#ffcf3f,#e07a00);border-color:#fff3c4;box-shadow:0 4px 0 #7a4a00,0 0 16px #ffb02088;color:#fff;cursor:pointer}
+.modeCard.rankedOn .soon{position:absolute;top:-10px;right:-6px;background:#22c55e;color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:10px;transform:rotate(6deg);box-shadow:0 2px 0 #0e5a2a}
+#tsBtn{display:none;flex-direction:column;align-items:center;gap:3px;min-width:124px;padding:6px 12px 7px;margin-bottom:6px;border-radius:18px;border:3px solid #fff;font-style:italic;font-weight:900;font-size:18px;cursor:pointer;pointer-events:auto}
+#tsBtn.turun{background:linear-gradient(180deg,#3a9bff,#1257c9);color:#fff;box-shadow:0 4px 0 #0b3480,0 0 16px #3fa0ff88;text-shadow:0 2px 0 #0b3480}
+#tsBtn.dorong{background:linear-gradient(180deg,#4ade80,#16a34a);color:#052e16;box-shadow:0 4px 0 #0e5a2a,0 0 16px #22c55e88}
+#tsBtn small{font-size:10px;font-style:normal;letter-spacing:.4px}
+#tsGap{position:relative;width:100px;height:9px;border-radius:5px;background:#052e1655;overflow:hidden}
+#tsSweet{position:absolute;top:0;bottom:0;left:58.3%;width:33.3%;background:#fff9}
+#tsMark{position:absolute;top:-2px;width:4px;height:13px;margin-left:-2px;border-radius:2px;background:#0d2a66}
+#tsBtn.turun #tsGap{display:none}
+@media(max-width:560px){#tsBtn{min-width:96px;font-size:14px;padding:4px 8px 5px}#tsGap{width:80px}}`;
+ document.head.appendChild(st);
+ const b=document.createElement('button');b.id='tsBtn';b.type='button';
+ b.innerHTML='<span id="tsLbl">TURUN</span><div id="tsGap"><div id="tsSweet"></div><div id="tsMark"></div></div><small id="tsGapTxt">REKAN 0 m</small>';
+ const tp=$('tap');if(tp&&tp.parentNode)tp.parentNode.insertBefore(b,tp);
+ b.addEventListener('pointerdown',e=>{e.preventDefault();audioReady();tsAction()});
+ window.addEventListener('keydown',e=>{if(e.repeat)return;const tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA')return;if(e.key==='Enter'||e.key.toLowerCase()==='e'){if(spec().team){e.preventDefault();tsAction()}}});
+ document.addEventListener('click',e=>{const t=e.target&&e.target.closest&&e.target.closest('#mRanked');if(t){audioReady();tsMenu()}});
+})();
+function tsBtnUI(){
+ const b=$('tsBtn');if(!b)return;
+ let show=false,mode='turun',g=99;
+ const T=TM.teams[0];
+ if(spec().team&&T&&state==='race'&&!TM.dq){const nx=tsRecv(T),out=tsAct(T);
+  if(nx){g=(nx.s-out.s)/tsK();if(nx.tsHold==='fence'){show=g<80;mode='turun'}else if(nx.tsHold==='glide'){show=true;mode='dorong'}
+   const j=T.leg+1,z=tsZone(j);if(TM.zoneJ!==j&&tsM(out)>=z.zs-60){TM.zoneJ=j;setToast('MENDEKATI ZONA ESTAFET',spec().relay?'DORONG KE-'+j+' DARI '+(T.legs-1):'TEKAN TURUN UNTUK MEMANGGIL REKAN')}}}
+ b.style.display=show?'flex':'none';
+ if(!show)return;
+ b.className=mode;$('tsLbl').textContent=mode==='turun'?'TURUN':'DORONG';b.setAttribute('aria-label',mode==='turun'?'Suruh rekan turun ke trek':'Dorong rekan');
+ const c=Math.max(0,Math.min(6,g));$('tsMark').style.left=((1-c/6)*100)+'%';$('tsGapTxt').textContent='REKAN '+Math.max(0,g).toFixed(1)+' m';
+}
+let tsPick='ts';
+function tsMenu(){menuMain=false;$('dialog').style.removeProperty('width');$('overlay').style.display='flex';
+ const rel=tsPick==='relay';
+ const info=rel?`🔁 Tim 3 pelari, <b>1.400 m</b> (7 lap). Setiap pelari <b>2× dorong</b> secara bergiliran (total 6 dorongan), pelari ke-7 adalah <b>finisher</b> sampai garis finis. Zona estafet ada di setiap lap. Kamu selalu mengendalikan pelari yang sedang aktif.`:`🤝 Kamu <b>pelari 1</b> Tim Biru. Rekanmu berdiri di pinggir pagar zona estafet (235–265 m).`;
+ $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>RANKED • PILIH NOMOR</b><small>NOMOR BEREGU • LATIHAN VS KOMPUTER</small></div>
+ <div class="choices"><button class="choice ${rel?'':'sel'}" type="button" data-tp="ts">TEAM SPRINT<br><small>2 PELARI • 500 M</small></button><button class="choice ${rel?'sel':''}" type="button" data-tp="relay">RELAY<br><small>3 PELARI • 1.400 M</small></button></div>
+ <div class="itemLegend">${info}<br>1. Tekan <b>TURUN</b> saat mendekat, rekan meluncur dari pagar.<br>2. Tekan <b>DORONG</b> saat penanda masuk area putih.<br>Rekan terus meluncur setelah turun. Terlambat dorong = tabrakan, dan rekan yang sampai garis start/finis tanpa didorong = <b>diskualifikasi</b>.</div>
+ <button class="primary" id="tsStart" type="button">▶ MAIN ${rel?'RELAY':'TEAM SPRINT'}</button><button class="secondary" id="tsBack" type="button">⬅ KEMBALI</button>`;
+ $('dialog').querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{tsPick=b.dataset.tp;tsMenu()});
+ $('tsStart').onclick=()=>{cfg.race=tsPick;cfg.mode='kasual';cfg.playerName=acct?acct.name:'SKATER';audioReady();setTrack('oval');initRace()};
+ $('tsBack').onclick=()=>menu();
+}
+{const _rlb=renderLeaderboard;renderLeaderboard=function(){
+ if(!spec().team||!TM.teams.length)return _rlb();
+ const sc=T=>{const r=tsAct(T);return r.finished?1e9-r.finishTime:r.s};
+ const rows=TM.teams.slice().sort((a,b)=>sc(b)-sc(a));const lead=tsAct(rows[0]);
+ $('leaderboard').innerHTML=rows.map((T,i)=>{const r=tsAct(T),gap=i===0?'LEAD':r.finished?'FINIS':'+'+((lead.s-r.s)/tsK()).toFixed(1)+' m';
+  return `<div class="racer ${T.id===0?'me':''}"><span class="rank">#${i+1}</span><div class="name">${T.id===0?'BIRU':'MERAH'} · ${spec().relay?'L'+(T.leg+1)+'/'+T.legs:'P'+(T.leg+1)}</div><div class="gap">${gap}</div></div>`}).join('')}}
+{const _er=endRace;endRace=function(won){
+ if(!spec().team||online)return _er(won);
+ if(state==='done')return;state='done';updateOfflineRaceTools();steer=0;tsBtnUI();
+ const sp=spec(),k=tsK(),B0=TM.teams[0],R0=TM.teams[1],bl=tsAct(B0),rd=tsAct(R0);
+ const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+ const ql=q=>q===null?'-':q>=.9?'SEMPURNA':q>=.65?'BAGUS':'LEMAH';
+ const qs=T=>(sp.relay?T.q.length+'× dorong · rata-rata ':'Dorongan ')+ql(avg(T.q));
+ if(TM.dq){
+  const R=`<div class="frkRow"><b>1</b><span class="frkDot" style="background:${COLORS[0]}"></span><span class="frkName">TIM MERAH</span><span class="frkT">MENANG</span></div><div class="frkRow me"><b>DQ</b><span class="frkDot" style="background:${COLORS[1]}"></span><span class="frkName">TIM BIRU</span><span class="frkT">${TM.dq.title}</span></div><div class="mini">${TM.dq.sub}${sp.relay?' · dorong ke-'+(B0.leg+1):''}</div>`;
+  finScreen({win:false,title:'DISKUALIFIKASI',sub:TM.dq.title+' • −1 ★',time:formatTime(elapsed),lap:sp.relay?B0.leg+'/'+(B0.legs-1):'GAGAL',lapLbl:sp.relay?'DORONG':'ESTAFET',leftHtml:R,againLbl:'COBA LAGI',changeLbl:'GANTI MATA LOMBA'});
+  const ch=$('change');if(ch)ch.onclick=()=>menuKasual();return;
+ }
+ const tb=bl.finished?bl.finishTime:elapsed;
+ let tr,est=false;if(rd.finished&&R0.leg===R0.legs-1)tr=rd.finishTime;else{est=true;const rem=Math.max(0,sp.meters-tsM(rd));tr=elapsed+rem/Math.max(8,rd.v/k)}
+ const win=tb<=tr;sfx(win?'finish':'elim');
+ const row=(n,name,col,t,me,T)=>`<div class="frkRow ${me?'me':''}"><b>${n}</b><span class="frkDot" style="background:${col}"></span><span class="frkName">${name}</span><span class="frkT">${t}</span></div><div class="mini">${qs(T)}</div>`;
+ const B=row(win?1:2,'TIM BIRU',COLORS[1],formatTime(tb),true,B0),R=row(win?2:1,'TIM MERAH',COLORS[0],(est?'~':'')+formatTime(tr),false,R0);
+ finScreen({win,title:win?'MENANG':'KALAH',sub:sp.label+' • '+(win?'+1 ★':'−1 ★'),place:win?1:2,time:formatTime(tb),lap:ql(avg(B0.q)),lapLbl:'DORONGAN',leftHtml:win?B+R:R+B,againLbl:'MAIN LAGI',changeLbl:'GANTI MATA LOMBA'});
+ const ch=$('change');if(ch)ch.onclick=()=>menuKasual();
+}}
+/* pose: berdiri di pagar = idle; meluncur = jongkok, dengkul dilipat, telapak tangan di dagu */
+function tsTuck(m){
+ const L1=5,L2=5.6,FOOT=5.45,lean=-.9;
+ m.torso.rotation.z=lean;m.torso.rotation.y=0;m.head.rotation.z=-lean*.95;
+ let maxDrop=0;
+ for(const lg of m.legs){const tx=-lg.sd*.06,z1=1.4,z2=-2.05;lg.th.rotation.set(tx,0,z1);lg.kn.rotation.z=z2;lg.an.rotation.z=-(z1+z2);lg.sk.rotation.x=-tx*.85;
+  const drop=(L1*Math.cos(z1)+L2*Math.cos(z1+z2))*Math.cos(tx)+FOOT;if(drop>maxDrop)maxDrop=drop}
+ m.hip.position.y=maxDrop+.4;
+ for(const a of m.arms){a.s.rotation.set(a.sd*.32,0,-lean+.95);a.el.rotation.z=2.35}
+}
+{const _gp=glPose;glPose=function(m,ph,mode,v,fall,dt){
+ const t=m&&m.tsMode;
+ if(t==='stand'&&!(fall>0))return _gp(m,ph,'idle',0,fall,dt);
+ if(t==='tuck'&&!(fall>0)){_gp(m,ph,'idle',0,0,dt);tsTuck(m);return}
+ return _gp(m,ph,mode,v,fall,dt)}}
+{const _up=update;update=function(dt){_up(dt);
+ if(spec().team){
+  if(TM.cool>0)TM.cool-=dt;
+  if(TM.dq&&state==='race'){TM.dqT-=dt;if(TM.dqT<=0)endRace(false)}
+  if(GL&&GL.models)for(const r of racers){const m=GL.models.get(r);if(m)m.tsMode=(r.tsHold==='fence'||r.tsHold==='queue')?'stand':r.tsHold==='glide'?'tuck':null}
+ }
+ tsBtnUI()}}
+
+/* ===== ONLINE: TEAM SPRINT & RELAY (beregu, campur manusia + komputer) ===== */
+if(!OL_FORMATS.includes('ts'))OL_FORMATS.push('ts');if(!OL_FORMATS.includes('relay'))OL_FORMATS.push('relay');
+OL_MAX.ts=4;OL_MAX.relay=6;OL_LBL.ts='TEAM SPRINT';OL_LBL.relay='RELAY';
+const TSO={out:[],seq:0,gid:'',seen:{},spect:null};
+const tsTeamOnline=()=>online&&spec().team;
+const tsOwn=r=>!r.remote;
+function tsMyT(){return player&&player.tsTeam!=null?TM.teams[player.tsTeam]:null}
+/* kirim/terima kejadian estafet lewat presence (tersimpan beberapa detik, jadi tidak hilang) */
+function tsEmit(ev){if(!online||!olRoom)return;TSO.out.push([++TSO.seq,TSO.gid].concat(ev));if(TSO.out.length>12)TSO.out.shift();try{olRoom.presence({te:TSO.out.slice()})}catch(e){}}
+function tsRecvEvents(){if(!olRoom)return;for(const pe of olRoom.peers()){if(pe.isMe||pe.sameTab)continue;const te=pe.presence&&pe.presence.te;if(!Array.isArray(te))continue;let last=TSO.seen[pe.peer]||0;
+  for(const e of te){if(!Array.isArray(e)||e[0]<=last||e[1]!==TSO.gid)continue;last=e[0];try{tsApplyEvent(e.slice(2),false)}catch(err){}}TSO.seen[pe.peer]=last}}
+function tsApplyEvent(e,local){const T=TM.teams[e[1]];if(!T)return;
+ if(e[0]==='turun'){if(T.leg===e[2])tsTurunApply(T)}
+ else if(e[0]==='ex'){if(T.leg===e[2])tsExApply(T,e[3],e[4])}
+ else if(e[0]==='dq'){if(!TM.dq){TM.dq={team:T.id,title:e[2],sub:e[3]};TM.dqT=1.4;const mine=tsMyT()===T;setToast('DISKUALIFIKASI',(mine?'TIMMU: ':'TIM LAWAN: ')+e[2]);sfx(mine?'elim':'go');tsBtnUI()}}
+ else if(e[0]==='fin'){if(T.finT==null)T.finT=e[2]}}
+function tsDo(ev){tsApplyEvent(ev,true);tsEmit(ev)}
+/* mulai balapan beregu online */
+function tsInitOnline(go){const sp=spec(),hostNow=iAmHost();TM.teams=[];TM.dq=null;TM.dqT=0;TM.cool=0;TM.zoneJ=0;TM.ended=false;
+ TSO.out=[];TSO.seq=0;TSO.gid=String(go.id||'');TSO.seen={};
+ if(olRoom){for(const pe of olRoom.peers()){const te=pe.presence&&pe.presence.te;if(Array.isArray(te))for(const e of te)TSO.seen[pe.peer]=Math.max(TSO.seen[pe.peer]||0,e[0]||0)}try{olRoom.presence({te:null})}catch(e){}}
+ const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;raceStartS=blueStart-TRACK.perimeter/2;
+ const humans=racers.filter(r=>!r.bot),bots=racers.filter(r=>r.bot);let nb=bots.length;
+ const teams=[[],[]];humans.forEach((r,i)=>teams[i%2].push(r));let bi=0;
+ for(let t=0;t<2;t++)while(teams[t].length<sp.size){let b=bots[bi++];if(!b){b={id:racers.length,name:(NAMES[1+nb]||'CPU')+' (PC)',bot:true,bi:nb++,ai:true,remote:!hostNow,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1};racers.push(b)}teams[t].push(b)}
+ for(const b of bots.slice(bi)){b.alive=false;b.tsHold='rest'}
+ const cols=[COLORS[1],COLORS[0]];
+ for(let t=0;t<2;t++){const T={id:t,order:teams[t],leg:0,legs:sp.legs,q:[],finT:null,finSent:false};tsAiNew(T);
+  T.order.forEach((r,i)=>{const d=t?12:-12;Object.assign(r,{tsTeam:t,tsHold:i===0?null:i===1?'fence':'queue',color:cols[t],alive:true,finished:false,finishTime:null,fall:0,v:0,s:raceStartS-12,d,_startS:raceStartS-12,_startD:d,_validStartS:raceStartS-12,ai:!!r.bot})});
+  TM.teams.push(T);if(T.order[1])tsPlace(T,T.order[1]);if(T.order[2])tsQueue(T,T.order[2])}
+ const myT=tsMyT(),me=player,role=myT?myT.order.indexOf(me):0;
+ setTimeout(()=>{if(!tsTeamOnline()||state==='done')return;setToast('TIM '+(me.tsTeam?'MERAH':'BIRU'),role===0?'KAMU PELARI PERTAMA':'TUNGGU DI PAGAR • TEKAN TURUN SAAT REKAN MENDEKAT')},700);
+ if(olRoom)olRoom.presence({s:+player.s.toFixed(1),d:+player.d.toFixed(1)});renderLeaderboard();tsBtnUI()}
+{const _sor=startOnlineRace;startOnlineRace=function(go){_sor(go);if(go&&(go.rc==='ts'||go.rc==='relay'))tsInitOnline(go)}}
+/* transisi yang sama di semua HP */
+function tsTurunApply(T){const nx=tsRecv(T);if(!nx||nx.tsHold!=='fence')return;nx.tsHold='glide';nx.v=Math.max(nx.v||0,.6*tsK());
+ if(tsMyT()===T){if(nx===player)setToast('MELUNCUR!','TUNGGU DORONGAN REKAN');else setToast('REKAN TURUN!','SIAP DORONG');sfx('ui')}tsBtnUI()}
+function tsExApply(T,q,v){const out=tsAct(T),nx=tsRecv(T);if(!nx||nx.tsHold!=='glide')return;
+ nx.v=v;T.q.push(q);T.leg++;nx.tsHold=null;nx.en=undefined;nx.lastTap=-9;nx.fall=0;out.tsHold='out';out.tOut=0;tsAiNew(T);
+ const nr=tsRecv(T);if(nr)tsPlace(T,nr);
+ if(nx===player){energy=100;energyZone='g';smoothSpeedCap=Math.max(MAX_SPEED,nx.v);lastTapAt=0;steerValue=Math.max(-1,Math.min(1,nx.d/(TRACK.width/2+5)));steer=0;updateSteerUI();updateEnergyUI();
+  const last=T.leg===T.legs-1,lbl=q>=.9?'DORONGAN SEMPURNA!':q>=.65?'DORONGAN BAGUS':'DORONGAN LEMAH';setToast(lbl,last?'FINISHER! KEJAR GARIS FINIS':'GILIRANMU! TAP SEKARANG');sfx('go')}
+ else if(out===player){setToast(q>=.9?'DORONGAN SEMPURNA!':q>=.65?'DORONGAN BAGUS':'DORONGAN LEMAH','REKAN MELANJUTKAN');sfx('go')}
+ tsBtnUI();renderLeaderboard()}
+/* logika pelari yang dikendalikan HP ini (pemain sendiri; host = semua komputer) */
+{const _hs=tsHoldStep;tsHoldStep=function(r,dt){if(!tsTeamOnline())return _hs(r,dt);
+ const k=tsK(),T=TM.teams[r.tsTeam],out=tsAct(T),z=tsZone(T.leg+1);
+ if(r.tsHold==='rest'){r.alive=false;r.v=0;return}
+ if(r.tsHold==='queue'){r.v=0;r.d=tsFenceD();return}
+ if(r.tsHold==='fence'){r.v=0;r.d=tsFenceD();if(r.qT!==undefined&&r.s<r.qT){const st=Math.min(r.qT-r.s,2.5*k*dt);r.s+=st;r.phase+=st*.055}
+  if(tsRecv(T)!==r||TM.dq)return;
+  if(r.bot&&out.bot&&(r.s-out.s)/k<=T.aiTurun)tsDo(['turun',T.id,T.leg]);
+  else if(tsM(out)>z.ze+3)tsDo(['dq',T.id,r.bot?'REKAN KOMPUTER TIDAK DISURUH TURUN':'PELARI TIDAK TURUN','TEKAN TURUN SAAT REKAN MENDEKAT']);
+ }else if(r.tsHold==='glide'){r.v=Math.min(r.v+2.6*k*dt,7*k);const tgt=Math.max(-TRACK.width/2+8,Math.min(TRACK.width/2-8,out.d));r.d+=Math.max(-12*dt,Math.min(12*dt,tgt-r.d));tsMove(r,dt);
+  if(TM.dq||tsRecv(T)!==r)return;const gap=(r.s-out.s)/k;
+  if(out.bot&&gap<=T.aiGap&&gap>0){const q=tsQual(gap);tsDo(['ex',T.id,T.leg,+q.toFixed(3),+Math.min(MAX_SPEED*1.12,Math.max(r.v,out.v*(.8+.38*q))).toFixed(1)])}
+  else if(!out.bot&&gap<=.2&&Math.abs(r.d-out.d)<9)tsDo(['dq',T.id,'TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT']);
+  else if(!out.bot&&tsM(r)>=tsLine(z.f)+1)tsDo(['dq',T.id,'REKAN MELEWATI GARIS','BELUM DIDORONG SAMPAI GARIS START/FINIS']);
+ }else if(r.tsHold==='out'){r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=(r.tsTeam===0?-1:1)*(TRACK.width/2-10);r.d+=(side-r.d)*Math.min(1,1.2*dt);tsMove(r,dt);if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r)}}}
+/* tombol TURUN / DORONG online */
+{const _ta=tsAction;tsAction=function(){if(!tsTeamOnline())return _ta();
+ if(state!=='race'||TM.dq)return;const T=tsMyT();if(!T)return;const out=tsAct(T),nx=tsRecv(T);if(!nx)return;
+ if(nx.tsHold==='fence'&&(nx===player||(out===player&&nx.bot))){tsDo(['turun',T.id,T.leg]);return}
+ if(out===player&&nx.tsHold==='glide'&&TM.cool<=0){const g=(nx.s-out.s)/tsK();if(g>4){TM.cool=.7;setToast('DORONG MELESET','TERLALU JAUH • TUNGGU LEBIH DEKAT');sfx('ui');return}
+  const q=tsQual(g);tsDo(['ex',T.id,T.leg,+q.toFixed(3),+Math.min(MAX_SPEED*1.12,Math.max(nx.v,out.v*(.8+.38*q))).toFixed(1)])}}}
+{const _bu=tsBtnUI;tsBtnUI=function(){if(!tsTeamOnline())return _bu();const b=$('tsBtn');if(!b)return;let show=false,mode='turun',g=99;const T=tsMyT();
+ if(T&&state==='race'&&!TM.dq){const out=tsAct(T),nx=tsRecv(T);
+  if(nx){g=(nx.s-out.s)/tsK();
+   if(nx.tsHold==='fence'){mode='turun';show=g<80&&(nx===player||(out===player&&nx.bot))}
+   else if(nx.tsHold==='glide'&&out===player){mode='dorong';show=true}
+   const j=T.leg+1,z=tsZone(j);if(TM.zoneJ!==j&&tsM(out)>=z.zs-60&&(out===player||nx===player)){TM.zoneJ=j;setToast('MENDEKATI ZONA ESTAFET',nx===player?'TEKAN TURUN SAAT REKAN DEKAT':nx.bot?'TEKAN TURUN UNTUK MEMANGGIL REKAN KOMPUTER':'REKANMU AKAN TURUN SENDIRI')}}}
+ b.style.display=show?'flex':'none';if(!show)return;b.className=mode;$('tsLbl').textContent=mode==='turun'?'TURUN':'DORONG';
+ const c=Math.max(0,Math.min(6,g));$('tsMark').style.left=((1-c/6)*100)+'%';$('tsGapTxt').textContent=(nx_isMe()?'PELARI ':'REKAN ')+Math.max(0,g).toFixed(1)+' m'}}
+function tsMoreLegs(T){for(let L=T.leg+1;L<T.legs;L++)if(T.order[L%T.order.length]===player)return true;return false}
+function nx_isMe(){const T=tsMyT();return !!T&&tsRecv(T)===player}
+/* kamera: selama menunggu, menonton pelari aktif tim sendiri */
+function tsCamTarget(){if(tsTeamOnline()&&player&&player.tsHold&&player.tsHold!=='glide'){const T=tsMyT();if(T){const a=tsAct(T);if(a&&a!==player)return a}}return player}
+function tsSpectHud(){let el=$('tsSpect');const T=tsMyT(),tg=tsCamTarget(),on=tsTeamOnline()&&state==='race'&&tg&&tg!==player;
+ if(!el&&$('stage')){el=document.createElement('div');el.id='tsSpect';$('stage').appendChild(el);const st=document.createElement('style');st.textContent=`#tsSpect{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:6;pointer-events:none;display:none;white-space:nowrap;background:rgba(12,36,92,.82);border:1.5px solid rgba(120,190,255,.7);border-radius:14px;padding:6px 14px;color:#fff;font:italic 900 13px/1.2 'Exo 2',system-ui,sans-serif;text-align:center}#tsSpect small{display:block;font-size:10px;font-style:normal;opacity:.85}`;document.head.appendChild(st)}
+ if(!el)return;el.style.display=on?'block':'none';if(!on)return;const h='👀 MENONTON '+escapeHTML(tg.name)+'<small>'+(player.tsHold==='fence'&&tsRecv(T)===player?'GILIRANMU BERIKUTNYA • TEKAN TURUN SAAT REKAN DEKAT':tsMoreLegs(T)?'TUNGGU GILIRANMU DI PAGAR':'TUGASMU SELESAI • DUKUNG REKANMU')+'</small>';if(el._h!==h){el._h=h;el.innerHTML=h}}
+/* akhir lomba online */
+function tsOnlineEnd(){if(TM.ended)return;TM.ended=true;state='done';steer=0;tsBtnUI();const sp=spec(),k=tsK(),mt=player.tsTeam,A=TM.teams[mt],B=TM.teams[1-mt];
+ const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null,ql=q=>q===null?'-':q>=.9?'SEMPURNA':q>=.65?'BAGUS':'LEMAH',nm=T=>T.id===0?'TIM BIRU':'TIM MERAH',col=T=>T.id===0?COLORS[1]:COLORS[0];
+ const est=T=>{if(T.finT!=null)return{t:T.finT,e:false};const r=tsAct(T);return{t:elapsed+Math.max(0,sp.meters-tsM(r))/Math.max(8,r.v/k),e:true}};
+ let win,ra,rb;if(TM.dq){win=TM.dq.team!==mt;ra=TM.dq.team===mt?'DQ':formatTime(est(A).t);rb=TM.dq.team!==mt?'DQ':'~'+formatTime(est(B).t)}
+ else{const ta=est(A),tb=est(B);win=ta.t<=tb.t;ra=(ta.e?'~':'')+formatTime(ta.t);rb=(tb.e?'~':'')+formatTime(tb.t)}
+ sfx(win?'finish':'elim');
+ const row=(n,T,t,me)=>`<div class="frkRow ${me?'me':''}"><b>${n}</b><span class="frkDot" style="background:${col(T)}"></span><span class="frkName">${nm(T)}${me?' (kamu)':''}</span><span class="frkT">${t}</span></div><div class="mini">${T.order.map(r=>escapeHTML(r.name)).join(', ')} · dorongan ${ql(avg(T.q))}</div>`;
+ const left=win?row(1,A,ra,true)+row(2,B,rb,false):row(1,B,rb,false)+row(2,A,ra,true);
+ finScreen({win,title:TM.dq?(win?'LAWAN DISKUALIFIKASI':'DISKUALIFIKASI'):(win?'MENANG':'KALAH'),sub:sp.label+' • ONLINE'+(TM.dq?' • '+TM.dq.title:''),place:win?1:2,time:ra,lap:ql(avg(A.q)),lapLbl:'DORONGAN',leftHtml:left,againLbl:'KEMBALI KE ROOM',changeLbl:'KELUAR ROOM'});
+ const ag=$('again'),ch=$('change');if(ag)ag.onclick=()=>{audioReady();backToLobby()};if(ch)ch.onclick=()=>{audioReady();leaveRoom();menu()};
+ if(olRoom)try{olRoom.presence({ph:'fin',v:0})}catch(e){}}
+{const _er2=endRace;endRace=function(won){if(tsTeamOnline())return tsOnlineEnd();return _er2(won)}}
+{const _rl=renderLeaderboard;renderLeaderboard=function(){if(!tsTeamOnline()||!TM.teams.length)return _rl();const mt=player?player.tsTeam:0;
+ const sc=T=>{const r=tsAct(T);return T.finT!=null?1e9-T.finT:r.s};const rows=TM.teams.slice().sort((a,b)=>sc(b)-sc(a)),lead=tsAct(rows[0]);
+ $('leaderboard').innerHTML=rows.map((T,i)=>{const r=tsAct(T),gap=i===0?'LEAD':T.finT!=null?'FINIS':'+'+((lead.s-r.s)/tsK()).toFixed(1)+' m';return `<div class="racer ${T.id===mt?'me':''}"><span class="rank">#${i+1}</span><div class="name">${T.id===0?'BIRU':'MERAH'} · ${escapeHTML(String(r.name).slice(0,8))}</div><div class="gap">${gap}</div></div>`}).join('')}}
+{const _up2=update;update=function(dt){_up2(dt);if(!tsTeamOnline())return;tsRecvEvents();tsSpectHud();
+ if(state!=='race')return;
+ for(const T of TM.teams){const a=tsAct(T);if(T.leg===T.legs-1&&a.finished&&tsOwn(a)&&!T.finSent){T.finSent=true;tsDo(['fin',T.id,+(a.finishTime||elapsed).toFixed(2)])}}
+ if(TM.dq){TM.dqT-=dt;if(TM.dqT<=0)tsOnlineEnd()}else if(TM.teams.some(T=>T.finT!=null))tsOnlineEnd();
+ if(Math.floor(elapsed*4)!==TSO.lb){TSO.lb=Math.floor(elapsed*4);renderLeaderboard()}}}
+
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
 </script></body></html>
+
+</body></html>
