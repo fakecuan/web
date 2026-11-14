@@ -128,6 +128,9 @@ html,body{background:#2f86e8;font-family:"Exo 2",system-ui,-apple-system,"Segoe 
 .menuBrand img{width:190px!important;height:auto!important;filter:invert(1) drop-shadow(0 3px 0 #0b1d45) drop-shadow(0 0 3px #0b1d45)}
 .menuBrand span{display:inline-block;font-size:clamp(17px,4.6vw,24px)!important;background:linear-gradient(180deg,#ff4a3d,#c8141c);padding:4px 22px;transform:skewX(-14deg);border-radius:4px;box-shadow:0 3px 0 #7a0b10;letter-spacing:.5px}
 .choices{gap:9px}
+.choices .choice[data-race=mara]{grid-column:1/-1}
+.choices .choice[data-race=mara]:not(.sel),.choices .choice[data-race=mara]:not(.sel) small{color:#3ff28f!important}
+.choices .choice[data-race=mara].sel{background:linear-gradient(180deg,#2fd17f,#0f8a4e);color:#fff}
 .choice{position:relative;background:linear-gradient(180deg,#1f57b8,#133f8c);color:#fff;border:2px solid rgba(130,195,255,.6);border-radius:15px;font-style:italic;font-weight:900;font-size:16px;padding:12px 6px;box-shadow:inset 0 1px 0 #ffffff33,0 3px 8px #0004}
 .choice small{color:#cfe2ff;font-weight:700;font-size:10px;font-style:normal;letter-spacing:.3px}
 .choice.sel{background:linear-gradient(180deg,#ff4a3d,#c8141c);border-color:#ffb4ae;color:#fff;box-shadow:0 0 16px rgba(255,70,60,.6),inset 0 1px 0 #ffffff55}
@@ -452,6 +455,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .modeCard b{font-size:19px;font-weight:900;line-height:1}
 .modeCard small{font-size:10px;font-weight:700;line-height:1.2}
 .modeCard.brutal{grid-column:1/-1;min-height:82px;background:linear-gradient(180deg,#3a3f4e,#0b0e16);border-color:#ffb020;box-shadow:0 4px 0 #000,0 0 14px #ff8a0088}
+.modeCard.marathon{background:linear-gradient(180deg,#2fd17f,#0f8a4e);box-shadow:0 4px 0 #075a32,0 0 12px #2fd17f66}
+.modeCard.marathon b{font-size:clamp(14px,4.2vw,19px)}
+.modeGrid .modeCard.brutal{grid-column:auto;min-height:104px}
+.modeGrid .modeCard.brutal small{font-size:9px}
+.choice.maraLocked{opacity:.55;filter:saturate(.3);cursor:not-allowed}
 .modeCard.ranked{background:linear-gradient(180deg,#c2c8d1,#7d8694);border-color:#e7ebf1;box-shadow:0 4px 0 #4b525d;color:#eef1f5;cursor:not-allowed;filter:saturate(.25)}
 .modeCard.ranked .soon{position:absolute;top:-10px;right:-6px;background:#ffb020;color:#3a2600;font-size:10px;font-weight:900;padding:3px 8px;border-radius:10px;transform:rotate(6deg);box-shadow:0 2px 0 #8a5200}
 .trackGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0}
@@ -640,18 +648,19 @@ const LAP_METERS=200; // Satu putaran lintasan = 200 meter
 /* Lintasan standar World Skate: 200 m (1 m = 10,31 unit), lebar 6 m, tikungan miring (tepi luar 1 m), profil linear + zona transisi */
 const TRACK={radius:175,width:72.3};TRACK.arc=Math.PI*TRACK.radius;TRACK.perimeter=2062.48;TRACK.straight=(TRACK.perimeter-2*TRACK.arc)/2;
 TRACK.bankM=1.0;TRACK.trans=125;TRACK.bankVis=19;
-function bankF(s){const L=TRACK.straight,A=TRACK.arc,P=TRACK.perimeter,Z=TRACK.trans;s=((s%P)+P)%P;let t;
+function bankF(s){if(TRACK.route)return 0;const L=TRACK.straight,A=TRACK.arc,P=TRACK.perimeter,Z=TRACK.trans;s=((s%P)+P)%P;let t;
  if(s<L)t=s<Z?1-s/Z:s>L-Z?(s-(L-Z))/Z:0;else if(s<L+A)t=1;else if(s<2*L+A){const u=s-L-A;t=u<Z?1-u/Z:u>L-Z?(u-(L-Z))/Z:0}else t=1;
  return t*t*(3-2*t)}
 function bankLat(d){return Math.max(0,Math.min(1,(d+TRACK.width/2)/TRACK.width))}
-function elevM(s,d){return TRACK.bankM*bankF(s)*bankLat(d)}       // tinggi dalam meter (fisika)
-function elevU(s,d){return TRACK.bankVis*bankF(s)*bankLat(d)}      // tinggi visual (skala karakter)
+function elevM(s,d){if(TRACK.route)return maraElevM(sM(s));return TRACK.bankM*bankF(s)*bankLat(d)}       // tinggi dalam meter (fisika)
+function elevU(s,d){if(TRACK.route)return maraElevM(sM(s))*MU;return TRACK.bankVis*bankF(s)*bankLat(d)}      // tinggi visual (skala karakter)
 /* pengaruh tanjakan/turunan: energi potensial ↔ kinetik */
 const CENTRI_BASE=206,CENTRI_SLIP=70,CENTRI_SCRUB=1.2;
 /* Cengkeram di tikungan: gaya sentrifugal = v²/(R+d). Di lintasan dalam (R kecil) gaya ini lebih besar.
    Jika melebihi cengkeram (dibantu kemiringan), pemain melebar ke luar dan kehilangan kecepatan. */
 function applyCentrifugal(r,dt){
  if(!r.alive||r.fall>0||r.finished)return;
+ if(TRACK.route){maraCentri(r,dt);return}
  if(!trackPos(r.s,r.d).arc)return;
  const Rl=TRACK.radius+r.d;if(Rl<=1)return;
  const limit=CENTRI_BASE*(1+.25*bankF(r.s)*bankLat(r.d));
@@ -675,7 +684,7 @@ const raceSpecs={'300':{label:'300 METER',count:6,meters:300,laps:300/LAP_METERS
 'dtt200':{label:'DTT 200 M',count:1,meters:200,laps:1,elim:false,individual:true,runup:false}};
 function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(2,devicePixelRatio||1)*RS;W=r.width;H=r.height;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);const mr=mapCanvas.getBoundingClientRect();mapCanvas.width=Math.round(mr.width*dpr);mapCanvas.height=Math.round(mr.height*dpr);mapCtx.setTransform(dpr,0,0,dpr,0,0);glResize();draw()}
 new ResizeObserver(resize).observe(canvas);
-function trackPos(s,d=0){const {straight:L,radius:R,arc:A,perimeter:P}=TRACK;s=((s%P)+P)%P;let x,y,h,arc=false,a;if(s<L){x=-L/2+s;y=R+d;h=0}else if(s<L+A){arc=true;a=Math.PI/2-(s-L)/R;x=L/2+(R+d)*Math.cos(a);y=(R+d)*Math.sin(a);h=a-Math.PI/2}else if(s<2*L+A){let u=s-L-A;x=L/2-u;y=-(R+d);h=Math.PI}else{arc=true;a=-Math.PI/2-(s-2*L-A)/R;x=-L/2+(R+d)*Math.cos(a);y=(R+d)*Math.sin(a);h=a-Math.PI/2}return{x,y,h,arc}}
+function trackPos(s,d=0){if(TRACK.route)return routeInto(s,d,{});const {straight:L,radius:R,arc:A,perimeter:P}=TRACK;s=((s%P)+P)%P;let x,y,h,arc=false,a;if(s<L){x=-L/2+s;y=R+d;h=0}else if(s<L+A){arc=true;a=Math.PI/2-(s-L)/R;x=L/2+(R+d)*Math.cos(a);y=(R+d)*Math.sin(a);h=a-Math.PI/2}else if(s<2*L+A){let u=s-L-A;x=L/2-u;y=-(R+d);h=Math.PI}else{arc=true;a=-Math.PI/2-(s-2*L-A)/R;x=-L/2+(R+d)*Math.cos(a);y=(R+d)*Math.sin(a);h=a-Math.PI/2}return{x,y,h,arc}}
 function spec(){return raceSpecs[cfg.race]}
 function startGrid(count,baseS){if(count===18){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:18},(_,i)=>{const row=Math.floor(i/6),lane=i%6;return{s:baseS-12-row*34,d:lanes[lane],row:row+1}})}if(count===6){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:6},(_,i)=>({s:baseS-12,d:lanes[i],row:1}))}const front=4,back=count-front,ds=[];for(let i=0;i<front;i++)ds.push((i-(front-1)/2)*13.5);for(let i=0;i<back;i++)ds.push((i-(back-1)/2)*13.5);return Array.from({length:count},(_,i)=>({s:baseS-12-(i<front?0:38),d:ds[i<front?i:i-front],row:i<front?1:2}))}
 function setupIndividualHeat(active=true){
@@ -688,7 +697,7 @@ function setupIndividualHeat(active=true){
  if(active&&sp.runup)setToast('DOBBIN SPRINT','MULAI ANCANG-ANCANG 100 M');
 }
 let individualStarted=false,individualTimer=0,individualPhase='';
-function initRace(){const sp=spec();if(sp.individual){online=false;racers=[{id:0,name:cfg.playerName||'SKATER',color:COLORS[0],s:0,d:0,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,phase:0,ai:false,row:1}];player=racers[0];setupIndividualHeat(true);return}const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;const grid=startGrid(sp.count,raceStartS);itemsReset();racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();}
+function initRace(){const sp=spec();lapLabel(sp.marathon?'CP':'LAP');if(sp.marathon)maraEnsureWorld(true);else if(TRACK.route)exitMarathonWorld();if(sp.individual){online=false;racers=[{id:0,name:cfg.playerName||'SKATER',color:COLORS[0],s:0,d:0,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,phase:0,ai:false,row:1}];player=racers[0];setupIndividualHeat(true);return}const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;if(sp.marathon)raceStartS=mS(0);const grid=startGrid(sp.count,raceStartS);itemsReset();racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(sp.marathon)marathonReset();state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();}
 function updateOfflineRaceTools(){
  const el=$('offlineRaceTools');
  if(el)el.style.display=(!online&&(state==='race'||state==='count'||state==='runup'))?'flex':'none';
@@ -790,7 +799,7 @@ function stepHumanPhysics(dt){
  if(!player||!player.alive)return;
  player.v=Math.max(0,player.v-((COAST_DECEL_KMH_PER_SEC/3.6)*(TRACK.perimeter/LAP_METERS))*dt);
  if(performance.now()-lastTapAt>300)energy=Math.min(100,energy+6*dt);
- const targetCap=speedCap()*((player&&player.boostT>0)?1.2:1);
+ const targetCap=player.wingT>0?WING_V():speedCap()*((player&&player.boostT>0)?1.2:1);if(player.wingT>0){player.v=targetCap;smoothSpeedCap=targetCap}
  smoothSpeedCap += (targetCap-smoothSpeedCap)*(1-Math.exp(-dt*0.72));
  if(player.v>smoothSpeedCap)player.v=Math.max(smoothSpeedCap,player.v-((player.v-smoothSpeedCap)*1.2+4)*dt);
  if(Math.abs(steerValue)>.01){const targetD=steerValue*(TRACK.width/2+5);const steerRate=15*Math.min(1.3,player.v/180);const delta=targetD-player.d;player.d+=Math.max(-steerRate*dt,Math.min(steerRate*dt,delta))}
@@ -802,9 +811,9 @@ const ITEM_DEF={rudal:{label:'RUDAL',icon:'🚀',w:.24},oli:{label:'OLI',icon:'�
 const HELP_RULES='Lawan komputer menggunakan AI tingkat kesulitan 5×: lebih agresif melakukan TAP, lebih cepat berakselerasi, dan menjaga kecepatan lebih konsisten. Top speed tetap sama dengan pemain. Energi kuning membatasi top speed 70%, energi merah 50%. Energi pulih saat kamu tidak melakukan TAP. Mode Elimination 2,5 km: 18 pembalap start dalam 3 baris (6 per baris). Setiap lap, 3 pembalap terbawah tereliminasi sampai tersisa 3.<br><br><b>Mode Brutal:</b> 6 kotak item tersebar di lintasan. Ambil satu kotak untuk mendapat item acak: rudal mengejar pembalap di depan, oli dijatuhkan di belakangmu, lempar waktu memperlambat pembalap di depan, nitro memberi dorongan, perisai menahan satu serangan. Lantai turbo memberi dorongan singkat.';
 const HELP_CONTROLS='Tekan tombol TAP berulang untuk akselerasi. Jika TAP dilepas, kecepatan turun perlahan sebesar 3 km/jam per detik. Gunakan slider KIRI–TENGAH–KANAN untuk mengarahkan skater. Saat mendekati top speed, kurangi TAP agar energi lebih hemat.<br><br>Di mode Brutal, tombol <b>ITEM</b> di atas TAP memakai item yang sedang kamu bawa.';
 let trackId='oval',trackPick='oval',menuMain=false,ITEMS_ON=false,itemBoxes=[],turboPads=[],missiles=[],oilSpots=[];
-function setTrack(id){const p=TRACK_PRESETS[id]||TRACK_PRESETS.oval;if(trackId===id&&TRACK.radius===p.radius)return;trackId=id;TRACK.radius=p.radius;TRACK.arc=Math.PI*TRACK.radius;TRACK.straight=(TRACK.perimeter-2*TRACK.arc)/2;rebuildWorld()}
+function setTrack(id){if(TRACK.route){maraClearSpect();TRACK.route=null;trackId=''}const p=TRACK_PRESETS[id]||TRACK_PRESETS.oval;if(trackId===id&&TRACK.radius===p.radius)return;trackId=id;TRACK.radius=p.radius;TRACK.arc=Math.PI*TRACK.radius;TRACK.straight=(TRACK.perimeter-2*TRACK.arc)/2;rebuildWorld()}
 function rebuildWorld(){if(!GL.ok||!GL.sc)return;const sc=GL.sc;for(const o of GL.worldObjs||[]){sc.remove(o);o.traverse(n=>{if(n.geometry)n.geometry.dispose()})}
- GL.worldObjs=[];GL.crowd=[];GL.flags=[];GL.stands=[];const before=new Set(sc.children);glBuildWorld();GL.worldObjs=sc.children.filter(c=>!before.has(c));
+ GL.worldObjs=[];GL.crowd=[];GL.flags=[];GL.stands=[];const before=new Set(sc.children);if(TRACK.route)glBuildRouteWorld();else glBuildWorld();GL.worldObjs=sc.children.filter(c=>!before.has(c));
  GL.worldObjs.forEach(o=>o.traverse(n=>{if(n.isMesh&&!n.isInstancedMesh)n.receiveShadow=true}));if(GL.arch)GL.arch.traverse(n=>{if(n.isMesh)n.castShadow=true})}
 function brutalOn(){return cfg.mode==='brutal'&&!online}
 function pickItem(){const x=Math.random();let acc=0;for(const k in ITEM_DEF){acc+=ITEM_DEF[k].w;if(x<acc)return k}return 'rudal'}
@@ -819,10 +828,11 @@ function buildItemMeshes(){const T=THREE;if(!GL.ok||!ITEMS_ON)return;
  for(const p of turboPads){p.mesh=new T.Mesh(padGeo,padMat);GL.itemG.add(p.mesh)}
 }
 function itemsReset(){
- clearItemObjs();
+ fxClear();bombs=[];tornados=[];clearItemObjs();
  ITEMS_ON=brutalOn()&&!spec().individual;
  itemBoxes=[];turboPads=[];missiles=[];oilSpots=[];
  if(!ITEMS_ON)return;
+ if(TRACK.route){maraItemsPlace();buildItemMeshes();return}
  const P=TRACK.perimeter;
  for(const f of [.16,.5,.84])for(const d of [-16,16])itemBoxes.push({s:raceStartS+f*P,d,cool:0,mesh:null});
  for(let k=0;k<4;k++)turboPads.push({s:raceStartS+(.08+Math.random()*.9)*P,d:(Math.random()*2-1)*20,mesh:null});
@@ -830,7 +840,7 @@ function itemsReset(){
 }
 function nearestAhead(r,range){let best=null;for(const o of racers){if(o===r||!o.alive||o.finished)continue;const g=o.s-r.s;if(g>0&&g<range&&(!best||g<best.s-r.s))best=o}return best}
 function behindNear(r,range){return racers.some(o=>o!==r&&o.alive&&!o.finished&&o.s<r.s&&r.s-o.s<range)}
-function hitRacer(t,kind,owner){if(!t||!t.alive||t.finished)return;
+function hitRacer_v1(t,kind,owner){if(!t||!t.alive||t.finished)return;
  if((t.shieldT||0)>0){t.shieldT=0;if(t===player)setToast('DIBLOKIR PERISAI!','SERANGAN TERTAHAN');else if(owner===player)setToast('TARGET PAKAI PERISAI','');return}
  if(kind==='rudal'){t.fall=1.35;t.v*=.1;t.crashCooldown=.6}
  else if(kind==='oli'){t.fall=.8;t.v*=.2}
@@ -839,7 +849,7 @@ function hitRacer(t,kind,owner){if(!t||!t.alive||t.finished)return;
  else if(owner===player)setToast('TARGET TERKENA!',kind==='rudal'?'RUDAL':kind==='oli'?'OLI':'LEMPAR WAKTU');
  sfx(kind==='waktu'?'elim':'crash');
 }
-function useItem(r,isBot){
+function useItem_v1(r,isBot){
  const k=r.item;if(!k)return false;
  if(k==='rudal'){const t=nearestAhead(r,300);if(!t)return false;missiles.push({owner:r,tgt:t,s:r.s+8,d:r.d,v:MAX_SPEED*1.6,life:5,dead:false,mesh:null})}
  else if(k==='oli'){if(isBot&&!behindNear(r,140))return false;oilSpots.push({owner:r,s:r.s-7,d:r.d,life:14,hit:new Set(),dead:false,mesh:null})}
@@ -849,10 +859,10 @@ function useItem(r,isBot){
  r.item=null;r.itemUseAt=0;
  return true;
 }
-function useAttack(){if(!ITEMS_ON||state!=='race'||!player||!player.alive||player.fall>0||!player.item)return;
+function useAttack_v1(){if(!ITEMS_ON||state!=='race'||!player||!player.alive||player.fall>0||!player.item)return;
  if(!useItem(player,false))setToast('TIDAK ADA TARGET','ITEM TETAP DISIMPAN');else setToast('ITEM DIPAKAI!','');updateAtk()}
-function itemsStep(dt){
- const P=TRACK.perimeter,cd=(a,b)=>{const x=Math.abs(a-b)%P;return Math.min(x,P-x)};
+function itemsStep_v1(dt){
+ const P=TRACK.perimeter,cd=TRACK.route?(a,b)=>Math.abs(a-b):(a,b)=>{const x=Math.abs(a-b)%P;return Math.min(x,P-x)};
  for(const b of itemBoxes)if(b.cool>0)b.cool-=dt;
  for(const r of racers){
   if(!r.alive||r.finished)continue;
@@ -875,7 +885,7 @@ function itemsStep(dt){
 function missileMesh(){const T=THREE;if(!GL.missileMats)GL.missileMats={red:new T.MeshLambertMaterial({color:'#e8302a',emissive:'#7a0b10'}),white:new T.MeshLambertMaterial({color:'#f5f7fa'})};
  const g=new T.Group(),body=new T.Mesh(new T.CylinderGeometry(.9,.9,6,8),GL.missileMats.red);body.rotation.z=Math.PI/2;g.add(body);
  const nose=new T.Mesh(new T.ConeGeometry(.9,2,8),GL.missileMats.white);nose.rotation.z=-Math.PI/2;nose.position.x=4;g.add(nose);return g}
-function itemsRender(){
+function itemsRender_v1(){
  if(!GL.ok||!ITEMS_ON||!GL.itemG)return;const T=THREE;
  for(let i=0;i<itemBoxes.length;i++){const b=itemBoxes[i];if(!b.mesh)continue;tpos(b.s,b.d,_t);b.mesh.position.set(_t.x,elevU(b.s,b.d)+6.4+Math.sin(GL.t*3+i)*.5,_t.y);b.mesh.rotation.set(0,GL.t*1.6+i,0);b.mesh.visible=b.cool<=0}
  for(const p of turboPads){if(!p.mesh)continue;tpos(p.s,p.d,_t);p.mesh.position.set(_t.x,elevU(p.s,p.d)+.45,_t.y);p.mesh.rotation.y=-_t.h}
@@ -883,7 +893,7 @@ function itemsRender(){
  for(const o of oilSpots){if(!o.mesh){o.mesh=new T.Mesh(GL.oilGeo,GL.oilMat);GL.itemG.add(o.mesh)}tpos(o.s,o.d,_t);o.mesh.position.set(_t.x,elevU(o.s,o.d)+.3,_t.y);o.mesh.rotation.y=0}
  for(const m of missiles){if(!m.mesh){m.mesh=missileMesh();GL.itemG.add(m.mesh)}tpos(m.s,m.d,_t);m.mesh.position.set(_t.x,elevU(m.s,m.d)+2.4,_t.y);m.mesh.rotation.y=-_t.h}
 }
-function updateAtk(){const b=$('atk');if(!b)return;const on=ITEMS_ON&&state==='race';b.style.display=on?'flex':'none';if(!on)return;
+function updateAtk_v1(){const b=$('atk');if(!b)return;const on=ITEMS_ON&&state==='race';b.style.display=on?'flex':'none';if(!on)return;
  const it=player&&player.alive&&player.item?ITEM_DEF[player.item]:null;b.classList.toggle('empty',!it);
  const h=it?'<em>'+it.icon+'</em>'+it.label:'<em>⬚</em>ITEM KOSONG';if(b.dataset.h!==h){b.dataset.h=h;b.innerHTML=h}}
 $('atk').addEventListener('pointerdown',e=>{e.preventDefault();audioReady();useAttack()});
@@ -892,8 +902,8 @@ function ensureMenuTools(){if($('menuTools'))return;const d=document.createEleme
 function showHelp(kind){menuMain=false;$('overlay').style.display='flex';const aturan=kind==='aturan';
  $('dialog').innerHTML=`<h1>${aturan?'ATURAN':'KONTROL'}</h1><div class="helpBody">${aturan?HELP_RULES:HELP_CONTROLS}</div><button class="primary" id="hBack">⬅ KEMBALI</button>`;$('hBack').onclick=()=>menu()}
 function menuHeader(){return `<h1 class="menuBrand"><img src="${MENU_LOGO_SRC}" alt="DIVA SKATE"><span>Inline Skate Race</span></h1>`}
-function raceChoices(keys){return keys.map(k=>{const v=raceSpecs[k];return `<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.individual?'INDIVIDUAL • TANPA KOMPUTER':v.count+' PEMBALAP • '+v.laps+' LAP'}</small></button>`}).join('')}
-function menuKasual(){menuMain=false;cfg.mode='kasual';if(!['300','500','1000','elim'].includes(cfg.race))cfg.race='1000';
+function raceChoices(keys){return keys.map(k=>{const v=raceSpecs[k];return `<button class="choice ${cfg.race===k?'sel':''}" data-race="${k}">${v.label}<br><small>${v.individual?'INDIVIDUAL • TANPA KOMPUTER':v.marathon?'RUTE A→B • '+v.count+' PEMBALAP':v.count+' PEMBALAP • '+v.laps+' LAP'}</small></button>`}).join('')}
+function menuKasualOval(){menuMain=false;cfg.mode='kasual';if(!['300','500','1000','elim'].includes(cfg.race))cfg.race='1000';
  $('overlay').style.display='flex';
  $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH JARAK</b><small>1 PUTARAN = 200 METER</small></div><div class="choices">${raceChoices(['300','500','1000','elim'])}</div><button class="primary" id="kStart">▶ MAIN BALAP (OFFLINE)</button><button class="secondary" id="kBack">⬅ KEMBALI</button>`;
  $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.race=b.dataset.race;menuKasual()});
@@ -907,11 +917,10 @@ function menuBrutal(){menuMain=false;cfg.mode='brutal';if(cfg.race!=='1000'&&cfg
  $('dialog').querySelectorAll('[data-track]').forEach(b=>b.onclick=()=>{trackPick=b.dataset.track;menuBrutal()});
  $('bStart').onclick=()=>{cfg.playerName='SKATER';cfg.mode='brutal';audioReady();setTrack(trackPick);initRace()};
  $('bBack').onclick=()=>menu()}
-function menu(){navSeq++;$('dialog').style.removeProperty('width');try{leaveRoom()}catch(e){console.warn('Cleanup room:',e)}state='menu';menuMain=true;updateOfflineRaceTools();$('dialog').dataset.olhtml='';$('overlay').style.display='flex';
+function menu(){navSeq++;$('dialog').style.removeProperty('width');try{leaveRoom()}catch(e){console.warn('Cleanup room:',e)}state='menu';menuMain=true;exitMarathonWorld();updateOfflineRaceTools();$('dialog').dataset.olhtml='';$('overlay').style.display='flex';
  $('dialog').innerHTML=`${menuHeader()}<p class="menuIntro">Pilih mode permainan.</p><div class="modeGrid">
-  <button class="modeCard kasual" id="mKasual" type="button"><i>🛼</i><b>KASUAL</b><small>300 m, 500 m, 1.000 m &amp; Elimination</small></button>
+  <button class="modeCard kasual" id="mKasual" type="button"><i>🛼</i><b>KASUAL</b><small>300 m, 500 m, 1.000 m, Elimination &amp; Marathon</small></button>
   <div class="modeCard ranked" aria-disabled="true"><span class="soon">SEGERA</span><i>🏆</i><b>RANKED</b><small>Peringkat resmi musim</small></div>
-  <div class="modeCard brutal ranked" aria-disabled="true"><span class="soon">SEGERA</span><i>💥</i><b>BRUTAL</b><small>1.000 m &amp; Elimination dengan item rudal, oli, lempar waktu dan lantai turbo</small></div>
  </div>
  <button class="secondary" id="online">🌐 MAIN ONLINE</button>
  <button class="secondary" id="bestBtn">⏱ WAKTU TERBAIK 200 M</button>
@@ -977,7 +986,8 @@ for(const r of racers){if(r.remote)continue;if(!r.alive||r.finished)continue;if(
 if(r===player){
  stepHumanPhysics(dt);applyCentrifugal(player,dt);
  const redLine=TRACK.width/2-3;
- if(Math.abs(r.d)>=redLine){
+ if(Math.abs(r.d)>=redLine&&r.wingT>0)r.d=Math.sign(r.d)*(redLine-.5);
+ else if(Math.abs(r.d)>=redLine){
    r.fall=1.65;r.v*=.12;r.d=Math.sign(r.d)*(redLine-6);r.crashCooldown=.55;
    steerValue=0;steer=0;updateSteerUI();
    setToast('MENABRAK GARIS MERAH!','SKATER TERJATUH');sfx('red');
@@ -995,14 +1005,15 @@ const laneBias=Math.sin(elapsed*.65+r.id*1.7)*3.5-(bankF(r.s)>.05?4:0);
 r.d+=(Math.max(-TRACK.width/2+6,Math.min(TRACK.width/2-7,desired+laneBias))-r.d)*Math.min(1,1.7*dt)}
 {const h0=r._h??elevM(r.s,r._pd??r.d);r.s+=r.v*dt*(trackPos(r.s,r.d).arc?TRACK.radius/(TRACK.radius+r.d):1);const h1=elevM(r.s,r.d);if(r.fall<=0)slopeApply(r,h0,h1);r._h=h1;r._pd=r.d}r.phase+=r.v*dt*.055;if(r.s>=endS&&(!sp.elim||aliveN<=3)){r.finished=true;r.finishTime=elapsed;finishOrder.push(r)}
 }
+if(TRACK.route&&state==='race')marathonStep(dt);
 if(ITEMS_ON&&state==='race')itemsStep(dt);
 let collisionSound=false,playerHit=false;
 if(state==='race')for(let i=0;i<racers.length;i++)for(let j=i+1;j<racers.length;j++){
  const a=racers[i],b=racers[j];if(!a.alive||!b.alive||a.finished||b.finished)continue;
- if((a.fall<=0&&a.crashCooldown>0)||(b.fall<=0&&b.crashCooldown>0))continue;
+ if(a.wingT>0||b.wingT>0)continue;if((a.fall<=0&&a.crashCooldown>0)||(b.fall<=0&&b.crashCooldown>0))continue;
  const collisionProtection=50/LAP_METERS*TRACK.perimeter;
  if(Math.min(a.s,b.s)-raceStartS<collisionProtection)continue;
- const ds=Math.abs(a.s-b.s),along=Math.abs(((ds+TRACK.perimeter/2)%TRACK.perimeter)-TRACK.perimeter/2),side=Math.abs(a.d-b.d);
+ const ds=Math.abs(a.s-b.s),along=TRACK.route?ds:Math.abs(((ds+TRACK.perimeter/2)%TRACK.perimeter)-TRACK.perimeter/2),side=Math.abs(a.d-b.d);
  if(Math.hypot(along,side*2.05)<16){
   let newlyHit=false;
   for(const r of [a,b])if(r.fall<=0&&!r.remote){r.fall=1.25;r.v*=.22;r.imm=0;r.crashCooldown=1.05;newlyHit=true;if(r===player)playerHit=true}
@@ -1021,7 +1032,7 @@ if(state==='race'){
  if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
  else{if(!player.alive){endRace(false);return}if(player.finished){endRace(true);return}}
 }
-$('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);updateEnergyUI();$('speedNum').textContent=kmh(player.v);lbThrottle();}
+$('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=sp.marathon?maraCP()+'/'+MARA_ZONES.length:currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);updateEnergyUI();$('speedNum').textContent=kmh(player.v);lbThrottle();}
 function top3Get(race){try{return JSON.parse(localStorage.getItem('diva_top3_'+race)||'[]')||[]}catch(e){return[]}}
 function top3Add(race,name,t){const L=top3Get(race);L.push({n:String(name||'Pemain').slice(0,16),t});L.sort((a,b)=>a.t-b.t);const K=L.slice(0,3);try{localStorage.setItem('diva_top3_'+race,JSON.stringify(K))}catch(e){}return K}
 function top3Html(race){const L=top3Get(race),lbl=(raceSpecs[race]||{}).label||'';
@@ -1067,11 +1078,11 @@ function finishIndividualOnline(){
   finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'NEW RECORD':'',time:formatTime(time),lapLbl:'JARAK',lap:'200 M',againLbl:'MENUNGGU HASIL…',changeLbl:'KELUAR'});
   const ag=$('again'),ch=$('change');if(ag){ag.disabled=true;ag.style.opacity='.7';ag.onclick=null}if(ch)ch.onclick=()=>confirmExit('Kamu akan keluar dari room ini.',()=>roomListScreen())}
 }
-function endRace(won){if(online){onlineFinish(won);return}state='done';updateOfflineRaceTools();steer=0;if(won)sfx('finish');const place=ranking().indexOf(player)+1;const LT=Math.ceil(spec().laps);finScreen({win:won,title:won?'FINISH':'TERELIMINASI',sub:won?'':'Jarak tempuh '+Math.floor(meters(player))+' m',place,time:formatTime(elapsed),lap:(won?LT:Math.min(LT,currentLap(player)))+'/'+LT});}
+function endRace(won){if(online){onlineFinish(won);return}state='done';updateOfflineRaceTools();steer=0;if(won)sfx('finish');const place=ranking().indexOf(player)+1;const LT=Math.ceil(spec().laps);finScreen({win:won,title:won?'FINISH':'TERELIMINASI',sub:won?'':'Jarak tempuh '+Math.floor(meters(player))+' m',place,time:formatTime(elapsed),lap:spec().marathon?(won?MARA_ZONES.length:maraCP())+'/'+MARA_ZONES.length:(won?LT:Math.min(LT,currentLap(player)))+'/'+LT,lapLbl:spec().marathon?'CP':'LAP'});}
 function drawSkater(r){const q=trackPos(r.s,r.d);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.h);if(!r.alive)ctx.globalAlpha=.25;if(r.fall>0)ctx.rotate(1.25);let sw=Math.sin(r.phase)*5;ctx.fillStyle='#10151b';ctx.fillRect(-10+sw,-8,13,4);ctx.fillRect(-10-sw,5,13,4);ctx.fillStyle=r.color;ctx.beginPath();ctx.ellipse(0,0,10,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8f8f8';ctx.beginPath();ctx.arc(5,-1,4.2,0,Math.PI*2);ctx.fill();if(r===player){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);ctx.stroke()}ctx.restore()}
 function drawMinimap(){
  const w=mapCanvas.clientWidth,h=mapCanvas.clientHeight;if(!w||!h)return;if(mapCanvas.width!==Math.round(w*dpr)){mapCanvas.width=Math.round(w*dpr);mapCanvas.height=Math.round(h*dpr)}
- mapCtx.setTransform(dpr,0,0,dpr,0,0);mapCtx.clearRect(0,0,w,h);
+ mapCtx.setTransform(dpr,0,0,dpr,0,0);mapCtx.clearRect(0,0,w,h);if(TRACK.route){maraMinimap(w,h);return}
  // Peta sederhana seperti versi awal: hanya garis lintasan hitam dan titik pembalap.
  mapCtx.clearRect(0,0,w,h);
  const scale=Math.min((w-22)/(TRACK.straight+2*TRACK.radius),(h-20)/(2*TRACK.radius));
@@ -1112,7 +1123,7 @@ const cols=Array.from({length:NC},()=>[]),wtop=[[],[]];
 const pt=(a,i)=>a[i]||(a[i]={r:0,v:0,z:0});
 const cmpZ=(a,b)=>b.z-a.z;
 function normA(a){a%=TWO_PI;if(a>Math.PI)a-=TWO_PI;else if(a<-Math.PI)a+=TWO_PI;return a}
-function tpos(s,d,o){const L=TRACK.straight,R=TRACK.radius,A=TRACK.arc,P=TRACK.perimeter;s=((s%P)+P)%P;let a;
+function tpos(s,d,o){if(TRACK.route)return routeInto(s,d,o);o.arc=false;const L=TRACK.straight,R=TRACK.radius,A=TRACK.arc,P=TRACK.perimeter;s=((s%P)+P)%P;let a;
  if(s<L){o.x=-L/2+s;o.y=R+d;o.h=0}
  else if(s<L+A){a=Math.PI/2-(s-L)/R;o.x=L/2+(R+d)*Math.cos(a);o.y=(R+d)*Math.sin(a);o.h=a-Math.PI/2}
  else if(s<2*L+A){const u=s-L-A;o.x=L/2-u;o.y=-(R+d);o.h=Math.PI}
@@ -1601,7 +1612,7 @@ function glSyncRacers(dt,raceView){const keep=new Set();
   keep.add(r);
   const fl=(r.fall||0)>0;if(fl&&!m.wasFall&&state!=='done'){try{let k=1;if(!me&&GL.cam){tpos(r.s,r.d,_t);const dx=_t.x-GL.cam.position.x,dz=_t.y-GL.cam.position.z;k=Math.max(0,1-Math.sqrt(dx*dx+dz*dz)/260)*.6}if(k>.05)sfx('fall',k)}catch(e){}}m.wasFall=fl;
   m.g.visible=r.alive||me;if(!m.g.visible)continue;
-  tpos(r.s,r.d,_t);m.g.scale.setScalar(.75);m.g.position.set(_t.x,contactY(r.s,r.d)+.35,_t.y);m.g.rotation.order='YXZ';m.g.rotation.y=-_t.h;{const arc=_t.arc?1:bankF(r.s);const tgt=-arc*Math.min(.42,(r.v||0)/MAX_SPEED*.48);m.lean=(m.lean||0)+(tgt-(m.lean||0))*Math.min(1,dt*5);m.g.rotation.x=r.fall>0?0:m.lean}
+  tpos(r.s,r.d,_t);m.g.scale.setScalar(.75);m.g.position.set(_t.x,contactY(r.s,r.d)+.35,_t.y);m.g.rotation.order='YXZ';m.g.rotation.y=-_t.h+(r.spinT>0?r.spinT*24:0);if(r.spinT>0)m.g.position.y+=Math.sin(Math.min(1,r.spinT/1.5)*Math.PI)*10;{const arc=_t.arc?1:TRACK.route?-Math.sign(routeK(r.s))*Math.min(1,Math.abs(routeK(r.s))*MU*60)+(r._wob>0?Math.sin(GL.t*13+(r.id||0))*.9:0):bankF(r.s);const tgt=-arc*Math.min(.42,(r.v||0)/MAX_SPEED*.48);m.lean=(m.lean||0)+(tgt-(m.lean||0))*Math.min(1,dt*5);m.g.rotation.x=r.fall>0?0:m.lean}
   if(!me&&player&&isFin()&&GL.cam){const dx=_t.x-GL.cam.position.x,dz=_t.y-GL.cam.position.z,ds=r.s-player.s;tpos(r.s,r.d,_t);if(ds>-3&&ds<12){m.g.visible=false;continue}}
   if(isFin()&&me){glPose(m,GL.t*5,'skate',.85,0,dt);continue}
   glPose(m,r.phase||0,'skate',Math.min(1,(r.v||0)/MAX_SPEED*1.2+.15),r.fall||0,dt)}
@@ -1730,7 +1741,7 @@ function drawGL(){
   for(const st of GL.stands){let blocked=false;if(raceView&&state!=='done'&&dl>1){const p=ray.intersectBox(st.box,hit);blocked=!!p&&a.distanceTo(p)<dl-4}
    st.op+=((blocked?.1:1)-st.op)*Math.min(1,dtc*7);const o=st.op;for(const m of st.mats){m.opacity=o;m.depthWrite=o>.95}}}
  if(GL.sun){const sh=qual>0;GL.sun.castShadow=sh;GL.sun.position.set(fx0-180,330,fz0+150);GL.sun.target.position.set(fx0,0,fz0);GL.sun.target.updateMatrixWorld()}
- if(typeof itemsRender==='function')itemsRender();GL.rnd.render(GL.sc,cam);
+ if(typeof itemsRender==='function')itemsRender();if(TRACK.route)marathonRender();GL.rnd.render(GL.sc,cam);
  // ---- lapisan 2D di atas (hitung mundur, toast, nama, garis kecepatan) ----
  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
  if(raceView){const spd=Math.min(1,player.v/MAX_SPEED),CX=W/2,CY=H*.5,Fv=Math.min(W,H);
@@ -1738,7 +1749,7 @@ function drawGL(){
   if(qual===2){const v=GL._v||(GL._v=new THREE.Vector3());ctx.textAlign='center';ctx.font='italic 800 12px "Exo 2",system-ui';for(const r of racers){if(r===player||!r.alive)continue;tpos(r.s,r.d,_t);const dx=_t.x-cam.position.x,dz=_t.y-cam.position.z;if(dx*dx+dz*dz>320*320)continue;v.set(_t.x,23+elevU(r.s,r.d),_t.y).project(cam);if(v.z>1||v.z<-1)continue;const x=(v.x+1)/2*W,y=(1-v.y)/2*H;if(y<70)continue;const tx=String(r.name).slice(0,10);const w=ctx.measureText(tx).width+12;ctx.fillStyle='rgba(12,34,84,.78)';ctx.beginPath();ctx.roundRect(x-w/2,y-15,w,17,8);ctx.fill();ctx.fillStyle=r.color;ctx.fillRect(x-w/2+5,y-10,3,7);ctx.fillStyle='#fff';ctx.fillText(tx,x+3,y-2.5)}}
  }
  if(state==='count'){const n=Math.ceil(countdown);ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';const sz=Math.min(140,W*.28),k=1+(countdown%1)*.25;ctx.translate(W/2,H*.42);ctx.scale(k,k);ctx.font='italic 900 '+sz+'px "Exo 2",system-ui';ctx.lineJoin='round';ctx.lineWidth=sz*.12;ctx.strokeStyle='#0d2a66';ctx.shadowColor='rgba(232,48,42,.8)';ctx.shadowBlur=24;ctx.strokeText(n,0,0);ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.fillText(n,0,0);ctx.restore()}
- if(toast&&performance.now()<toastUntil){const [a,b]=toast.split('|');ctx.save();ctx.textAlign='center';const tf=Math.round(Math.min(34,W*.06));ctx.font='italic 900 '+tf+'px "Exo 2",system-ui';const w=Math.max(ctx.measureText(a).width+40,160);ctx.fillStyle='rgba(13,42,102,.85)';ctx.beginPath();ctx.roundRect(W/2-w/2,H*.43-36,w,b?72:52,16);ctx.fill();ctx.fillStyle='#e8302a';ctx.fillRect(W/2-w/2+16,H*.43+(b?32:12),w-32,4);ctx.fillStyle='#fff';ctx.fillText(a,W/2,H*.43);if(b){ctx.font='italic 800 '+Math.min(13,Math.round(W*.028))+'px "Exo 2",system-ui';ctx.fillStyle='#cfe3ff';ctx.fillText(b,W/2,H*.43+22)}ctx.restore()}
+ if(toast&&performance.now()<toastUntil){const [a,b]=toast.split('|');ctx.save();ctx.textAlign='center';const tf=Math.round(Math.min(34,W*.06));ctx.font='italic 900 '+tf+'px "Exo 2",system-ui';const TY=raceView&&state==='race'?Math.max(150,H*.25):H*.43;const w=Math.max(ctx.measureText(a).width+40,160);ctx.fillStyle=raceView&&state==='race'?'rgba(13,42,102,.42)':'rgba(13,42,102,.85)';ctx.beginPath();ctx.roundRect(W/2-w/2,TY-36,w,b?72:52,16);ctx.fill();ctx.fillStyle='rgba(232,48,42,.8)';ctx.fillRect(W/2-w/2+16,TY+(b?32:12),w-32,4);ctx.fillStyle='#fff';ctx.shadowColor='rgba(8,25,70,.85)';ctx.shadowBlur=6;ctx.fillText(a,W/2,TY);if(b){ctx.font='italic 800 '+Math.min(13,Math.round(W*.028))+'px "Exo 2",system-ui';ctx.fillStyle='#e6f0ff';ctx.fillText(b,W/2,TY+22)}ctx.restore()}
 }
 
 /* ===== LAYAR FINISH (seperti mockup) ===== */
@@ -1812,9 +1823,9 @@ function draw2D(){
 function frame(now){if((mmT++%3)===0)drawMinimap();updateOfflineRaceTools();updateAtk();{const mt=$('menuTools');if(mt)mt.style.display=(state==='menu'&&menuMain)?'flex':'none'}const dt=Math.min(.045,(now-lastFrame)/1000||.016);lastFrame=now;onlineTick(now);update(dt);$('app').classList.toggle('playing',state==='count'||state==='race'||state==='runup');$('app').classList.toggle('main-menu',state==='menu');$('app').classList.toggle('avatar-mode',state==='avatar');$('app').classList.toggle('finish-mode',isFin()&&!!$('dialog').querySelector('.finWrap'));draw();requestAnimationFrame(frame)}
 
 // ===== AKUN, ROOM & MULTIPLAYER ONLINE =====
-const OL_FORMATS=['300','500','1000','elim'];
-const OL_MAX={'300':6,'500':6,'1000':8,'elim':16,'ds200':99,'dtt200':99};
-const OL_LBL={'300':'300 M','500':'500 M','1000':'1.000 M','elim':'ELIM','ds200':'DOBBIN SPRINT 200 M','dtt200':'DTT 200 M'};
+const OL_FORMATS=['300','500','1000','elim','mara'];
+const OL_MAX={'mara':8,'300':6,'500':6,'1000':8,'elim':16,'ds200':99,'dtt200':99};
+const OL_LBL={'mara':'MARATHON 2 KM','300':'300 M','500':'500 M','1000':'1.000 M','elim':'ELIM','ds200':'DOBBIN SPRINT 200 M','dtt200':'DTT 200 M'};
 const EMOJIS=['🛼','🏁','🔥','⚡','🦊','🐯','🦅','🐬','🚀','👑','🌟','😎'];
 let online=false,olRoom=null,olCode='',olUnsub=null,olLastSend=0,olRes=null,olLastHTML='',olMyReady=false,olMeta=null,olMyPw='',olLastGo='',olElims=[],olRecPending=false,olRecState='',olFinAt=0,olView='lobby',olSyncAt=0,olLbLast='';
 let acct=null,navSeq=0,lbRoom=null,lbUnsub=null,lbChatUnsub=null,lbBusy=null,roomApiP=null,roomMsg='',createRc='1000'; let olInvalidRace=false,olInvalidReason='',olValidityStartedAt=0;
@@ -2595,17 +2606,17 @@ function hostStart(force){
   olLastGo=go.id;olRoom.presence({go,ph:'race',solo:{idx:0,results:[],started:Date.now()},b:null,eo:null,fn:null,ff:null,fc:0,red:false,f:0,v:0});startOnlineRace(go);return;
  }
  const humans=ps.filter(p=>p.sameTab||(p.presence.rd===true&&p.presence.ph==='lobby')).slice(0,max),total=olMeta.fill!==false?max:humans.length;if(total<2)return;
- const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,parts:humans.map(p=>[p.peer,olNameOf(p),p.sameTab?olMyColor:(p.presence.cc||COLORS[0])]),bots:total-humans.length};
+ const go={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),rc:olMeta.rc,seed:(Math.random()*2147483000|0)+1,parts:humans.map(p=>[p.peer,olNameOf(p),p.sameTab?olMyColor:(p.presence.cc||COLORS[0])]),bots:total-humans.length};
  olLastGo=go.id;olRoom.presence({go,ph:'race',b:null,eo:null,fn:null,ff:null,fc:0,red:false,f:0,v:0});startOnlineRace(go)}
 function olGrid(n,rc,baseS){
  if(rc==='elim'){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:n},(_,i)=>({s:baseS-12-Math.floor(i/6)*34,d:lanes[i%6],row:Math.floor(i/6)+1}))}
  if(rc==='300'||rc==='500'){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:n},(_,i)=>({s:baseS-12,d:lanes[i],row:1}))}
  const front=Math.min(4,n),back=n-front,ds=[];for(let i=0;i<front;i++)ds.push((i-(front-1)/2)*13.5);for(let i=0;i<back;i++)ds.push((i-(back-1)/2)*13.5);
  return Array.from({length:n},(_,i)=>({s:baseS-12-(i<front?0:38),d:ds[i<front?i:i-front],row:i<front?1:2}))}
-function startOnlineRace(go){setTrack('oval');
- cfg.race=go.rc;const me=myPeer(),hostNow=iAmHost();
+function startOnlineRace(go){cfg.race=go.rc;cfg.mode=go.rc==='mara'?'marathon':'kasual';if(go.rc==='mara'){maraEnsureWorld(true,go.seed||7);lapLabel('CP')}else{setTrack('oval');lapLabel('LAP')}
+const me=myPeer(),hostNow=iAmHost();
  const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65,yellowStart=blueStart-TRACK.perimeter/2;
- raceStartS=(go.rc==='300'||go.rc==='500')?yellowStart:blueStart;
+ raceStartS=(go.rc==='300'||go.rc==='500')?yellowStart:blueStart;if(go.rc==='mara')raceStartS=mS(0);
  const n=go.individual?go.parts.length:go.parts.length+go.bots,grid=olGrid(Math.max(1,n),go.rc,raceStartS);racers=[];
  const mk=(i,name,extra)=>Object.assign({id:i,name,color:COLORS[i%COLORS.length],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:false,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:1,stamina:1},extra);
  go.parts.forEach(([peer,name,color],i)=>racers.push(mk(i,name,{color:COLORS.includes(color)?color:COLORS[i%COLORS.length],remote:peer!==me,peer})));
@@ -2620,7 +2631,7 @@ function startOnlineRace(go){setTrack('oval');
  }else{individualOnline=false;soloResults=[];soloIndex=0}
  olInvalidRace=false;olInvalidReason='';olValidityStartedAt=Date.now();
  for(const r of racers){r._validStartS=r.s;r._validNetSeen=Date.now()}
- elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(!go.individual)state='count';olLastHTML='';olElims=[];olRecPending=false;olRecState='';olView='lobby';$('dialog').dataset.olhtml='';
+ elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(!go.individual)state='count';olLastHTML='';olElims=[];olRecPending=false;if(go.rc==='mara')marathonReset();olRecState='';olView='lobby';$('dialog').dataset.olhtml='';
  renderLeaderboard();$('overlay').style.display='none';audioReady();
  olRoom.presence({ph:'race',s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,f:0,fn:null})}
 function onlineTick(now){
@@ -2778,6 +2789,639 @@ if($('dialog')&&!$('dialog').innerHTML.trim()){
  const d=$('dialog');d.innerHTML='<h1>🛼 DIVA SKATE</h1><p>Pilih nomor balapan.</p><button class="primary" id="start">MAIN BALAP (OFFLINE)</button><button class="secondary" id="online">MAIN ONLINE</button>';
  $('start').onclick=()=>{cfg.playerName='SKATER';initRace()};$('online').onclick=()=>onlineMenu();
 }
+
+/* ================= MODE MARATHON (rute A ke B · versi RESMI) =================
+   Rute berkelok halus dari garis start ke finish, 6 zona dengan checkpoint:
+   start kota → jalan rusak → pos minum → jembatan berangin → turunan bukit → finish.
+   Tantangan realistis tanpa item: lubang, kerikil, polisi tidur, genangan,
+   angin samping, tanjakan/turunan, tikungan tajam, dan penonton menyeberang. */
+const MU=TRACK.perimeter/LAP_METERS;           // unit dunia per meter (≈10,3)
+const MARA_PRE=80,MARA_LEN=2000,MARA_GRIP=4.6;  // ancang-ancang (m), jarak lomba (m), cengkeram tikungan (m/s²)
+const MARA_ZONES=[
+ {m:0,name:'START KOTA',sub:'LURUSAN PADAT PENONTON'},
+ {m:330,name:'JALAN RUSAK',sub:'AWAS LUBANG & KERIKIL'},
+ {m:720,name:'POS MINUM',sub:'LEWAT LAJUR KANAN UNTUK ISI ENERGI'},
+ {m:980,name:'JEMBATAN',sub:'AWAS ANGIN SAMPING'},
+ {m:1330,name:'TURUNAN BUKIT',sub:'CEPAT · AWAS TIKUNGAN DI BAWAH'},
+ {m:1760,name:'FINISH',sub:'PENONTON RAMAI · SPRINT!'}];
+/* bentuk rute diacak setiap balapan; posisi zona (jembatan, bukit, tikungan tajam) tetap di meter yang sama */
+function maraRandSegs(rnd){const segs=[[MARA_PRE+150,0]];let m=150,hd=0;
+ const wiggle=(m1,maxA)=>{let flip=rnd()<.5?1:-1;while(m<m1-40){const len=Math.min(m1-m,70+rnd()*110);let a=(12+rnd()*(maxA-12))*flip;if(Math.abs(hd+a)>75)a=-a;segs.push([len,a]);hd+=a;m+=len;flip=-flip;
+   if(m<m1-40&&rnd()<.6){const st=Math.min(m1-m,40+rnd()*90);segs.push([st,0]);m+=st}}
+  if(m<m1){segs.push([m1-m,0]);m=m1}};
+ wiggle(MARA_BRIDGE[0]-20,55);segs.push([MARA_BRIDGE[0]-m,0]);m=MARA_BRIDGE[0];
+ segs.push([MARA_BRIDGE[1]-m,0]);m=MARA_BRIDGE[1];
+ wiggle(1595,38);segs.push([1600-m,0]);m=1600;
+ let a=(58+rnd()*22)*(hd>0?-1:hd<0?1:(rnd()<.5?1:-1));segs.push([90,a]);hd+=a;m=1690;
+ wiggle(1880,40);segs.push([2300-m,0]);
+ return segs.filter(q=>q[0]>.5)}
+const MARA_BRIDGE=[1130,1310],MARA_HILL=[1310,1480,1690];
+raceSpecs.mara={label:'MARATHON 2 KM',count:8,meters:MARA_LEN,laps:1,elim:false,marathon:true};
+const mS=m=>(m+MARA_PRE)*MU,sM=s=>s/MU-MARA_PRE;
+let MS={cp:1,spect:[],drank:false,g:null,toastAt:0,windDir:1,windT:0,slipAt:0,puddleAt:0};
+
+function maraElevM(m){let e=0;
+ if(m>MARA_BRIDGE[0]&&m<MARA_BRIDGE[1])e+=1.6*Math.sin(Math.PI*(m-MARA_BRIDGE[0])/(MARA_BRIDGE[1]-MARA_BRIDGE[0]));
+ const [h0,h1,h2]=MARA_HILL;
+ if(m>h0&&m<h2){if(m<h1){const t=(m-h0)/(h1-h0);e+=4.5*t*t*(3-2*t)}else{const t=(m-h1)/(h2-h1);e+=4.5*(1-t*t*(3-2*t))}}
+ return e}
+
+function buildMaraRoute(seed){let sd=Math.max(1,Math.floor(seed||1))%2147483646||7;const rnd=()=>((sd=(sd*16807)%2147483647)/2147483647);const SEGS=maraRandSegs(rnd);
+ const stepM=2,raw=[];
+ for(const [len,deg] of SEGS){const k=deg*Math.PI/180/len;for(let m=0;m<len;m+=stepM)raw.push(k)}
+ const w=9,K=raw.map((_,i)=>{let a=0,c=0;for(let j=-w;j<=w;j++){const q=raw[i+j];if(q!==undefined){a+=q;c++}}return a/c});
+ const n=K.length+1,x=new Float64Array(n),y=new Float64Array(n),h=new Float64Array(n),kU=new Float64Array(n),st=stepM*MU;
+ for(let i=0;i<n-1;i++){const hm=h[i]+K[i]*stepM/2;x[i+1]=x[i]+Math.cos(hm)*st;y[i+1]=y[i]+Math.sin(hm)*st;h[i+1]=h[i]+K[i]*stepM;kU[i]=K[i]/MU}
+ kU[n-1]=0;
+ // pusatkan rute di sekitar titik asal
+ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<n;i++){x0=Math.min(x0,x[i]);x1=Math.max(x1,x[i]);y0=Math.min(y0,y[i]);y1=Math.max(y1,y[i])}
+ const cx=(x0+x1)/2,cy=(y0+y1)/2;for(let i=0;i<n;i++){x[i]-=cx;y[i]-=cy}
+ // rintangan tetap (selalu sama setiap balapan agar adil)
+ const HW=TRACK.width/2,rr=(a,b)=>a+rnd()*(b-a);
+ const holes=[],nh=12+Math.floor(rnd()*8);for(let i=0;i<nh;i++){const m=350+(i+rnd()*.8)*(340/nh);holes.push({s:mS(m),d:(rnd()*2-1)*(HW-9)})}
+ const gravel=[0,1,2].map(i=>{const m0=rr(380+i*110,430+i*110),sd=rnd()<.5?1:-1,w=rr(18,26);return{m0,m1:m0+rr(35,60),d0:sd>0?HW-2-w:-HW+2,d1:sd>0?HW-2:-HW+2+w}}).map(g=>({s0:mS(g.m0),s1:mS(g.m1),d0:g.d0,d1:g.d1}));
+ const bumps=[rr(150,210),rr(240,310)].map(m=>mS(m));
+ const puddles=[rr(740,800),rr(905,950),rr(1720,1760)].map(m0=>{const c=rr(-HW+16,HW-16);return{m0,m1:m0+rr(18,30),d0:c-rr(9,13),d1:c+rr(9,13)}}).map(g=>({s0:mS(g.m0),s1:mS(g.m1),d0:g.d0,d1:g.d1}));
+ return{x,y,h,kU,n,step:st,len:(n-1)*st,w:x1-x0,hgt:y1-y0,hz:{holes,gravel,bumps,puddles,drink:{s0:mS(830),s1:mS(895),dMin:12},wind:{s0:mS(MARA_BRIDGE[0]),s1:mS(MARA_BRIDGE[1])}}}
+}
+function routeInto(s,d,o){const R=TRACK.route,n=R.n;let x,y,h;
+ if(s<=0){h=R.h[0];x=R.x[0]+Math.cos(h)*s;y=R.y[0]+Math.sin(h)*s}
+ else if(s>=R.len){const i=n-1,e=s-R.len;h=R.h[i];x=R.x[i]+Math.cos(h)*e;y=R.y[i]+Math.sin(h)*e}
+ else{const f=s/R.step,i=Math.min(n-2,Math.floor(f)),t=f-i;x=R.x[i]+(R.x[i+1]-R.x[i])*t;y=R.y[i]+(R.y[i+1]-R.y[i])*t;h=R.h[i]+(R.h[i+1]-R.h[i])*t}
+ o.x=x-Math.sin(h)*d;o.y=y+Math.cos(h)*d;o.h=h;o.arc=false;return o}
+function routeK(s){const R=TRACK.route;if(!R||s<=0||s>=R.len)return 0;return R.kU[Math.floor(s/R.step)]||0}
+function maraZoneAt(s){const m=sM(s);let z=0;for(let i=0;i<MARA_ZONES.length;i++)if(m>=MARA_ZONES[i].m)z=i;return z}
+function maraCP(){return MS.cp}
+function lapLabel(t){const b=$('lap');if(b&&b.previousElementSibling)b.previousElementSibling.textContent=t}
+
+/* tikungan rute: gaya sentrifugal v²/R; melebihi cengkeram → melebar ke luar */
+function maraCentri(r,dt){if(r.wingT>0)return;const k=routeK(r.s),ak=Math.abs(k);if(ak<1e-7)return;
+ const sg=Math.sign(k),Rl=Math.max(40,1/ak-sg*r.d),limit=MARA_GRIP*MU,ex=r.v*r.v/Rl/limit-1;if(ex<=0)return;
+ r.d-=sg*Math.min(2,ex)*240*dt;const vLim=Math.sqrt(limit*Rl);if(r.v>vLim)r.v=vLim+(r.v-vLim)*Math.exp(-2.2*dt);
+ if(r===player&&ex>.06&&performance.now()-MS.slipAt>2600){MS.slipAt=performance.now();setToast('TERLALU CEPAT!','KURANGI TAP DI TIKUNGAN')}}
+
+function maraEnsureWorld(fresh,seed){if(TRACK.route&&!fresh)return;maraClearSpect();MS.seed=Math.floor(seed||Math.random()*2147483646+1);TRACK.route=buildMaraRoute(MS.seed);trackId='marathon';rebuildWorld()}
+function exitMarathonWorld(){if(!TRACK.route)return;maraClearSpect();TRACK.route=null;trackId='';setTrack('oval');lapLabel('LAP')}
+function startMarathon(){cfg.race='mara';cfg.mode=maraVar==='brutal'?'brutal':'marathon';cfg.playerName='SKATER';audioReady();initRace()}
+
+function maraClearSpect(){if(MS.g&&GL.sc){GL.sc.remove(MS.g);MS.g.traverse(n=>{if(n.geometry)n.geometry.dispose()})}MS.g=null}
+function maraSpectMesh(color){const T=THREE,g=new T.Group(),tm=GL.tm;
+ const body=new T.Mesh(new T.CapsuleGeometry(2.6,7,3,8),tm(color));body.position.y=11;g.add(body);
+ const head=new T.Mesh(new T.SphereGeometry(2.7,10,8),tm('#f0c9a2'));head.position.y=19;g.add(head);
+ const hair=new T.Mesh(new T.SphereGeometry(2.8,10,6,0,Math.PI*2,0,Math.PI*.5),tm('#2a2320'));hair.position.y=19.3;g.add(hair);
+ const legs=[];for(const sd of [-1,1]){const lg=new T.Group();lg.position.set(0,6.5,sd*1.3);const m=new T.Mesh(new T.CylinderGeometry(1,1,6.5,6),tm('#2b3a55'));m.position.y=-3.2;lg.add(m);g.add(lg);legs.push(lg)}
+ const arms=[];for(const sd of [-1,1]){const a=new T.Group();a.position.set(0,14.5,sd*3.3);const m=new T.Mesh(new T.CylinderGeometry(.8,.8,6,6),tm(color));m.position.y=-3;a.add(m);g.add(a);arms.push(a)}
+ g.userData={legs,arms};maraWarnSprite(g,29);return g}
+const MARA_ANIM={cat:{run:6.5,name:'KUCING',spd:32,warn:.55,r:5,cols:['#f2a65a','#3a3a3a','#f4f1ea','#9a9a9a']},dog:{run:7.5,name:'ANJING',spd:25,warn:.75,r:6,cols:['#a8743f','#d9b47a','#2e2a28','#f1ede4']},goat:{run:3.8,name:'KAMBING',spd:14,warn:1.1,r:7,cols:['#f2f0ea','#7a5a3c','#d8d2c4']}};
+function maraAnimalMesh(kind,col){const T=THREE,tm=GL.tm,g=new T.Group(),legs=[];
+ const cap=(r,l,x,y,c)=>{const m=new T.Mesh(new T.CapsuleGeometry(r,l,3,8),tm(c));m.rotation.z=Math.PI/2;m.position.set(x,y,0);g.add(m);return m};
+ const ball=(r,x,y,z,c)=>{const m=new T.Mesh(new T.SphereGeometry(r,10,8),tm(c));m.position.set(x,y,z);g.add(m);return m};
+ const box=(w,h,d,x,y,z,c)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),tm(c));m.position.set(x,y,z);g.add(m);return m};
+ const leg=(x,z,h,r,c)=>{const lg=new T.Group();lg.position.set(x,h,z);const m=new T.Mesh(new T.CylinderGeometry(r,r*.85,h,6),tm(c));m.position.y=-h/2;lg.add(m);g.add(lg);legs.push(lg)};
+ const tail=(x,y,len,ang,r,c)=>{const t=new T.Group();t.position.set(x,y,0);const m=new T.Mesh(new T.CylinderGeometry(r*.6,r,len,6),tm(c));m.position.y=len/2;t.add(m);t.rotation.z=ang;g.add(t);return t};
+ let tl,warnY;
+ if(kind==='cat'){cap(1.5,4,0,3.4,col);ball(1.75,3.5,4.9,0,col);for(const z of [-.9,.9]){const e=new T.Mesh(new T.ConeGeometry(.6,1.3,4),tm(col));e.position.set(3.4,6.6,z);g.add(e)}
+  ball(.32,5.05,5.2,-.6,'#1b1b1b');ball(.32,5.05,5.2,.6,'#1b1b1b');ball(.28,5.25,4.6,0,'#e98a9a');
+  for(const x of [-1.7,1.7])for(const z of [-.8,.8])leg(x,z,2.6,.42,col);tl=tail(-3.4,3.8,4.6,.9,.32,col);warnY=12}
+ else if(kind==='dog'){cap(2.1,5.6,0,5,col);ball(2.1,5.3,7,0,col);box(2.2,1.5,1.7,7.3,6.4,0,col);ball(.45,8.45,6.8,0,'#1b1b1b');
+  for(const z of [-1.7,1.7])box(.8,2.6,1.5,4.8,7.4,z,'#5a3a1e');ball(.36,6.7,7.6,-.9,'#1b1b1b');ball(.36,6.7,7.6,.9,'#1b1b1b');
+  for(const x of [-2.6,2.6])for(const z of [-1.2,1.2])leg(x,z,3.8,.62,col);tl=tail(-4.6,6.2,3.6,1.1,.45,col);warnY=16}
+ else{cap(2.7,6,0,6.8,col);ball(1.9,5.9,9,0,col);box(2.4,1.6,1.8,7.6,8.4,0,col);ball(.34,6.9,9.7,-1,'#1b1b1b');ball(.34,6.9,9.7,1,'#1b1b1b');
+  for(const z of [-.8,.8]){const h=new T.Mesh(new T.ConeGeometry(.45,3,6),tm('#8b8578'));h.position.set(5,11.6,z);h.rotation.z=.6;g.add(h)}
+  for(const z of [-1.9,1.9]){const e=box(1.6,.5,.9,5.6,9.6,z,col);e.rotation.x=z<0?-.4:.4}
+  const bd=new T.Mesh(new T.ConeGeometry(.5,1.6,5),tm('#8b8578'));bd.position.set(7.4,6.9,0);bd.rotation.z=Math.PI;g.add(bd);
+  for(const x of [-2.9,2.9])for(const z of [-1.4,1.4])leg(x,z,4.6,.55,col);tl=tail(-5.4,8.2,1.8,1.6,.5,col);warnY=19}
+ g.userData={legs,arms:null,tail:tl,warnY};return g}
+function maraWarnSprite(g,y){if(!GL.warnTex)GL.warnTex=glCanvasTex(128,128,(x,w,h)=>{x.fillStyle='#ffd23f';x.strokeStyle='#7a4a00';x.lineWidth=8;x.lineJoin='round';x.beginPath();x.moveTo(w/2,10);x.lineTo(w-10,h-14);x.lineTo(10,h-14);x.closePath();x.fill();x.stroke();x.fillStyle='#3a2600';x.font='900 72px "Exo 2",system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText('!',w/2,h/2+16)});
+ const warn=new THREE.Sprite(new THREE.SpriteMaterial({map:GL.warnTex,depthTest:false,transparent:true}));warn.scale.set(8,8,1);warn.position.y=y;warn.renderOrder=5;g.add(warn);g.userData.warn=warn;g.userData.warnY=y}
+/* suara binatang (disintesis, tanpa file audio) */
+function maraAnimalSound(kind,k){if(!audioCtx||!sfxOn||k<=.04)return;try{aFx();const t=audioCtx.currentTime+.01;
+ if(kind==='cat'){voice('sawtooth',620,t,.2,.09*k,'sfx',{to:980,glide:.18,bp:1500,q:2.2,a:.03});voice('sawtooth',980,t+.2,.32,.08*k,'sfx',{to:520,glide:.3,bp:1300,q:2.2});voice('sine',1240,t,.45,.03*k,'sfx',{to:900})}
+ else if(kind==='dog'){for(const o of [0,.24]){noise(t+o,.08,.22*k,'sfx',{f:1100,fTo:500,q:1.4});voice('square',360,t+o,.11,.13*k,'sfx',{to:170,lp:1600});voice('sawtooth',250,t+o+.01,.1,.08*k,'sfx',{to:140,lp:900})}}
+ else{for(let j=0;j<9;j++)voice('sawtooth',440+(j%2)*28-j*4,t+j*.065,.07,.075*k,'sfx',{bp:1150,q:1.6,a:.01});voice('sawtooth',300,t,.6,.04*k,'sfx',{to:270,lp:800})}}catch(e){}}
+function marathonReset(){const HW=TRACK.width/2;MS.cp=1;MS.drank=false;MS.toastAt=0;MS.windDir=Math.random()<.5?1:-1;MS.windT=0;MS.slipAt=0;MS.puddleAt=0;
+ maraClearSpect();const cols=['#e8302a','#2f7be0','#f2c230','#22b573','#e85e9c','#8a5cd6','#ff8a3c'];let sd=((MS.seed||7)*31+17)%2147483647||7;const R=()=>((sd=(sd*16807)%2147483647)/2147483647);
+ // penonton menyeberang di zona kota
+ const list=[110+R()*60,220+R()*80,1790+R()*40,1860+R()*40,1930+R()*40].filter(()=>R()<.85).map(m=>({m,kind:'person'}));
+ // binatang menyeberang di luar kota: kucing, anjing, kambing (posisi & jumlah acak)
+ const spots=[];const nA=6+Math.floor(R()*4);for(let tries=0;spots.length<nA&&tries<80;tries++){const inHill=R()<.35,m=inHill?1330+R()*400:340+R()*780;if(m>MARA_BRIDGE[0]-15&&m<MARA_BRIDGE[1]+15)continue;if(spots.some(q=>Math.abs(q-m)<55))continue;spots.push(m)}
+ for(const m of spots){const x=R();list.push({m,kind:x<.38?'cat':x<.74?'dog':'goat'})}
+ list.sort((a,b)=>a.m-b.m);
+ MS.spect=list.map((o,i)=>{const side=R()<.5?1:-1,A=MARA_ANIM[o.kind];return{s:mS(o.m),kind:o.kind,side,d:A?(R()*2-1)*(HW-12):side*(HW+9),d0:0,st:'wait',t:0,ph:0,col:A?A.cols[(R()*A.cols.length)|0]:cols[i%cols.length],mesh:null,cried:false}});
+ for(const r of racers){r._hole=null;r._bump=-1;r._ps=r.s;r._wob=0}
+ if(GL.ok&&GL.sc){MS.g=new THREE.Group();for(const sp of MS.spect){if(sp.kind==='person')sp.mesh=maraSpectMesh(sp.col);else{sp.mesh=maraAnimalMesh(sp.kind,sp.col);maraWarnSprite(sp.mesh,sp.mesh.userData.warnY)}MS.g.add(sp.mesh)}GL.sc.add(MS.g)}}
+
+function maraToast(a,b,gap){const n=performance.now();if(n-MS.toastAt<(gap||900))return;MS.toastAt=n;setToast(a,b)}
+function marathonStep(dt){const R=TRACK.route;if(!R||!player)return;const hz=R.hz,HW=TRACK.width/2,lim=MAX_SPEED;
+ // checkpoint / zona
+ const z=maraZoneAt(player.s)+1;if(z>MS.cp){MS.cp=z;const Z=MARA_ZONES[z-1];MS.toastAt=0;maraToast('ZONA '+z+' · '+Z.name,Z.sub);sfx('count')}
+ MS.windT-=dt;if(MS.windT<=0){MS.windT=3.5+Math.random()*2.5;MS.windDir=Math.random()<.6?-MS.windDir:MS.windDir}
+ for(const r of racers){if(r.remote||!r.alive||r.finished)continue;const me=r===player,ps=r._ps??r.s;
+  if(r.wingT>0){r._wob=0;r._hole=null}
+  if(r.fall<=0&&!(r.wingT>0)){
+   // lubang jalan
+   for(const h of hz.holes){if(Math.abs(r.s-h.s)<6&&Math.abs(r.d-h.d)<6.5){if(r._hole!==h){r._hole=h;
+      if(me){if(r.v>.6*lim){r.fall=1.15;r.v*=.25;r.crashCooldown=.6;steerValue=0;steer=0;updateSteerUI();MS.toastAt=0;maraToast('MASUK LUBANG!','KECEPATAN TERLALU TINGGI');sfx('fall')}else{r.v*=.72;maraToast('GOYAH!','PELAN-PELAN DI JALAN RUSAK');sfx('tap')}}
+      else r.v*=.7}
+     break}}
+   // polisi tidur
+   for(let i=0;i<hz.bumps.length;i++){const b=hz.bumps[i];if(ps<b&&r.s>=b&&r._bump!==i){r._bump=i;if(r.v>.7*lim){r.v*=.8;if(me){maraToast('POLISI TIDUR!','KECEPATAN BERKURANG');sfx('tap')}}else r.v*=.94}}
+   // kerikil
+   for(const g of hz.gravel)if(r.s>g.s0&&r.s<g.s1&&r.d>g.d0&&r.d<g.d1){r.v-=r.v*(me?.85:.5)*dt;if(me)maraToast('KERIKIL!','KECEPATAN TURUN',2500)}
+   // genangan air: hanya oleng (badan goyah kiri-kanan), kecepatan tidak berkurang
+   for(const g of hz.puddles)if(r.s>g.s0&&r.s<g.s1&&r.d>g.d0&&r.d<g.d1){r._wob=.9;if(me&&performance.now()-MS.puddleAt>3000){MS.puddleAt=performance.now();maraToast('LICIN!','OLENG DI GENANGAN AIR')}}
+   if(r._wob>0){r._wob-=dt;r.d+=Math.sin(elapsed*7+r.id)*(me?22:10)*dt*Math.min(1,r._wob*2)}
+   // angin samping di jembatan
+   if(r.s>hz.wind.s0&&r.s<hz.wind.s1){const f=11*(.55+.45*Math.sin(elapsed*1.7+r.id));r.d+=MS.windDir*f*dt}
+   // bot menghindari lubang di depan
+   if(!me)for(const h of hz.holes){const a=h.s-r.s;if(a>0&&a<85&&Math.abs(h.d-r.d)<9){r.d+=(r.d>=h.d?1:-1)*42*dt;break}}
+  }
+  r._ps=r.s}
+ // pos minum
+ const dk=hz.drink;if(!MS.drank&&player.s>dk.s0&&player.s<dk.s1&&player.d>=dk.dMin&&player.fall<=0){MS.drank=true;energy=Math.min(100,energy+45);updateEnergyUI();MS.toastAt=0;maraToast('POS MINUM','ENERGI +45');sfx('finish')}
+ // penonton & binatang menyeberang
+ const near=sp=>{const ds=Math.abs(sp.s-player.s)/MU;return Math.max(0,1-ds/90)};
+ for(const sp of MS.spect){const A=MARA_ANIM[sp.kind],spd=A?A.spd:24,wt=A?A.warn:1.1,rad=A?A.r:6.5,who=A?A.name:'PENONTON';
+  if(A){maraAnimalStep(sp,A,dt,near);continue}
+  if(sp.st==='wait'&&player.s>=sp.s-75*MU){sp.st='warn';sp.t=0;MS.toastAt=0;maraToast('AWAS!',who+' MENYEBERANG');sfx('red')}
+  else if(sp.st==='warn'){sp.t+=dt;if(sp.t>wt){sp.st='cross';sp.t=0}}
+  else if(sp.st==='cross'){sp.t+=dt;sp.ph+=dt*9;sp.d-=sp.side*spd*dt;
+   if(-sp.side*sp.d>HW+10){sp.st='done'}
+   for(const r of racers){if(r.remote||!r.alive||r.finished||r.fall>0||r._spHit===sp||r.wingT>0)continue;
+    if(Math.abs(r.s-sp.s)<rad+1&&Math.abs(r.d-sp.d)<rad){r._spHit=sp;
+     if(r===player){r.fall=1.4;r.v*=.15;r.crashCooldown=.8;steerValue=0;steer=0;updateSteerUI();MS.toastAt=0;maraToast('TERTABRAK '+who+'!','SKATER TERJATUH');sfx('crash')}else r.v*=.4}}}}
+}
+// binatang lari dari arah depan (berlawanan arah balap). Kena pembalap: pembalap jatuh, binatang hilang.
+function maraAnimalStep(sp,A,dt,near){
+ if(sp.st==='wait'){if(player.s>=sp.s-115*MU&&player.s<sp.s){sp.st='run';sp.t=0;sp.d0=sp.d;MS.toastAt=0;maraToast('AWAS! '+A.name,'DATANG DARI DEPAN');maraAnimalSound(sp.kind,.55+.45*near(sp))}return}
+ if(sp.st==='poof'){sp.t+=dt;if(sp.t>.4)sp.st='gone';return}
+ if(sp.st!=='run')return;
+ sp.t+=dt;sp.ph+=dt*(sp.kind==='goat'?11:15);sp.s-=A.run*MU*dt;sp.d=sp.d0+Math.sin(sp.t*1.7+sp.s*.01)*6;
+ if(!sp.cried&&Math.abs(sp.s-player.s)<45*MU){sp.cried=true;maraAnimalSound(sp.kind,near(sp))}
+ if(sp.s<player.s-45*MU||sp.s<mS(-60)){sp.st='gone';return}
+ for(const r of racers){if(r.remote||!r.alive||r.finished)continue;const ds=sp.s-r.s;
+  if(r.ai&&r.fall<=0&&ds>0&&ds<75&&Math.abs(r.d-sp.d)<11)r.d+=(r.d>=sp.d?1:-1)*46*dt;
+  if(r.fall>0)continue;
+  if(Math.abs(ds)<A.r+2&&Math.abs(r.d-sp.d)<A.r+1){
+   if(r.wingT>0){maraAnimalSound(sp.kind,Math.max(.3,near(sp)));sp.st='poof';sp.t=0;if(typeof fxPoof==='function'){tpos(sp.s,sp.d,_t);fxPoof(_t.x,elevU(sp.s,sp.d)+3,_t.y)}return}
+   if(r===player){r.fall=1.4;r.v*=.12;r.crashCooldown=.8;steerValue=0;steer=0;updateSteerUI();MS.toastAt=0;maraToast('TERTABRAK '+A.name+'!','SKATER TERJATUH');sfx('crash')}
+   else{r.fall=1.1;r.v*=.15;r.crashCooldown=.6}
+   maraAnimalSound(sp.kind,Math.max(.3,near(sp)));sp.st='poof';sp.t=0;
+   if(typeof fxPoof==='function'){tpos(sp.s,sp.d,_t);fxPoof(_t.x,elevU(sp.s,sp.d)+3,_t.y)}
+   return}}
+}
+function marathonRender(){if(!MS.g)return;const t=GL.t||0;
+ for(const sp of MS.spect){const m=sp.mesh;if(!m)continue;m.visible=sp.kind==='person'?(sp.st!=='done'||Math.abs(sp.d)<TRACK.width/2+30):sp.st!=='gone';if(!m.visible)continue;tpos(sp.s,sp.d,_t);
+  m.position.set(_t.x,elevU(sp.s,sp.d),_t.y);const walking=sp.st==='cross'||sp.st==='run',u=m.userData;
+  if(sp.kind==='person'){m.rotation.y=-_t.h+(walking?(sp.side>0?Math.PI:0):(sp.side>0?Math.PI/2:-Math.PI/2))+(walking?0:Math.PI);
+   const sw=walking?Math.sin(sp.ph)*.7:Math.sin(t*3+sp.s)*.15;u.legs[0].rotation.z=sw;u.legs[1].rotation.z=-sw;u.arms[0].rotation.z=-sw*.8;u.arms[1].rotation.z=walking?sw*.8:-2.5+Math.sin(t*6+sp.s)*.4;
+   m.position.y+=walking?Math.abs(Math.sin(sp.ph))*.8:0}
+  else{m.rotation.y=Math.PI-_t.h;m.scale.setScalar(sp.st==='poof'?Math.max(.01,1-sp.t/.4):1);
+   const sw=walking?Math.sin(sp.ph)*.75:0;u.legs.forEach((lg,i)=>{lg.rotation.z=((i&1)^(i>>1)?1:-1)*sw});
+   if(u.tail)u.tail.rotation.x=Math.sin(t*(sp.kind==='dog'?14:4)+sp.s)*.45;m.position.y+=walking?Math.abs(Math.sin(sp.ph))*.5:0}
+  u.warn.visible=sp.st==='warn'||sp.st==='cross'||sp.st==='run';if(u.warn.visible)u.warn.position.y=u.warnY+Math.sin(t*8)*1}
+ if(GL.maraFlags)for(const f of GL.maraFlags){f.rotation.y=f.userData.base+MS.windDir*(.35+.25*Math.sin(t*4+f.userData.k))}
+}
+/* ---------- peta mini rute ---------- */
+function maraMinimap(w,h){const R=TRACK.route;if(!R.mm){const ang=Math.atan2(R.y[R.n-1]-R.y[0],R.x[R.n-1]-R.x[0]),c=Math.cos(-ang),s=Math.sin(-ang),P=[];let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(let i=0;i<R.n;i+=8){const X=R.x[i]*c-R.y[i]*s,Y=R.x[i]*s+R.y[i]*c;P.push([X,Y]);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y)}
+  R.mm={c,s,P,cx:(x0+x1)/2,cy:(y0+y1)/2,sw:x1-x0,sh:y1-y0}}
+ const M=R.mm,k=Math.min((w-20)/M.sw,(h-16)/Math.max(1,M.sh)),tr=(X,Y)=>[w/2+(X-M.cx)*k,h/2+(Y-M.cy)*k],tq=(x,y)=>tr(x*M.c-y*M.s,x*M.s+y*M.c);
+ mapCtx.lineJoin=mapCtx.lineCap='round';mapCtx.strokeStyle='rgba(255,255,255,.9)';mapCtx.lineWidth=3.2;mapCtx.beginPath();
+ const a0=routeInto(mS(0),0,{}),a1=routeInto(mS(MARA_LEN),0,{});
+ const i0=Math.floor(mS(0)/R.step/8),i1=Math.ceil(mS(MARA_LEN)/R.step/8);
+ for(let i=i0;i<=Math.min(i1,M.P.length-1);i++){const p=tr(M.P[i][0],M.P[i][1]);i===i0?mapCtx.moveTo(p[0],p[1]):mapCtx.lineTo(p[0],p[1])}mapCtx.stroke();
+ for(let z=1;z<MARA_ZONES.length;z++){const q=routeInto(mS(MARA_ZONES[z].m),0,{}),p=tq(q.x,q.y);mapCtx.fillStyle=z<MS.cp?'#2ecc71':'#9fc4ff';mapCtx.beginPath();mapCtx.arc(p[0],p[1],2,0,Math.PI*2);mapCtx.fill()}
+ {const p=tq(a0.x,a0.y);mapCtx.fillStyle='#2ecc71';mapCtx.beginPath();mapCtx.arc(p[0],p[1],3,0,Math.PI*2);mapCtx.fill()}
+ {const p=tq(a1.x,a1.y);mapCtx.fillStyle='#ffd23f';mapCtx.beginPath();mapCtx.arc(p[0],p[1],3.4,0,Math.PI*2);mapCtx.fill()}
+ for(const r of racers){if(r===player)continue;const q=routeInto(r.s,0,{}),p=tq(q.x,q.y);mapCtx.globalAlpha=r.alive?1:.3;mapCtx.fillStyle=r.color;mapCtx.beginPath();mapCtx.arc(p[0],p[1],2.4,0,Math.PI*2);mapCtx.fill()}
+ if(player){const q=routeInto(player.s,0,{}),p=tq(q.x,q.y);mapCtx.globalAlpha=1;mapCtx.fillStyle='#e8302a';mapCtx.strokeStyle='#fff';mapCtx.lineWidth=1.5;mapCtx.beginPath();mapCtx.arc(p[0],p[1],3.6,0,Math.PI*2);mapCtx.fill();mapCtx.stroke()}
+ mapCtx.globalAlpha=1}
+
+/* ---------- dunia 3D rute marathon ---------- */
+function maraStrip(s0,s1,d0,d1,Y,colFn,step,uvS){const T=THREE,pos=[],col=[],uv=[],c=new T.Color();step=step||8;
+ for(let s=s0;s<s1;s+=step){const e=Math.min(s1,s+step);tpos(s,d0,_t);const a=[_t.x,Y(s,d0),_t.y];tpos(s,d1,_t);const b=[_t.x,Y(s,d1),_t.y];tpos(e,d1,_t);const cc=[_t.x,Y(e,d1),_t.y];tpos(e,d0,_t);const d=[_t.x,Y(e,d0),_t.y];
+  c.set(colFn?colFn((s+e)/2):'#ffffff');const u0=s/(uvS||80),u1=e/(uvS||80);
+  for(const [p,uu,vv] of [[a,u0,0],[b,u0,1],[cc,u1,1],[a,u0,0],[cc,u1,1],[d,u1,0]]){pos.push(p[0],p[1],p[2]);col.push(c.r,c.g,c.b);uv.push(uu,vv)}}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();return g}
+function maraQuad(s0,s1,d0,d1,y){const T=THREE,pos=[],uv=[],n=Math.max(1,Math.ceil((s1-s0)/10));
+ for(let i=0;i<n;i++){const a=s0+(s1-s0)*i/n,b=s0+(s1-s0)*(i+1)/n,va=i/n,vb=(i+1)/n,P=[];
+  for(const [s,d,u,v] of [[a,d0,0,va],[a,d1,1,va],[b,d1,1,vb],[a,d0,0,va],[b,d1,1,vb],[b,d0,0,vb]]){tpos(s,d,_t);pos.push(_t.x,elevU(s,0)+y,_t.y);uv.push(u,v)}}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();return g}
+function maraWall(s0,s1,d,top,bot,colFn,step){const T=THREE,pos=[],col=[],c=new T.Color();step=step||8;
+ for(let s=s0;s<s1;s+=step){const e=Math.min(s1,s+step);tpos(s,d,_t);const ax=_t.x,az=_t.y;tpos(e,d,_t);const bx=_t.x,bz=_t.y;c.set(colFn(s));const ta=top(s),tb=top(e),ba=bot(s),bb=bot(e);
+  for(const p of [[ax,ba,az],[bx,bb,bz],[bx,tb,bz],[ax,ba,az],[bx,tb,bz],[ax,ta,az]]){pos.push(...p);col.push(c.r,c.g,c.b)}}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.computeVertexNormals();return g}
+function maraNearRoad(x,y,clear){const R=TRACK.route;if(!R.grid){const G=new Map(),C=300;for(let i=0;i<R.n;i+=2){const k=Math.floor(R.x[i]/C)+','+Math.floor(R.y[i]/C);(G.get(k)||G.set(k,[]).get(k)).push(i)}R.grid=G}
+ const C=300,cx=Math.floor(x/C),cy=Math.floor(y/C),rr=Math.ceil(clear/C);let best=1e18;
+ for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++){const L=R.grid.get((cx+a)+','+(cy+b));if(!L)continue;for(const i of L){const dx=R.x[i]-x,dy=R.y[i]-y,q=dx*dx+dy*dy;if(q<best)best=q}}
+ return Math.sqrt(best)<clear}
+function maraFace(h){return Math.atan2(-Math.cos(h),-Math.sin(h))}   // rotasi papan agar menghadap pembalap yang datang
+function maraArch(s,label){const T=THREE,tm=GL.tm,g=new T.Group();tpos(s,0,_t);g.position.set(_t.x,elevU(s,0),_t.y);g.rotation.y=-_t.h;
+ const segs=9,red=[],wht=[];for(let i=0;i<segs;i++)(i&1?wht:red).push({g:new T.CylinderGeometry(6.2,6.6,6.4,12),m:glMat4(0,3.2+i*6.4,0)});
+ const rg=glMergeGeos(red),wg=glMergeGeos(wht),Z=TRACK.width/2+14;
+ for(const sd of [-1,1]){const r=new T.Mesh(rg,tm('#e8302a')),w=new T.Mesh(wg,tm('#f7f7f7'));r.position.z=w.position.z=sd*Z;g.add(r,w);const b=new T.Mesh(new T.CylinderGeometry(8,8,3,12),tm('#13306e'));b.position.set(0,1.5,sd*Z);g.add(b)}
+ const top=new T.Mesh(new T.CapsuleGeometry(10,2*Z-8,6,14),tm('#16357a'));top.rotation.x=Math.PI/2;top.position.y=64;g.add(top);
+ const tex=glCanvasTex(512,128,(x,w,h)=>{const gr=x.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#1d4596');gr.addColorStop(1,'#0e2862');x.fillStyle=gr;x.fillRect(0,0,w,h);x.fillStyle='#e8302a';x.fillRect(0,h-12,w,12);x.fillStyle='#fff';x.font='italic 900 64px "Exo 2",system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(label,w/2,h/2-4)});
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>glRedraw(tex));
+ const bm=new T.MeshBasicMaterial({map:tex});for(const sx of [-1,1]){const p=new T.Mesh(new T.PlaneGeometry(2*Z-14,24),bm);p.position.set(sx*10.4,64,0);p.rotation.y=sx<0?-Math.PI/2:Math.PI/2;g.add(p)}
+ GL.sc.add(g);return g}
+function maraSign(s,d,big,small,col){const T=THREE,tex=glCanvasTex(512,256,(x,w,h)=>{const gr=x.createLinearGradient(0,0,0,h);gr.addColorStop(0,col||'#1d4ea6');gr.addColorStop(1,'#0b2a75');x.fillStyle=gr;x.fillRect(0,0,w,h);x.fillStyle='#e8302a';x.fillRect(0,h-22,w,22);x.fillStyle='#fff';x.fillRect(0,h-28,w,6);x.textAlign='center';x.fillStyle='#cfe2ff';x.font='italic 800 44px "Exo 2",system-ui';x.fillText(small,w/2,64);x.fillStyle='#fff';let f=86;x.font='italic 900 '+f+'px "Exo 2",system-ui';while(x.measureText(big).width>w-30&&f>40){f-=6;x.font='italic 900 '+f+'px "Exo 2",system-ui'}x.fillText(big,w/2,160)});
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>glRedraw(tex));
+ const g=new T.Group();tpos(s,d,_t);g.position.set(_t.x,elevU(s,0),_t.y);g.rotation.y=maraFace(_t.h);
+ const p=new T.Mesh(new T.PlaneGeometry(40,20),new T.MeshBasicMaterial({map:tex,side:T.DoubleSide}));p.position.y=26;g.add(p);
+ for(const x of [-16,16]){const pole=new T.Mesh(new T.CylinderGeometry(.6,.6,26,5),GL.lm('#c5ccd6'));pole.position.set(x,13,-.3);g.add(pole)}
+ GL.sc.add(g);return g}
+
+function glBuildRouteWorld(){
+ const T=THREE,sc=GL.sc,R=TRACK.route,tm=GL.tm,lm=GL.lm,HW=TRACK.width/2,hz=R.hz,S0=-900,S1=R.len+900;
+ const vc=new T.MeshLambertMaterial({vertexColors:true}),vcd=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide});
+ const zone=s=>maraZoneAt(s),inB=s=>{const m=sM(s);return m>MARA_BRIDGE[0]-4&&m<MARA_BRIDGE[1]+4};
+ const EY=s=>elevU(s,0)+.35;
+ GL.maraFlags=[];_gs=29;
+ // tanah rumput luas
+ const grass=glCanvasTex(256,256,(x,w,h)=>{x.fillStyle='#74c24e';x.fillRect(0,0,w,h);x.fillStyle='#69b845';x.fillRect(0,0,w,h/2);for(let i=0;i<900;i++){x.fillStyle=Math.random()<.5?'rgba(255,255,255,.05)':'rgba(0,60,0,.05)';x.fillRect(Math.random()*w,Math.random()*h,2,2)}},true);
+ const GW=Math.max(R.w,R.hgt)+9000;grass.repeat.set(GW/270,GW/270);
+ const ground=new T.Mesh(new T.PlaneGeometry(GW,GW),new T.MeshLambertMaterial({map:grass,polygonOffset:true,polygonOffsetFactor:2,polygonOffsetUnits:8}));ground.rotation.x=-Math.PI/2;ground.position.y=-1.5;sc.add(ground);
+ // jalan aspal (warna per zona) + tekstur halus
+ const asph=glCanvasTex(256,256,(x,w,h)=>{x.fillStyle='#d8d8d8';x.fillRect(0,0,w,h);for(let i=0;i<2200;i++){const v=Math.random();x.fillStyle=v<.5?'rgba(255,255,255,.18)':'rgba(0,0,0,.14)';x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,1)}for(let i=0;i<10;i++){x.strokeStyle='rgba(0,0,0,.12)';x.lineWidth=1;x.beginPath();let px=Math.random()*w,py=Math.random()*h;x.moveTo(px,py);for(let k=0;k<5;k++){px+=(Math.random()-.5)*40;py+=(Math.random()-.5)*40;x.lineTo(px,py)}x.stroke()}},true);
+ const roadCol=s=>{const z=zone(s);return inB(s)?'#8a9099':z===1?'#5a5c61':z===4?'#6a6f78':'#666c75'};
+ sc.add(new T.Mesh(maraStrip(S0,S1,-HW,HW,EY,roadCol,8,90),new T.MeshLambertMaterial({map:asph,vertexColors:true})));
+ // garis tepi & garis tengah putus-putus
+ const lineM=new T.MeshBasicMaterial({color:'#ffffff'});
+ sc.add(new T.Mesh(maraStrip(S0,S1,-HW+2,-HW+3.2,s=>EY(s)+.1),lineM));sc.add(new T.Mesh(maraStrip(S0,S1,HW-3.2,HW-2,s=>EY(s)+.1),lineM));
+ {const pos=[],dash=new T.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.85});for(let s=S0;s<S1;s+=64){const g=maraQuad(s,s+30,-.7,.7,.45);pos.push(...g.attributes.position.array);g.dispose()}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.computeVertexNormals();sc.add(new T.Mesh(g,dash))}
+ // trotoar / bahu jalan per zona, lalu lereng rumput turun ke tanah
+ const sideCol=s=>{const z=zone(s);return z===0||z===5?'#c9cfd8':z===1?'#b9996a':inB(s)?'#8a9099':'#a8c98a'};
+ for(const sd of [-1,1]){const a=sd<0?-HW-14:HW,b=sd<0?-HW:HW+14;sc.add(new T.Mesh(maraStrip(S0,S1,a,b,s=>inB(s)?-8:EY(s)-.05,sideCol),vc));
+  const o0=sd<0?-HW-90:HW+14,o1=sd<0?-HW-14:HW+90,inner=sd<0?o1:o0;
+  sc.add(new T.Mesh(maraStrip(S0,S1,o0,o1,(s,d)=>Math.abs(d-inner)<.01?EY(s)-.1:(inB(s)?-8:-1.2),s=>inB(s)?'#5d636b':'#6fb64a'),vc))}
+ // garis start & finish kotak-kotak
+ {const s0=mS(0);sc.add(new T.Mesh(maraQuad(s0-3,s0+3,-HW,HW,.5),new T.MeshBasicMaterial({color:'#ffffff',side:T.DoubleSide})))}
+ {const chk=glCanvasTex(256,64,(x,w,h)=>{const n=16,c=w/n;for(let i=0;i<n;i++)for(let j=0;j<4;j++){x.fillStyle=((i+j)&1)?'#ffffff':'#13213f';x.fillRect(i*c,j*h/4,c,h/4)}});const s1=mS(MARA_LEN);
+  sc.add(new T.Mesh(maraQuad(s1-6,s1+6,-HW,HW,.5),new T.MeshBasicMaterial({map:chk,side:T.DoubleSide})))}
+ maraArch(mS(0),'START');GL.arch=maraArch(mS(MARA_LEN),'FINISH');
+ // papan zona (checkpoint)
+ MARA_ZONES.forEach((z,i)=>{if(i>0)maraSign(mS(z.m),HW+20,z.name,'ZONA '+(i+1)+' · CP',i===4?'#b5121b':null)});
+ maraSign(mS(1575),(routeK(mS(1645))<0?1:-1)*(HW+20),'TIKUNGAN TAJAM','HATI-HATI','#b5121b');
+ // rambu chevron di sisi luar tikungan tajam bawah bukit
+ {const tex=glCanvasTex(128,128,(x,w,h)=>{x.fillStyle='#e8302a';x.fillRect(0,0,w,h);x.strokeStyle='#fff';x.lineWidth=16;x.lineJoin='miter';x.beginPath();x.moveTo(40,24);x.lineTo(84,64);x.lineTo(40,104);x.stroke()}),cm=new T.MeshBasicMaterial({map:tex,side:T.DoubleSide});
+  for(let m=1600;m<=1695;m+=12){const s=mS(m),k=routeK(s),sd=k<0?1:-1;tpos(s,sd*(HW+9),_t);const p=new T.Mesh(new T.PlaneGeometry(9,9),cm);p.position.set(_t.x,elevU(s,0)+8,_t.y);p.rotation.y=maraFace(_t.h);sc.add(p);const pole=new T.Mesh(new T.CylinderGeometry(.4,.4,8,5),lm('#c5ccd6'));pole.position.set(_t.x,elevU(s,0)+3.5,_t.y);sc.add(pole)}}
+ // lubang jalan
+ {const hm=new T.InstancedMesh(new T.CircleGeometry(1,14),new T.MeshLambertMaterial({color:'#25272b'}),hz.holes.length),rim=new T.InstancedMesh(new T.RingGeometry(.92,1.18,14),new T.MeshLambertMaterial({color:'#8f8f8f'}),hz.holes.length);
+  hz.holes.forEach((h,i)=>{tpos(h.s,h.d,_t);const y=elevU(h.s,0)+.5,sx=4.2+(i%3)*.6,sz=2.9+(i%2)*.5;hm.setMatrixAt(i,glMat4(_t.x,y,_t.y,-Math.PI/2,0,-_t.h,sx,sz,1));rim.setMatrixAt(i,glMat4(_t.x,y-.02,_t.y,-Math.PI/2,0,-_t.h,sx,sz,1))});sc.add(rim,hm);
+  const cones=[];hz.holes.forEach((h,i)=>{if(i%4===0){tpos(h.s-14,h.d+(h.d>0?-4:4),_t);cones.push(glMat4(_t.x,elevU(h.s,0)+2.6,_t.y))}});
+  const cg=new T.InstancedMesh(new T.ConeGeometry(1.8,5,8),tm('#ff7a1a'),cones.length);cones.forEach((m,i)=>cg.setMatrixAt(i,m));sc.add(cg)}
+ // kerikil
+ {const tex=glCanvasTex(128,128,(x,w,h)=>{x.fillStyle='#a88b62';x.fillRect(0,0,w,h);for(let i=0;i<700;i++){const v=Math.random();x.fillStyle=v<.33?'#7d6544':v<.66?'#cdb48a':'#8f7a5a';x.beginPath();x.arc(Math.random()*w,Math.random()*h,1+Math.random()*2.4,0,Math.PI*2);x.fill()}},true);tex.repeat.set(1,4);
+  const gm=new T.MeshLambertMaterial({map:tex,transparent:true,opacity:.95});for(const g of hz.gravel)sc.add(new T.Mesh(maraQuad(g.s0,g.s1,g.d0,g.d1,.42),gm))}
+ // polisi tidur kuning-hitam
+ {const tex=glCanvasTex(256,32,(x,w,h)=>{for(let i=0;i<16;i++){x.fillStyle=i&1?'#1b1b1b':'#ffd23f';x.fillRect(i*w/16,0,w/16,h)}});const bm=new T.MeshLambertMaterial({map:tex,side:T.DoubleSide});
+  for(const b of hz.bumps){const g=new T.BufferGeometry(),pos=[],uv=[];for(const [ss,dd,u,v] of [[b-5,-HW,0,0],[b-5,HW,1,0],[b+5,HW,1,1],[b-5,-HW,0,0],[b+5,HW,1,1],[b+5,-HW,0,1]]){tpos(ss,dd,_t);pos.push(_t.x,EY(ss)+.6,_t.y);uv.push(u,v)}g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();sc.add(new T.Mesh(g,bm))}}
+ // genangan air
+ {const tex=glCanvasTex(128,128,(x,w,h)=>{const g=x.createRadialGradient(w/2,h/2,4,w/2,h/2,w/2);g.addColorStop(0,'rgba(140,200,255,.85)');g.addColorStop(.7,'rgba(110,170,230,.6)');g.addColorStop(1,'rgba(110,170,230,0)');x.fillStyle=g;x.fillRect(0,0,w,h)}),pm=new T.MeshLambertMaterial({map:tex,transparent:true,depthWrite:false});
+  for(const g of hz.puddles)sc.add(new T.Mesh(maraQuad(g.s0,g.s1,g.d0,g.d1,.44),pm))}
+ // pos minum: tenda, meja, gelas, lajur hijau
+ {const dk=hz.drink;sc.add(new T.Mesh(maraQuad(dk.s0,dk.s1,dk.dMin,HW-3.5,.43),new T.MeshBasicMaterial({color:'#2ecc71',transparent:true,opacity:.28,depthWrite:false})));
+  for(const m of [845,875]){const s=mS(m),g=new T.Group();tpos(s,HW+20,_t);g.position.set(_t.x,elevU(s,0),_t.y);g.rotation.y=-_t.h;
+   const roof=new T.Mesh(new T.ConeGeometry(17,9,4),tm('#ffffff'));roof.position.y=24;roof.rotation.y=Math.PI/4;g.add(roof);
+   const val=new T.Mesh(new T.CylinderGeometry(12,12,3.2,4,1,true),new T.MeshToonMaterial({color:'#e8302a',gradientMap:GL.grad,side:T.DoubleSide}));val.position.y=18.4;val.rotation.y=Math.PI/4;g.add(val);
+   for(const [x,z] of [[-8.3,-8.3],[8.3,-8.3],[-8.3,8.3],[8.3,8.3]]){const l=new T.Mesh(new T.CylinderGeometry(.5,.5,20,5),lm('#9aa4b1'));l.position.set(x,10,z);g.add(l)}
+   sc.add(g);
+   const tb=new T.Group();tpos(s,HW+5,_t);tb.position.set(_t.x,elevU(s,0),_t.y);tb.rotation.y=-_t.h;const top=new T.Mesh(new T.BoxGeometry(26,1.2,5),lm('#2c5fbf'));top.position.y=7;tb.add(top);
+   for(const x of [-11,11]){const l=new T.Mesh(new T.BoxGeometry(1,7,4),lm('#9aa4b1'));l.position.set(x,3.5,0);tb.add(l)}
+   for(let i=0;i<7;i++){const cup=new T.Mesh(new T.CylinderGeometry(.9,.7,2.2,8),tm(i&1?'#ffffff':'#7fd8ff'));cup.position.set(-10+i*3.3,8.7,0);tb.add(cup)}sc.add(tb)}
+  maraSign(mS(810),HW+20,'POS MINUM','LAJUR KANAN →','#18a35b')}
+ // jembatan: sungai, rel pengaman, sisi dek, bendera angin
+ {const m0=MARA_BRIDGE[0],m1=MARA_BRIDGE[1],sm=mS((m0+m1)/2);tpos(sm,0,_t);
+  const water=glCanvasTex(256,256,(x,w,h)=>{x.fillStyle='#3d8fd8';x.fillRect(0,0,w,h);for(let i=0;i<60;i++){x.strokeStyle='rgba(255,255,255,'+(.08+Math.random()*.12)+')';x.lineWidth=2;const y=Math.random()*h,x0=Math.random()*w;x.beginPath();x.moveTo(x0,y);x.lineTo(x0+20+Math.random()*30,y);x.stroke()}},true);water.repeat.set(2,30);GL.waterTex=water;
+  const wg=new T.Group();wg.position.set(_t.x,.6,_t.y);wg.rotation.y=-_t.h;const wp=new T.Mesh(new T.PlaneGeometry((m1-m0-40)*MU,9000),new T.MeshLambertMaterial({map:water}));wp.rotation.x=-Math.PI/2;wg.add(wp);
+  for(const sd of [-1,1]){const bank=new T.Mesh(new T.PlaneGeometry(40,9000),lm('#d9c79b'));bank.rotation.x=-Math.PI/2;bank.position.set(sd*((m1-m0-40)*MU/2+18),.3,0);wg.add(bank)}sc.add(wg);
+  const b0=mS(m0),b1=mS(m1);
+  for(const sd of [-1,1]){const dd=sd*(HW+1);sc.add(new T.Mesh(maraWall(b0,b1,dd,s=>EY(s)-.2,()=>-6,()=>'#9aa1aa'),vcd));
+   sc.add(new T.Mesh(maraStrip(b0,b1,dd-.6,dd+.6,s=>EY(s)+10,()=>'#e8302a'),vc));sc.add(new T.Mesh(maraStrip(b0,b1,dd-.4,dd+.4,s=>EY(s)+5,()=>'#c5ccd6'),vc));
+   const posts=[];for(let s=b0;s<=b1;s+=24){tpos(s,dd,_t);posts.push(glMat4(_t.x,EY(s)+5,_t.y))}const ig=new T.InstancedMesh(new T.CylinderGeometry(.5,.5,10,6),lm('#c5ccd6'),posts.length);posts.forEach((m,i)=>ig.setMatrixAt(i,m));sc.add(ig)}
+  const flagM=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide}),fg=glMergeGeos([{g:new T.PlaneGeometry(14,4.5),m:glMat4(7,2.25,0),c:'#e8302a'},{g:new T.PlaneGeometry(14,4.5),m:glMat4(7,-2.25,0),c:'#ffffff'}]);
+  let k=0;for(let s=b0+120;s<b1;s+=360)for(const sd of [-1,1]){tpos(s,sd*(HW+4),_t);const pole=new T.Mesh(new T.CylinderGeometry(.5,.5,30,5),lm('#d9dee6'));pole.position.set(_t.x,EY(s)+15,_t.y);sc.add(pole);const f=new T.Mesh(fg,flagM);f.position.set(_t.x,EY(s)+27,_t.y);f.userData={base:-_t.h+Math.PI/2,k:k++};f.rotation.y=f.userData.base;sc.add(f);GL.maraFlags.push(f)}}
+ // gedung kota di zona start & finish
+ {const spots=[];const add=(m0,m1)=>{for(const sd of [-1,1])for(let m=m0;m<m1;m+=16+grnd()*8){const s=mS(m);const off=HW+85+grnd()*50;tpos(s,sd*off,_t);if(maraNearRoad(_t.x,_t.y,off-6))continue;spots.push([_t.x,_t.y,-_t.h,110+grnd()*90,80+grnd()*240,90+grnd()*60])}};
+  add(-MARA_PRE-60,320);add(1770,2200);
+  const win=glCanvasTex(64,128,(x,w,h)=>{x.fillStyle='#ffffff';x.fillRect(0,0,w,h);x.fillStyle='#9cc8ee';for(let r=0;r<10;r++)for(let c=0;c<4;c++)x.fillRect(5+c*15,6+r*12,9,7)});
+  const bm=new T.InstancedMesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({map:win}),spots.length),rf=new T.InstancedMesh(new T.BoxGeometry(1,1,1),lm('#7d8694'),spots.length);
+  const pal=['#f3f5f8','#ffd9b0','#cfe3ff','#ffe9a8','#e0d4f5','#d6f0d8','#f7c8c0'].map(c=>new T.Color(c));
+  spots.forEach(([x,z,ry,w,h,d],i)=>{bm.setMatrixAt(i,glMat4(x,h/2,z,0,ry,0,w,h,d));bm.setColorAt(i,pal[(grnd()*pal.length)|0]);rf.setMatrixAt(i,glMat4(x,h+2,z,0,ry,0,w*.92,4,d*.92))});sc.add(bm,rf)}
+ // pagar & penonton di zona start dan finish
+ {const segs=[[-30,220],[1830,2120]],body=[],head=[],pal=['#e8302a','#2f7be0','#f2c230','#22b573','#ffffff','#e85e9c','#8a5cd6','#ff8a3c','#1a1f2b'].map(c=>new T.Color(c)),sk=['#f3d1b0','#e0b088','#c58c62','#9a6643'].map(c=>new T.Color(c));
+  const fenceC=s=>(Math.floor(s/30)&1)?'#1d4ea6':'#f6f6f6',fm=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide});
+  for(const [m0,m1] of segs){const s0=mS(m0),s1=mS(m1);for(const sd of [-1,1]){sc.add(new T.Mesh(maraWall(s0,s1,sd*(HW+15),s=>EY(s)+8,s=>EY(s),fenceC),fm));
+    for(let s=s0;s<s1;s+=8.5)for(let row=0;row<1;row++){if(grnd()<.15)continue;tpos(s+grnd()*3,sd*(HW+21+grnd()*3),_t);const y=EY(s)+row*1.5;body.push([_t.x,y+5,_t.y]);head.push([_t.x,y+10.6,_t.y])}}}
+  const bi=new T.InstancedMesh(new T.CapsuleGeometry(2.3,2.6,2,6),new T.MeshLambertMaterial({color:'#ffffff'}),body.length),hi=new T.InstancedMesh(new T.SphereGeometry(2.2,6,5),new T.MeshLambertMaterial({color:'#ffffff'}),head.length);
+  body.forEach((p,i)=>{bi.setMatrixAt(i,glMat4(p[0],p[1],head[i][2]));bi.setColorAt(i,pal[(grnd()*pal.length)|0]);hi.setMatrixAt(i,glMat4(head[i][0],head[i][1],head[i][2]));hi.setColorAt(i,sk[(grnd()*sk.length)|0])});
+  sc.add(bi,hi);GL.crowd.push(bi,hi)}
+ // pohon low-poly di luar kota
+ {const spots=[];for(let s=S0;s<S1;s+=26){const m=sM(s),city=m<330||m>1760,br=inB(s);for(const sd of [-1,1]){if(city&&grnd()<.85)continue;if(br)continue;const d=sd*(HW+40+grnd()*360);tpos(s+grnd()*20,d,_t);if(maraNearRoad(_t.x,_t.y,HW+34))continue;spots.push([_t.x,_t.y,.8+grnd()*.8,elevU(s,0)*.6])}}
+  for(let i=0;i<90;i++){const s=S0+grnd()*(S1-S0),sd=grnd()<.5?-1:1;tpos(s,sd*(500+grnd()*1500),_t);if(maraNearRoad(_t.x,_t.y,HW+60))continue;spots.push([_t.x,_t.y,1.4+grnd()*1.4,0])}
+  const trunk=new T.InstancedMesh(new T.CylinderGeometry(1.4,2,12,5),lm('#7a5232'),spots.length),fol=new T.InstancedMesh(new T.IcosahedronGeometry(10,0),new T.MeshLambertMaterial({flatShading:true}),spots.length);
+  const greens=['#4caf50','#5cbf3a','#3f9e48','#6cc44a','#2f8f42'].map(c=>new T.Color(c));
+  spots.forEach(([x,z,k,y0],i)=>{trunk.setMatrixAt(i,glMat4(x,y0+6*k,z,0,0,0,k,k,k));fol.setMatrixAt(i,glMat4(x,y0+20*k,z,0,grnd()*3,0,k*1.05,k*1.2,k*1.05));fol.setColorAt(i,greens[(grnd()*greens.length)|0])});sc.add(trunk,fol)}
+ // bukit hijau di sekitar zona turunan
+ {for(let i=0;i<9;i++){const m=MARA_HILL[0]+grnd()*(MARA_HILL[2]-MARA_HILL[0]),sd=grnd()<.5?-1:1,s=mS(m);const r=120+grnd()*140;tpos(s,sd*(r+HW+50+grnd()*200),_t);if(maraNearRoad(_t.x,_t.y,r+HW+30))continue;const hl=new T.Mesh(new T.SphereGeometry(r,14,8,0,Math.PI*2,0,Math.PI/2),new T.MeshLambertMaterial({color:i&1?'#6cbf4a':'#5daf42',flatShading:true}));hl.scale.y=.35+grnd()*.25;hl.position.set(_t.x,-4,_t.y);sc.add(hl)}}
+ // awan
+ {const cl=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),new T.MeshLambertMaterial({color:'#ffffff',emissive:'#bcd6ee',flatShading:true,fog:false}),30*4);let ci=0;
+  for(let i=0;i<30;i++){const s=S0+grnd()*(S1-S0),sd=grnd()<.5?-1:1;tpos(s,sd*(1500+grnd()*1500),_t);const x=_t.x,z=_t.y,y=380+grnd()*420,a=grnd()*6,sz=50+grnd()*40;for(let j=0;j<4;j++){const ox=(j-1.5)*sz*.9,sy=sz*(j==1||j==2?1:.7);cl.setMatrixAt(ci++,glMat4(x+ox*Math.cos(a),y+(j==1||j==2?sz*.25:0),z+ox*Math.sin(a),0,0,0,sz*1.1,sy*.8,sz))}}sc.add(cl)}
+}
+
+/* ---------- menu marathon ---------- */
+let maraVar='resmi';
+const MARA_TXT={resmi:'🏁 Start kota → 🕳️ jalan rusak → 🥤 pos minum → 🌉 jembatan berangin → ⛰️ turunan bukit → 🏆 finish.<br>Bentuk rute dan rintangan diacak setiap balapan. Awas lubang, kerikil, polisi tidur, genangan yang bikin oleng, angin samping, serta penonton, kucing, anjing dan kambing yang menyeberang.',
+ brutal:'💥 Rute dan rintangan sama seperti Resmi, ditambah <b>kotak item ❓</b> di sepanjang jalan. Ambil kotak lalu tekan <b>ITEM</b> di atas tombol TAP: 🚀 rudal, 🛢️ oli, ⏱️ lempar waktu, ⚡ nitro, 🛡️ perisai. Lewati lantai <b>TURBO</b> untuk tambahan kecepatan.'};
+function menuKasual(){menuMain=false;cfg.mode='kasual';if(!['300','500','1000','elim','mara'].includes(cfg.race))cfg.race='1000';
+ $('overlay').style.display='flex';const isM=cfg.race==='mara';
+ const panel=isM?`<div class="sub menuSub"><b>MARATHON • PILIH MODE</b></div><div class="choices"><button class="choice" data-var="resmi">▶ RESMI<br><small>TANPA ITEM</small></button><button class="choice" data-var="brutal">💥 BRUTAL<br><small>PAKAI ITEM</small></button></div>`:'';
+ const lbl=isM?(maraVar==='brutal'?'💥 MAIN MARATHON BRUTAL':'🏃 MAIN MARATHON RESMI'):'▶ MAIN BALAP';
+ $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>KASUAL • PILIH JARAK</b><small>1 PUTARAN = 200 METER</small></div><div class="choices">${raceChoices(['300','500','1000','elim','mara'])}</div>${panel}${isM?'':`<button class="primary" id="kStart">${lbl} (OFFLINE)</button>`}<button class="secondary" id="kBack">⬅ KEMBALI</button>`;
+ $('dialog').querySelectorAll('[data-race]').forEach(b=>b.onclick=()=>{cfg.race=b.dataset.race;menuKasual()});
+ $('dialog').querySelectorAll('[data-var]').forEach(b=>b.onclick=()=>{maraVar=b.dataset.var;startMarathon()});
+ if($('kStart'))$('kStart').onclick=()=>{if(cfg.race==='mara'){startMarathon();return}cfg.playerName='SKATER';cfg.mode='kasual';audioReady();setTrack('oval');initRace()};
+ $('kBack').onclick=()=>menu()}
+// kotak item & lantai turbo di sepanjang rute (Marathon Brutal)
+function maraItemsPlace(){const R=Math.random;
+ for(let k=0,m=110;m<1960;k++,m+=92+R()*26){const ds=k%2?[-24,-8,8,24]:[-18,0,18];for(const d of ds)itemBoxes.push({s:mS(m),d,cool:0,mesh:null})}
+ for(let k=0;k<10;k++){const m=170+k*180+R()*90;turboPads.push({s:mS(m),d:(R()*2-1)*20,mesh:null})}}
+
+/* ================= ITEM BRUTAL v2: bom, tornado, listrik + efek & suara ================= */
+ITEM_DEF.rudal.w=.16;ITEM_DEF.oli.w=.11;ITEM_DEF.waktu.w=.09;ITEM_DEF.nitro.w=.14;ITEM_DEF.perisai.w=.10;
+ITEM_DEF.bom={label:'BOM',icon:'💣',w:.15};ITEM_DEF.tornado={label:'TORNADO',icon:'🌪️',w:.13};ITEM_DEF.listrik={label:'LISTRIK',icon:'🌩️',w:.12};ITEM_DEF.sayap={label:'SAYAP',icon:'👼',w:.1};
+let bombs=[],tornados=[];
+const FX={g:null,parts:[],pool:{},rings:[],bolts:[],shake:0,flash:0,flashCol:'#ffffff',last:0,tex:{},geo:{},rollIcon:'❓'};
+(()=>{const st=document.createElement('style');st.textContent=`#atk.roll{animation:atkRoll .14s linear infinite;box-shadow:0 0 0 3px #fff,0 0 24px #ffd23f!important;background:linear-gradient(180deg,#ffe066,#ff8a00)!important;color:#3a1600!important}#atk.roll em{filter:drop-shadow(0 0 6px #fff)}@keyframes atkRoll{0%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.1) rotate(3deg)}100%{transform:scale(1) rotate(-3deg)}}#atk.got{animation:atkGot .45s ease-out}@keyframes atkGot{0%{transform:scale(1.4);filter:brightness(1.8)}100%{transform:scale(1);filter:none}}#fxFlash,#fxTint,#fxVert{position:absolute;inset:0;pointer-events:none;z-index:4;opacity:0}#fxTint{background:radial-gradient(ellipse at 50% 55%,rgba(75,0,190,.05) 30%,rgba(60,0,170,.55) 100%)}#fxVert{background:repeating-conic-gradient(from 0deg at 50% 52%,rgba(150,90,255,.0) 0deg 10deg,rgba(150,90,255,.28) 10deg 20deg);mix-blend-mode:screen}#menuFriends:empty{display:none!important}#atkWarn{position:absolute;left:50%;top:34%;transform:translateX(-50%);z-index:6;pointer-events:none;display:none;white-space:nowrap;padding:7px 16px;border-radius:14px;background:rgba(210,20,20,.86);border:2px solid #fff;color:#fff;font:italic 900 15px/1.15 'Exo 2',system-ui,sans-serif;text-align:center;box-shadow:0 0 18px #ff2a2a;animation:awBlink .38s ease-in-out infinite alternate}#atkWarn small{display:block;font-size:11px;opacity:.9}@keyframes awBlink{from{opacity:1;transform:translateX(-50%) scale(1)}to{opacity:.55;transform:translateX(-50%) scale(1.06)}}`;document.head.appendChild(st)})();
+function fxDist(s){return player?Math.max(.22,1-Math.abs(s-player.s)/(260*MU)):1}
+/* ---------- partikel ---------- */
+function fxTex(k){if(FX.tex[k])return FX.tex[k];const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);
+ const st={fire:[[0,'rgba(255,255,235,1)'],[.25,'rgba(255,215,80,.95)'],[.55,'rgba(255,105,15,.6)'],[1,'rgba(190,30,0,0)']],
+  smoke:[[0,'rgba(95,95,100,.8)'],[.5,'rgba(75,75,80,.45)'],[1,'rgba(60,60,60,0)']],
+  spark:[[0,'rgba(255,255,255,1)'],[.3,'rgba(190,230,255,.9)'],[1,'rgba(80,160,255,0)']],
+  dust:[[0,'rgba(205,178,128,.85)'],[.6,'rgba(170,140,95,.4)'],[1,'rgba(150,120,80,0)']]}[k];
+ for(const [o,cl] of st)g.addColorStop(o,cl);x.fillStyle=g;x.fillRect(0,0,64,64);return FX.tex[k]=new THREE.CanvasTexture(c)}
+function fxGroup(){if(!FX.g&&GL.ok&&GL.sc){FX.g=new THREE.Group();GL.sc.add(FX.g)}return FX.g}
+function fxPart(x,y,z,o){const g=fxGroup();if(!g||FX.parts.length>520)return;const key=o.tex+(o.add?'+':''),pool=FX.pool[key]||(FX.pool[key]=[]);
+ let sp=pool.pop();if(!sp){sp=new THREE.Sprite(new THREE.SpriteMaterial({map:fxTex(o.tex),transparent:true,depthWrite:false,blending:o.add?THREE.AdditiveBlending:THREE.NormalBlending}));sp.userData.key=key}
+ sp.material.color.set(o.col||'#ffffff');sp.material.opacity=0;sp.position.set(x,y,z);sp.scale.setScalar(.01);sp.visible=true;g.add(sp);
+ FX.parts.push({sp,vx:o.vx||0,vy:o.vy||0,vz:o.vz||0,life:o.life||1,T:o.life||1,size:o.size||4,grow:o.grow||1,op:o.op??1,drag:o.drag??1.5,gy:o.gy||0,rot:(Math.random()-.5)*3})}
+function fxRing(x,y,z,s0,s1,T,col){const g=fxGroup();if(!g)return;if(!FX.geo.ring){FX.geo.ring=new THREE.RingGeometry(.82,1,48);FX.geo.ring.rotateX(-Math.PI/2)}
+ const m=new THREE.Mesh(FX.geo.ring,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));m.position.set(x,y,z);m.scale.setScalar(s0);g.add(m);FX.rings.push({m,t:0,T,s0,s1})}
+function fxUpdate(dt){
+ for(let i=FX.parts.length-1;i>=0;i--){const p=FX.parts[i];p.life-=dt;if(p.life<=0){p.sp.visible=false;if(FX.g)FX.g.remove(p.sp);(FX.pool[p.sp.userData.key]||[]).push(p.sp);FX.parts.splice(i,1);continue}
+  const k=Math.exp(-p.drag*dt);p.vx*=k;p.vy=p.vy*k+p.gy*dt;p.vz*=k;const P=p.sp.position;P.x+=p.vx*dt;P.y+=p.vy*dt;P.z+=p.vz*dt;
+  const a=1-p.life/p.T;p.sp.scale.setScalar(p.size*(1+(p.grow-1)*a));p.sp.material.opacity=p.op*Math.min(1,(1-a)*1.7,a*12+.2);p.sp.material.rotation+=p.rot*dt}
+ for(let i=FX.rings.length-1;i>=0;i--){const r=FX.rings[i];r.t+=dt;const a=r.t/r.T;if(a>=1){FX.g.remove(r.m);r.m.material.dispose();FX.rings.splice(i,1);continue}r.m.scale.setScalar(r.s0+(r.s1-r.s0)*(1-(1-a)*(1-a)));r.m.material.opacity=.85*(1-a)}
+ for(let i=FX.bolts.length-1;i>=0;i--){const b=FX.bolts[i];b.t+=dt;if(b.t>b.T){b.meshes.forEach(m=>FX.g.remove(m));FX.bolts.splice(i,1);continue}if(b.t>b.nextJ){b.nextJ=b.t+.06;boltBuild(b)}}
+ if(FX.bolts.length&&FX.boltCore){const f=.5+Math.random()*.5;FX.boltCore.opacity=f;FX.boltGlow.opacity=.25+.3*f}
+ FX.shake*=Math.exp(-5.5*dt);FX.flash*=Math.exp(-7*dt);
+ if(FX.shake>.02&&GL.cam){const q=FX.shake;GL.cam.position.x+=(Math.random()-.5)*q*4;GL.cam.position.y+=(Math.random()-.5)*q*3;GL.cam.position.z+=(Math.random()-.5)*q*4}
+ let fl=$('fxFlash');if(!fl&&$('stage')){fl=document.createElement('div');fl.id='fxFlash';$('stage').appendChild(fl)}
+ if(fl){const o=FX.flash>.01?Math.min(.75,FX.flash):0;if(fl._o!==o){fl._o=o;fl.style.opacity=o;fl.style.background=FX.flashCol}}
+ fxScreen(dt)}
+function fxScreen(dt){const st=$('stage');if(!st)return;const mk=id=>{let e=$(id);if(!e){e=document.createElement('div');e.id=id;st.appendChild(e)}return e};
+ const live=state==='race'&&player;const tint=live&&player.timeT>0?Math.min(1,player.timeT/.6)*(.75+.25*Math.sin(GL.t*6)):0;const ti=mk('fxTint');ti.style.opacity=tint.toFixed(2);
+ FX.vertT=Math.max(0,(FX.vertT||0)-dt);const v=live?Math.min(1,FX.vertT/.6):0,ve=mk('fxVert'),cv=GL.rnd&&GL.rnd.domElement;
+ if(v>0){const t=GL.t;ve.style.opacity=(.85*v).toFixed(2);ve.style.transform='rotate('+(t*90%360).toFixed(1)+'deg) scale(1.6)';if(cv){cv.style.transform='rotate('+(Math.sin(t*2.6)*5*v).toFixed(2)+'deg) scale('+(1+.09*v+Math.sin(t*4.1)*.03*v).toFixed(3)+')';cv.style.filter='hue-rotate('+(Math.sin(t*1.7)*40*v).toFixed(0)+'deg) saturate('+(1+.5*v).toFixed(2)+')';FX.cvMod=true}}
+ else{ve.style.opacity=0;if(FX.cvMod&&cv){cv.style.transform='';cv.style.filter='';FX.cvMod=false}}}
+function fxClear(){FX.vertT=0;try{fxScreen(0)}catch(e){}const aw=$('atkWarn');if(aw)aw.style.display='none';if(FX.g&&GL.sc){GL.sc.remove(FX.g);FX.rings.forEach(r=>r.m.material.dispose())}FX.g=null;FX.parts=[];FX.pool={};FX.rings=[];FX.bolts=[];FX.shake=0;FX.flash=0}
+/* ledakan besar: bola api, asap, percikan, gelombang kejut, guncangan kamera */
+function fxExplode(x,y,z,sc,s){sc=sc||1;const k=fxDist(s);
+ fxPart(x,y+5,z,{tex:'fire',add:true,life:.3,size:30*sc,grow:1.7,drag:0});
+ for(let i=0;i<18;i++){const a=Math.random()*6.283,e=Math.random()*1.25,v=(16+Math.random()*28)*sc;fxPart(x,y+3,z,{tex:'fire',add:true,vx:Math.cos(a)*Math.cos(e)*v,vy:Math.sin(e)*v*.9+8,vz:Math.sin(a)*Math.cos(e)*v,life:.45+Math.random()*.4,size:(8+Math.random()*8)*sc,grow:2.2,drag:3.4})}
+ for(let i=0;i<10;i++){const a=Math.random()*6.283,v=4+Math.random()*10*sc;fxPart(x,y+4,z,{tex:'smoke',vx:Math.cos(a)*v,vy:7+Math.random()*12,vz:Math.sin(a)*v,life:1.2+Math.random()*.8,size:6.5*sc,grow:2.3,op:.5,col:'#9a9a9e',drag:1.1})}
+ for(let i=0;i<26;i++){const a=Math.random()*6.283,v=40+Math.random()*55;fxPart(x,y+3,z,{tex:'spark',add:true,vx:Math.cos(a)*v,vy:18+Math.random()*40,vz:Math.sin(a)*v,gy:-75,life:.5+Math.random()*.5,size:1.8,grow:.6,col:'#ffd27a',drag:.8})}
+ fxRing(x,y+.7,z,3*sc,38*sc,.5,'#ffb347');fxRing(x,y+.9,z,2*sc,22*sc,.35,'#ffffff');
+ FX.shake=Math.max(FX.shake,1.4*k*sc);if(k>.5){FX.flash=Math.max(FX.flash,.4*k);FX.flashCol='radial-gradient(circle at 50% 55%,rgba(255,220,140,.9),rgba(255,120,30,.35) 60%,rgba(255,80,0,0))'}
+ sndBoom(k*Math.min(1.25,sc))}
+function fxPoof(x,y,z){for(let i=0;i<14;i++){const a=Math.random()*6.283,v=8+Math.random()*16;fxPart(x,y,z,{tex:'dust',vx:Math.cos(a)*v,vy:4+Math.random()*10,vz:Math.sin(a)*v,life:.7+Math.random()*.4,size:5,grow:2.3,op:.8,drag:2.5})}
+ for(let i=0;i<8;i++){const a=Math.random()*6.283;fxPart(x,y+3,z,{tex:'spark',add:true,vx:Math.cos(a)*20,vy:14+Math.random()*12,vz:Math.sin(a)*20,gy:-40,life:.5,size:2.2,col:'#fff6c2'})}
+ sndPoof()}
+/* ---------- petir ---------- */
+function fxBolt(x,y,z){const g=fxGroup();if(!g)return;const T=THREE;
+ if(!FX.boltCore){FX.boltCore=new T.MeshBasicMaterial({color:'#ffffff',transparent:true,blending:T.AdditiveBlending,depthWrite:false});FX.boltGlow=new T.MeshBasicMaterial({color:'#5fb0ff',transparent:true,opacity:.45,blending:T.AdditiveBlending,depthWrite:false});FX.geo.cyl=new T.CylinderGeometry(1,1,1,6,1,true);FX._up=new T.Vector3(0,1,0);FX._v=new T.Vector3()}
+ const b={t:0,T:.6,nextJ:.06,meshes:[],x,y,z,ox:(Math.random()-.5)*70,oz:(Math.random()-.5)*70};boltBuild(b);FX.bolts.push(b);
+ for(let i=0;i<22;i++){const a=Math.random()*6.283,v=25+Math.random()*45;fxPart(x,y+2,z,{tex:'spark',add:true,vx:Math.cos(a)*v,vy:10+Math.random()*40,vz:Math.sin(a)*v,gy:-60,life:.4+Math.random()*.4,size:2,grow:.5,col:'#bfe4ff',drag:.8})}
+ fxPart(x,y+8,z,{tex:'spark',add:true,life:.45,size:34,grow:1.4,col:'#9fd2ff',drag:0});fxRing(x,y+.8,z,3,30,.45,'#7cc4ff')}
+function boltSeg(b,a,c,r,mat){const m=new THREE.Mesh(FX.geo.cyl,mat),dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],L=Math.hypot(dx,dy,dz)||1;m.position.set((a[0]+c[0])/2,(a[1]+c[1])/2,(a[2]+c[2])/2);m.scale.set(r,L,r);FX._v.set(dx/L,dy/L,dz/L);m.quaternion.setFromUnitVectors(FX._up,FX._v);FX.g.add(m);b.meshes.push(m)}
+function boltBuild(b){b.meshes.forEach(m=>FX.g.remove(m));b.meshes=[];const n=12,top=[b.x+b.ox,b.y+170,b.z+b.oz],P=[];
+ for(let i=0;i<=n;i++){const f=i/n,j=i===0||i===n?0:11*(1-f*.5);P.push([top[0]+(b.x-top[0])*f+(Math.random()-.5)*j*2,top[1]+(b.y+6-top[1])*f,top[2]+(b.z-top[2])*f+(Math.random()-.5)*j*2])}
+ for(let i=0;i<n;i++){boltSeg(b,P[i],P[i+1],.55,FX.boltCore);boltSeg(b,P[i],P[i+1],2.2,FX.boltGlow)}
+ for(let k=0;k<2;k++){let a=P[3+((Math.random()*6)|0)];for(let s=0;s<3;s++){const c=[a[0]+(Math.random()-.5)*26,a[1]-8-Math.random()*10,a[2]+(Math.random()-.5)*26];boltSeg(b,a,c,.35,FX.boltCore);boltSeg(b,a,c,1.3,FX.boltGlow);a=c}}}
+/* ---------- suara menggelegar ---------- */
+function sndOk(){return audioCtx&&sfxOn}
+function sndBoom(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.01;
+ noise(t,.16,.6*k,'sfx',{type:'highpass',f:1600,q:.5});
+ voice('sine',125,t,1.1,.9*k,'sfx',{to:26,glide:.9});voice('triangle',72,t+.02,1.5,.5*k,'sfx',{to:22,glide:1.3,lp:420});
+ noise(t,2,.75*k,'sfx',{type:'lowpass',f:2400,fTo:60,q:.7,rev:true});noise(t+.05,.9,.32*k,'sfx',{f:900,fTo:140,q:.6});
+ for(let i=0;i<7;i++)noise(t+.12+Math.random()*.7,.05,.16*k,'sfx',{type:'highpass',f:2600})}catch(e){}}
+function sndLaunch(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.01;
+ noise(t,.75,.4*k,'sfx',{f:380,fTo:3400,q:1.3,a:.04});voice('sawtooth',150,t,.7,.09*k,'sfx',{to:820,lp:1500});noise(t+.2,1.4,.2*k,'sfx',{type:'highpass',f:3200,fTo:1400,a:.05});voice('sine',90,t,.4,.3*k,'sfx',{to:40})}catch(e){}}
+function sndThrow(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.01;
+ voice('sine',720,t,.28,.14*k,'sfx',{to:280});noise(t,.32,.16*k,'sfx',{f:1300,fTo:500});noise(t+.05,1.1,.09*k,'sfx',{type:'highpass',f:5200,a:.03})}catch(e){}}
+function sndTornado(k,start){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.01,d=start?2.4:1.5;
+ noise(t,d,.5*k,'sfx',{type:'lowpass',f:200,fTo:950,q:5,a:.3,rev:true});noise(t,d,.26*k,'sfx',{f:650,fTo:1800,q:7,a:.35});
+ voice('sine',88,t,d,.34*k,'sfx',{to:52,a:.25});voice('sawtooth',46,t,d,.1*k,'sfx',{lp:180,a:.3});
+ if(start){noise(t,.7,.4*k,'sfx',{f:260,fTo:2800,q:1.1});voice('sine',60,t,.9,.5*k,'sfx',{to:30})}}catch(e){}}
+function sndThunder(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.01;
+ noise(t,.09,.9*k,'sfx',{type:'highpass',f:2400,q:.4});noise(t+.03,.4,.65*k,'sfx',{f:1900,fTo:280,q:.5});noise(t+.16,.12,.6*k,'sfx',{type:'highpass',f:2000,q:.4});
+ voice('sawtooth',58,t,.75,.2*k,'sfx',{bp:760,q:3});voice('square',120,t,.35,.07*k,'sfx',{to:60,lp:1200});
+ noise(t+.12,3,.85*k,'sfx',{type:'lowpass',f:750,fTo:42,q:.8,a:.06,rev:true});voice('sine',56,t+.1,2.2,.55*k,'sfx',{to:28,glide:2})}catch(e){}}
+function sndTick(){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;voice('square',1050+Math.random()*600,t,.035,.06,'sfx',{lp:3200})}catch(e){}}
+function sndItemGet(){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;voice('triangle',880,t,.14,.13,'sfx');voice('triangle',1320,t+.08,.22,.13,'sfx');voice('sine',1760,t+.16,.3,.08,'sfx',{rev:true})}catch(e){}}
+function sndPoof(){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;noise(t,.25,.18,'sfx',{f:1600,fTo:380,q:.8});voice('sine',420,t,.18,.08,'sfx',{to:900})}catch(e){}}
+/* ---------- model 3D ---------- */
+function missileMesh2(){const T=THREE,M=GL.missileMats2||(GL.missileMats2={red:new T.MeshLambertMaterial({color:'#e8302a',emissive:'#5a0a0a'}),white:new T.MeshLambertMaterial({color:'#f2f4f7'}),dark:new T.MeshLambertMaterial({color:'#2a2f38'})});
+ const g=new T.Group(),cyl=(r1,r2,h,m,x)=>{const o=new T.Mesh(new T.CylinderGeometry(r1,r2,h,12),m);o.rotation.z=Math.PI/2;o.position.x=x;g.add(o);return o};
+ cyl(1.05,1.05,7.2,M.white,0);cyl(1.08,1.08,1.1,M.red,1.6);cyl(.8,1.05,1,M.dark,-4);
+ const nose=new T.Mesh(new T.ConeGeometry(1.05,2.8,12),M.red);nose.rotation.z=-Math.PI/2;nose.position.x=5;g.add(nose);
+ for(let i=0;i<4;i++){const a=i*Math.PI/2,f=new T.Mesh(new T.BoxGeometry(2.2,.18,1.9),M.red);f.position.set(-2.8,Math.cos(a)*1.5,Math.sin(a)*1.5);f.rotation.x=a+Math.PI/2;g.add(f)}
+ const fl=new T.Sprite(new T.SpriteMaterial({map:fxTex('fire'),transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:'#ffd9a0'}));fl.material.userData.own=true;fl.position.x=-6.2;fl.scale.set(6,3.5,1);g.add(fl);g.userData.flame=fl;return g}
+function bombMesh(){const T=THREE,g=new T.Group(),mat=new T.MeshPhongMaterial({color:'#1c1f26',shininess:80,specular:'#888888',emissive:'#000000'});mat.userData.own=true;
+ const body=new T.Mesh(new T.SphereGeometry(2.5,16,12),mat);g.add(body);const cap=new T.Mesh(new T.CylinderGeometry(.9,.9,.9,10),GL.missileMats2?GL.missileMats2.dark:mat);cap.position.y=2.6;g.add(cap);
+ const fuse=new T.Mesh(new T.CylinderGeometry(.18,.18,1.6,6),new T.MeshLambertMaterial({color:'#c9a46a'}));fuse.material.userData.own=true;fuse.position.set(.3,3.6,0);fuse.rotation.z=-.4;g.add(fuse);g.userData.body=body;return g}
+function torTex(){if(FX.tex.tor)return FX.tex.tor;const c=document.createElement('canvas');c.width=128;c.height=256;const x=c.getContext('2d');
+ for(let i=0;i<90;i++){const y=Math.random()*270,w=24+Math.random()*70,a=.12+Math.random()*.5,x0=Math.random()*128,l=Math.random();x.strokeStyle=`rgba(${(175+l*70)|0},${(165+l*65)|0},${(145+l*60)|0},${a.toFixed(2)})`;x.lineWidth=2+Math.random()*8;
+  for(const ox of [0,-128]){x.beginPath();x.moveTo(x0+ox,y);x.bezierCurveTo(x0+ox+w*.3,y-6,x0+ox+w*.7,y-12,x0+ox+w,y-20);x.stroke()}}
+ const t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;t.repeat.set(3,1);return FX.tex.tor=t}
+function tornadoMesh(){const T=THREE,g=new T.Group(),tex=torTex(),layers=[];
+ for(const [rt,rb,h,op,sp,col] of [[20,3.4,68,.62,4.5,'#cfc5ae'],[15,2.6,64,.72,-7,'#9e927b'],[10,1.8,60,.85,10,'#6e6557']]){
+  const mat=new T.MeshBasicMaterial({map:tex,transparent:true,opacity:op,depthWrite:false,side:T.DoubleSide,color:col});mat.userData.own=true;
+  const m=new T.Mesh(new T.CylinderGeometry(rt,rb,h,24,1,true),mat);m.position.y=h/2;m.userData.sp=sp;g.add(m);layers.push(m)}
+ const deb=[],dm=[new T.MeshLambertMaterial({color:'#7a5a3a'}),new T.MeshLambertMaterial({color:'#4f8f3a'})];dm.forEach(m=>m.userData.own=true);
+ for(let i=0;i<9;i++){const m=new T.Mesh(new T.BoxGeometry(1.4+Math.random()*1.6,.4,1+Math.random()),dm[i%2]);g.add(m);deb.push({m,a:Math.random()*6.283,r:6+Math.random()*10,h:6+Math.random()*44,w:3+Math.random()*3})}
+ g.userData.layers=layers;g.userData.deb=deb;return g}
+function itemMeshDispose(o){o.traverse(n=>{if(n.geometry&&n.geometry!==GL.oilGeo)n.geometry.dispose();if(n.material&&n.material.userData&&n.material.userData.own)n.material.dispose()})}
+/* ---------- logika item ---------- */
+function hitRacer(t,kind,owner){if(!t||!t.alive||t.finished)return;
+ if((t.wingT||0)>0){if(t===player&&performance.now()-(FX.shMsg||0)>700){FX.shMsg=performance.now();setToast('KEBAL!','SAYAP MELINDUNGI')}sndShield(t===player?.8:fxDist(t.s)*.6);return}
+ if((t.shieldT||0)>0){t._shPing=.35;if(t===player){if(performance.now()-(FX.shMsg||0)>700){FX.shMsg=performance.now();setToast('DIBLOKIR PERISAI!','SERANGAN TERTAHAN')}}else if(owner===player&&kind!=='waktu')setToast('TARGET PAKAI PERISAI','');sndShield(t===player?1:fxDist(t.s));return}
+ if(kind==='rudal'){t.fall=1.35;t.v*=.1;t.crashCooldown=.6}
+ else if(kind==='bom'){t.fall=1.45;t.v*=.08;t.crashCooldown=.6}
+ else if(kind==='tornado'){t.fall=1.7;t.v*=.06;t.spinT=1.5;t.crashCooldown=.8}
+ else if(kind==='listrik'){t.fall=.95;t.v*=.2;t.zapT=1.1}
+ else if(kind==='oli'){t.fall=.9;t.v*=.2;t.spinT=.9}
+ else if(kind==='waktu'){t.slowT=3.5;t.timeT=3.5;t._wob=3.5}
+ else if(kind==='sayap'){t._wob=Math.max(t._wob||0,1.4);t.v*=.8}
+ const L={rudal:'RUDAL',bom:'BOM',tornado:'TORNADO',listrik:'LISTRIK',oli:'OLI',waktu:'LEMPAR WAKTU',sayap:'SAYAP'};
+ if(t===player){if(kind!=='waktu'&&kind!=='sayap'){steerValue=0;steer=0;updateSteerUI()}const m={rudal:'KENA RUDAL!',bom:'KENA BOM!',tornado:'DISAPU TORNADO!',listrik:'KESETRUM!',oli:'TERGELINCIR OLI!',waktu:'WAKTU DILEMPAR!',sayap:'DISENGGOL SAYAP!'}[kind];setToast(m,kind==='waktu'?'OLENG & KECEPATAN TURUN':kind==='sayap'?'OLENG!':'SKATER TERJATUH')}
+ else if(owner===player&&kind!=='waktu')setToast('TARGET TERKENA!',L[kind]||'');
+ if(kind==='oli'){sfx('crash');sndSlip(fxDist(t.s))}else if(kind==='sayap')sndWhoosh(t===player||owner===player?1:fxDist(t.s))}
+function useItem(r,isBot){const k=r.item;if(!k||(r.rollT||0)>0)return false;
+ if(k==='rudal'){const t=nearestAhead(r,300);if(!t)return false;missiles.push({owner:r,tgt:t,s:r.s+8,d:r.d,v:MAX_SPEED*1.6,life:5,dead:false,mesh:null});sndLaunch(fxDist(r.s))}
+ else if(k==='bom'){const t=nearestAhead(r,330);if(isBot&&!t)return false;const lead=t?Math.min(330,Math.max(110,(t.s-r.s)+t.v*1.1)):170;bombs.push({owner:r,tgt:t,s0:r.s+4,d0:r.d,s1:r.s+lead,d1:t?t.d:r.d,t:0,T:.85,fuse:.25,st:'fly',dead:false,mesh:null});sndThrow(fxDist(r.s))}
+ else if(k==='tornado'){if(isBot&&!nearestAhead(r,520))return false;tornados.push({owner:r,s:r.s+18,d:r.d,v:MAX_SPEED*1.3,life:6.5,hit:new Set(),dead:false,mesh:null,sndT:1.2});sndTornado(fxDist(r.s),true);FX.shake=Math.max(FX.shake,.5*fxDist(r.s))}
+ else if(k==='listrik'){const c=racers.filter(o=>o!==r&&o.alive&&!o.finished&&Math.abs(o.s-r.s)<420).sort((a,b)=>Math.abs(a.s-r.s)-Math.abs(b.s-r.s)).slice(0,3);if(!c.length)return false;
+  const kk=(r===player||c.includes(player))?1:Math.max(...c.map(o=>fxDist(o.s)));sndThunder(kk);
+  for(const t of c){if(GL.ok){tpos(t.s,t.d,_t);fxBolt(_t.x,elevU(t.s,t.d),_t.y)}hitRacer(t,'listrik',r)}
+  if(kk>.5){FX.flash=Math.max(FX.flash,.7*kk);FX.flashCol='rgba(200,230,255,.9)'}FX.shake=Math.max(FX.shake,.9*kk)}
+ else if(k==='oli'){if(isBot&&!behindNear(r,140))return false;const o={owner:r,s:r.s-9,d:r.d,life:14,age:0,hit:new Set(),dead:false,mesh:null,rot:Math.random()*6.283};oilSpots.push(o);
+  if(GL.ok&&Math.abs(r.s-player.s)<500*MU){tpos(o.s,o.d,_t);const y=elevU(o.s,o.d)+1;for(let i=0;i<14;i++){const a=Math.random()*6.283,v=10+Math.random()*16;fxPart(_t.x,y,_t.y,{tex:'smoke',vx:Math.cos(a)*v,vy:8+Math.random()*12,vz:Math.sin(a)*v,gy:-60,life:.5,size:1.8,grow:.6,op:1,col:'#0a0a0c',drag:.6})}}sndSplat(fxDist(r.s))}
+ else if(k==='waktu'){const vs=racers.filter(o=>o!==r&&o.alive&&!o.finished);if(!vs.length)return false;for(const o of vs)hitRacer(o,'waktu',r);
+  if(r===player){FX.vertT=2.6;setToast('WAKTU DILEMPAR!','SEMUA LAWAN MELAMBAT')}sndTime(r===player||vs.includes(player)?1:fxDist(r.s))}
+ else if(k==='nitro')r.boostT=2.2;
+ else if(k==='perisai'){r.shieldT=3;sndShield(fxDist(r.s)*.8)}
+ else if(k==='sayap'){r.wingT=5;r.wingHit=new Map();r.slowT=0;r.timeT=0;r._wob=0;r.spinT=0;sndWings(fxDist(r.s));if(r===player)setToast('SAYAP MALAIKAT!','KEBAL 5 DETIK • LARI OTOMATIS 70 KM/J')}
+ r.item=null;r.itemUseAt=0;return true}
+function useAttack(){if(!ITEMS_ON||state!=='race'||!player||!player.alive||player.fall>0||!player.item)return;if((player.rollT||0)>0)return;
+ if(!useItem(player,false))setToast('TIDAK ADA TARGET','ITEM TETAP DISIMPAN');else setToast('ITEM DIPAKAI!','');updateAtk()}
+function itemsStep(dt){
+ const P=TRACK.perimeter,cd=TRACK.route?(a,b)=>Math.abs(a-b):(a,b)=>{const x=Math.abs(a-b)%P;return Math.min(x,P-x)},HW=TRACK.width/2;
+ for(const b of itemBoxes)if(b.cool>0)b.cool-=dt;
+ for(const r of racers){
+  if(!r.alive||r.finished)continue;
+  r.shieldT=Math.max(0,(r.shieldT||0)-dt);r.boostT=Math.max(0,(r.boostT||0)-dt);r.slowT=Math.max(0,(r.slowT||0)-dt);r.padCd=Math.max(0,(r.padCd||0)-dt);r.spinT=Math.max(0,(r.spinT||0)-dt);r.zapT=Math.max(0,(r.zapT||0)-dt);r.timeT=Math.max(0,(r.timeT||0)-dt);r._shPing=Math.max(0,(r._shPing||0)-dt);r.wingT=Math.max(0,(r.wingT||0)-dt);
+  if(r.rollT>0){r.rollT-=dt;if(r===player){r.rollTick-=dt;if(r.rollT<=0){FX.rollIcon=ITEM_DEF[r.item].icon;setToast('ITEM DIDAPAT',ITEM_DEF[r.item].label+' • TEKAN ITEM');sndItemGet();updateAtk();const b=$('atk');if(b){b.classList.remove('got');void b.offsetWidth;b.classList.add('got')}}
+   else if(r.rollTick<=0){r.rollTick=.045+(1.3-r.rollT)*.11;const ks=Object.keys(ITEM_DEF);let ic;do{ic=ITEM_DEF[ks[(Math.random()*ks.length)|0]].icon}while(ic===FX.rollIcon);FX.rollIcon=ic;sndTick();updateAtk()}}}
+  if(r.fall>0)continue;
+  if(r.boostT>0){r.v=Math.min(r.v+50*dt,MAX_SPEED*1.2);if(r===player)smoothSpeedCap=Math.max(smoothSpeedCap,MAX_SPEED*1.2)}
+  if(r.slowT>0)r.v=Math.min(r.v,MAX_SPEED*.55);
+  if(r.wingT>0){r.v=WING_V();if(r===player)smoothSpeedCap=Math.max(smoothSpeedCap,r.v);
+   for(const o of racers){if(o===r||!o.alive||o.finished||o.fall>0)continue;if(cd(r.s,o.s)<15&&Math.abs(r.d-o.d)<13){const last=r.wingHit.get(o)||-9;if(elapsed-last<1.2)continue;r.wingHit.set(o,elapsed);if(!((o.shieldT||0)>0))o.d+=(o.d>=r.d?1:-1)*7;hitRacer(o,'sayap',r)}}}
+  if(!r.item)for(const b of itemBoxes){if(b.cool>0)continue;if(cd(r.s,b.s)<14&&Math.abs(r.d-b.d)<12){b.cool=1;r.item=pickItemFor(r);
+    if(r===player){r.rollT=1.3;r.rollTick=0;FX.rollIcon='❓';setToast('KOTAK ITEM!','MENGACAK...')}else r.itemUseAt=elapsed+1.2+Math.random()*2.2;
+    if(GL.ok&&cd(b.s,player.s)<500){tpos(b.s,b.d,_t);const y=elevU(b.s,b.d)+6;for(let i=0;i<12;i++){const a=Math.random()*6.283;fxPart(_t.x,y,_t.y,{tex:'spark',add:true,vx:Math.cos(a)*22,vy:8+Math.random()*20,vz:Math.sin(a)*22,gy:-30,life:.6,size:2.4,col:'#ffe27a'})}}
+    sfx('ui');break}}
+  if(r.padCd<=0)for(const p of turboPads){if(cd(r.s,p.s)<14&&Math.abs(r.d-p.d)<12){r.boostT=Math.max(r.boostT,1.3);r.padCd=1.5;if(r===player)setToast('LANTAI TURBO!','');sfx('go');break}}
+ }
+attackWarn(dt);
+ for(const r of racers){if(!r.ai||!r.item||!r.alive||r.finished||r.fall>0||(r.rollT||0)>0)continue;if(elapsed<(r.itemUseAt||0))continue;useItem(r,true)}
+ // rudal
+ for(const m of missiles){m.life-=dt;const t=m.tgt;if(m.life<=0||!t||!t.alive||t.finished){m.dead=true;if(m.life<=0&&GL.ok){tpos(m.s,m.d,_t);fxExplode(_t.x,elevU(m.s,m.d)+2,_t.y,.7,m.s)}continue}
+  m.s+=m.v*dt;m.d+=Math.max(-70*dt,Math.min(70*dt,t.d-m.d));
+  if(cd(m.s,t.s)<12&&Math.abs(m.d-t.d)<10){m.dead=true;tpos(t.s,t.d,_t);fxExplode(_t.x,elevU(t.s,t.d)+2,_t.y,1,t.s);hitRacer(t,'rudal',m.owner)}}
+ // bom: dilempar melengkung ke depan, mendarat, lalu meledak
+ for(const b of bombs){b.t+=dt;if(b.st==='fly'){const g=b.tgt;if(g&&g.alive&&!g.finished){b.s1+=Math.max(-160*dt,Math.min(160*dt,g.s+g.v*(b.T-b.t+b.fuse)-b.s1));b.d1+=Math.max(-60*dt,Math.min(60*dt,g.d-b.d1))}if(b.t>=b.T){b.st='fuse';b.t=0}}
+  else if(b.t>=b.fuse){b.dead=true;tpos(b.s1,b.d1,_t);fxExplode(_t.x,elevU(b.s1,b.d1),_t.y,1.35,b.s1);
+   for(const r of racers){if(!r.alive||r.finished||r.fall>0)continue;if(cd(r.s,b.s1)<24&&Math.abs(r.d-b.d1)<21)hitRacer(r,'bom',b.owner)}}}
+ // tornado: melaju ke depan, mengejar pembalap terdekat di depannya
+ for(const tn of tornados){tn.life-=dt;tn.s+=tn.v*dt;let tg=null;for(const o of racers){if(o===tn.owner||!o.alive||o.finished)continue;const g=o.s-tn.s;if(g>-5&&g<300&&(!tg||g<tg.s-tn.s))tg=o}
+  if(tg)tn.d+=Math.max(-32*dt,Math.min(32*dt,tg.d-tn.d));tn.d=Math.max(-HW+6,Math.min(HW-6,tn.d));
+  for(const r of racers){if(r===tn.owner||!r.alive||r.finished||tn.hit.has(r))continue;if(cd(r.s,tn.s)<15&&Math.abs(r.d-tn.d)<15){tn.hit.add(r);hitRacer(r,'tornado',tn.owner);if(r===player)FX.shake=Math.max(FX.shake,1.2)}}
+  tn.sndT-=dt;if(tn.sndT<=0){tn.sndT=1.25;sndTornado(fxDist(tn.s)*.9,false)}
+  if(tn.life<=0||(TRACK.route&&tn.s>mS(MARA_LEN+80)))tn.dead=true}
+ for(const o of oilSpots){o.life-=dt;if(o.life<=0){o.dead=true;continue}
+  for(const r of racers){if(r===o.owner||!r.alive||r.finished||r.fall>0||o.hit.has(r))continue;if(cd(r.s,o.s)<9&&Math.abs(r.d-o.d)<9){o.hit.add(r);hitRacer(r,'oli',o.owner)}}}
+ for(const o of [...missiles,...bombs,...tornados])if(o.dead&&o.mesh&&GL.itemG){GL.itemG.remove(o.mesh);itemMeshDispose(o.mesh);o.mesh=null}
+ for(const o of oilSpots)if(o.dead&&o.mesh&&GL.itemG){GL.itemG.remove(o.mesh);o.mesh=null}
+ missiles=missiles.filter(m=>!m.dead);oilSpots=oilSpots.filter(o=>!o.dead);bombs=bombs.filter(b=>!b.dead);tornados=tornados.filter(t=>!t.dead);
+}
+function itemsRender(){const now=performance.now(),dt=Math.min(.05,Math.max(0,(now-(FX.last||now))/1000));FX.last=now;fxUpdate(dt);
+ if(!GL.ok||!ITEMS_ON||!GL.itemG)return;const T=THREE,t=GL.t||0;
+ for(let i=0;i<itemBoxes.length;i++){const b=itemBoxes[i];if(!b.mesh)continue;tpos(b.s,b.d,_t);b.mesh.position.set(_t.x,elevU(b.s,b.d)+6.4+Math.sin(t*3+i)*.5,_t.y);b.mesh.rotation.set(0,t*1.6+i,0);b.mesh.visible=b.cool<=0}
+ for(const p of turboPads){if(!p.mesh)continue;tpos(p.s,p.d,_t);p.mesh.position.set(_t.x,elevU(p.s,p.d)+.45,_t.y);p.mesh.rotation.y=-_t.h}
+ if(!GL.oilGeo){GL.oilGeo=new T.PlaneGeometry(18,18);GL.oilGeo.rotateX(-Math.PI/2);GL.oilMat=new T.MeshBasicMaterial({map:oilTex(),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-6})}
+ for(const o of oilSpots){if(!o.mesh){o.mesh=new T.Mesh(GL.oilGeo,GL.oilMat);GL.itemG.add(o.mesh)}o.age=(o.age||0)+dt;tpos(o.s,o.d,_t);o.mesh.position.set(_t.x,elevU(o.s,o.d)+.35,_t.y);o.mesh.rotation.y=o.rot||0;
+  const sc=Math.min(1,o.age/.28)*(o.life<.6?Math.max(.01,o.life/.6):1);o.mesh.scale.set(Math.max(.01,sc),1,Math.max(.01,sc))}
+ if(GL.models)for(const r of racers){const m=GL.models.get(r);if(m)racerFx(r,m,t,dt)}
+ for(const m of missiles){if(!m.mesh){m.mesh=missileMesh2();GL.itemG.add(m.mesh)}tpos(m.s,m.d,_t);const y=elevU(m.s,m.d)+3.8;m.mesh.position.set(_t.x,y,_t.y);m.mesh.rotation.set(Math.sin(t*20)*.08,-_t.h,0);
+  m.mesh.userData.flame.scale.set(6+Math.random()*3,3.2+Math.random()*1.5,1);
+  tpos(m.s-8,m.d,_t);fxPart(_t.x,y,_t.y,{tex:'smoke',vx:(Math.random()-.5)*5,vy:2+Math.random()*3,vz:(Math.random()-.5)*5,life:1.2,size:3.2,grow:3.4,op:.6,col:'#dcdcdc',drag:1});
+  fxPart(_t.x,y,_t.y,{tex:'fire',add:true,life:.16,size:4,grow:.4,drag:0})}
+ for(const b of bombs){if(!b.mesh){b.mesh=bombMesh();GL.itemG.add(b.mesh)}let s,d,h;
+  if(b.st==='fly'){const f=Math.min(1,b.t/b.T);s=b.s0+(b.s1-b.s0)*f;d=b.d0+(b.d1-b.d0)*f;h=2.5+Math.sin(f*Math.PI)*26}else{s=b.s1;d=b.d1;h=2.5+Math.abs(Math.sin(b.t*16))*1.4*(1-b.t/b.fuse)}
+  tpos(s,d,_t);const y=elevU(s,d)+h;b.mesh.position.set(_t.x,y,_t.y);if(b.st==='fly'){b.mesh.rotation.x+=.25;b.mesh.rotation.z+=.17}
+  b.mesh.userData.body.material.emissive.set(b.st==='fuse'&&Math.sin(b.t*45)>0?'#ff2200':'#000000');
+  fxPart(_t.x,y+3.4,_t.y,{tex:'spark',add:true,vx:(Math.random()-.5)*12,vy:6+Math.random()*8,vz:(Math.random()-.5)*12,gy:-20,life:.25,size:2,col:'#ffcc55',drag:.5})}
+ for(const tn of tornados){if(!tn.mesh){tn.mesh=tornadoMesh();GL.itemG.add(tn.mesh)}tpos(tn.s,tn.d,_t);const y=elevU(tn.s,tn.d),u=tn.mesh.userData;tn.mesh.position.set(_t.x,y,_t.y);
+  u.layers.forEach((L,i)=>{L.rotation.y+=L.userData.sp*dt;L.position.x=Math.sin(t*2.3+i)*1.8;L.position.z=Math.cos(t*1.9+i*2)*1.8;L.rotation.z=Math.sin(t*1.3+i)*.05});
+  const gr=Math.min(1,(6.5-tn.life)/.45)*Math.min(1,tn.life/.6);tn.mesh.scale.set(Math.max(.05,gr),Math.max(.05,gr),Math.max(.05,gr));
+  u.deb.forEach(o=>{o.a+=o.w*dt;o.m.position.set(Math.cos(o.a)*o.r*(.5+o.h/90),o.h+Math.sin(t*3+o.a)*3,Math.sin(o.a)*o.r*(.5+o.h/90));o.m.rotation.x+=dt*6;o.m.rotation.y+=dt*4});
+  for(let i=0;i<3;i++){const a=Math.random()*6.283,rr=5+Math.random()*8;fxPart(_t.x+Math.cos(a)*rr,y+1.5,_t.y+Math.sin(a)*rr,{tex:'dust',vx:-Math.sin(a)*26+Math.cos(a)*6,vy:5+Math.random()*12,vz:Math.cos(a)*26+Math.sin(a)*6,life:.9,size:6,grow:2.6,op:.75,drag:1.3})}}
+ for(const r of racers){if(!(r.zapT>0)||!r.alive)continue;tpos(r.s,r.d,_t);const y=elevU(r.s,r.d)+4+Math.random()*12;fxPart(_t.x+(Math.random()-.5)*7,y,_t.y+(Math.random()-.5)*7,{tex:'spark',add:true,vx:(Math.random()-.5)*30,vy:(Math.random()-.5)*30,vz:(Math.random()-.5)*30,life:.18,size:3,col:'#9fd8ff',drag:0})}
+}
+function updateAtk(){const b=$('atk');if(!b)return;const on=ITEMS_ON&&state==='race';b.style.display=on?'flex':'none';if(!on)return;
+ const rolling=!!(player&&player.alive&&player.rollT>0),it=!rolling&&player&&player.alive&&player.item?ITEM_DEF[player.item]:null;
+ b.classList.toggle('roll',rolling);b.classList.toggle('empty',!rolling&&!it);
+ const h=rolling?'<em>'+FX.rollIcon+'</em>MENGACAK...':it?'<em>'+it.icon+'</em>'+it.label:'<em>⬚</em>ITEM KOSONG';if(b.dataset.h!==h){b.dataset.h=h;b.innerHTML=h}}
+
+/* ---------- item untuk peringkat: pemain terakhir pasti SAYAP, posisi 1-2 tidak pernah ---------- */
+function pickItemFor(r){const act=racers.filter(o=>o.alive&&!o.finished).sort((a,b)=>b.s-a.s),rank=act.indexOf(r)+1;
+ if(act.length>=3&&rank===act.length)return 'sayap';
+ let k='nitro';for(let i=0;i<14;i++){k=pickItem();if(k!=='sayap'||rank>2)break}if(k==='sayap'&&rank<=2)k='nitro';return k}
+/* ---------- peringatan serangan dari belakang ---------- */
+function attackWarn(dt){let el=$('atkWarn');if(!el&&$('stage')){el=document.createElement('div');el.id='atkWarn';$('stage').appendChild(el)}if(!el)return;
+ let best=null,bd=1e9;const P=player;
+ if(P&&P.alive&&!P.finished&&state==='race'){
+  for(const m of missiles)if(m.tgt===P&&m.s<P.s){const d=P.s-m.s;if(d<bd){bd=d;best=['🚀 AWAS ADA RUDAL!',d]}}
+  for(const b of bombs)if(b.tgt===P&&b.owner!==P){const cs=b.st==='fly'?b.s0+(b.s1-b.s0)*Math.min(1,b.t/b.T):b.s1,d=Math.max(0,P.s-cs);if(d<bd||!best){bd=d;best=['💣 AWAS ADA BOM!',d]}}
+  for(const tn of tornados)if(tn.owner!==P&&tn.s<P.s&&P.s-tn.s<480&&!tn.hit.has(P)){const d=P.s-tn.s;if(d<bd){bd=d;best=['🌪️ AWAS TORNADO!',d]}}
+  for(const o of racers)if(o!==P&&o.wingT>0&&o.s<P.s&&P.s-o.s<260){const d=P.s-o.s;if(d<bd){bd=d;best=['👼 AWAS SAYAP!',d]}}}
+ if(!best){if(el.style.display!=='none')el.style.display='none';FX.beepT=0;return}
+ const h=best[0]+'<small>'+Math.round(best[1]/MU)+' m DI BELAKANG • '+((P.shieldT||0)>0?'PERISAI AKTIF':'MENGHINDAR!')+'</small>';
+ if(el._h!==h){el._h=h;el.innerHTML=h}if(el.style.display!=='block')el.style.display='block';
+ FX.beepT=(FX.beepT||0)-dt;if(FX.beepT<=0){FX.beepT=Math.max(.14,Math.min(.6,bd/600));sndBeep()}}
+/* ---------- suara tambahan ---------- */
+function sndBeep(){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;voice('square',1480,t,.06,.08,'sfx',{lp:4000});voice('square',1180,t+.08,.06,.07,'sfx',{lp:4000})}catch(e){}}
+function sndShield(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;voice('sine',520,t,.4,.16*k,'sfx',{to:1300,glide:.3,rev:true});voice('triangle',1040,t+.05,.35,.07*k,'sfx',{to:1800});noise(t,.25,.08*k,'sfx',{type:'highpass',f:4200})}catch(e){}}
+function sndSlip(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;noise(t,.6,.24*k,'sfx',{f:2600,fTo:700,q:2});voice('sine',300,t,.5,.12*k,'sfx',{to:90})}catch(e){}}
+function sndSplat(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;noise(t,.32,.32*k,'sfx',{type:'lowpass',f:900,fTo:180});voice('sine',190,t,.22,.26*k,'sfx',{to:55});noise(t+.03,.12,.14*k,'sfx',{f:1500,q:2})}catch(e){}}
+function sndTime(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;voice('sine',1250,t,1.7,.22*k,'sfx',{to:85,glide:1.5,rev:true});voice('sawtooth',115,t,1.6,.12*k,'sfx',{to:52,lp:650});noise(t,.45,.24*k,'sfx',{f:300,fTo:2400,q:1.2,a:.3});
+ let q=t;for(let i=0;i<11;i++){noise(q,.025,.16*k,'sfx',{type:'highpass',f:4800});q+=.09*(1+i*.12)}}catch(e){}}
+function sndWings(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;[523,659,784,1047,1319,1568].forEach((f,i)=>voice('triangle',f,t+i*.06,.6,.09*k,'sfx',{rev:true}));noise(t,.6,.18*k,'sfx',{f:700,fTo:2600,q:1.2})}catch(e){}}
+function sndWhoosh(k){if(!sndOk())return;try{aFx();const t=audioCtx.currentTime+.005;noise(t,.35,.26*k,'sfx',{f:600,fTo:2300,q:1.5});voice('sine',420,t,.25,.1*k,'sfx',{to:150})}catch(e){}}
+/* ---------- oli hitam mengkilap ---------- */
+function oilTex(){if(FX.tex.oil)return FX.tex.oil;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#06070a';
+ for(let i=0;i<9;i++){const a=Math.random()*6.283,r=Math.random()*20,rr=17+Math.random()*18;x.beginPath();x.ellipse(64+Math.cos(a)*r,64+Math.sin(a)*r,rr,rr*(.7+Math.random()*.3),Math.random()*3,0,6.283);x.fill()}
+ for(let i=0;i<12;i++){const a=Math.random()*6.283,r=42+Math.random()*16;x.beginPath();x.arc(64+Math.cos(a)*r,64+Math.sin(a)*r,1.5+Math.random()*4.5,0,6.283);x.fill()}
+ x.globalCompositeOperation='source-atop';const g=x.createLinearGradient(14,24,114,104);['rgba(255,0,140,0)','rgba(130,60,255,.25)','rgba(0,200,255,.2)','rgba(80,255,130,.15)','rgba(255,220,0,.18)','rgba(255,0,140,0)'].forEach((cc,i,a)=>g.addColorStop(i/(a.length-1),cc));x.fillStyle=g;x.fillRect(0,0,128,128);
+ for(const [hx,hy,hr,ha] of [[46,44,24,.6],[80,76,12,.35],[62,90,7,.3]]){const h=x.createRadialGradient(hx,hy,0,hx,hy,hr);h.addColorStop(0,'rgba(255,255,255,'+ha+')');h.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=h;x.fillRect(0,0,128,128)}
+ return FX.tex.oil=new THREE.CanvasTexture(c)}
+/* ---------- efek yang menempel di pembalap: perisai, aura waktu, sayap + lingkaran kepala ---------- */
+const FXA={shY:12,shR:17,wx:-2,wy:4,hy:13.5,ty:12,ws:1.55};
+function fxAtt(){if(FX.att)return FX.att;const T=THREE,A={};
+ A.ball=new T.SphereGeometry(1,28,18);A.ico=new T.IcosahedronGeometry(1,2);
+ A.shIn=new T.MeshBasicMaterial({color:'#4fd2ff',transparent:true,opacity:.3,blending:T.AdditiveBlending,depthWrite:false,side:T.BackSide});
+ A.shOut=new T.MeshBasicMaterial({color:'#7fe3ff',transparent:true,opacity:.2,blending:T.AdditiveBlending,depthWrite:false,wireframe:true});A.ico=new T.IcosahedronGeometry(1,1);
+ A.tmIn=new T.MeshBasicMaterial({color:'#5b2bff',transparent:true,opacity:.32,blending:T.AdditiveBlending,depthWrite:false,side:T.BackSide});
+ const sh=new T.Shape();sh.moveTo(0,0);sh.bezierCurveTo(2,3.5,6,6.5,10.5,7.2);sh.bezierCurveTo(9.4,5.8,9.8,4.8,10.8,4.2);sh.bezierCurveTo(9.3,3.6,9.2,2.8,9.9,2.1);sh.bezierCurveTo(8.3,1.7,7.8,.9,8.2,0);sh.bezierCurveTo(5.5,.4,3,-.6,0,0);A.wing=new T.ShapeGeometry(sh,10);
+ A.wingM=new T.MeshLambertMaterial({color:'#ffffff',emissive:'#fff1c4',emissiveIntensity:.5,side:T.DoubleSide});A.wingM2=new T.MeshLambertMaterial({color:'#f3f7ff',emissive:'#dfe9ff',emissiveIntensity:.4,side:T.DoubleSide});
+ A.halo=new T.TorusGeometry(2.7,.4,8,30);A.halo.rotateX(Math.PI/2);A.haloM=new T.MeshBasicMaterial({color:'#ffd84a'});
+ A.glow=new T.SpriteMaterial({map:fxTex('fire'),color:'#ffe7a0',transparent:true,depthWrite:false,blending:T.AdditiveBlending});
+ const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),g=x.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(140,90,255,.9)');g.addColorStop(1,'rgba(80,0,200,0)');x.fillStyle=g;x.fillRect(0,0,128,128);x.font='72px system-ui,"Apple Color Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('⏱️',64,68);
+ A.clock=new T.SpriteMaterial({map:new T.CanvasTexture(c),transparent:true,depthWrite:false});
+ return FX.att=A}
+function racerFx(r,m,t,dt){const A=fxAtt(),T=THREE;let a=r._att;if(!a||a.m!==m)a=r._att={m};
+ const sOn=(r.shieldT||0)>0;
+ if(sOn&&!a.sh){const g=new T.Group();g.add(new T.Mesh(A.ball,A.shIn));const o=new T.Mesh(A.ico,A.shOut);g.add(o);g.userData.o=o;g.position.y=FXA.shY;m.g.add(g);a.sh=g;a.shT0=r.shieldT}
+ if(a.sh){a.sh.visible=sOn&&!(r.shieldT<.6&&Math.sin(t*32)>0);if(sOn){const pop=Math.min(1,(a.shT0-r.shieldT)/.18+.15);a.sh.scale.setScalar(FXA.shR*pop*(1+(r._shPing||0)*.45));a.sh.userData.o.rotation.y+=dt*.9;a.sh.userData.o.rotation.x+=dt*.5}else a.shT0=3}
+ const tOn=(r.timeT||0)>0;
+ if(tOn&&!a.tm){const g=new T.Group();const au=new T.Mesh(A.ball,A.tmIn);au.scale.setScalar(13);g.add(au);const ck=new T.Sprite(A.clock);ck.scale.set(7,7,1);ck.position.y=FXA.ty+4;g.add(ck);g.userData.ck=ck;g.userData.au=au;g.position.y=FXA.shY;m.g.add(g);a.tm=g}
+ if(a.tm){a.tm.visible=tOn;if(tOn){a.tm.userData.au.scale.setScalar(13*(1+Math.sin(t*7)*.06));a.tm.userData.ck.material.rotation=Math.sin(t*5)*.4;a.tm.userData.ck.position.y=FXA.ty+4+Math.sin(t*4)*.6;
+   if(Math.random()<.35){tpos(r.s,r.d,_t);fxPart(_t.x+(Math.random()-.5)*8,elevU(r.s,r.d)+4+Math.random()*12,_t.y+(Math.random()-.5)*8,{tex:'spark',add:true,vy:6+Math.random()*6,life:.6,size:2.2,col:'#8a5cff',drag:1})}}}
+ const wOn=(r.wingT||0)>0;
+ if(wOn&&!a.w){const g=new T.Group(),L=[];for(const sd of [1,-1]){const p=new T.Group();p.add(new T.Mesh(A.wing,A.wingM));const w2=new T.Mesh(A.wing,A.wingM2);w2.scale.setScalar(.7);w2.position.set(.5,-.8,.2*sd);p.add(w2);p.userData.sd=sd;g.add(p);L.push(p)}
+  g.userData.L=L;g.scale.setScalar(FXA.ws);g.position.set(FXA.wx,FXA.wy,0);(m.torso||m.g).add(g);a.w=g;
+  const h=new T.Group();h.add(new T.Mesh(A.halo,A.haloM));const gl=new T.Sprite(A.glow);gl.scale.set(10,4.5,1);h.add(gl);h.position.y=FXA.hy;(m.head||m.g).add(h);a.h=h}
+ if(a.w){const vis=wOn&&!(r.wingT<.7&&Math.sin(t*28)>0);a.w.visible=a.h.visible=vis;
+  if(wOn){const f=.3+Math.sin(t*15+(r.id||0))*.5;a.w.userData.L.forEach(p=>{p.rotation.y=p.userData.sd>0?-Math.PI/2-f:Math.PI/2+f});a.h.rotation.y+=dt*2.2;a.h.position.y=FXA.hy+Math.sin(t*4)*.35;
+   tpos(r.s-4,r.d,_t);fxPart(_t.x+(Math.random()-.5)*6,elevU(r.s,r.d)+6+Math.random()*8,_t.y+(Math.random()-.5)*6,{tex:'spark',add:true,vy:2+Math.random()*4,life:.7,size:2.2,col:'#ffe58a',drag:1})}}}
+
+function WING_V(){return 70/3.6*(TRACK.perimeter/LAP_METERS)}
+
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
 </script></body></html>
