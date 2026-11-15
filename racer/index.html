@@ -3743,9 +3743,8 @@ setInterval(()=>{if(!fsOn()){const w=document.querySelector('.tapWrap');if(w&&w.
 /* ===== DAFTAR WAKTU TERBAIK: tap nama → pop up (profil, chat, tambah teman, ajak main) ===== */
 bestPlayerTap=async function(name){
  audioReady();name=cleanTxt(name,16);if(!name)return;
- if(!acct){menuToast('Login dulu untuk melihat profil pemain.');onlineMenu();return}
  closeModalById('friendActionModal');
- const own=name.toLowerCase()===String(acct.name).toLowerCase();
+ const own=!!acct&&name.toLowerCase()===String(acct.name).toLowerCase();
  const wrap=document.createElement('div');wrap.id='friendActionModal';
  wrap.style.cssText='position:fixed;inset:0;z-index:10025;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px';
  wrap.innerHTML=`<div style="width:min(340px,100%);background:linear-gradient(180deg,rgba(22,66,150,.97),rgba(10,36,98,.98));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:14px;box-shadow:0 12px 40px #0008;display:flex;flex-direction:column;gap:9px">
@@ -3756,6 +3755,7 @@ bestPlayerTap=async function(name){
  wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove()});
  wrap.querySelectorAll('[data-fa]').forEach(b=>b.onclick=async()=>{const a=b.dataset.fa;audioReady();
   if(a==='close'){wrap.remove();return}
+  if(!acct){wrap.remove();menuToast('Login dulu untuk '+(a==='profil'?'melihat profil':a==='chat'?'chat':a==='teman'?'menambah teman':'mengajak main')+'.');onlineMenu();return}
   if(a==='profil'){wrap.remove();profileBackTarget=()=>menuBest200();viewPlayerProfile(name);return}
   if(a==='chat'){wrap.remove();openDirectChat(name);return}
   if(a==='main'){wrap.remove();inviteFriend(name);return}
@@ -3768,7 +3768,7 @@ bestPlayerTap=async function(name){
   const st=$('faSt');if(st&&!own)st.innerHTML=on?'<span class="presenceDot online"></span> Online':'<span class="presenceDot"></span> Sedang offline';
   const iv=$('faInvite');if(iv)iv.style.display=on?'':'none'})();
  (async()=>{try{const r=await rpc('skate_get_profiles',{p_names:[name]});const p=r&&r.ok&&(r.list||r.rows||[])[0];const av=p&&(p.avatar||p.av);if(av&&$('faAv'))$('faAv').innerHTML=avHTML(av,52,name)}catch(e){}})();
- if(!own)(async()=>{try{const f=await loadFollowingNames();const b=$('faFollow');if(b&&f.has(name.toLowerCase())){b.disabled=true;b.textContent='✓ SUDAH BERTEMAN'}}catch(e){}})();
+ if(!own&&acct)(async()=>{try{const f=await loadFollowingNames();const b=$('faFollow');if(b&&f.has(name.toLowerCase())){b.disabled=true;b.textContent='✓ SUDAH BERTEMAN'}}catch(e){}})();
 };
 
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
