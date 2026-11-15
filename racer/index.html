@@ -4133,7 +4133,7 @@ function tsSplitTeams(humans,go,size,NT){NT=NT||2;const pref=new Map((go.parts||
 
 /* ===== RELAY ONLINE: komputer dikendalikan oleh manusia yang mendorongnya + kamera pagar ===== */
 const RC={me0:null};
-const rcOn=()=>online&&spec().team&&spec().relay;
+const rcOn=()=>online&&spec().team;
 /* sesudah tsInitOnline: ingat pelari milik sendiri, kosongkan kendali */
 {const _ti=tsInitOnline;tsInitOnline=function(go){_ti(go);RC.me0=player;for(const r of racers){r.ctl=null;r._ctlMiss=0}try{if(olRoom)olRoom.presence({cr:null})}catch(e){}}}
 /* komputer yang dikendalikan manusia tidak lagi diputuskan oleh AI */
@@ -4148,7 +4148,7 @@ const rcAI=r=>!!r&&r.bot&&!r.ctl;
  rcSync(true)}}
 /* pemain yang dikendalikan HP ini */
 function rcSync(announce){if(!rcOn()||!RC.me0)return;const me=myPeer();
- const mine=racers.find(r=>r.bot&&r.ctl===me&&!r.finished&&(r.tsHold==null||r.tsHold==='glide'));
+ const mine=racers.find(r=>r.bot&&r.ctl===me&&!r.finished&&r.tsHold==null);
  const want=mine||RC.me0;
  if(player!==want){const prev=player;player=want;
   if(mine){energy=100;energyZone='g';smoothSpeedCap=Math.max(MAX_SPEED,mine.v);lastTapAt=0;mine.lastTap=-9;mine.ai=false;steerValue=Math.max(-1,Math.min(1,mine.d/(TRACK.width/2+5)));steer=0;try{updateSteerUI();updateEnergyUI()}catch(e){}
@@ -4162,6 +4162,7 @@ function rcApplyCtl(r,ps,dt){const me=myPeer();if(r.ctl===me){r.remote=false;ret
  if(!pe){r._ctlMiss=r._ctlMiss||Date.now();if(Date.now()-r._ctlMiss>3000){r.ctl=null;r._ctlMiss=0;r.ai=true}return}
  r._ctlMiss=0;const q=pe.presence||{};
  if(q.cr===rKey(r)&&typeof q.s==='number'&&typeof q.d==='number')applyRemote(r,q.s,q.d,typeof q.v==='number'?q.v:0,q.f,pe.updatedAt,dt);
+ else if(Array.isArray(q.gb)&&q.gb[0]===rKey(r))applyRemote(r,q.gb[1],q.gb[2],q.gb[3],0,pe.updatedAt,dt);
  if(typeof q.fn==='number'&&!r.finished&&r.tsHold==null){r.finished=true;r.finishTime=q.fn}}
 /* pelari manusia yang sedang mengendalikan komputer: posisi aslinya disimulasikan pasif di HP lain */
 function rcPassive(r,dt){const T=TM.teams[r.tsTeam];if(!T)return;const k=tsK();
@@ -4190,6 +4191,16 @@ function tsFenceCamOff(){if(GL&&GL._fc)GL._fc.on=0}
  const on=spec().team&&state==='race'&&T&&!T.dq&&player.tsHold==='fence'&&tsRecv(T)===player&&tsAct(T)!==player;
  if(on){const a=tsAct(T),g=Math.max(0,(a.s-player.s)/tsK());const h='👀 '+escapeHTML(String(a.name).replace(' (PC)',''))+' DATANG • '+Math.abs(g).toFixed(0)+' m<small>GILIRANMU BERIKUTNYA • TEKAN TURUN SAAT REKAN DEKAT</small>';el.style.display='block';if(el._h!==h){el._h=h;el.innerHTML=h}}
  else if(player&&player.ctl&&state==='race'){const h='🎮 KAMU MENGENDALIKAN '+escapeHTML(String(player.name).replace(' (PC)','').toUpperCase())+'<small>REKAN KOMPUTER • BAWA KE ZONA DORONG</small>';el.style.display='block';if(el._h!==h){el._h=h;el.innerHTML=h}}}}
+
+/* Saat manusia menyuruh rekan KOMPUTER turun, luncuran komputer itu dijalankan di HP si pendorong
+   (bukan di HP host). Jadi jarak dorong & tabrakan dihitung dari posisi yang sama dengan yang dilihat pendorong,
+   tidak lagi terlambat karena jaringan. */
+{const _tu=tsTurunApply;tsTurunApply=function(T){const out=tsAct(T),nx=tsRecv(T);_tu(T);
+ if(!rcOn()||!nx||!nx.bot||nx.tsHold!=='glide')return;const P=out.ctl||(!out.bot?out.peer:null);if(P){nx.ctl=P;nx._ctlMiss=0}}}
+const RCG={t:0,last:null};
+{const _u=update;update=function(dt){_u(dt);if(!rcOn()||!olRoom)return;RCG.t+=dt;if(RCG.t<.08)return;RCG.t=0;const me=myPeer();
+ const g=racers.find(r=>r.bot&&r.ctl===me&&r.tsHold==='glide');const v=g?[rKey(g),+g.s.toFixed(1),+g.d.toFixed(1),Math.round(g.v)]:null;
+ const k=JSON.stringify(v);if(k!==RCG.last||v){RCG.last=k;try{olRoom.presence({gb:v})}catch(e){}}}}
 
 /* ====== KEJAR-KEJARAN: KUCING & ANJING (mode dalam shadow DOM) ====== */
 const TAGX={on:false,api:null};
