@@ -2,6 +2,7 @@
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Skinsuit 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Audiowide&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Cinzel:wght@700&family=Dancing+Script:wght@700&family=Great+Vibes&family=Lobster&family=Montserrat:wght@800&family=Orbitron:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Racing+Sans+One&family=Russo+One&family=Staatliches&family=Teko:wght@600&display=swap">
 <style>
 :root{--ac:#e8701a;--tx:#1b1b1f;--mu:#6b6b73;--pn:#ffffffee;--bd:#0000001a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -34,7 +35,7 @@ select.chip{appearance:none;-webkit-appearance:none;padding-right:26px;backgroun
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .row .chip{height:38px;box-shadow:none;background:#f4f3f6;border-color:transparent}
 .row .chip.on{background:var(--ac);color:#fff}
-.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.btns{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
 .btns button,.tools button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border:0;border-radius:12px;background:#f4f3f6;font:12px/1.2 inherit;color:inherit;cursor:pointer}
 .btns svg,.tools svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .btns button:disabled{opacity:.4}
@@ -63,6 +64,26 @@ textarea#ptx[hidden]{display:none}
 .mact{display:flex;gap:8px;justify-content:flex-end}
 .mact button{height:36px;padding:0 14px;border-radius:18px;border:0;background:#f1f0f3;font:500 13px system-ui,sans-serif;cursor:pointer}
 .mact button.pri{background:var(--ac);color:#fff}
+.seg{display:flex;gap:4px;padding:3px;background:#f1f0f3;border-radius:12px;margin:6px 0}.seg[hidden]{display:none}.seg button{flex:1;height:30px;border:0;border-radius:9px;background:none;font:500 13px system-ui,sans-serif;cursor:pointer}.seg button.on{background:#fff;box-shadow:0 1px 4px #0002}
+#txp{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px;padding:10px;border-radius:12px;background:#f7f6f9}#txp[hidden]{display:none}
+#tin{height:38px;border:1px solid #ddd;border-radius:10px;padding:0 10px;font:16px system-ui,sans-serif}
+.tr2{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mu)}.tr2 label{white-space:nowrap}
+.tr2 select{flex:1;height:34px;border:1px solid #ddd;border-radius:10px;padding:0 8px;font-size:16px;background:#fff}
+.tr2 input[type=color]{width:38px;height:30px;border:0;padding:0;background:none;flex:none}
+.tr2 input[type=range]{flex:1;accent-color:var(--ac)}.tr2 output{width:22px;text-align:right;color:var(--tx)}
+.rb{width:40px;height:40px;border-radius:50%;padding:0;justify-content:center;position:relative;text-decoration:none}
+.rb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#pin{background:#e60023;border-color:#e60023}#pin svg{width:24px;height:24px}
+#libn{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--ac);color:#fff;font:600 10px/17px system-ui,sans-serif}
+#libn[hidden],#libp[hidden]{display:none}
+#libp{position:fixed;right:max(12px,env(safe-area-inset-right));top:calc(max(12px,env(safe-area-inset-top)) + 186px);width:min(300px,calc(100vw - 24px));max-height:calc(100vh - 220px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 10px 30px #0003;padding:10px 12px;z-index:25;display:flex;flex-direction:column;gap:8px}
+.lh{display:flex;align-items:center;justify-content:space-between}.lh .x{width:30px;height:30px;font-size:14px}
+.lpaste{height:34px;border:0;border-radius:10px;background:var(--ac);color:#fff;font:500 13px system-ui,sans-serif;cursor:pointer}
+#libg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#libg .it{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/12px 12px;border:0;padding:0;cursor:pointer}
+#libg .it img{width:100%;height:100%;object-fit:cover;display:block}
+#libg .dx{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#000a;color:#fff;font-size:11px;line-height:20px;text-align:center}
+#libg .empty{grid-column:1/-1;color:var(--mu);font-size:12px;text-align:center;padding:14px 0}
 </style></head>
 <body>
 <div id="view"></div>
@@ -80,9 +101,17 @@ textarea#ptx[hidden]{display:none}
     <option value="fq">Serong depan</option><option value="bq">Serong belakang</option>
   </select>
   <button class="chip" id="lock" aria-pressed="false" title="Putar 3D (tekan untuk kunci)"></button>
+  <a class="chip rb" id="pin" href="https://id.pinterest.com/search/pins/?q=skinsuit%20design" target="_blank" rel="noopener" title="Cari inspirasi di Pinterest"><svg viewBox="0 0 24 24"><path d="M12 22s-6-6.2-6-11a6 6 0 1 1 12 0c0 4.8-6 11-6 11z" fill="#fff" stroke="none"/><circle cx="12" cy="11" r="2.3" fill="#e60023" stroke="none"/></svg></a>
+  <button class="chip rb" id="libb" title="Library gambar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><circle cx="8" cy="10" r="1.5"/><path d="M17 15l-4-4-7 7"/></svg><span id="libn" hidden></span></button>
+
 </div>
 
 <div id="tip">Ketuk bagian skinsuit untuk menambah gambar</div>
+
+<div id="libp" hidden><div class="lh"><b>Library</b><button class="x" id="libx" aria-label="Tutup">✕</button></div>
+    <button id="libpaste" class="lpaste">Tempel dari papan klip</button>
+    <small>Salin gambar di Pinterest, lalu kembali ke sini. Gambar yang disalin otomatis masuk Library. Ketuk gambar untuk memasangnya ke bagian yang dipilih.</small>
+    <div id="libg"></div></div>
 
 <div id="sheet" aria-hidden="true">
   <div class="hd"><b id="pname">Bagian</b><button class="x" id="close" aria-label="Tutup">✕</button></div>
@@ -92,6 +121,13 @@ textarea#ptx[hidden]{display:none}
   </div>
   <canvas id="pv"></canvas>
   <small id="hint" style="text-align:center"></small>
+  <div class="seg" id="lyr" hidden><button id="lyL">Gambar</button><button id="lyT">Teks</button></div>
+  <div id="txp" hidden>
+    <input id="tin" type="text" maxlength="40" placeholder="Tulis teks / nama" autocomplete="off">
+    <div class="tr2"><label>Font</label><select id="tfont"></select></div>
+    <div class="tr2"><label>Warna teks</label><input type="color" id="tcol"><label>Warna stroke</label><input type="color" id="tsc"></div>
+    <div class="tr2"><label>Lebar stroke</label><input type="range" id="tsw" min="0" max="30" step="1"><output id="tswv">0</output></div>
+  </div>
   <div class="tools" id="tools">
     <button id="fh"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l-5 5 5 5V7zM16 7l5 5-5 5V7z"/></svg>Flip H</button>
     <button id="fv"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l5-5 5 5H7zM7 16l5 5 5-5H7z"/></svg>Flip V</button>
@@ -102,6 +138,7 @@ textarea#ptx[hidden]{display:none}
     <button id="paste"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h4"/></svg>Tempel</button>
     <button id="fromp"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/></svg>Bagian lain</button>
     <button id="fromd"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>Perangkat</button>
+    <button id="addtxt"><svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Teks</button>
     <button id="cprompt"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>Salin prompt</button>
   </div>
   <div id="pbox" contenteditable="true" aria-label="Tempel gambar"></div>
@@ -156,13 +193,21 @@ let locked=false;function setLock(v){locked=v;const b=$('#lock');b.innerHTML=v?I
 $('#lock').onclick=()=>setLock(!locked);locked=false;$('#lock').innerHTML=ICON_ROT;
 
 /* ---------- render tekstur ---------- */
-function imgDims(L,W){const im=L.img,w=L.s*W*(L.sx||1),h=L.s*W*(im.naturalHeight/im.naturalWidth)*(L.sy||1);return[w,h]}
-function tile(x,L,cx,cy,w,h){x.save();x.translate(cx,cy);x.scale(L.fx?-1:1,L.fy?-1:1);x.drawImage(L.img,-w/2,-h/2,w,h);x.restore()}
-function drawLayer(x,L,W,H){if(!L||!L.img.naturalWidth)return;const[w,h]=imgDims(L,W);x.save();x.translate(L.x*W,L.y*H);x.rotate((L.r||0)*Math.PI/180);
- if(!L.rep)tile(x,L,0,0,w,h);
- else{const Dg=Math.hypot(W,H)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);for(let i=-ni;i<=ni;i++)for(let j=-nj;j<=nj;j++)tile(x,L,i*w,j*h,w,h)}
+const FONTS=['Bebas Neue','Anton','Oswald','Russo One','Teko','Orbitron','Racing Sans One','Staatliches','Audiowide','Black Ops One','Bungee','Montserrat','Pacifico','Lobster','Permanent Marker','Dancing Script','Great Vibes','Cinzel'];
+const A=p=>p?((p.act=='T'?p.T:p.L)||p.L||p.T):null;
+const ready=L=>!!L&&(L.t=='txt'?!!L.txt:!!(L.img&&L.img.naturalWidth));
+const fsz=(L,W)=>L.s*W*.22,ffont=(L,W)=>`${fsz(L,W)}px "${L.f}",sans-serif`,mctx=document.createElement('canvas').getContext('2d');
+function dims(L,W){if(L.t=='txt'){const f=fsz(L,W),sw=f*(L.sw||0)/50;mctx.font=ffont(L,W);return[(mctx.measureText(L.txt||' ').width+sw+f*.08)*(L.sx||1),(f*1.05+sw)*(L.sy||1)]}
+ const im=L.img;return[L.s*W*(L.sx||1),L.s*W*(im.naturalHeight/im.naturalWidth)*(L.sy||1)]}
+function tile(x,L,cx,cy,w,h,W){x.save();x.translate(cx,cy);x.scale(L.fx?-1:1,L.fy?-1:1);
+ if(L.t=='txt'){const f=fsz(L,W);x.scale(L.sx||1,L.sy||1);x.font=ffont(L,W);x.textAlign='center';x.textBaseline='middle';
+  if(L.sw>0){x.lineJoin='round';x.miterLimit=2;x.lineWidth=f*L.sw/50;x.strokeStyle=L.sc;x.strokeText(L.txt,0,f*.04)}x.fillStyle=L.c;x.fillText(L.txt,0,f*.04)}
+ else x.drawImage(L.img,-w/2,-h/2,w,h);x.restore()}
+function drawLayer(x,L,W,H){if(!ready(L))return;const[w,h]=dims(L,W);x.save();x.translate(L.x*W,L.y*H);x.rotate((L.r||0)*Math.PI/180);
+ if(!L.rep)tile(x,L,0,0,w,h,W);
+ else{const Dg=Math.hypot(W,H)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);for(let i=-ni;i<=ni;i++)for(let j=-nj;j<=nj;j++)tile(x,L,i*w,j*h,w,h,W)}
  x.restore()}
-function render(id){const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);drawLayer(c,p.L,W,H);p.tx.needsUpdate=true;if(id==sel)drawPv()}
+function render(id){const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);drawLayer(c,p.L,W,H);drawLayer(c,p.T,W,H);p.tx.needsUpdate=true;if(id==sel)drawPv()}
 
 /* ---------- warna ---------- */
 function picker(pop,get,set,withAll){
@@ -191,9 +236,9 @@ const rc=new THREE.Raycaster(),mp=new THREE.Vector2();
 const hit=(e,objs)=>{const r=R.domElement.getBoundingClientRect();mp.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);rc.setFromCamera(mp,cam);return rc.intersectObjects(objs)[0]};
 let g3=null,ptrs=0;
 box.addEventListener('pointerdown',e=>{ptrs++;const h=hit(e,grp.children.filter(o=>o.visible));g3={x:e.clientX,y:e.clientY,t:performance.now(),drag:null};
- if(ptrs==1&&h&&sel&&h.object.userData.id==sel&&P[sel].L){const L=P[sel].L;g3.drag={dx:L.x-h.uv.x,dy:L.y-(1-h.uv.y)};ctl.enabled=false}
+ if(ptrs==1&&h&&sel&&h.object.userData.id==sel&&A(P[sel])){const L=A(P[sel]);g3.drag={dx:L.x-h.uv.x,dy:L.y-(1-h.uv.y)};ctl.enabled=false}
  else ctl.enabled=!locked},true);
-box.addEventListener('pointermove',e=>{if(!g3||!g3.drag)return;const h=hit(e,[P[sel].m]);if(h){const L=P[sel].L;L.x=h.uv.x+g3.drag.dx;L.y=1-h.uv.y+g3.drag.dy;snapCenter(L,1,1,.025);guide=null;render(sel)}});
+box.addEventListener('pointermove',e=>{if(!g3||!g3.drag)return;const h=hit(e,[P[sel].m]);if(h){const L=A(P[sel]);L.x=h.uv.x+g3.drag.dx;L.y=1-h.uv.y+g3.drag.dy;snapCenter(L,1,1,.025);guide=null;render(sel)}});
 addEventListener('pointerup',e=>{ptrs=Math.max(0,ptrs-1);if(!g3)return;const moved=Math.hypot(e.clientX-g3.x,e.clientY-g3.y);
  if(!g3.drag&&e.target==R.domElement&&moved<8&&performance.now()-g3.t<500){const h=hit(e,grp.children.filter(o=>o.visible));select(h?h.object.userData.id:null)}
  if(g3.drag){view=null;drawPv()}g3=null;ctl.enabled=!locked});
@@ -208,20 +253,20 @@ function mask(id){if(masks[id])return masks[id];const p=P[id],W=p.cv.width,H=p.c
  const e=document.createElement('canvas');e.width=W;e.height=H;const ec=e.getContext('2d');ec.drawImage(m,0,0);ec.globalCompositeOperation='source-in';ec.fillStyle='#e8701a';ec.fillRect(0,0,W,H);
  return masks[id]={over:o,edge:e,m}}
 function rotP(L,W,H,lx,ly){const a=(L.r||0)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a);return[L.x*W+lx*cs-ly*sn,L.y*H+lx*sn+ly*cs]}
-function computeView(){const p=P[sel],W=p.cv.width,H=p.cv.height;let x0=0,y0=0,x1=W,y1=H;const L=p.L;
- if(L&&L.img.naturalWidth&&!L.rep){const[w,h]=imgDims(L,W);[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,b])=>{const[X,Y]=rotP(L,W,H,a*w/2,b*h/2);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y)})}
- const pad=Math.max(x1-x0,y1-y0)*.1+40;x0-=pad;y0-=pad*1.4;x1+=pad;y1+=pad;
+function computeView(){const p=P[sel],W=p.cv.width,H=p.cv.height;let x0=0,y0=0,x1=W,y1=H;const L=A(p);
+ if(ready(L)&&!L.rep){const[w,h]=dims(L,W);[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,b])=>{const[X,Y]=rotP(L,W,H,a*w/2,b*h/2);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y)})}
+ const pad=Math.max(x1-x0,y1-y0)*.1+40;x0-=pad;y0-=pad*1.4+Math.max(W,H)*.09;x1+=pad;y1+=pad;
  const maxS=Math.max(W,H)*2.4;if(x1-x0>maxS){const c=(x0+x1)/2;x0=c-maxS/2;x1=c+maxS/2}if(y1-y0>maxS){const c=(y0+y1)/2;y0=c-maxS/2;y1=c+maxS/2}
  view={x0,y0,w:x1-x0,h:y1-y0};q=Math.min(1,900/Math.max(view.w,view.h));pv.width=Math.round(view.w*q);pv.height=Math.round(view.h*q)}
 function T(X,Y){return[(X-view.x0)*q,(Y-view.y0)*q]}
-function handles(){const p=P[sel],L=p.L;if(!L||!L.img.naturalWidth)return[];const W=p.cv.width,H=p.cv.height,[w,h]=imgDims(L,W),k=pv.width/(pv.clientWidth||pv.width);
+function handles(){const p=P[sel],L=A(p);if(!ready(L))return[];const W=p.cv.width,H=p.cv.height,[w,h]=dims(L,W),k=pv.width/(pv.clientWidth||pv.width);
  const out=[['c',0,0],['nw',-w/2,-h/2],['ne',w/2,-h/2],['se',w/2,h/2],['sw',-w/2,h/2],['n',0,-h/2],['s',0,h/2],['w',-w/2,0],['e',w/2,0]].map(([key,lx,ly])=>{const t=T(...rotP(L,W,H,lx,ly));return{k:key,x:t[0],y:t[1]}});
  const a=(L.r||0)*Math.PI/180,n=out[5],ext=34*k;out.push({k:'rot',x:n.x+Math.sin(a)*ext*(L.fy?1:1),y:n.y-Math.cos(a)*ext});return out}
 let pd=null,guide=null;
 function drawPv(){if(!sel)return;if(!view)computeView();const p=P[sel],W=p.cv.width,H=p.cv.height,c=pv.getContext('2d'),M=mask(sel);
  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,pv.width,pv.height);
  c.setTransform(q,0,0,q,-view.x0*q,-view.y0*q);
- if(p.L&&!p.L.rep){c.globalAlpha=.3;drawLayer(c,p.L,W,H);c.globalAlpha=1}
+ c.globalAlpha=.3;[p.L,p.T].forEach(L=>{if(L&&!L.rep)drawLayer(c,L,W,H)});c.globalAlpha=1
  c.drawImage(p.cv,0,0);c.drawImage(M.over,0,0);
  c.setTransform(1,0,0,1,0,0);
  const k=pv.width/(pv.clientWidth||pv.width);
@@ -235,17 +280,18 @@ function drawPv(){if(!sel)return;if(!view)computeView();const p=P[sel],W=p.cv.wi
    if(ctr){c.strokeStyle='#fff';c.lineWidth=1.6*k;c.beginPath();c.moveTo(h.x-5*k,h.y);c.lineTo(h.x+5*k,h.y);c.moveTo(h.x,h.y-5*k);c.lineTo(h.x,h.y+5*k);c.stroke()}
    if(rot){c.strokeStyle='#fff';c.lineWidth=1.6*k;c.beginPath();c.arc(h.x,h.y,5*k,-Math.PI*.9,Math.PI*.4);c.stroke();const ax=h.x+5*k*Math.cos(Math.PI*.4),ay=h.y+5*k*Math.sin(Math.PI*.4);c.beginPath();c.moveTo(ax+3*k,ay-1*k);c.lineTo(ax,ay);c.lineTo(ax-1*k,ay-3.5*k);c.stroke()}
    if(corner){const v=[h.x-by.c.x,h.y-by.c.y],n=Math.hypot(...v)||1,ux=v[0]/n*3.5*k,uy=v[1]/n*3.5*k;c.strokeStyle='#e8701a';c.lineWidth=1.6*k;c.beginPath();c.moveTo(h.x-ux,h.y-uy);c.lineTo(h.x+ux,h.y+uy);c.stroke()}})
-  if(pd&&pd.k=='rot'){c.font=`600 ${13*k}px system-ui`;c.textAlign='center';const t=Math.round(p.L.r||0)+'°',tx=by.rot.x,ty=by.rot.y-20*k;c.fillStyle='#1b1b1f';const tw=c.measureText(t).width+12*k;c.fillRect(tx-tw/2,ty-11*k,tw,20*k);c.fillStyle='#fff';c.fillText(t,tx,ty+4*k)}}
- $('#hint').textContent=p.L?'Serong: besar-kecil · tengah: geser · sisi: tarik · atas: putar':'Tambah gambar untuk bagian ini, atau pilih warna saja.'}
+  if(pd&&pd.k=='rot'){c.font=`600 ${13*k}px system-ui`;c.textAlign='center';const t=Math.round(A(p).r||0)+'°',tx=by.rot.x,ty=by.rot.y-20*k;c.fillStyle='#1b1b1f';const tw=c.measureText(t).width+12*k;c.fillRect(tx-tw/2,ty-11*k,tw,20*k);c.fillStyle='#fff';c.fillText(t,tx,ty+4*k)}}
+ $('#hint').textContent=A(p)?'Serong: besar-kecil · tengah: geser · sisi: tarik · atas: putar':'Tambah gambar untuk bagian ini, atau pilih warna saja.'}
 function pvXY(e){const r=pv.getBoundingClientRect();return[(e.clientX-r.left)*pv.width/r.width,(e.clientY-r.top)*pv.height/r.height]}
 const SNAP_ANG=6;function snapAng(r){r=((r%360)+540)%360-180;const n=Math.round(r/45)*45;return Math.abs(r-n)<SNAP_ANG?(n==-180?180:n):Math.round(r)}
 function snapCenter(L,W,H,tolPx){guide={x:false,y:false};if(Math.abs(L.x-.5)*W<tolPx){L.x=.5;guide.x=true}if(Math.abs(L.y-.5)*H<tolPx){L.y=.5;guide.y=true}if(!guide.x&&!guide.y)guide=null}
-pv.addEventListener('pointerdown',e=>{const p=P[sel],L=p&&p.L;if(!L)return;const[x,y]=pvXY(e),k=pv.width/pv.clientWidth,W=p.cv.width;
+pv.addEventListener('pointerdown',e=>{const p=P[sel];let L=A(p);if(!L)return;const[x,y]=pvXY(e),k=pv.width/pv.clientWidth,W=p.cv.width;
  let best=null,bd=26*k;handles().forEach(h=>{const d=Math.hypot(h.x-x,h.y-y);if(d<bd){bd=d;best=h}});
- const[w,h]=imgDims(L,W),c=T(L.x*W,L.y*p.cv.height),a=-(L.r||0)*Math.PI/180,vx=x-c[0],vy=y-c[1],lx=vx*Math.cos(a)-vy*Math.sin(a),ly=vx*Math.sin(a)+vy*Math.cos(a);
- if(!best&&Math.abs(lx)<w*q/2&&Math.abs(ly)<h*q/2)best={k:'c'};
+ const inside=L2=>{if(!ready(L2))return false;const[w,h]=dims(L2,W),c=T(L2.x*W,L2.y*p.cv.height),a=-(L2.r||0)*Math.PI/180,vx=x-c[0],vy=y-c[1],lx=vx*Math.cos(a)-vy*Math.sin(a),ly=vx*Math.sin(a)+vy*Math.cos(a);return Math.abs(lx)<w*q/2&&Math.abs(ly)<h*q/2};
+ if(!best){const other=L===p.L?p.T:p.L;if(!inside(L)&&inside(other)){p.act=other===p.T?'T':'L';L=other;uiTools();drawPv()}if(inside(L))best={k:'c'}}
+ const c=T(L.x*W,L.y*p.cv.height);
  if(!best)return;pv.setPointerCapture(e.pointerId);pd={k:best.k,x,y,L0:{...L},c,a0:Math.atan2(y-c[1],x-c[0])}});
-pv.addEventListener('pointermove',e=>{if(!pd)return;const p=P[sel],L=p.L,W=p.cv.width,H=p.cv.height,[x,y]=pvXY(e),dx=(x-pd.x)/q,dy=(y-pd.y)/q,o=pd.L0,k=pv.width/pv.clientWidth,a=(o.r||0)*Math.PI/180;
+pv.addEventListener('pointermove',e=>{if(!pd)return;const p=P[sel],L=A(p),W=p.cv.width,H=p.cv.height,[x,y]=pvXY(e),dx=(x-pd.x)/q,dy=(y-pd.y)/q,o=pd.L0,k=pv.width/pv.clientWidth,a=(o.r||0)*Math.PI/180;
  if(pd.k=='c'){L.x=o.x+dx/W;L.y=o.y+dy/H;snapCenter(L,W,H,12*k/q)}
  else if(pd.k=='rot'){L.r=snapAng((o.r||0)+(Math.atan2(y-pd.c[1],x-pd.c[0])-pd.a0)*180/Math.PI)}
  else if(pd.k.length==2){const d0=Math.hypot(pd.x-pd.c[0],pd.y-pd.c[1]),d1=Math.hypot(x-pd.c[0],y-pd.c[1]);L.s=cl(o.s*d1/(d0||1),.03,8)}
@@ -255,14 +301,30 @@ pv.addEventListener('pointermove',e=>{if(!pd)return;const p=P[sel],L=p.L,W=p.cv.
 const pvEnd=()=>{if(pd){pd=null;guide=null;view=null;drawPv()}};pv.addEventListener('pointerup',pvEnd);pv.addEventListener('pointercancel',pvEnd);
 
 /* ---------- alat gambar ---------- */
-function uiTools(){const L=sel&&P[sel].L;$('#tools').style.display=L?'grid':'none';if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep)}}
-$('#fh').onclick=()=>{const L=P[sel].L;L.fx=!L.fx;render(sel);uiTools()};
-$('#fv').onclick=()=>{const L=P[sel].L;L.fy=!L.fy;render(sel);uiTools()};
-$('#rep').onclick=()=>{const L=P[sel].L;L.rep=!L.rep;view=null;render(sel);uiTools();toast(L.rep?'Gambar diulang ke semua arah':'Ulang dimatikan')};
-$('#del').onclick=()=>{P[sel].L=null;view=null;render(sel);uiTools()};
+function uiTools(){const p=sel&&P[sel],L=A(p);$('#tools').style.display=L?'grid':'none';
+ $('#lyr').hidden=!(p&&p.L&&p.T);if(p){$('#lyL').classList.toggle('on',L===p.L);$('#lyT').classList.toggle('on',L===p.T)}
+ $('#txp').hidden=!(L&&L.t=='txt');if(L&&L.t=='txt'){if($('#tin')!==document.activeElement)$('#tin').value=L.txt;$('#tfont').value=L.f;$('#tfont').style.fontFamily=`"${L.f}"`;$('#tcol').value=L.c;$('#tsc').value=L.sc;$('#tsw').value=L.sw;$('#tswv').textContent=L.sw}
+ if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep)}}
+const cur=()=>A(P[sel]);
+$('#fh').onclick=()=>{const L=cur();L.fx=!L.fx;render(sel);uiTools()};
+$('#fv').onclick=()=>{const L=cur();L.fy=!L.fy;render(sel);uiTools()};
+$('#rep').onclick=()=>{const L=cur();L.rep=!L.rep;view=null;render(sel);uiTools();toast(L.rep?'Diulang ke semua arah':'Ulang dimatikan')};
+$('#del').onclick=()=>{const p=P[sel];if(A(p)===p.T){p.T=null;p.act='L'}else{p.L=null;p.act='T'}view=null;render(sel);uiTools()};
+$('#lyL').onclick=()=>{P[sel].act='L';view=null;drawPv();uiTools()};
+$('#lyT').onclick=()=>{P[sel].act='T';view=null;drawPv();uiTools()};
+/* teks */
+$('#tfont').innerHTML=FONTS.map(f=>`<option value="${f}" style="font-family:'${f}'">${f}</option>`).join('');
+$('#addtxt').onclick=()=>{const p=P[sel];if(!p.T)p.T={t:'txt',txt:'NAMA',f:'Bebas Neue',c:'#ffffff',sc:'#16161a',sw:6,x:.5,y:.35,s:.9,sx:1,sy:1,r:0,fx:0,fy:0,rep:0};p.act='T';view=null;
+ document.fonts.load(ffont(p.T,100)).then(()=>{view=null;render(sel)});render(sel);uiTools();setTimeout(()=>{$('#tin').focus();$('#tin').select()},50)};
+const setT=(k,v)=>{const L=P[sel].T;if(!L)return;L[k]=v;if(k=='f')document.fonts.load(ffont(L,100)).then(()=>{view=null;render(sel)});render(sel);uiTools()};
+$('#tin').oninput=e=>setT('txt',e.target.value);$('#tin').onchange=()=>{view=null;drawPv()};
+$('#tfont').onchange=e=>setT('f',e.target.value);
+$('#tcol').oninput=e=>setT('c',e.target.value);$('#tsc').oninput=e=>setT('sc',e.target.value);
+$('#tsw').oninput=e=>setT('sw',+e.target.value);
+document.fonts.onloadingdone=()=>Object.keys(P).forEach(id=>{if(P[id].T)render(id)});
 
-function setImage(src,from){const im=new Image();im.onload=()=>{if(/^blob:/.test(src)){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);try{setImage(c.toDataURL('image/png'),from)}catch(e){}return}const p=P[sel],W=p.cv.width,H=p.cv.height,ar=im.naturalHeight/im.naturalWidth;
- p.L=from?{...from,img:im,src}:{img:im,src,x:.5,y:.5,s:Math.max(1,(H/W)/ar),sx:1,sy:1,fx:0,fy:0,rep:0};view=null;render(sel);uiTools();$('#others').hidden=true};
+function setImage(src,from,noLib){const im=new Image();im.onload=()=>{if(/^blob:/.test(src)){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);try{setImage(c.toDataURL('image/png'),from,noLib)}catch(e){}return}if(!from&&!noLib)libAdd(im);const p=P[sel],W=p.cv.width,H=p.cv.height,ar=im.naturalHeight/im.naturalWidth;
+ p.act='L';p.L=from?{...from,img:im,src}:{img:im,src,x:.5,y:.5,s:Math.max(1,(H/W)/ar),sx:1,sy:1,fx:0,fy:0,rep:0};view=null;render(sel);uiTools();$('#others').hidden=true};
  im.onerror=()=>toast('Gambar tidak bisa dibuka');im.src=src}
 const readBlob=b=>{const r=new FileReader();r.onload=()=>setImage(r.result);r.readAsDataURL(b)};
 $('#fromd').onclick=()=>$('#file').click();
@@ -291,7 +353,7 @@ function imageFromPaste(dt){if(!dt)return null;const f=[...(dt.files||[])].find(
 document.addEventListener('paste',e=>{const g=imageFromPaste(e.clipboardData);const inBox=e.target.closest&&e.target.closest('#pbox');
  if(!g){if(inBox){e.preventDefault();toast('Papan klip tidak berisi gambar')}return}
  if(e.target.closest&&e.target.closest('input,textarea')&&!inBox)return;
- e.preventDefault();if(!sel){toast('Ketuk bagian skinsuit dulu, lalu tempel');return}
+ e.preventDefault();if(!sel){libFromSrc(g);return}
  g.blob?readBlob(g.blob):setImage(g.url);pboxDone();toast('Gambar ditempel ke '+NAME[sel].toLowerCase())});
 /* seret file gambar dari perangkat: ke bagian 3D atau ke panel */
 addEventListener('dragover',e=>{if([...(e.dataTransfer?.types||[])].includes('Files'))e.preventDefault()});
@@ -314,7 +376,7 @@ $('#cprompt').onclick=async()=>{if(!kind(sel))return;const t=prompt(sel),x=$('#p
 /* model lengan */
 let ls=0;const vis=d=>!d.v||(d.v=='l')==!!ls;
 function applySleeve(){Object.values(P).forEach(p=>p.m.visible=vis(p.d));$('#slv').value=ls}
-$('#slv').onchange=e=>{ls=+e.target.value;['L','R'].forEach(k=>{const a=P[(ls?'sleeve':'long')+k],b=P[(ls?'long':'sleeve')+k];b.base=a.base;if(a.L&&!b.L)b.L={...a.L};render(b.d.id)});
+$('#slv').onchange=e=>{ls=+e.target.value;['L','R'].forEach(k=>{const a=P[(ls?'sleeve':'long')+k],b=P[(ls?'long':'sleeve')+k];b.base=a.base;if(a.L&&!b.L)b.L={...a.L};if(a.T&&!b.T)b.T={...a.T};render(b.d.id)});
  if(sel&&!vis(P[sel].d))select(null);applySleeve();toast(ls?'Model lengan panjang':'Model lengan pendek')};
 applySleeve();
 /* ---------- proyek: baru / buka / simpan / export ---------- */
@@ -323,14 +385,14 @@ async function saveFile(name,data){
  if(DL){try{await DL.save({filename:name,data});toast('Tersimpan: '+name);return}catch(e){if(e&&e.code=='declined')return;if(e&&e.code=='rate_limited'){toast('Tunggu sebentar lalu coba lagi');return}}}
  try{const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Mengunduh '+name)}catch(e){toast('Unduhan tidak tersedia di tampilan ini')}}
 document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target==m||e.target.hasAttribute('data-x'))m.hidden=true})});
-function resetAll(){Object.values(P).forEach(p=>{p.L=null;p.base='#16161a'});ls=0;applySleeve();select(null);Object.keys(P).forEach(render);$('#cdot').style.background='#16161a'}
+function resetAll(){Object.values(P).forEach(p=>{p.L=null;p.T=null;p.act='L';p.base='#16161a'});ls=0;applySleeve();select(null);Object.keys(P).forEach(render);$('#cdot').style.background='#16161a'}
 $('#bnew').onclick=()=>{$('#mnew').hidden=false};
 $('#mnewok').onclick=()=>{resetAll();$('#mnew').hidden=true;toast('Desain baru')};
-$('#bsave').onclick=()=>{const o={app:'skinsuit-3d',v:1,ls,parts:{}};Object.entries(P).forEach(([id,p])=>{const L=p.L?{...p.L}:null;if(L)delete L.img;o.parts[id]={base:p.base,L}});
+$('#bsave').onclick=()=>{const o={app:'skinsuit-3d',v:1,ls,parts:{}};Object.entries(P).forEach(([id,p])=>{const L=p.L?{...p.L}:null;if(L)delete L.img;o.parts[id]={base:p.base,L,T:p.T||null}});
  saveFile('desain-skinsuit.json',new Blob([JSON.stringify(o)],{type:'application/json'}))};
 $('#bopen').onclick=()=>$('#fjson').click();
 $('#fjson').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.parts)throw 0;resetAll();ls=+o.ls||0;applySleeve();
-  Object.entries(o.parts).forEach(([id,v])=>{const p=P[id];if(!p)return;p.base=v.base||'#16161a';if(v.L&&v.L.src){const im=new Image();p.L={...v.L,img:im};im.onload=()=>render(id);im.src=v.L.src}render(id)});
+  Object.entries(o.parts).forEach(([id,v])=>{const p=P[id];if(!p)return;p.base=v.base||'#16161a';if(v.L&&v.L.src){const im=new Image();p.L={...v.L,img:im};im.onload=()=>render(id);im.src=v.L.src}if(v.T){p.T={...v.T};document.fonts.load(ffont(p.T,100)).then(()=>render(id))}render(id)});
   $('#cdot').style.background=P.torsoF.base;toast('Desain dibuka')}catch(x){toast('File desain tidak valid')}};r.readAsText(f)};
 let pvBlob=null;
 async function makePreview(){const btn=$('#exp');btn.disabled=true;const OW=1800,OH=3200,fov=14,t=Math.tan(fov*Math.PI/360),mg=1.08;
@@ -349,6 +411,30 @@ async function makePreview(){const btn=$('#exp');btn.disabled=true;const OW=1800
  if(out){pvBlob=await new Promise(r=>out.toBlob(r,'image/png'));$('#pimg').src=URL.createObjectURL(pvBlob);$('#mexp').hidden=false}}
 $('#exp').onclick=makePreview;
 $('#pdl').onclick=()=>{if(pvBlob)saveFile('preview-skinsuit.png',pvBlob)};
+
+/* ---------- Pinterest + Library ---------- */
+let LIB=[];try{LIB=JSON.parse(localStorage.getItem('skinsuitLib')||'[]')}catch(e){LIB=[]}
+function libStore(){for(;;){try{localStorage.setItem('skinsuitLib',JSON.stringify(LIB));return}catch(e){if(LIB.length<=1)return;LIB.pop()}}}
+function libKey(d){return d.length+':'+d.slice(-60)}
+function libAdd(im){try{const M=900,k=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+ let d=c.toDataURL('image/webp',.86);if(!d.startsWith('data:image/webp'))d=c.toDataURL('image/png');const key=libKey(d);if(LIB.some(x=>x.k==key))return false;LIB.unshift({k:key,d});if(LIB.length>40)LIB.length=40;libStore();libRender();return true}catch(e){return false}}
+function libFromSrc(g){const go=src=>{const im=new Image();im.onload=()=>{if(libAdd(im)){toast('Gambar masuk Library');$('#libp').hidden=false}else toast('Gambar sudah ada di Library')};im.src=src};
+ if(g.blob){const r=new FileReader();r.onload=()=>go(r.result);r.readAsDataURL(g.blob)}else go(g.url)}
+function libRender(){const n=$('#libn');n.textContent=LIB.length;n.hidden=!LIB.length;
+ $('#libg').innerHTML=LIB.length?LIB.map((x,i)=>`<button class="it" data-i="${i}"><img src="${x.d}" alt=""><span class="dx" data-del="${i}">✕</span></button>`).join(''):'<div class="empty">Belum ada gambar. Salin gambar dari Pinterest atau tekan Tempel.</div>'}
+$('#libg').onclick=e=>{const d=e.target.closest('[data-del]');if(d){LIB.splice(+d.dataset.del,1);libStore();libRender();return}
+ const b=e.target.closest('.it');if(!b)return;if(!sel){toast('Ketuk bagian skinsuit dulu, lalu pilih gambar');return}setImage(LIB[+b.dataset.i].d,null,true);toast('Dipasang ke '+NAME[sel].toLowerCase())};
+$('#libb').onclick=e=>{e.stopPropagation();const p=$('#libp');p.hidden=!p.hidden};$('#libx').onclick=()=>$('#libp').hidden=true;
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#libp,#libb,#sheet'))$('#libp').hidden=true},true);
+async function clipToLib(silent){try{if(!navigator.clipboard||!navigator.clipboard.read)throw 0;const items=await navigator.clipboard.read();
+  for(const it of items){const t=it.types.find(t=>t.startsWith('image/'));if(t){libFromSrc({blob:await it.getType(t)});return true}}
+  for(const it of items)for(const t of ['text/html','text/plain'])if(it.types.includes(t)){const d=dataImg(await (await it.getType(t)).text());if(d){libFromSrc({url:d});return true}}
+  if(!silent)toast('Papan klip belum berisi gambar')}catch(e){if(!silent)toast(e&&e.name=='NotAllowedError'?'Izinkan akses "Papan klip" untuk halaman ini':'Papan klip tidak bisa dibaca')}return false}
+$('#libpaste').onclick=()=>clipToLib(false);
+let pinAway=false;$('#pin').onclick=()=>{pinAway=true;toast('Salin gambar di Pinterest, lalu kembali ke sini')};
+const back=()=>{if(pinAway&&document.visibilityState=='visible'){pinAway=false;setTimeout(()=>clipToLib(true),300)}};
+document.addEventListener('visibilitychange',back);addEventListener('focus',back);
+libRender();
 /* awal */
 setAll('#16161a');gBuild();
 </script>
