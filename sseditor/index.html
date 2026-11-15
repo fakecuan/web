@@ -84,6 +84,11 @@ textarea#ptx[hidden]{display:none}
 #libg .it img{width:100%;height:100%;object-fit:cover;display:block}
 #libg .dx{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#000a;color:#fff;font-size:11px;line-height:20px;text-align:center}
 #libg .empty{grid-column:1/-1;color:var(--mu);font-size:12px;text-align:center;padding:14px 0}
+#lyr{display:flex;gap:6px;overflow-x:auto;padding:4px 0;margin:4px 0;scrollbar-width:none}#lyr[hidden]{display:none}
+#lyr>button{flex:none;display:flex;align-items:center;gap:6px;height:34px;padding:0 10px 0 4px;border:1px solid #e3e1e8;border-radius:10px;background:#fff;font:500 12px system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+#lyr>button img{width:26px;height:26px;object-fit:cover;border-radius:6px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/8px 8px}
+#lyr>button.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+#lyr .ord{display:flex;gap:4px;margin-left:auto;flex:none}#lyr .ord button{width:34px;height:34px;border:0;border-radius:10px;background:#f1f0f3;cursor:pointer;font-size:11px}
 </style></head>
 <body>
 <div id="view"></div>
@@ -121,7 +126,7 @@ textarea#ptx[hidden]{display:none}
   </div>
   <canvas id="pv"></canvas>
   <small id="hint" style="text-align:center"></small>
-  <div class="seg" id="lyr" hidden><button id="lyL">Gambar</button><button id="lyT">Teks</button></div>
+  <div id="lyr" hidden></div>
   <div id="txp" hidden>
     <input id="tin" type="text" maxlength="40" placeholder="Tulis teks / nama" autocomplete="off">
     <div class="tr2"><label>Font</label><select id="tfont"></select></div>
@@ -175,7 +180,7 @@ D.forEach(d=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new T
  const cv=document.createElement('canvas');cv.width=Math.max(16,Math.round(1024*d.w));cv.height=Math.max(16,Math.round(1024*d.h));
  const tx=new THREE.CanvasTexture(cv);tx.anisotropy=8;tx.encoding=THREE.sRGBEncoding;
  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({map:tx,roughness:.85,metalness:0,side:THREE.DoubleSide}));m.userData.id=d.id;grp.add(m);
- P[d.id]={d,cv,tx,m,g,base:'#16161a',L:null}});
+ P[d.id]={d,cv,tx,m,g,base:'#16161a',layers:[],ai:-1}});
 const ctl=new THREE.OrbitControls(cam,R.domElement);ctl.enableDamping=true;ctl.enablePan=false;ctl.rotateSpeed=.8;
 const bb=new THREE.Box3().setFromObject(grp),C=bb.getCenter(new THREE.Vector3()),S=bb.getSize(new THREE.Vector3());
 const DIST=S.y*.6/Math.tan(35*Math.PI/360);ctl.target.copy(C);cam.position.set(C.x,C.y+S.y*.03,C.z+DIST);ctl.minDistance=DIST*.25;ctl.maxDistance=DIST*2.2;
@@ -194,7 +199,9 @@ $('#lock').onclick=()=>setLock(!locked);locked=false;$('#lock').innerHTML=ICON_R
 
 /* ---------- render tekstur ---------- */
 const FONTS=['Bebas Neue','Anton','Oswald','Russo One','Teko','Orbitron','Racing Sans One','Staatliches','Audiowide','Black Ops One','Bungee','Montserrat','Pacifico','Lobster','Permanent Marker','Dancing Script','Great Vibes','Cinzel'];
-const A=p=>p?((p.act=='T'?p.T:p.L)||p.L||p.T):null;
+const A=p=>p?(p.layers[p.ai]||null):null;
+const cloneL=L=>L.t=='txt'?{...L}:{...L,img:L.img};
+function addLayer(p,L){p.layers.push(L);p.ai=p.layers.length-1}
 const ready=L=>!!L&&(L.t=='txt'?!!L.txt:!!(L.img&&L.img.naturalWidth));
 const fsz=(L,W)=>L.s*W*.22,ffont=(L,W)=>`${fsz(L,W)}px "${L.f}",sans-serif`,mctx=document.createElement('canvas').getContext('2d');
 function dims(L,W){if(L.t=='txt'){const f=fsz(L,W),sw=f*(L.sw||0)/50;mctx.font=ffont(L,W);return[(mctx.measureText(L.txt||' ').width+sw+f*.08)*(L.sx||1),(f*1.05+sw)*(L.sy||1)]}
@@ -207,7 +214,7 @@ function drawLayer(x,L,W,H){if(!ready(L))return;const[w,h]=dims(L,W);x.save();x.
  if(!L.rep)tile(x,L,0,0,w,h,W);
  else{const Dg=Math.hypot(W,H)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);for(let i=-ni;i<=ni;i++)for(let j=-nj;j<=nj;j++)tile(x,L,i*w,j*h,w,h,W)}
  x.restore()}
-function render(id){const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);drawLayer(c,p.L,W,H);drawLayer(c,p.T,W,H);p.tx.needsUpdate=true;if(id==sel)drawPv()}
+function render(id){const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);p.layers.forEach(L=>drawLayer(c,L,W,H));p.tx.needsUpdate=true;if(id==sel)drawPv()}
 
 /* ---------- warna ---------- */
 function picker(pop,get,set,withAll){
@@ -266,7 +273,7 @@ let pd=null,guide=null;
 function drawPv(){if(!sel)return;if(!view)computeView();const p=P[sel],W=p.cv.width,H=p.cv.height,c=pv.getContext('2d'),M=mask(sel);
  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,pv.width,pv.height);
  c.setTransform(q,0,0,q,-view.x0*q,-view.y0*q);
- c.globalAlpha=.3;[p.L,p.T].forEach(L=>{if(L&&!L.rep)drawLayer(c,L,W,H)});c.globalAlpha=1
+ c.globalAlpha=.3;p.layers.forEach(L=>{if(!L.rep)drawLayer(c,L,W,H)});c.globalAlpha=1
  c.drawImage(p.cv,0,0);c.drawImage(M.over,0,0);
  c.setTransform(1,0,0,1,0,0);
  const k=pv.width/(pv.clientWidth||pv.width);
@@ -288,7 +295,7 @@ function snapCenter(L,W,H,tolPx){guide={x:false,y:false};if(Math.abs(L.x-.5)*W<t
 pv.addEventListener('pointerdown',e=>{const p=P[sel];let L=A(p);if(!L)return;const[x,y]=pvXY(e),k=pv.width/pv.clientWidth,W=p.cv.width;
  let best=null,bd=26*k;handles().forEach(h=>{const d=Math.hypot(h.x-x,h.y-y);if(d<bd){bd=d;best=h}});
  const inside=L2=>{if(!ready(L2))return false;const[w,h]=dims(L2,W),c=T(L2.x*W,L2.y*p.cv.height),a=-(L2.r||0)*Math.PI/180,vx=x-c[0],vy=y-c[1],lx=vx*Math.cos(a)-vy*Math.sin(a),ly=vx*Math.sin(a)+vy*Math.cos(a);return Math.abs(lx)<w*q/2&&Math.abs(ly)<h*q/2};
- if(!best){const other=L===p.L?p.T:p.L;if(!inside(L)&&inside(other)){p.act=other===p.T?'T':'L';L=other;uiTools();drawPv()}if(inside(L))best={k:'c'}}
+ if(!best){if(!inside(L)){for(let i=p.layers.length-1;i>=0;i--)if(inside(p.layers[i])){p.ai=i;L=p.layers[i];uiTools();drawPv();break}}if(inside(L))best={k:'c'}}
  const c=T(L.x*W,L.y*p.cv.height);
  if(!best)return;pv.setPointerCapture(e.pointerId);pd={k:best.k,x,y,L0:{...L},c,a0:Math.atan2(y-c[1],x-c[0])}});
 pv.addEventListener('pointermove',e=>{if(!pd)return;const p=P[sel],L=A(p),W=p.cv.width,H=p.cv.height,[x,y]=pvXY(e),dx=(x-pd.x)/q,dy=(y-pd.y)/q,o=pd.L0,k=pv.width/pv.clientWidth,a=(o.r||0)*Math.PI/180;
@@ -302,29 +309,30 @@ const pvEnd=()=>{if(pd){pd=null;guide=null;view=null;drawPv()}};pv.addEventListe
 
 /* ---------- alat gambar ---------- */
 function uiTools(){const p=sel&&P[sel],L=A(p);$('#tools').style.display=L?'grid':'none';
- $('#lyr').hidden=!(p&&p.L&&p.T);if(p){$('#lyL').classList.toggle('on',L===p.L);$('#lyT').classList.toggle('on',L===p.T)}
+ const ly=$('#lyr');ly.hidden=!(p&&p.layers.length>1);if(p&&p.layers.length>1){let ni=0;ly.innerHTML=p.layers.map((l,i)=>{const lab=l.t=='txt'?'“'+(l.txt||'Teks').slice(0,10)+'”':(i==0&&p.layers[0].bg?'Latar':'Gambar '+(++ni));return `<button data-li="${i}" class="${i==p.ai?'on':''}">${l.t=='txt'?'':`<img src="${l.src}" alt="">`}${lab}</button>`}).reverse().join('')+(p.ai>=0?`<span class=ord><button data-mv="1" title="Ke depan">▲</button><button data-mv="-1" title="Ke belakang">▼</button></span>`:'')}
  $('#txp').hidden=!(L&&L.t=='txt');if(L&&L.t=='txt'){if($('#tin')!==document.activeElement)$('#tin').value=L.txt;$('#tfont').value=L.f;$('#tfont').style.fontFamily=`"${L.f}"`;$('#tcol').value=L.c;$('#tsc').value=L.sc;$('#tsw').value=L.sw;$('#tswv').textContent=L.sw}
  if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep)}}
 const cur=()=>A(P[sel]);
 $('#fh').onclick=()=>{const L=cur();L.fx=!L.fx;render(sel);uiTools()};
 $('#fv').onclick=()=>{const L=cur();L.fy=!L.fy;render(sel);uiTools()};
 $('#rep').onclick=()=>{const L=cur();L.rep=!L.rep;view=null;render(sel);uiTools();toast(L.rep?'Diulang ke semua arah':'Ulang dimatikan')};
-$('#del').onclick=()=>{const p=P[sel];if(A(p)===p.T){p.T=null;p.act='L'}else{p.L=null;p.act='T'}view=null;render(sel);uiTools()};
-$('#lyL').onclick=()=>{P[sel].act='L';view=null;drawPv();uiTools()};
-$('#lyT').onclick=()=>{P[sel].act='T';view=null;drawPv();uiTools()};
+$('#del').onclick=()=>{const p=P[sel];if(p.ai<0)return;p.layers.splice(p.ai,1);p.ai=p.layers.length-1;view=null;render(sel);uiTools()};
+$('#lyr').onclick=e=>{const p=P[sel],m=e.target.closest('[data-mv]');if(m){const d=+m.dataset.mv,j=p.ai+d;if(j<0||j>=p.layers.length)return;const t=p.layers[j];p.layers[j]=p.layers[p.ai];p.layers[p.ai]=t;p.ai=j;render(sel);uiTools();return}
+ const b=e.target.closest('[data-li]');if(!b)return;p.ai=+b.dataset.li;view=null;drawPv();uiTools()};
 /* teks */
 $('#tfont').innerHTML=FONTS.map(f=>`<option value="${f}" style="font-family:'${f}'">${f}</option>`).join('');
-$('#addtxt').onclick=()=>{const p=P[sel];if(!p.T)p.T={t:'txt',txt:'NAMA',f:'Bebas Neue',c:'#ffffff',sc:'#16161a',sw:6,x:.5,y:.35,s:.9,sx:1,sy:1,r:0,fx:0,fy:0,rep:0};p.act='T';view=null;
- document.fonts.load(ffont(p.T,100)).then(()=>{view=null;render(sel)});render(sel);uiTools();setTimeout(()=>{$('#tin').focus();$('#tin').select()},50)};
-const setT=(k,v)=>{const L=P[sel].T;if(!L)return;L[k]=v;if(k=='f')document.fonts.load(ffont(L,100)).then(()=>{view=null;render(sel)});render(sel);uiTools()};
+$('#addtxt').onclick=()=>{const p=P[sel],nt=p.layers.filter(l=>l.t=='txt').length;const L={t:'txt',txt:'NAMA',f:'Bebas Neue',c:'#ffffff',sc:'#16161a',sw:6,x:.5,y:nt?.6:.35,s:.9,sx:1,sy:1,r:0,fx:0,fy:0,rep:0};addLayer(p,L);view=null;
+ document.fonts.load(ffont(L,100)).then(()=>{view=null;render(sel)});render(sel);uiTools();setTimeout(()=>{$('#tin').focus();$('#tin').select()},50)};
+const setT=(k,v)=>{const L=cur();if(!L||L.t!='txt')return;L[k]=v;if(k=='f')document.fonts.load(ffont(L,100)).then(()=>{view=null;render(sel)});render(sel);uiTools()};
 $('#tin').oninput=e=>setT('txt',e.target.value);$('#tin').onchange=()=>{view=null;drawPv()};
 $('#tfont').onchange=e=>setT('f',e.target.value);
 $('#tcol').oninput=e=>setT('c',e.target.value);$('#tsc').oninput=e=>setT('sc',e.target.value);
 $('#tsw').oninput=e=>setT('sw',+e.target.value);
-document.fonts.onloadingdone=()=>Object.keys(P).forEach(id=>{if(P[id].T)render(id)});
+document.fonts.onloadingdone=()=>Object.keys(P).forEach(id=>{if(P[id].layers.some(l=>l.t=='txt'))render(id)});
 
 function setImage(src,from,noLib){const im=new Image();im.onload=()=>{if(/^blob:/.test(src)){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);try{setImage(c.toDataURL('image/png'),from,noLib)}catch(e){}return}if(!from&&!noLib)libAdd(im);const p=P[sel],W=p.cv.width,H=p.cv.height,ar=im.naturalHeight/im.naturalWidth;
- p.act='L';p.L=from?{...from,img:im,src}:{img:im,src,x:.5,y:.5,s:Math.max(1,(H/W)/ar),sx:1,sy:1,fx:0,fy:0,rep:0};view=null;render(sel);uiTools();$('#others').hidden=true};
+ const hasImg=p.layers.some(l=>l.t!='txt'),bg=!hasImg;let L;if(from&&bg)L={...from,img:im,src,bg};else if(bg)L={img:im,src,bg:1,x:.5,y:.5,s:Math.max(1,(H/W)/ar),sx:1,sy:1,r:0,fx:0,fy:0,rep:0};else{const n=p.layers.filter(l=>l.t!='txt').length;L={img:im,src,x:.5+((n%3)-1)*.18,y:.3+(Math.floor(n/3)%3)*.2,s:Math.min(.45,.45*(H/W)/ar),sx:1,sy:1,r:0,fx:0,fy:0,rep:0}}
+ if(bg){p.layers.unshift(L);p.ai=0}else addLayer(p,L);if(hasImg)toast('Ditambahkan di atas gambar sebelumnya');view=null;render(sel);uiTools();$('#others').hidden=true};
  im.onerror=()=>toast('Gambar tidak bisa dibuka');im.src=src}
 const readBlob=b=>{const r=new FileReader();r.onload=()=>setImage(r.result);r.readAsDataURL(b)};
 $('#fromd').onclick=()=>$('#file').click();
@@ -360,9 +368,9 @@ addEventListener('dragover',e=>{if([...(e.dataTransfer?.types||[])].includes('Fi
 addEventListener('drop',e=>{const f=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));if(!f)return;e.preventDefault();
  if(e.target==R.domElement){const h=hit(e,grp.children.filter(o=>o.visible));if(h&&h.object.userData.id!=sel)select(h.object.userData.id)}
  if(!sel){toast('Jatuhkan gambar tepat di bagian skinsuit');return}readBlob(f);toast('Gambar ditambahkan ke '+NAME[sel].toLowerCase())});
-$('#fromp').onclick=()=>{const o=$('#others'),ids=Object.keys(P).filter(id=>id!=sel&&P[id].L);if(!ids.length){toast('Belum ada bagian lain yang punya gambar');return}
+$('#fromp').onclick=()=>{const o=$('#others'),ids=Object.keys(P).filter(id=>id!=sel&&P[id].layers.some(l=>l.t!='txt'));if(!ids.length){toast('Belum ada bagian lain yang punya gambar');return}
  o.innerHTML='<small style="width:100%">Ambil gambar dari:</small>'+ids.map(id=>`<button data-id="${id}">${NAME[id]}</button>`).join('');o.hidden=!o.hidden;
- o.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{const L=P[b.dataset.id].L;setImage(L.src,L)})};
+ o.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{const L=P[b.dataset.id].layers.find(l=>l.t!='txt');setImage(L.src,L,true)})};
 
 /* ---------- prompt (latar saja) ---------- */
 const kind=id=>/^torsoF/.test(id)?'torsoF':/^torsoB/.test(id)?'torsoB':/^sleeve/.test(id)?'sleeve':/^long/.test(id)?'long':/^leg/.test(id)?'leg':null;
@@ -376,7 +384,7 @@ $('#cprompt').onclick=async()=>{if(!kind(sel))return;const t=prompt(sel),x=$('#p
 /* model lengan */
 let ls=0;const vis=d=>!d.v||(d.v=='l')==!!ls;
 function applySleeve(){Object.values(P).forEach(p=>p.m.visible=vis(p.d));$('#slv').value=ls}
-$('#slv').onchange=e=>{ls=+e.target.value;['L','R'].forEach(k=>{const a=P[(ls?'sleeve':'long')+k],b=P[(ls?'long':'sleeve')+k];b.base=a.base;if(a.L&&!b.L)b.L={...a.L};if(a.T&&!b.T)b.T={...a.T};render(b.d.id)});
+$('#slv').onchange=e=>{ls=+e.target.value;['L','R'].forEach(k=>{const a=P[(ls?'sleeve':'long')+k],b=P[(ls?'long':'sleeve')+k];b.base=a.base;if(a.layers.length&&!b.layers.length){b.layers=a.layers.map(cloneL);b.ai=b.layers.length-1}render(b.d.id)});
  if(sel&&!vis(P[sel].d))select(null);applySleeve();toast(ls?'Model lengan panjang':'Model lengan pendek')};
 applySleeve();
 /* ---------- proyek: baru / buka / simpan / export ---------- */
@@ -385,14 +393,14 @@ async function saveFile(name,data){
  if(DL){try{await DL.save({filename:name,data});toast('Tersimpan: '+name);return}catch(e){if(e&&e.code=='declined')return;if(e&&e.code=='rate_limited'){toast('Tunggu sebentar lalu coba lagi');return}}}
  try{const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Mengunduh '+name)}catch(e){toast('Unduhan tidak tersedia di tampilan ini')}}
 document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target==m||e.target.hasAttribute('data-x'))m.hidden=true})});
-function resetAll(){Object.values(P).forEach(p=>{p.L=null;p.T=null;p.act='L';p.base='#16161a'});ls=0;applySleeve();select(null);Object.keys(P).forEach(render);$('#cdot').style.background='#16161a'}
+function resetAll(){Object.values(P).forEach(p=>{p.layers=[];p.ai=-1;p.base='#16161a'});ls=0;applySleeve();select(null);Object.keys(P).forEach(render);$('#cdot').style.background='#16161a'}
 $('#bnew').onclick=()=>{$('#mnew').hidden=false};
 $('#mnewok').onclick=()=>{resetAll();$('#mnew').hidden=true;toast('Desain baru')};
-$('#bsave').onclick=()=>{const o={app:'skinsuit-3d',v:1,ls,parts:{}};Object.entries(P).forEach(([id,p])=>{const L=p.L?{...p.L}:null;if(L)delete L.img;o.parts[id]={base:p.base,L,T:p.T||null}});
+$('#bsave').onclick=()=>{const o={app:'skinsuit-3d',v:2,ls,parts:{}};Object.entries(P).forEach(([id,p])=>{o.parts[id]={base:p.base,layers:p.layers.map(l=>{const c={...l};delete c.img;return c})}});
  saveFile('desain-skinsuit.json',new Blob([JSON.stringify(o)],{type:'application/json'}))};
 $('#bopen').onclick=()=>$('#fjson').click();
 $('#fjson').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.parts)throw 0;resetAll();ls=+o.ls||0;applySleeve();
-  Object.entries(o.parts).forEach(([id,v])=>{const p=P[id];if(!p)return;p.base=v.base||'#16161a';if(v.L&&v.L.src){const im=new Image();p.L={...v.L,img:im};im.onload=()=>render(id);im.src=v.L.src}if(v.T){p.T={...v.T};document.fonts.load(ffont(p.T,100)).then(()=>render(id))}render(id)});
+  Object.entries(o.parts).forEach(([id,v])=>{const p=P[id];if(!p)return;p.base=v.base||'#16161a';const arr=v.layers||[v.L,v.T].filter(Boolean).map(l=>l.t?l:{...l,bg:1});p.layers=arr.map(l=>{const c={...l};if(c.t=='txt'){document.fonts.load(ffont(c,100)).then(()=>render(id))}else{const im=new Image();c.img=im;im.onload=()=>render(id);im.src=c.src}return c});p.ai=p.layers.length-1;render(id)});
   $('#cdot').style.background=P.torsoF.base;toast('Desain dibuka')}catch(x){toast('File desain tidak valid')}};r.readAsText(f)};
 let pvBlob=null;
 async function makePreview(){const btn=$('#exp');btn.disabled=true;const OW=1800,OH=3200,fov=14,t=Math.tan(fov*Math.PI/360),mg=1.08;
