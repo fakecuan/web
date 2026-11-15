@@ -3716,6 +3716,30 @@ document.addEventListener('pointerdown',e=>{if(!fsOn()||e.clientX<=innerWidth*.5
  e.preventDefault();audioReady();const b=$('tap');if(b){b.classList.add('down');setTimeout(()=>b.classList.remove('down'),90)}tap();ftMove(e.clientX,e.clientY)},{passive:false});
 setInterval(()=>{if(!fsOn()){const w=document.querySelector('.tapWrap');if(w&&w.style.getPropertyValue('transform')){w.classList.remove('follow');w.style.removeProperty('transform')}}},400);
 
+/* ===== WAKTU TERBAIK 200 M: tulisan lebih kecil & muat + tombol kembali di atas ===== */
+(()=>{const st=document.createElement('style');st.textContent=`
+.bestList button.bRow,.bestList .bRow{font:700 clamp(11px,3.1vw,14px)/1.2 "Exo 2",system-ui,sans-serif!important;grid-template-columns:22px minmax(0,1fr) auto!important;gap:6px!important;padding:6px 6px 6px 2px!important;align-items:center!important}
+.bestList .bRow span{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important}
+.bestList .bRow strong{font-size:.95em}
+.bestList{max-height:min(46vh,420px)!important;padding-right:4px;scrollbar-width:thin}
+.bestCol h3{font-size:clamp(11px,3.2vw,14px)!important}
+.bestCol .primary{font-size:clamp(12px,3.4vw,15px)!important;padding:9px 4px!important;margin-top:auto}
+.bestGrid{gap:8px!important}
+#bTopBack{display:block;width:auto!important;margin:0 0 6px!important;padding:6px 14px!important;font-size:13px!important;border-radius:20px!important}`;document.head.appendChild(st)})();
+{const _mb=menuBest200;menuBest200=function(){_mb();const d=$('dialog');if(d&&!$('bTopBack')){const b=document.createElement('button');b.id='bTopBack';b.type='button';b.className='secondary';b.textContent='⬅ KEMBALI';b.onclick=()=>{audioReady();menu()};const sub=d.querySelector('.menuSub');if(sub)sub.parentNode.insertBefore(b,sub);else d.insertBefore(b,d.firstChild)}}}
+
+/* ===== GESER LAYAR KE KIRI / KANAN UNTUK KEMBALI (di semua menu) ===== */
+(()=>{const G={x:0,y:0,t:0,on:false};
+ const ov=()=>$('overlay');
+ const blocked=t=>!t||!t.closest||t.closest('input,textarea,select,.avList,.choices,.bestList,#chatLog,.chatBox,[data-noswipe]');
+ function backBtn(){const d=$('dialog');if(!d)return null;
+  return $('bTopBack')||$('bBack')||[...d.querySelectorAll('button')].find(b=>b.offsetParent&&/^\s*(⬅|←|◀)|KEMBALI/.test(b.textContent)&&!/LOBBY|ROOM/.test(b.textContent))||null}
+ document.addEventListener('touchstart',e=>{const o=ov();if(!o||o.style.display==='none'||state==='race'||state==='count'||state==='runup'||(typeof TAGX!=='undefined'&&TAGX.on))return;
+  if(e.touches.length!==1||blocked(e.target)){G.on=false;return}const t=e.touches[0];G.x=t.clientX;G.y=t.clientY;G.t=Date.now();G.on=true},{passive:true});
+ document.addEventListener('touchend',e=>{if(!G.on)return;G.on=false;const t=e.changedTouches[0];const dx=t.clientX-G.x,dy=t.clientY-G.y;
+  if(Date.now()-G.t>700||Math.abs(dx)<Math.max(70,innerWidth*.22)||Math.abs(dx)<Math.abs(dy)*2)return;
+  const b=backBtn();if(b){audioReady();b.click()}},{passive:true})})();
+
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
 raceSpecs.mtt={label:'TIME TRIAL 2 KM',count:1,meters:MARA_LEN,laps:1,elim:false,marathon:true,tt:true};
 raceSpecs.battle={label:'BATTLE ARENA',count:6,meters:1e9,laps:99,elim:false,battle:true};
