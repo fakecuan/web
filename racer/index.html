@@ -701,10 +701,10 @@ let individualStarted=false,individualTimer=0,individualPhase='';
 function initRace(){const sp=spec();lapLabel(sp.battle?'HP':sp.marathon?'CP':'LAP');if(sp.marathon)maraEnsureWorld(true,sp.tt?ttSeed():0);else if(TRACK.route)exitMarathonWorld();if(sp.team){tsInit();return}if(sp.individual){online=false;racers=[{id:0,name:cfg.playerName||'SKATER',color:COLORS[0],s:0,d:0,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,phase:0,ai:false,row:1}];player=racers[0];setupIndividualHeat(true);return}const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;if(sp.marathon)raceStartS=mS(0);const grid=startGrid(sp.count,raceStartS);itemsReset();racers=Array.from({length:sp.count},(_,i)=>({id:i,name:i===0?(cfg.playerName.trim()||'Kamu'):NAMES[i],color:COLORS[i],s:grid[i].s,d:grid[i].d,v:0,top:MAX_SPEED,alive:true,finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai:i!==0,row:grid[i].row,finishTime:null,eliminatedAt:null,skill:.91+Math.random()*.09,stamina:1}));player=racers[0];foulCards=0;olSeenFoulAt=0;racers.forEach(r=>{r._startS=r.s;r._startD=r.d});racers.forEach((r,i)=>{if(i>0)r.skill=.99+((i*7)%2)*.01});elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(sp.marathon){marathonReset();pack2Reset();if(sp.tt)ttReset()}if(sp.battle)battleReset();state='count';renderLeaderboard();$('overlay').style.display='none';updateOfflineRaceTools();}
 function updateOfflineRaceTools(){
  const el=$('offlineRaceTools');
- if(el)el.style.display=(!online&&(state==='race'||state==='count'||state==='runup'))?'flex':'none';
+ if(el)el.style.display=((state==='race'||state==='count'||state==='runup'))?'flex':'none';const rb=$('offlineRestart');if(rb)rb.style.display=online?'none':'';
 }
 $('offlineRestart')?.addEventListener('click',()=>{if(!online){audioReady();initRace()}});
-$('offlineExit')?.addEventListener('click',()=>{if(!online){audioReady();confirmExit('Balapan ini tidak akan disimpan.',()=>menu())}});
+$('offlineExit')?.addEventListener('click',()=>{audioReady();if(!online){confirmExit('Balapan ini tidak akan disimpan.',()=>menu())}else{confirmExit('Kamu akan keluar dari permainan dan room ini.',()=>{steer=0;steerValue=0;try{updateSteerUI()}catch(e){}roomListScreen()})}});
 function escapeHTML(v){return String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
 const menuBtnEl=$('menuBtn');if(menuBtnEl)menuBtnEl.addEventListener('click',()=>{audioReady();steer=0;steerValue=0;updateSteerUI();menu()});
 function formatTime(s){let m=Math.floor(s/60),sec=(s%60).toFixed(2).padStart(5,'0');return m+':'+sec}
@@ -3679,6 +3679,40 @@ function avDropdownify(){const p=$('avPanel');if(!p)return;let n=0;
  p.querySelectorAll('[data-k]').forEach(b=>{const h=b.onclick;if(h&&!b._dd){b._dd=1;b.onclick=e=>{avOpenDD=null;h(e)}}})}
 function avDropdownify2(){const p=$('avPanel');if(!p)return;p.querySelectorAll('.avDDBtn').forEach((b,i)=>{});avRender()}
 {const _ar=avRender;avRender=function(){_ar();try{avDropdownify()}catch(e){}}}
+/* ===== kemudi bebas: sentuh & geser di mana saja di separuh kiri layar ===== */
+(()=>{const st=document.createElement('style');st.textContent=`#app.playing #stage{touch-action:none}
+#flexSteer{position:fixed;z-index:30;pointer-events:none;width:120px;height:56px;margin:-28px 0 0 -60px;border-radius:30px;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);display:none}
+#flexSteer i{position:absolute;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe8f3 60%,#b9c7d8);box-shadow:0 2px 8px #0005}
+#flexSteer:before,#flexSteer:after{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:14px;font-weight:900;opacity:.8}#flexSteer:before{content:'◀';left:8px}#flexSteer:after{content:'▶';right:8px}`;document.head.appendChild(st)})();
+const FS={id:null,x0:0,s0:0,el:null};
+function fsOn(){return document.getElementById('app').classList.contains('playing')&&(state==='race'||state==='count'||state==='runup')}
+function fsUI(x,y){let el=FS.el||(FS.el=document.getElementById('flexSteer'));if(!el){el=document.createElement('div');el.id='flexSteer';el.innerHTML='<i></i>';document.body.appendChild(el);FS.el=el}
+ if(x==null){el.style.display='none';return}el.style.display='block';el.style.left=x+'px';el.style.top=y+'px';el.firstChild.style.left=(60+steerValue*42)+'px'}
+document.addEventListener('pointerdown',e=>{if(FS.id!==null||!fsOn())return;if(e.clientX>innerWidth*.5)return;
+ const t=e.target;if(t&&t.closest&&t.closest('button,input,textarea,select,a,#steerPad,#overlay #dialog,#tsBtn,#atk'))return;
+ FS.id=e.pointerId;FS.x0=e.clientX;FS.y0=e.clientY;FS.s0=steerValue;audioReady();fsUI(FS.x0,FS.y0);e.preventDefault()},{passive:false});
+document.addEventListener('pointermove',e=>{if(e.pointerId!==FS.id)return;const span=Math.max(70,Math.min(130,innerWidth*.22));setSteer(Math.max(-1,Math.min(1,FS.s0+(e.clientX-FS.x0)/span)));fsUI(FS.x0,FS.y0);e.preventDefault()},{passive:false});
+['pointerup','pointercancel'].forEach(k=>document.addEventListener(k,e=>{if(e.pointerId!==FS.id)return;FS.id=null;fsUI(null)}));
+setInterval(()=>{if(FS.id!==null&&!fsOn()){FS.id=null;fsUI(null)}},300);
+/* slider bawah disembunyikan: kemudi cukup dengan geser jempol di kiri layar */
+(()=>{const st=document.createElement('style');st.textContent=`#app.playing #controls .steerBox{visibility:hidden;pointer-events:none!important}
+#steerHint{position:absolute;left:14px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:6;pointer-events:none;display:none;color:#fff;font:italic 900 12px/1.2 'Exo 2',system-ui,sans-serif;background:rgba(12,36,92,.55);border:1.5px dashed rgba(255,255,255,.6);border-radius:22px;padding:8px 14px;text-align:center;opacity:.9;transition:opacity .6s}
+#steerHint small{display:block;font-size:9px;font-style:normal;opacity:.85}`;document.head.appendChild(st)})();
+let fsUsed=false,fsLastState='';
+setInterval(()=>{const st=$('stage');if(!st)return;let h=$('steerHint');if(!h){h=document.createElement('div');h.id='steerHint';h.innerHTML='◀ GESER JEMPOL ▶<small>di mana saja di layar kiri untuk belok</small>';st.appendChild(h)}
+ if(state==='count'&&fsLastState!=='count')fsUsed=false;fsLastState=state;
+ const on=fsOn()&&!fsUsed;h.style.display=on?'block':'none'},250);
+document.addEventListener('pointermove',e=>{if(e.pointerId===FS.id&&Math.abs(e.clientX-FS.x0)>12)fsUsed=true});
+/* ===== TAP di mana saja di layar kanan; logo TAP mengikuti jempol lalu kembali ke kanan bawah ===== */
+(()=>{const st=document.createElement('style');st.textContent=`#app.playing .tapWrap{transition:none!important}#tap small{display:none!important}.tapLbl{display:none!important}`;document.head.appendChild(st)})();
+const FT={tm:0,ids:new Set()};
+function ftMove(x,y){const w=document.querySelector('.tapWrap'),b=$('tap');if(!w||!b)return;
+ const cur=w.style.getPropertyValue('transform');w.style.removeProperty('transform');const r=b.getBoundingClientRect();if(cur)w.style.setProperty('transform',cur,'important');
+ const dx=x-(r.left+r.width/2),dy=y-(r.top+r.height/2);w.classList.add('follow');w.style.setProperty('transform',`translate(${dx.toFixed(0)}px,${dy.toFixed(0)}px)`,'important');}
+document.addEventListener('pointerdown',e=>{if(!fsOn()||e.clientX<=innerWidth*.5)return;const t=e.target;
+ if(t&&t.closest&&t.closest('#tap,button,input,textarea,select,a,#overlay #dialog,#tsBtn,#atk'))return;
+ e.preventDefault();audioReady();const b=$('tap');if(b){b.classList.add('down');setTimeout(()=>b.classList.remove('down'),90)}tap();ftMove(e.clientX,e.clientY)},{passive:false});
+setInterval(()=>{if(!fsOn()){const w=document.querySelector('.tapWrap');if(w&&w.style.getPropertyValue('transform')){w.classList.remove('follow');w.style.removeProperty('transform')}}},400);
 
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
 raceSpecs.mtt={label:'TIME TRIAL 2 KM',count:1,meters:MARA_LEN,laps:1,elim:false,marathon:true,tt:true};
