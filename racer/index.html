@@ -816,7 +816,7 @@ function setTrack(id){if(TRACK.route){maraClearSpect();TRACK.route=null;trackId=
 function rebuildWorld(){if(!GL.ok||!GL.sc)return;const sc=GL.sc;for(const o of GL.worldObjs||[]){sc.remove(o);o.traverse(n=>{if(n.geometry)n.geometry.dispose()})}
  GL.worldObjs=[];GL.crowd=[];GL.flags=[];GL.stands=[];const before=new Set(sc.children);if(TRACK.route)glBuildRouteWorld();else glBuildWorld();GL.worldObjs=sc.children.filter(c=>!before.has(c));
  GL.worldObjs.forEach(o=>o.traverse(n=>{if(n.isMesh&&!n.isInstancedMesh)n.receiveShadow=true}));if(GL.arch)GL.arch.traverse(n=>{if(n.isMesh)n.castShadow=true})}
-function brutalOn(){return cfg.mode==='brutal'&&(!online||!!TRACK.route)}
+function brutalOn(){return cfg.mode==='brutal'&&(!online||!!TRACK.route||!!spec().battle)}
 function pickItem(){const x=Math.random();let acc=0;for(const k in ITEM_DEF){acc+=ITEM_DEF[k].w;if(x<acc)return k}return 'rudal'}
 function clearItemObjs(){if(GL.itemG){GL.sc.remove(GL.itemG);GL.itemG.traverse(n=>{if(n.geometry)n.geometry.dispose();if(n.material){if(n.material.map)n.material.map.dispose();n.material.dispose()}});GL.itemG=null}}
 function buildItemMeshes(){const T=THREE;if(!GL.ok||!ITEMS_ON)return;
@@ -1032,7 +1032,7 @@ if(sp.elim&&state==='race'){
  else{const lap=Math.floor(Math.max(0,player.s-raceStartS)/TRACK.perimeter);if(lap>eliminations)eliminateLap(lap)}
 }
 if(state==='race'){
- if(online&&spec().team){}else if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
+ if(online&&(spec().team||spec().battle)){}else if(online){if(!player.alive){onlineFinish(false);return}if(player.finished){onlineFinish(true);return}}
  else{if(!player.alive){endRace(false);return}if(player.finished){endRace(true);return}}
 }
 $('distance').textContent=Math.floor(meters(player)).toLocaleString('id-ID')+' m';$('lap').textContent=sp.battle?String(Math.ceil(player.hp??0)):sp.marathon?maraCP()+'/'+MARA_ZONES.length:currentLap(player)+'/'+sp.laps;$('clock').textContent=formatTime(elapsed);updateEnergyUI();$('speedNum').textContent=kmh(player.v);lbThrottle();}
@@ -2616,7 +2616,7 @@ function olGrid(n,rc,baseS){
  if(rc==='300'||rc==='500'){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:n},(_,i)=>({s:baseS-12,d:lanes[i],row:1}))}
  const front=Math.min(4,n),back=n-front,ds=[];for(let i=0;i<front;i++)ds.push((i-(front-1)/2)*13.5);for(let i=0;i<back;i++)ds.push((i-(back-1)/2)*13.5);
  return Array.from({length:n},(_,i)=>({s:baseS-12-(i<front?0:38),d:ds[i<front?i:i-front],row:i<front?1:2}))}
-function startOnlineRace(go){cfg.race=go.rc;cfg.mode=go.rc==='marab'?'brutal':go.rc==='mara'?'marathon':'kasual';if(isMaraRc(go.rc)){maraEnsureWorld(true,go.seed||7);lapLabel('CP')}else{setTrack('oval');lapLabel('LAP')}
+function startOnlineRace(go){cfg.race=go.rc;cfg.mode=(go.rc==='marab'||go.rc==='battle')?'brutal':go.rc==='mara'?'marathon':'kasual';if(go.rc==='battle')MS.seed=go.seed||7;if(isMaraRc(go.rc)){maraEnsureWorld(true,go.seed||7);lapLabel('CP')}else{setTrack('oval');lapLabel('LAP')}
 const me=myPeer(),hostNow=iAmHost();
  const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65,yellowStart=blueStart-TRACK.perimeter/2;
  raceStartS=(go.rc==='300'||go.rc==='500')?yellowStart:blueStart;if(isMaraRc(go.rc))raceStartS=mS(0);
@@ -2634,7 +2634,7 @@ const me=myPeer(),hostNow=iAmHost();
  }else{individualOnline=false;soloResults=[];soloIndex=0}
  olInvalidRace=false;olInvalidReason='';olValidityStartedAt=Date.now();
  for(const r of racers){r._validStartS=r.s;r._validNetSeen=Date.now()}
- elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(!go.individual)state='count';olLastHTML='';olElims=[];olRecPending=false;olItemsReset(go);itemsReset();if(isMaraRc(go.rc)){marathonReset();pack2Reset()}olRecState='';olView='lobby';$('dialog').dataset.olhtml='';
+ elapsed=0;countdown=3.9;$('foulCardValue').textContent='0/2';smoothSpeedCap=MAX_SPEED;steer=0;steerValue=0;updateSteerUI();lapNow=0;eliminations=0;finishOrder=[];toast='';if(!go.individual)state='count';olLastHTML='';olElims=[];olRecPending=false;olItemsReset(go);itemsReset();if(isMaraRc(go.rc)){marathonReset();pack2Reset()}if(go.rc==='battle')battleReset();olRecState='';olView='lobby';$('dialog').dataset.olhtml='';
  renderLeaderboard();$('overlay').style.display='none';audioReady();
  olRoom.presence({ph:'race',s:+player.s.toFixed(1),d:+player.d.toFixed(1),v:0,f:0,fn:null})}
 function onlineTick(now){
@@ -2674,22 +2674,22 @@ function onlineTick(now){
  if(state==='lobby'){const ps=olViewers(),h=olHostP(ps),g=h&&h.presence.go;
   if(g&&g.id!==olLastGo){olLastGo=g.id;const me=myPeer();if(!h.sameTab&&h.presence.ph==='race'&&Array.isArray(g.parts)&&g.parts.some(x=>x[0]===me)&&olView==='lobby')startOnlineRace(g)}return}
  if((state==='count'||state==='race'||state==='runup'||state==='done')&&player&&now-olLastSend>70){olLastSend=now;const patch={};
-  if(state!=='done'){patch.s=+player.s.toFixed(1);patch.d=+player.d.toFixed(1);patch.v=Math.round(player.v);patch.f=player.fall>0?1:0;if(ITEMS_ON)patch.x=p2Bits(player)}
-  if(racers.some(r=>r.bot)&&iAmHost()){patch.b=racers.filter(r=>r.bot).map(r=>[+r.s.toFixed(1),+r.d.toFixed(1),Math.round(r.v),r.fall>0?1:0,r.finished&&r.finishTime?+r.finishTime.toFixed(2):0,ITEMS_ON?p2Bits(r):0]);patch.eo=olElims.length?olElims:null}
+  if(state!=='done'){patch.s=+player.s.toFixed(1);patch.d=+player.d.toFixed(1);patch.v=Math.round(player.v);patch.f=player.fall>0?1:0;if(ITEMS_ON)patch.x=p2Bits(player);if(spec().battle){patch.hp=Math.ceil(player.hp??100);patch.ko=player.alive?0:1}}
+  if(racers.some(r=>r.bot)&&iAmHost()){patch.b=racers.filter(r=>r.bot).map(r=>[+r.s.toFixed(1),+r.d.toFixed(1),Math.round(r.v),r.fall>0?1:0,r.finished&&r.finishTime?+r.finishTime.toFixed(2):0,ITEMS_ON?p2Bits(r):0,spec().battle?Math.ceil(r.hp??100):0]);patch.eo=olElims.length?olElims:null}
   if(Object.keys(patch).length)olRoom.presence(patch)}}
 function applyRemote(r,s,d,v,f,upd,dt){const age=Math.min(.35,Math.max(0,(Date.now()-upd)/1000)),ts=s+(f?0:v*age),k=Math.min(1,12*dt);r.s+=(ts-r.s)*k;r.d+=(d-r.d)*k;r.v=v;r.fall=f?1:0;r.phase+=v*dt*.055}
 function applyElims(eo){let ch=false;for(const e of eo){const r=racers[e[0]];if(r&&r.alive&&!r.finished){r.alive=false;r.eliminatedAt=e[1];eliminations=Math.max(eliminations,e[1]);ch=true}}if(ch){setToast('ELIMINATION','PEMBALAP TERAKHIR KELUAR');sfx('elim');renderLeaderboard()}}
 function syncRemotes(dt){
  if(!olRoom)return;const ps=olRoom.peers(),h=olHostP(olViewers()),meHost=!!(h&&h.sameTab),hp=h?h.presence:null;
  for(const r of racers){
-  if(r.bot){r.remote=!meHost;if(meHost||!h)continue;const b=hp.b&&hp.b[r.bi];if(!b)continue;applyRemote(r,b[0],b[1],b[2],b[3],h.updatedAt,dt);if(ITEMS_ON)p2ApplyBits(r,b[5]||0);if(b[4]&&!r.finished){r.finished=true;r.finishTime=b[4]}continue}
+  if(r.bot){r.remote=!meHost;if(meHost||!h)continue;const b=hp.b&&hp.b[r.bi];if(!b)continue;applyRemote(r,b[0],b[1],b[2],b[3],h.updatedAt,dt);if(ITEMS_ON)p2ApplyBits(r,b[5]||0);if(spec().battle)btRemoteHP(r,b[6],0);if(b[4]&&!r.finished){r.finished=true;r.finishTime=b[4]}continue}
   if(!r.remote)continue;
   const pe=ps.find(p=>p.peer===r.peer);
   if(!pe){if(!r.finished&&r.alive)r.alive=false;continue}
   const q=pe.presence;
   if(q.red){r.alive=false;r.v=0}
   r.foulCards=Number(q.fc)||0;
-  if(typeof q.s==='number'&&typeof q.d==='number'){applyRemote(r,q.s,q.d,typeof q.v==='number'?q.v:0,q.f,pe.updatedAt,dt);if(ITEMS_ON)p2ApplyBits(r,q.x||0)}
+  if(typeof q.s==='number'&&typeof q.d==='number'){applyRemote(r,q.s,q.d,typeof q.v==='number'?q.v:0,q.f,pe.updatedAt,dt);if(ITEMS_ON)p2ApplyBits(r,q.x||0);if(spec().battle)btRemoteHP(r,q.hp,q.ko)}
   if(typeof q.fn==='number'&&!r.finished){r.finished=true;r.finishTime=q.fn}}
  if(ITEMS_ON)olItemsRecv(ps);checkOnlineRaceValidity();if(!meHost&&hp&&Array.isArray(hp.eo))applyElims(hp.eo)}
 function markOnlineRaceInvalid(reason){
@@ -2699,7 +2699,7 @@ function markOnlineRaceInvalid(reason){
  olRecPending=false;olRecState='invalid';
  setToast('LOMBA TIDAK SAH','ADA PEMAIN TIDAK BERGERAK 1 PUTARAN');
 }
-function checkOnlineRaceValidity(){if(spec().team)return;
+function checkOnlineRaceValidity(){if(spec().team||spec().battle)return;
  if(!online||!olRoom||!racers.length||olInvalidRace)return;
  const peers=olRoom.peers();
  // A validity flag from any participant invalidates the entire shared race.
@@ -3641,7 +3641,7 @@ function mfApply(){const el=$('menuFriends'),ic=$('mfIcon');const open=MF.open&&
 (()=>{const st=document.createElement('style');st.textContent=`
 .choices.cfmt{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
 .choices.cfmt .choice{min-width:0;padding:7px 1px!important;font-size:clamp(9px,2.7vw,13px)!important;line-height:1.1;overflow-wrap:normal;word-break:normal;border-radius:12px}
-.choices.cfmt .choice:before{height:10px!important;margin-bottom:2px!important}
+.choices.cfmt .choice:before{display:none!important}
 .choices.cfmt .choice br{display:none}.choices.cfmt .choice small{display:block;margin-top:2px;font-size:9px!important}
 .choices.cfmt .choice.sel:after{width:16px;height:16px;line-height:16px;font-size:10px;right:-4px;top:-5px}
 #dialog:has(.cfmt) h1{font-size:22px;margin:0 0 2px}#dialog:has(.cfmt) .sub{margin:8px 0 5px}#dialog:has(.cfmt) .playerNameInput{padding:9px 12px!important}
@@ -3711,10 +3711,10 @@ function ttFinish(won){state='done';updateOfflineRaceTools();steer=0;const t=pla
 const BT={T:120,warn:{},tex:[]};
 function battleReset(){BT.warn={};BT.pops=[];for(const r of racers){r.hp=100;r.kos=0;r.invT=0;if(r._hs&&r._hs.parent)r._hs.parent.remove(r._hs);r._hs=null;r._hpShown=-1}setTimeout(()=>{if(spec().battle&&state!=='menu')setToast('BATTLE ARENA','HP 100 • BERTAHAN 2 MENIT')},900)}
 function battlePlaceItems(){const P=TRACK.perimeter;for(let k=0;k<8;k++){const ds=k%2?[-24,-8,8,24]:[-18,0,18];for(const d of ds)itemBoxes.push({s:raceStartS+(k+.5)/8*P,d,cool:0,mesh:null})}
- for(let k=0;k<4;k++)turboPads.push({s:raceStartS+(k+.25)/4*P,d:(Math.random()*2-1)*20,mesh:null})}
+ {const R=p2Rand(29);for(let k=0;k<4;k++)turboPads.push({s:raceStartS+(k+.25)/4*P,d:(R()*2-1)*20,mesh:null})}}
 const BT_DMG={rudal:30,bom:35,tornado:28,listrik:22,oli:15,waktu:8,juara:30};
 function battleHit(t,owner,kind){if(!spec().battle||!t.alive)return;const dmg=BT_DMG[kind]||20;t.hp=Math.max(0,(t.hp??100)-dmg);battlePop(t,'-'+dmg,dmg>=28?'#ff4d3d':'#ffb03a');
- if(t.hp<=0){t.alive=false;t.eliminatedAt=elapsed;t.v=0;if(owner&&owner!==t)owner.kos=(owner.kos||0)+1;if(t!==player)setToast(t.name+' KO!',(owner===player?'KAMU MENJATUHKANNYA':'TERSISA '+racers.filter(r=>r.alive).length+' PEMAIN'));sfx('elim')}
+ if(t.hp<=0){t.alive=false;t.eliminatedAt=elapsed;t.v=0;if(owner&&owner!==t)owner.kos=(owner.kos||0)+1;if(online){olEmit('ko',t,{t:owner&&owner!==t?rKey(owner):null});if(t===player)setTimeout(()=>{if(spec().battle&&state==='race')battleFinish()},1600)}if(t!==player)setToast(t.name+' KO!',(owner===player?'KAMU MENJATUHKANNYA':'TERSISA '+racers.filter(r=>r.alive).length+' PEMAIN'));sfx('elim')}
  else if(t===player&&t.hp<=30)setTimeout(()=>{if(state==='race')setToast('HP KRITIS!',Math.ceil(t.hp)+' HP TERSISA')},600)}
 function battleStep(dt){const al=racers.filter(r=>r.alive);const left=BT.T-elapsed;
  for(const k of [60,30,10])if(left<=k&&!BT.warn[k]){BT.warn[k]=1;setToast(k+' DETIK LAGI','');sfx('count')}
@@ -3722,7 +3722,8 @@ function battleStep(dt){const al=racers.filter(r=>r.alive);const left=BT.T-elaps
 function battleRank(){return racers.slice().sort((a,b)=>{if(a.alive!==b.alive)return a.alive?-1:1;if(a.alive)return ((b.hp||0)-(a.hp||0))||((b.kos||0)-(a.kos||0));return (b.eliminatedAt||0)-(a.eliminatedAt||0)})}
 function battleFinish(){if(state==='done')return;state='done';updateOfflineRaceTools();steer=0;const R=battleRank(),place=R.indexOf(player)+1,win=place===1;if(win)sfx('finish');
  const left=R.map((r,i)=>`<div class="frkRow${r===player?' me':''}"><b>${i+1}</b><span class="frkDot" style="background:${r.color}"></span><span class="frkName">${escapeHTML(r.name)}</span><span class="frkT">${r.alive?Math.ceil(r.hp)+' HP':'KO'} · ${r.kos||0} KO</span></div>`).join('');
- finScreen({win,title:win?'JUARA ARENA':player.alive?'WAKTU HABIS':'KO!',sub:'BATTLE ARENA • '+(player.kos||0)+' KO',place,time:formatTime(Math.min(elapsed,BT.T)),lapLbl:'HP',lap:player.alive?String(Math.ceil(player.hp)):'0',againLbl:'MAIN LAGI',changeLbl:'GANTI MATA LOMBA',leftHtml:left})}
+ finScreen({win,title:win?'JUARA ARENA':player.alive?'WAKTU HABIS':'KO!',sub:'BATTLE ARENA • '+(player.kos||0)+' KO',place,time:formatTime(Math.min(elapsed,BT.T)),lapLbl:'HP',lap:player.alive?String(Math.ceil(player.hp)):'0',againLbl:online?'KEMBALI KE ROOM':'MAIN LAGI',changeLbl:online?'KELUAR ROOM':'GANTI MATA LOMBA',leftHtml:left});
+ if(online){const ag=$('again'),ch=$('change');if(ag)ag.onclick=()=>{audioReady();backToLobby()};if(ch)ch.onclick=()=>{audioReady();leaveRoom();menu()};if(olRoom)try{olRoom.presence({ph:'fin',v:0})}catch(e){}}}
 function hpCol(h){return h>60?'#2ee06a':h>30?'#ffc72c':'#ff3b30'}
 function battleDrawHP(r){const c=r._hc,x=c.getContext('2d'),w=c.width,h=c.height,hp=Math.max(0,Math.ceil(r.alive?r.hp:0));x.clearRect(0,0,w,h);
  x.fillStyle='rgba(8,20,52,.85)';x.beginPath();x.roundRect?x.roundRect(2,6,w-4,h-12,10):x.rect(2,6,w-4,h-12);x.fill();
@@ -3747,7 +3748,7 @@ function behindNear(r,range){const P=TRACK.perimeter,W=!TRACK.route;return racer
 
 /* ================= ONLINE: MARATHON RESMI & BRUTAL (item tersinkron) ================= */
 raceSpecs.marab=Object.assign({},raceSpecs.mara,{label:'MARATHON BRUTAL'});
-if(!OL_FORMATS.includes('marab'))OL_FORMATS.push('marab');OL_MAX.marab=8;OL_LBL.mara='MARATHON RESMI';OL_LBL.marab='MARATHON BRUTAL';
+if(!OL_FORMATS.includes('marab'))OL_FORMATS.push('marab');if(!OL_FORMATS.includes('battle'))OL_FORMATS.push('battle');OL_MAX.battle=6;OL_LBL.battle='BATTLE ARENA';OL_MAX.marab=8;OL_LBL.mara='MARATHON RESMI';OL_LBL.marab='MARATHON BRUTAL';
 function isMaraRc(rc){return rc==='mara'||rc==='marab'}
 function mkRng(seed){let sd=(Math.floor(seed)%2147483647+2147483647)%2147483647||7;return()=>((sd=(sd*16807)%2147483647)/2147483647)}
 function p2Rand(salt){return online&&MS.seed?mkRng(MS.seed*31+salt):Math.random}
@@ -3775,12 +3776,16 @@ function olApplyItem(e){const[,,k,ok,s,d,tk,x]=e,r=rByKey(ok);if(!r)return;const
  else if(k==='juara'){const t=rByKey(tk);if(!t)return;hunters.push({owner:r,tgt:t,s,d,v:MAX_SPEED*1.9,life:14,dead:false,mesh:null});sndHunter(k1)}
  else if(k==='nitro'){r.boostT=x?3.5:2.5;sndNitro(k1,r.boostT)}
  else if(k==='perisai'){r.shieldT=x?4.5:3;sndShield(k1*.8)}
- else if(k==='sayap'){r.wingT=5;r.wingHit=new Map();sndWings(k1)}}
+ else if(k==='sayap'){r.wingT=5;r.wingHit=new Map();sndWings(k1)}
+ else if(k==='ko'){const by=rByKey(tk);if(r.alive){r.alive=false;r.eliminatedAt=elapsed;r.hp=0;sfx('elim')}if(by)by.kos=(by.kos||0)+1;if(by===player)setToast(r.name+' KO!','KAMU MENJATUHKANNYA');else setToast(r.name+' KO!','TERSISA '+racers.filter(o=>o.alive).length+' PEMAIN')}}
 /* status visual pemain lain (perisai, sayap, nitro, waktu, setrum, item ditahan, berputar) */
 function p2Bits(r){return((r.shieldT||0)>0?1:0)|((r.wingT||0)>0?2:0)|((r.boostT||0)>0?4:0)|((r.timeT||0)>0?8:0)|((r.zapT||0)>0?16:0)|(r.hold==='oli'?32:0)|(r.hold==='bom'?64:0)|((r.spinT||0)>0?128:0)|((r.airT||0)>0?256:0)}
 function p2ApplyBits(r,b){b=b|0;const set=(f,key,v)=>{if(b&f)r[key]=Math.max(r[key]||0,v);else if(r[key]>0&&r['_x'+key])r[key]=0;r['_x'+key]=!!(b&f)};
  set(1,'shieldT',.3);set(2,'wingT',.3);set(4,'boostT',.3);set(8,'timeT',.3);set(16,'zapT',.3);set(128,'spinT',.3);
  r.hold=b&32?'oli':b&64?'bom':null;if(!r.wingHit)r.wingHit=new Map()}
+
+/* Battle Arena online: darah pemain lain dari presence */
+function btRemoteHP(r,hp,ko){if(hp==null)return;if(r._lastHp!=null&&hp<r._lastHp&&typeof battlePop==='function')battlePop(r,'-'+(r._lastHp-hp),(r._lastHp-hp)>=28?'#ff4d3d':'#ffb03a');r.hp=hp;r._lastHp=hp;if((hp<=0||ko)&&r.alive){r.alive=false;r.eliminatedAt=elapsed}}
 
 /* ===== RANKED BEREGU: TEAM SPRINT & RELAY — versi uji coba vs komputer ===== */
 raceSpecs.ts={label:'TEAM SPRINT 500 M',count:4,meters:500,laps:500/LAP_METERS,elim:false,team:true,size:2,legs:2};
