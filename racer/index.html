@@ -3835,7 +3835,8 @@ const tsM=r=>(r.s-raceStartS)/tsK();
 const tsQual=g=>Math.max(.3,Math.min(1,1-Math.abs(g-1.5)/2.5));
 const tsFenceD=()=>TRACK.width/2-5;
 function tsLine(fm){const fin=spec().meters%200;let best=1e9;for(let n=Math.floor(fm/200);n<=Math.floor(fm/200)+2;n++)for(const c of [n*200,n*200+fin])if(c>fm+1&&c<best)best=c;return best}
-function tsZone(j){if(spec().relay){const b=200*j;return{zs:b+35,ze:b+65,f:b+38}}return{zs:235,ze:265,f:238}}
+/* relay: penerima berdiri di tikungan seberang (tikungan ke-2), dorongan harus terjadi sebelum gapura start = garis diskualifikasi */
+function tsZone(j){if(spec().relay){const b=200*j,pre=(TRACK.straight*.65+TRACK.arc)/tsK(),f=Math.round(b-pre+8);return{zs:f-30,ze:f+28,f}}return{zs:235,ze:265,f:238}}
 const tsAct=T=>T.order[T.leg%T.order.length];
 const tsRecv=T=>T.leg+1<T.legs?T.order[(T.leg+1)%T.order.length]:null;
 function tsMk(id,name,color,s,d,ai,team,hold){return{id,name,color,s,d,v:0,top:MAX_SPEED,alive:hold!=='rest',finished:false,fall:0,fallTime:0,imm:0,crashCooldown:0,phase:Math.random()*6,ai,row:1,finishTime:null,eliminatedAt:null,skill:.99,stamina:1,tsTeam:team,tsHold:hold,_startS:s,_startD:d}}
@@ -3867,13 +3868,14 @@ function tsHoldStep(r,dt){
   if(out.ai&&(r.s-out.s)/k<=T.aiTurun)tsTurun(T);
   else if(!out.ai&&!TM.dq&&tsM(out)>z.ze+3)tsDQ('REKAN TIDAK TURUN','TEKAN TURUN SAAT KAMU MENDEKAT',false);
  }else if(r.tsHold==='glide'){
-  r.v=Math.min(r.v+2.6*k*dt,7*k);
+  if(!T.hold)r.v=Math.min(r.v+2.6*k*dt,7*k);
   const tgt=Math.max(-TRACK.width/2+8,Math.min(TRACK.width/2-8,out.d));r.d+=Math.max(-12*dt,Math.min(12*dt,tgt-r.d));
   tsMove(r,dt);
   if(TM.dq&&T.id===0)return;
   const gap=(r.s-out.s)/k;
-  if(out.ai&&gap<=T.aiGap&&gap>0)tsExchange(T,tsQual(gap));
-  else if(!out.ai&&gap<=.4&&Math.abs(r.d-out.d)<9)tsDQ('TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT',true);
+  if(out.ai&&!T.hold&&gap<=T.aiGap+.5&&gap>0)tsHoldStart(T);
+  else if(out.ai&&T.hold&&tsFill(T)>=(T.aiQ||.9))tsExchange(T,tsFill(T));
+  else if(!out.ai&&!T.hold&&!T.grab&&gap<=.4&&Math.abs(r.d-out.d)<9)tsDQ('TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT',true);
   else if(!out.ai&&tsM(r)>=tsLine(z.f))tsDQ('REKAN MELEWATI GARIS','BELUM DIDORONG SAMPAI GARIS START/FINIS',false);
  }else if(r.tsHold==='out'){
   r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=spec().relay?(r.tsTeam===0?-1:1)*(TRACK.width/2-10):tsFenceD();
@@ -3947,10 +3949,10 @@ function tsBtnUI(){
 let tsPick='ts';
 function tsMenu(){menuMain=false;$('dialog').style.removeProperty('width');$('overlay').style.display='flex';
  const rel=tsPick==='relay';
- const info=rel?`🔁 Tim 3 pelari, <b>1.400 m</b> (7 lap). Setiap pelari <b>2× dorong</b> secara bergiliran (total 6 dorongan), pelari ke-7 adalah <b>finisher</b> sampai garis finis. Zona estafet ada di setiap lap. Kamu selalu mengendalikan pelari yang sedang aktif.`:`🤝 Kamu <b>pelari 1</b> Tim Biru. Rekanmu berdiri di pinggir pagar zona estafet (235–265 m).`;
+ const info=rel?`🔁 Tim 3 pelari, <b>1.400 m</b> (7 lap). Setiap pelari <b>2× dorong</b> secara bergiliran (total 6 dorongan), pelari ke-7 adalah <b>finisher</b> sampai garis finis. Rekan menunggu di pagar <b>tikungan ke-2</b>; dorongan harus terjadi sebelum <b>gapura start</b>, lewat garis = diskualifikasi. Kamu selalu mengendalikan pelari yang sedang aktif.`:`🤝 Kamu <b>pelari 1</b> Tim Biru. Rekanmu berdiri di pinggir pagar zona estafet (235–265 m).`;
  $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>RANKED • PILIH NOMOR</b><small>NOMOR BEREGU • LATIHAN VS KOMPUTER</small></div>
  <div class="choices"><button class="choice ${rel?'':'sel'}" type="button" data-tp="ts">TEAM SPRINT<br><small>2 PELARI • 500 M</small></button><button class="choice ${rel?'sel':''}" type="button" data-tp="relay">RELAY<br><small>3 PELARI • 1.400 M</small></button></div>
- <div class="itemLegend">${info}<br>1. Tekan <b>TURUN</b> saat mendekat, rekan meluncur dari pagar.<br>2. Tekan <b>DORONG</b> saat penanda masuk area putih.<br>Rekan terus meluncur setelah turun. Terlambat dorong = tabrakan, dan rekan yang sampai garis start/finis tanpa didorong = <b>diskualifikasi</b>.</div>
+ <div class="itemLegend">${info}<br>1. Tekan <b>TURUN</b> saat mendekat, rekan meluncur dari pagar.<br>2. Dekati rekan (≤2,6 m) lalu tekan <b>PEGANG</b>.<br>3. Bar kuning → hijau: tekan <b>DORONG</b> saat bar penuh = kecepatan maksimal (bar setengah = setengah kecepatan).<br>Rekan terus meluncur setelah turun. Terlambat dorong = tabrakan, dan rekan yang sampai garis start/finis tanpa didorong = <b>diskualifikasi</b>.</div>
  <button class="primary" id="tsStart" type="button">▶ MAIN ${rel?'RELAY':'TEAM SPRINT'}</button><button class="secondary" id="tsBack" type="button">⬅ KEMBALI</button>`;
  $('dialog').querySelectorAll('[data-tp]').forEach(b=>b.onclick=()=>{tsPick=b.dataset.tp;tsMenu()});
  $('tsStart').onclick=()=>{cfg.race=tsPick;cfg.mode='kasual';cfg.playerName=acct?acct.name:'SKATER';audioReady();setTrack('oval');initRace()};
@@ -4064,10 +4066,10 @@ function tsExApply(T,q,v){const out=tsAct(T),nx=tsRecv(T);if(!nx||nx.tsHold!=='g
   if(tsRecv(T)!==r||T.dq)return;
   if(r.bot&&rcAI(out)&&(r.s-out.s)/k<=T.aiTurun)tsDo(['turun',T.id,T.leg]);
   else if(tsM(out)>z.ze+3)tsDo(['dq',T.id,r.bot?'REKAN KOMPUTER TIDAK DISURUH TURUN':'PELARI TIDAK TURUN','TEKAN TURUN SAAT REKAN MENDEKAT']);
- }else if(r.tsHold==='glide'){r.v=Math.min(r.v+2.6*k*dt,7*k);const tgt=Math.max(-TRACK.width/2+8,Math.min(TRACK.width/2-8,out.d));r.d+=Math.max(-12*dt,Math.min(12*dt,tgt-r.d));tsMove(r,dt);
+ }else if(r.tsHold==='glide'){if(!T.hold)r.v=Math.min(r.v+2.6*k*dt,7*k);const tgt=Math.max(-TRACK.width/2+8,Math.min(TRACK.width/2-8,out.d));r.d+=Math.max(-12*dt,Math.min(12*dt,tgt-r.d));tsMove(r,dt);
   if(T.dq||tsRecv(T)!==r)return;const gap=(r.s-out.s)/k;
-  if(rcAI(out)&&gap<=T.aiGap&&gap>0){const q=tsQual(gap);tsDo(['ex',T.id,T.leg,+q.toFixed(3),+Math.min(MAX_SPEED*1.12,Math.max(r.v,out.v*(.8+.38*q))).toFixed(1)])}
-  else if(!rcAI(out)&&gap<=.2&&Math.abs(r.d-out.d)<9)tsDo(['dq',T.id,'TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT']);
+  if(rcAI(out)&&!T.hold&&gap<=T.aiGap+.5&&gap>0)tsDo(['hold',T.id,T.leg]);else if(rcAI(out)&&T.hold&&tsFill(T)>=(T.aiQ||.9)){const q=+tsFill(T).toFixed(3);tsDo(['ex',T.id,T.leg,q,+tsPushV(q,tsBaseV(T)).toFixed(1)])}
+  else if(!rcAI(out)&&!T.hold&&!T.grab&&gap<=.2&&Math.abs(r.d-out.d)<9)tsDo(['dq',T.id,'TABRAKAN DENGAN REKAN','DORONGAN TERLAMBAT']);
   else if(!rcAI(out)&&tsM(r)>=tsLine(z.f)+1)tsDo(['dq',T.id,'REKAN MELEWATI GARIS','BELUM DIDORONG SAMPAI GARIS START/FINIS']);
  }else if(r.tsHold==='out'){r.tOut=(r.tOut||0)+dt;r.v=Math.max(0,r.v-3*k*dt);const side=spec().relay?(r.tsTeam===0?-1:1)*(TRACK.width/2-10):tsFenceD();r.d+=(side-r.d)*Math.min(1,(spec().relay?1.2:1.6)*dt);tsMove(r,dt);if(spec().relay&&(r.v<=.2*k||r.tOut>4))tsQueue(T,r);else if(!spec().relay&&(r.v<=.2*k||r.tOut>3.5)){r.tsHold='queue';r.v=0;r.qT=undefined;r.d=tsFenceD();r._h=undefined}}}}
 /* tombol TURUN / DORONG online */
@@ -4201,6 +4203,77 @@ const RCG={t:0,last:null};
 {const _u=update;update=function(dt){_u(dt);if(!rcOn()||!olRoom)return;RCG.t+=dt;if(RCG.t<.08)return;RCG.t=0;const me=myPeer();
  const g=racers.find(r=>r.bot&&r.ctl===me&&r.tsHold==='glide');const v=g?[rKey(g),+g.s.toFixed(1),+g.d.toFixed(1),Math.round(g.v)]:null;
  const k=JSON.stringify(v);if(k!==RCG.last||v){RCG.last=k;try{olRoom.presence({gb:v})}catch(e){}}}}
+
+/* ===== TEAM SPRINT & RELAY: PEGANG → BAR KEKUATAN → DORONG ===== */
+const THOLD={ARM:9,GAP:2.6,FILL:1.35,KEEP:.45,DECAY:.55,MIN:.3};
+function tsFill(T){if(!T||!T.hold)return 0;const t=T.hold.t;if(t<THOLD.FILL)return Math.max(.05,t/THOLD.FILL);if(t<THOLD.FILL+THOLD.KEEP)return 1;return Math.max(THOLD.MIN,1-(t-THOLD.FILL-THOLD.KEEP)*THOLD.DECAY)}
+/* dorongan melanjutkan kecepatan pendorong (tidak pernah melambat); bar menambah sisa ke kecepatan maksimal */
+const tsBaseV=T=>{const o=tsAct(T),n=tsRecv(T);return Math.max(o?o.v:0,n?n.v:0)};
+const tsPushV=(q,base)=>{q=Math.max(0,Math.min(1,q));base=base||0;return base>=MAX_SPEED?base*(1+.04*q):base+(MAX_SPEED-base)*q};
+const tsQLbl=q=>q>=.95?'DORONGAN SEMPURNA!':q>=.7?'DORONGAN BAGUS':q>=.5?'DORONGAN SEDANG':'DORONGAN LEMAH';
+function tsTeamOf(){return online?tsMyT():TM.teams[0]}
+/* AI: kapan memegang & seberapa penuh bar sebelum mendorong */
+{const _an=tsAiNew;tsAiNew=function(T){_an(T);T.aiQ=.78+Math.random()*.22;T.hold=null;T.grab=false}}
+function tsHoldStart(T){if(!T||T.hold)return;const out=tsAct(T),nx=tsRecv(T);if(!nx||nx.tsHold!=='glide')return;T.hold={t:0};
+ const mine=tsTeamOf()===T;
+ if(mine&&out===player){setToast('PEGANG!','TEKAN DORONG SAAT BAR HIJAU PENUH');sfx('ui')}
+ else if(mine&&nx===player){setToast('REKAN MEMEGANGMU!','SIAP-SIAP DIDORONG');sfx('ui')}
+ tsBtnUI()}
+/* ---------- OFFLINE ---------- */
+{const _ex=tsExchange;tsExchange=function(T,q){const out=tsAct(T),nx=tsRecv(T);if(!nx||nx.tsHold!=='glide')return;
+ const held=!!T.hold,base=tsBaseV(T);_ex(T,q);T.hold=null;if(!held)return;
+ nx.v=tsPushV(q,base);out._pushT=.4;if(nx===player){smoothSpeedCap=Math.max(MAX_SPEED,nx.v);setToast(tsQLbl(q),'LANJUT '+kmh(nx.v)+' KM/J')}}}
+/* ---------- ONLINE ---------- */
+{const _ae=tsApplyEvent;tsApplyEvent=function(e,local){const T=TM.teams[e[1]];
+ if(e[0]==='hold'){if(T&&T.leg===e[2])tsHoldStart(T);return}
+ if(e[0]==='grab'){if(T&&T.leg===e[2])T.grab=true;return}
+ if(e[0]==='ex'&&T&&T.leg===e[2]){const out=tsAct(T);_ae(e,local);T.hold=null;out._pushT=.4;const nx=tsAct(T);if(nx===player&&e[3]!=null){setToast(tsQLbl(e[3]),'LANJUT '+kmh(nx.v)+' KM/J')}return}
+ return _ae(e,local)}}
+/* tombol: PEGANG → DORONG (pemain sebagai pendorong) */
+{const _ta=tsAction;tsAction=function(){
+ if(!spec().team||state!=='race')return _ta();const T=tsTeamOf();if(!T||(online?T.dq:TM.dq))return _ta();
+ const out=tsAct(T),nx=tsRecv(T);
+ if(!nx||nx.tsHold!=='glide'||out!==player)return _ta();
+ if(TM.cool>0)return;
+ if(!T.hold){const g=(nx.s-out.s)/tsK();
+  if(g>THOLD.ARM){TM.cool=.4;setToast('TERLALU JAUH','DEKATI REKAN LALU TEKAN PEGANG');sfx('ui');return}
+  if(g<=THOLD.GAP){if(online)tsDo(['hold',T.id,T.leg]);else tsHoldStart(T)}
+  else if(!T.grab){if(online)tsDo(['grab',T.id,T.leg]);else T.grab=true;setToast('SIAP PEGANG!','TANGAN MERAIH REKAN…');sfx('ui')}return}
+ const q=+tsFill(T).toFixed(3);
+ if(online)tsDo(['ex',T.id,T.leg,q,+tsPushV(q,tsBaseV(T)).toFixed(1)]);else tsExchange(T,q)}}
+/* tampilan tombol & bar kekuatan */
+(()=>{const st=document.createElement('style');st.textContent=`#tsBtn.pegang{background:linear-gradient(180deg,#ffd23f,#e0a100);color:#3a2600;box-shadow:0 4px 0 #7a5200,0 0 16px #ffd23f88}
+#tsFill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:5px}
+#tsBtn.dorong #tsSweet,#tsBtn.dorong #tsMark{display:none}#tsBtn.pegang #tsFill{display:none}
+#tsBtn.dorong.full{animation:tsFull .25s infinite alternate}@keyframes tsFull{to{box-shadow:0 4px 0 #0e5a2a,0 0 26px #4ade80}}`;document.head.appendChild(st);
+ const g=$('tsGap');if(g&&!$('tsFill')){const f=document.createElement('div');f.id='tsFill';g.insertBefore(f,g.firstChild)}})();
+{const _bu=tsBtnUI;tsBtnUI=function(){_bu();const b=$('tsBtn');if(!b||!spec().team||state!=='race')return;const T=tsTeamOf();if(!T||(online?T.dq:TM.dq))return;
+ const out=tsAct(T),nx=tsRecv(T);if(!nx||nx.tsHold!=='glide'||out!==player)return;
+ b.style.display='flex';
+ if(!T.hold){const g=(nx.s-out.s)/tsK();b.className='pegang';$('tsLbl').textContent=T.grab?'✋ MERAIH…':'✋ PEGANG';
+  const c=Math.max(0,Math.min(6,g));$('tsMark').style.left=((1-c/6)*100)+'%';$('tsSweet').style.left=((1-THOLD.GAP/6)*100)+'%';$('tsSweet').style.width=(THOLD.GAP/6*100)+'%';
+  $('tsGapTxt').textContent=(g<=THOLD.GAP?'BISA PEGANG • ':'DEKATI • ')+Math.max(0,g).toFixed(1)+' m'}
+ else{const q=tsFill(T);b.className='dorong'+(q>=.99?' full':'');$('tsLbl').textContent='💥 DORONG';
+  const f=$('tsFill');f.style.width=(q*100)+'%';f.style.background='hsl('+Math.round(50+80*q)+',90%,50%)';
+  $('tsGapTxt').textContent=q>=.99?'PENUH! DORONG SEKARANG':'KEKUATAN '+Math.round(q*100)+'%'}}}
+/* tiap frame: hitung bar, kunci pendorong di belakang rekan, AI memegang & mendorong */
+{const _u=update;update=function(dt){_u(dt);if(!spec().team||state!=='race')return;const k=tsK();
+ for(const T of TM.teams){const out=tsAct(T),nx=tsRecv(T);
+  if(T.hold&&(!nx||nx.tsHold!=='glide'||T.dq||(!online&&TM.dq&&T.id===0))){T.hold=null;continue}
+  if(out._pushT>0)out._pushT-=dt;
+  if(!T.hold&&T.grab&&nx&&nx.tsHold==='glide'&&out===player){const g=(nx.s-out.s)/k;if(g<=THOLD.GAP){T.grab=false;if(online)tsDo(['hold',T.id,T.leg]);else tsHoldStart(T)}}
+  if(!T.hold)continue;T.grab=false;T.hold.t+=dt;
+  if(!out.remote){out.s=nx.s-.95*k;out.d+=(nx.d-out.d)*Math.min(1,dt*10);out.fall=0}
+  {const pv=Math.max(out.v,nx.v);if(!nx.remote)nx.v=pv;if(!out.remote)out.v=pv}
+ }
+ tsBtnUI()}}
+/* pose: tangan memegang pinggul rekan, lalu menghentak saat mendorong */
+{const _gp=glPose;glPose=function(m,ph,mode,v,fall,dt){_gp(m,ph,mode,v,fall,dt);const hp=m&&m.tsHoldPose;if(!hp||fall>0)return;
+ const lean=m.torso.rotation.z;
+ if(hp==='hold'){for(const a of m.arms){a.s.rotation.set(-a.sd*.12,0,-lean+1.2);a.el.rotation.z=.5}}
+ else if(hp==='push'){for(const a of m.arms){a.s.rotation.set(-a.sd*.06,0,-lean+1.6);a.el.rotation.z=.02}}}}
+{const _u2=update;update=function(dt){_u2(dt);if(!GL||!GL.models)return;for(const r of racers){const m=GL.models.get(r);if(!m)continue;let hp=null;
+ if(spec().team&&r.tsTeam!=null){const T=TM.teams[r.tsTeam];if(T&&T.hold&&tsAct(T)===r)hp='hold';else if(r._pushT>0)hp='push'}m.tsHoldPose=hp}}}
 
 /* ====== KEJAR-KEJARAN: KUCING & ANJING (mode dalam shadow DOM) ====== */
 const TAGX={on:false,api:null};
