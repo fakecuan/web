@@ -3740,6 +3740,37 @@ setInterval(()=>{if(!fsOn()){const w=document.querySelector('.tapWrap');if(w&&w.
   if(Date.now()-G.t>700||Math.abs(dx)<Math.max(70,innerWidth*.22)||Math.abs(dx)<Math.abs(dy)*2)return;
   const b=backBtn();if(b){audioReady();b.click()}},{passive:true})})();
 
+/* ===== DAFTAR WAKTU TERBAIK: tap nama → pop up (profil, chat, tambah teman, ajak main) ===== */
+bestPlayerTap=async function(name){
+ audioReady();name=cleanTxt(name,16);if(!name)return;
+ if(!acct){menuToast('Login dulu untuk melihat profil pemain.');onlineMenu();return}
+ closeModalById('friendActionModal');
+ const own=name.toLowerCase()===String(acct.name).toLowerCase();
+ const wrap=document.createElement('div');wrap.id='friendActionModal';
+ wrap.style.cssText='position:fixed;inset:0;z-index:10025;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px';
+ wrap.innerHTML=`<div style="width:min(340px,100%);background:linear-gradient(180deg,rgba(22,66,150,.97),rgba(10,36,98,.98));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:14px;box-shadow:0 12px 40px #0008;display:flex;flex-direction:column;gap:9px">
+ <div style="display:flex;align-items:center;gap:10px"><div id="faAv">${avHTML('',52,name)}</div><div style="min-width:0;flex:1"><b style="font-size:17px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(name)}</b><div id="faSt" style="font-size:12px;opacity:.85">Memeriksa…</div></div><button data-fa="close" aria-label="Tutup" style="border:0;border-radius:50%;width:32px;height:32px;font-size:18px;background:#ffffff22;color:#fff;cursor:pointer">×</button></div>
+ <button class="primary" data-fa="profil">👤 LIHAT PROFIL</button>
+ ${own?'':`<button class="secondary" data-fa="chat">💬 CHAT</button><button class="secondary" data-fa="teman" id="faFollow">➕ TAMBAH TEMAN</button><button class="secondary" data-fa="main" id="faInvite" style="display:none">🎮 AJAK MAIN</button>`}</div>`;
+ document.body.appendChild(wrap);
+ wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove()});
+ wrap.querySelectorAll('[data-fa]').forEach(b=>b.onclick=async()=>{const a=b.dataset.fa;audioReady();
+  if(a==='close'){wrap.remove();return}
+  if(a==='profil'){wrap.remove();profileBackTarget=()=>menuBest200();viewPlayerProfile(name);return}
+  if(a==='chat'){wrap.remove();openDirectChat(name);return}
+  if(a==='main'){wrap.remove();inviteFriend(name);return}
+  if(a==='teman'){b.disabled=true;b.textContent='Menambahkan…';try{const z=await rpc('skate_follow',{p_name:acct.name,p_token:acct.token,p_target:name});
+    if(z&&z.ok){followingNames=null;b.textContent='✓ SUDAH BERTEMAN';sfx('ui')}else{b.disabled=false;b.textContent='➕ TAMBAH TEMAN';menuToast('Gagal menambah teman.')}}catch(e){b.disabled=false;b.textContent='➕ TAMBAH TEMAN'}}});
+ if(own){$('faSt').textContent='Ini kamu';}
+ /* status online, avatar, status teman */
+ (async()=>{try{if(!lbRoom)await ensureLobby()}catch(e){}
+  const on=!!lbRoom&&lbRoom.peers().some(p=>cleanTxt((p.presence||{}).u,16).toLowerCase()===name.toLowerCase());
+  const st=$('faSt');if(st&&!own)st.innerHTML=on?'<span class="presenceDot online"></span> Online':'<span class="presenceDot"></span> Sedang offline';
+  const iv=$('faInvite');if(iv)iv.style.display=on?'':'none'})();
+ (async()=>{try{const r=await rpc('skate_get_profiles',{p_names:[name]});const p=r&&r.ok&&(r.list||r.rows||[])[0];const av=p&&(p.avatar||p.av);if(av&&$('faAv'))$('faAv').innerHTML=avHTML(av,52,name)}catch(e){}})();
+ if(!own)(async()=>{try{const f=await loadFollowingNames();const b=$('faFollow');if(b&&f.has(name.toLowerCase())){b.disabled=true;b.textContent='✓ SUDAH BERTEMAN'}}catch(e){}})();
+};
+
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
 raceSpecs.mtt={label:'TIME TRIAL 2 KM',count:1,meters:MARA_LEN,laps:1,elim:false,marathon:true,tt:true};
 raceSpecs.battle={label:'BATTLE ARENA',count:6,meters:1e9,laps:99,elim:false,battle:true};
