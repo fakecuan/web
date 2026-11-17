@@ -211,6 +211,9 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="rpaste"><b>Tempel dari papan klip</b><small>Gambar yang baru Anda salin</small></button>
   <button class="opt" id="rlib"><b>Dari Library</b><small>Gambar yang pernah dipakai</small></button>
   <div class="mact"><button data-x>Batal</button></div></div></div>
+<div class="modal" id="mdl" hidden><div class="mbox"><b>File siap disimpan</b><small id="dlinfo"></small>
+  <button class="opt" id="dlgo" style="background:var(--ac);color:#fff;border-color:var(--ac)"><b style="color:#fff">Unduh sekarang</b></button>
+  <div class="mact"><button data-x>Batal</button></div></div></div>
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -721,7 +724,7 @@ applySleeve();
 let DL=null;(function initDL(n){try{if(window.claude&&claude.use){claude.use('downloads').then(x=>{DL=x}).catch(()=>{});return}}catch(e){}if(n<20)setTimeout(()=>initDL(n+1),250)})(0);
 async function saveFile(name,data){
  if(DL&&/\.zprj$/i.test(name)){const u=new Uint8Array(await (data instanceof Blob?data:new Blob([data])).arrayBuffer());data=new Blob([fflate.zipSync({[name]:[u,{level:0}]})]);name+='.zip'}
- if(DL){try{await DL.save({filename:name,data});toast(/\.zprj\.zip$/i.test(name)?'Tersimpan: '+name+'. Ekstrak ZIP-nya untuk mendapat file .zprj':'Tersimpan: '+name);return}catch(e){if(e&&e.code=='declined')return;if(e&&e.code=='rate_limited'){toast('Tunggu sebentar lalu coba lagi');return}}}
+ if(DL){try{await DL.save({filename:name,data});toast(/\.zprj\.zip$/i.test(name)?'Tersimpan: '+name+'. Ekstrak ZIP-nya untuk mendapat file .zprj':'Tersimpan: '+name);return}catch(e){if(e&&e.code=='declined')return;if(e&&e.code=='rate_limited'){toast('Tunggu sebentar lalu coba lagi');return}console.warn('downloads',e);toast('Simpan lewat Claude gagal ('+((e&&e.code)||e)+'), mencoba unduhan biasa')}}
  try{const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Mengunduh '+name)}catch(e){toast('Unduhan tidak tersedia di tampilan ini')}}
 document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target==m||e.target.hasAttribute('data-x'))m.hidden=true})});
 function resetAll(){Object.values(P).forEach(p=>{p.layers=[];p.ai=-1;p.base='#16161a'});MIR={sleeve:1,leg:1,cuff:1,long:1};ls=0;applySleeve();select(null);Object.keys(P).forEach(render);$('#cdot').style.background='#16161a'}
@@ -927,7 +930,9 @@ async function zprjBlob_(){const T0=performance.now();const panels=[],ps=Object.
   busy('Menyusun file .zprj…');await tick();const T1=performance.now();
   const out=CLO.writeZprj(ZP,panels,projObj(),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
 async function saveZprj(forceAs){if(!ZP){toast('Buka file .zprj dulu');return}const tg=await getTarget('zprj',forceAs);if(!tg)return;
-  try{const b=await zprjBlob();busy(null);await writeTarget('zprj',tg,b)}catch(e){console.error(e);toast('Gagal menyimpan .zprj: '+(e.message||e))}finally{busy(null)}}
+  try{const b=await zprjBlob();busy(null);
+    if(tg.h){await writeTarget('zprj',tg,b);return}
+    readyDl(tg.name,b)}catch(e){console.error(e);toast('Gagal menyimpan .zprj: '+(e.message||e))}finally{busy(null)}}
 $('#ozprj').onclick=()=>{$('#mch').hidden=true;saveZprj(true)};
 $('#ojson').onclick=async()=>{$('#mch').hidden=true;const tg=await getTarget('json',true);if(tg)await writeTarget('json',tg,projBlob())};
 /* ---------- grafik CLO (artwork PNG/PDF) → lapisan "Motif CLO" ---------- */
@@ -985,6 +990,11 @@ async function importCloGraphics(st){let n=0;const ps=Object.values(P);
       try{const Ls=await cloLayers(pt,p.cv.width,p.cv.height);if(Ls.length){p.layers=[...p.layers,...Ls];p.ai=p.layers.length-1;n+=Ls.length}}catch(e){console.warn('gfx',p.d.id,e)}}
     render(p.d.id)}
   $('#cdot').style.background=P0().base;HS=[];HI=-1;clearTimeout(hT);histCommit();return n}
+
+/* file sudah jadi → minta satu ketukan lagi supaya unduhan diizinkan browser */
+function readyDl(name,blob){const mb=(blob.size/1048576).toFixed(1);const wrap=typeof DL!=='undefined'&&DL&&/\.zprj$/i.test(name);
+  $('#dlinfo').textContent=name+' ('+mb+' MB)'+(wrap?'. Di Claude, file disimpan sebagai .zip: ekstrak untuk mendapat .zprj.':'');
+  $('#dlgo').onclick=()=>{$('#mdl').hidden=true;saveFile(name,blob)};$('#mdl').hidden=false}
 
 /* ---------- edit pola layar penuh ---------- */
 window.FSON=false;const fsHome=[];
