@@ -292,7 +292,7 @@ footer{text-align:center;color:#888;font-size:12px;padding:30px}
     </div>
     <div class="form-group">
       <label for="designTheme">Tema</label>
-      <input id="designTheme" placeholder="Contoh: Karakter, Sport, Cute, Fantasy">
+      <input id="designTheme" placeholder="Contoh: Racing, Karakter & Kartun, Cute & Feminin">
     </div>
     <div class="form-group">
       <label for="designColor">Warna</label>
@@ -423,6 +423,44 @@ INITIAL_DESIGNS.forEach(item=>{
   }
 });
 
+
+// ===== Tema utama (filter diringkas) =====
+// Label detail lama tetap disimpan di item.tags; filter & tampilan memakai tema utama.
+const MAIN_THEMES = {
+  "Racing": ["Racing","Speed","Motorsport","Automotive","Performance","Ferrari","Scuderia Ferrari"],
+  "Karakter & Kartun": ["Character","Karakter","Anime","One Piece","Luffy","Roblox","Powerpuff Girls","Kuromi","Sanrio","Princess","Minecraft","Game","Pokémon","Sonic","Comic","Superhero","Armor","Hot Wheels","Dinosaur","Adventure"],
+  "Cute & Feminin": ["Cute","Pastel","Unicorn","Bunny","Feminine","Animal"],
+  "Floral & Ornamen": ["Floral","Peacock","Tropical","Paisley","Ornamental"],
+  "Indonesia & Budaya": ["Indonesia","National","Mega Mendung","Traditional","Cultural","Colombia","Korea"],
+  "Geometris & Abstrak": ["Geometric","Abstract","Pattern","Checkerboard","Camo","Animal Pattern"],
+  "Colorful & Street": ["Colorful","Pop Art","Graffiti","Street"],
+  "Minimalis & Elegan": ["Minimalis","Minimalist","Monochrome","Dark","Classic","Elegant","Royal","Gold","Gradient"],
+  "Fantasi & Petir": ["Lightning","Electric","Galaxy","Cosmic","Fantasy","Ice","Futuristic","Angel Wings"],
+  "Tim & Klub": ["Team","Football","Football Inspired","Champions","MRS","Musi Roller Skate","DMRT","Malang","Teknik Utama","Racing Karawang","Optima","Orange Skate"]
+};
+const MAIN_THEME_ORDER = Object.keys(MAIN_THEMES);
+const THEME_LOOKUP = {};
+MAIN_THEME_ORDER.forEach(main=>{
+  THEME_LOOKUP[main.toLocaleLowerCase("id")]=main;
+  MAIN_THEMES[main].forEach(t=>{ THEME_LOOKUP[t.toLocaleLowerCase("id")]=main; });
+});
+// Tambahan manual untuk desain yang labelnya kurang menggambarkan gambar.
+const THEME_EXTRA = {
+  produk_024:["Floral & Ornamen"], produk_064:["Geometris & Abstrak"], produk_067:["Geometris & Abstrak"],
+  produk_100:["Racing"], produk_110:["Fantasi & Petir"], produk_113:["Geometris & Abstrak"],
+  produk_118:["Minimalis & Elegan"]
+};
+function toMainThemes(tags,id){
+  const out=[];
+  (tags||[]).forEach(t=>{
+    const m=THEME_LOOKUP[String(t).trim().toLocaleLowerCase("id")];
+    if(m && !out.includes(m)) out.push(m);
+  });
+  (THEME_EXTRA[id]||[]).forEach(m=>{ if(!out.includes(m)) out.push(m); });
+  if(!out.length) out.push("Racing");
+  return out.sort((a,b)=>MAIN_THEME_ORDER.indexOf(a)-MAIN_THEME_ORDER.indexOf(b));
+}
+
 let designs = INITIAL_DESIGNS
   .filter(item => !deletedInitial.includes(item.id))
   .concat(savedUserDesigns);
@@ -431,6 +469,8 @@ designs.forEach(item=>{
   const blockedThemes=new Set(["Rediva","Syaki AF","Alfaro","RadyBalon","Shakaya"]);
   if(!item.themes) item.themes=item.theme?String(item.theme).split(/\s*[•,/]+\s*/).filter(Boolean):["Sport"];
   item.themes=item.themes.filter(t=>t && !blockedThemes.has(t));
+  if(!item.tags) item.tags=item.themes;
+  item.themes=item.isSpecial?[]:toMainThemes(item.tags,item.id);
   item.theme=item.themes.join(" • ");
   if(!item.colors) item.colors=item.color?String(item.color).split(/\s*[,/]+\s*/).filter(Boolean):["Multiwarna"];
 });
@@ -504,7 +544,7 @@ function escapeHtml(text){
 
 function setupFilters(){
   const blockedThemes=new Set(["Rediva","Syaki AF","Alfaro","RadyBalon","Shakaya"]);
-  const themes=[...new Set(designs.flatMap(d=>(d.themes||[]).filter(t=>t && !blockedThemes.has(t))))].sort((a,b)=>a.localeCompare(b,"id"));
+  const themes=[...new Set(designs.flatMap(d=>(d.themes||[]).filter(t=>t && !blockedThemes.has(t))))].sort((a,b)=>MAIN_THEME_ORDER.indexOf(a)-MAIN_THEME_ORDER.indexOf(b));
   const colors=[...new Set(designs.flatMap(d=>d.colors||[]))].sort();
 
   themeFilterEl.innerHTML='<option value="all">Semua Tema</option>'+themes.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
@@ -963,8 +1003,9 @@ document.getElementById("saveBulk").onclick=()=>{
     designs.unshift({
       id:Date.now().toString()+"_"+i,
       code,number:item.number,name:title,
-      theme:themeText,
-      themes:themeText.split(/\s*[,•/]+\s*/).filter(Boolean),
+      theme:toMainThemes(themeText.split(/\s*[,•/]+\s*/).filter(Boolean)).join(" • "),
+      tags:themeText.split(/\s*[,•/]+\s*/).filter(Boolean),
+      themes:toMainThemes(themeText.split(/\s*[,•/]+\s*/).filter(Boolean)),
       color:colorText,
       colors:colorText.split(/\s*[,/]+\s*/).filter(Boolean),
       description,image:item.image,source:"user"
@@ -995,8 +1036,9 @@ document.getElementById("saveDesign").onclick=()=>{
 
     designs.unshift({
       id:Date.now().toString(),code,number,name,
-      theme:themeText,
-      themes:themeText.split(/\s*[,•/]+\s*/).filter(Boolean),
+      theme:toMainThemes(themeText.split(/\s*[,•/]+\s*/).filter(Boolean)).join(" • "),
+      tags:themeText.split(/\s*[,•/]+\s*/).filter(Boolean),
+      themes:toMainThemes(themeText.split(/\s*[,•/]+\s*/).filter(Boolean)),
       color:colorText,
       colors:colorText.split(/\s*[,/]+\s*/).filter(Boolean),
       description:description||descriptionFromTitle(name),
