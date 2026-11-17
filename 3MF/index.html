@@ -43,7 +43,8 @@ header .title small{display:block;font-weight:500;color:var(--muted);font-size:1
 #sheet{flex:none;background:var(--panel);border-top:1px solid var(--line);display:flex;flex-direction:column}
 #panel{height:40dvh;overflow:auto;padding:12px 12px 10px}
 #panel.collapsed{display:none}
-#tabs{display:flex;overflow-x:auto;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));gap:2px;scrollbar-width:none}
+#tabs{display:flex;overflow-x:auto;border-top:1px solid var(--line);padding:4px 4px 2px;gap:2px;scrollbar-width:none}
+#ver{text-align:center;font-size:10px;color:var(--muted);padding:0 0 calc(3px + env(safe-area-inset-bottom));letter-spacing:.02em;opacity:.8}
 #tabs::-webkit-scrollbar{display:none}
 #tabs button{flex:1 0 50px;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;font:600 10.5px Inter}
 #tabs button svg{width:21px;height:21px}
@@ -180,6 +181,7 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
   <div id="sheet">
     <div id="panel"></div>
     <div id="tabs"></div>
+    <div id="ver"></div>
   </div>
 </div>
 <input type="file" id="fileIn" style="display:none">
@@ -201,6 +203,10 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
+const APP_VERSION = '1.0.0';
+const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
+let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
+document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
 const ICON = {
   move:'<path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>',
   rotate:'<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/>',
@@ -1194,6 +1200,7 @@ async function save() {
   let blob; try { blob = await build3MF(); } catch (e) { busy(false); console.error(e); return toast('Gagal membuat file: ' + e.message); }
   busy(false);
   const name = (src?.name || 'model').replace(/_edit$/, '') + '_edit.3mf';
+  if (IS_APK) return apkSave(blob, name);
   if (!inClaude) return anchorSave(blob, name);
   const d = await dlP;
   if (!d) return modal(`<h3>Simpan tidak tersedia di sini</h3><p>Tampilan ini tidak mengizinkan unduhan. Buka editor ini lewat browser (Chrome) agar bisa langsung menyimpan file .3mf.</p><div class="acts"><button class="btn" data-close>Tutup</button></div>`);
@@ -1210,6 +1217,34 @@ async function save() {
 }
 
 // ================= UI =================
+// ---- Android APK: simpan lewat dialog Android, buka file dari "Buka dengan" ----
+let apkWriteCb = null;
+window.__apkWrite = ok => { const f = apkWriteCb; apkWriteCb = null; if (f) f(ok); };
+async function apkSave(blob, name) {
+  const ok = await new Promise(r => { apkWriteCb = r; APK.pickSave(name); });
+  if (!ok) return toast('Dibatalkan');
+  busy(true, 'Menyimpan…');
+  try {
+    const buf = new Uint8Array(await blob.arrayBuffer()), N = 3 * 65536;
+    for (let i = 0; i < buf.length; i += N) {
+      let bin = ''; const part = buf.subarray(i, i + N);
+      for (let j = 0; j < part.length; j += 8192) bin += String.fromCharCode.apply(null, part.subarray(j, j + 8192));
+      const r = APK.chunk(btoa(bin)); if (r !== 'ok') throw new Error(r);
+    }
+    const r = APK.end(); if (r !== 'ok') throw new Error(r);
+    toast('File disimpan: ' + name);
+  } catch (e) { try { APK.end(); } catch (_) {} toast('Gagal menyimpan: ' + e.message); }
+  busy(false);
+}
+window.__apkIncoming = async () => {
+  if (!IS_APK) return; let info = ''; try { info = APK.incoming(); } catch (e) {} if (!info) return;
+  try { const o = JSON.parse(info); busy(true, 'Membuka ' + o.name + '…');
+    const res = await fetch(location.origin + '/web/3MF/__3mf/f/' + o.token); if (!res.ok) throw new Error('tidak bisa dibaca');
+    const f = new File([await res.blob()], o.name); busy(false); openFiles([f], false);
+  } catch (e) { busy(false); toast('Gagal membuka file: ' + e.message); }
+};
+window.__apkBack = () => { const m = $('#modal'); if (m && m.style.display !== 'none' && m.style.display !== '') { closeModal(); return 'handled'; } return state.objects.length ? 'dirty' : 'exit'; };
+if (IS_APK) setTimeout(() => window.__apkIncoming(), 800);
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2400); }
 function busy(on, t) { $('#busy').style.display = on ? 'flex' : 'none'; if (t) $('#busyTxt').textContent = t; }
 function modal(html) { $('#mbox').innerHTML = html; $('#modal').style.display = 'flex'; }
