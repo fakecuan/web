@@ -739,7 +739,7 @@ async function doSave(forceAs){if(ZP){await saveZprj(forceAs);return}const tg=aw
 function fnLabels(){const sk=ZP?'zprj':'json';$('#bsave').title=FS[sk].named?'Simpan ke '+FS[sk].n+'.'+sk:'Simpan';$('#pdfnm').textContent=FS.pdf.named?'Disimpan sebagai '+FS.pdf.n+'.pdf':''}
 $('#bsave').onclick=()=>doSave(false);$('#bsaveas').onclick=()=>doSave(true);
 $('#opdfas').onclick=()=>exportPDF(true);fnLabels();
-$('#bopen').onclick=async()=>{if(typeof window.showOpenFilePicker=='function'&&canPick()){try{const[h]=await showOpenFilePicker({types:[{description:'Proyek skinsuit atau CLO',accept:{'application/octet-stream':['.zprj','.json','.zip']}}]});const f=await h.getFile();const k=/\.zprj$/i.test(h.name)?'zprj':'json';FS[k].h=h;FS[k].n=h.name.replace(/\.[^.]+$/,'');FS[k].named=true;lss('skn_'+k,FS[k].n);fnLabels();loadProject(f);return}catch(e){if(e&&e.name=='AbortError')return}}$('#fjson').click()};
+$('#bopen').onclick=()=>{$('#fjson').click()};
 $('#fjson').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!/\.(zprj|zip|json)$/i.test(f.name)){toast('Pilih file .zprj (CLO), .zip, atau .json (proyek)');return}const k=/\.(zprj|zip)$/i.test(f.name)?'zprj':'json';FS[k].h=null;FS[k].n=f.name.replace(/(\.zprj)?\.(zip|zprj|json)$/i,'');FS[k].named=true;lss('skn_'+k,FS[k].n);fnLabels();loadProject(f)};
 function loadProject(f){if(/\.(zprj|zip)$/i.test(f.name)){openZprj(f);return}const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.parts)throw 0;applyProject(o);toast('Desain dibuka')}catch(x){toast('File desain tidak valid')}};r.readAsText(f)}
 function applyProject(o){resetAll();ls=ZP?0:(+o.ls||0);if(o.mir)MIR={...MIR,...o.mir};applySleeve();
@@ -891,7 +891,7 @@ async function openZprj(f){busy('Membuka file CLO…');await tick();
     if(fresh){applyProject(st.design);toast('File CLO dibuka beserta desainnya')}
     else{const n=await importCloGraphics(st);toast((st.design?'File sudah diubah di CLO, dimuat dari data CLO terbaru. ':'File CLO dibuka. ')+(n?n+' motif CLO jadi lapisan terpisah.':''))}
     loadAvatar(st)}
-  catch(e){console.error(e);toast('File .zprj tidak bisa dibuka: '+(e.message||e))}
+  catch(e){console.error(e);busy(null);const m=(e&&e.message)||String(e);toast('File .zprj tidak bisa dibuka: '+m);setTimeout(()=>{try{alert('File .zprj tidak bisa dibuka.\n\nPesan: '+m)}catch(_){}},50)}
   finally{busy(null)}}
 /* gambar desain bagian → tekstur kain CLO (ukuran = kotak pola dalam mm, digeser agar pas di koordinat CLO) */
 const ZFLIPV=false;
