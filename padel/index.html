@@ -82,7 +82,7 @@ nav button.on{background:var(--ball);color:var(--ballInk)}
 /* setup chips */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(3,14,36,.45);border-radius:999px;padding:5px 12px 5px 5px;font-size:13px;font-weight:700;transition:background .15s,border-color .15s}
-.chip .ini{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--glass2);font-size:11px;font-weight:800}
+.chip .ini{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--glass2);font-size:11px;font-weight:800;object-fit:cover;flex:none}
 .chip small{font-weight:600;color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
 .chip.on{background:var(--ball);border-color:var(--ball);color:var(--ballInk)}
 .chip.on .ini{background:rgba(27,36,8,.15)}.chip.on small{color:rgba(27,36,8,.7)}
@@ -111,6 +111,11 @@ nav button.on{background:var(--ball);color:var(--ballInk)}
 .side{padding:14px 14px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;min-width:0}
 .side.a{background:linear-gradient(180deg,rgba(220,242,75,.08),transparent 70%)}
 .side.b{background:linear-gradient(180deg,rgba(127,216,255,.08),transparent 70%)}
+.duo{display:flex;justify-content:center}
+.duo .ph{width:clamp(40px,11vw,54px);height:clamp(40px,11vw,54px);border-radius:50%;object-fit:cover;border:2px solid var(--court);background:linear-gradient(135deg,#1c4b95,#123069);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:18px;color:var(--ball)}
+.duo .ph+.ph{margin-left:-12px}
+.a .duo .ph{box-shadow:0 0 0 2px var(--ball)}.b .duo .ph{box-shadow:0 0 0 2px var(--teamB)}
+.duo .ph.fill{opacity:.45}
 .tname{font-weight:800;font-size:clamp(13px,3.6vw,16px);line-height:1.25;overflow-wrap:anywhere;min-height:2.5em;display:flex;align-items:center}
 .tlabel{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.16em}
 .a .tlabel{color:var(--ball)}.b .tlabel{color:var(--teamB)}
@@ -311,6 +316,8 @@ $('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
 function ask(title,msg,ok='Ya',danger=false){return new Promise(res=>{modal(`<div class="h" style="font-size:18px">${esc(title)}</div><p class="mut sm" style="line-height:1.5">${msg}</p><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn ghost" id="qNo">Batal</button><button class="btn ${danger?'dan':'pri'}" id="qOk">${esc(ok)}</button></div>`);$('qNo').onclick=()=>{closeModal();res(false)};$('qOk').onclick=()=>{closeModal();res(true)}})}
 const pname=id=>id===FILLER?'Pemain Pengisi':(players[id]?.name||'?');
 const team=t=>t.map(id=>esc(pname(id))).join(' & ');
+const photoOf=id=>players[id]?.photo||players[id]?.photoUrl||'';
+const face=(id,cls)=>{const src=photoOf(id);return src?`<img class="${cls}" src="${esc(src)}" alt="">`:`<span class="${cls}${id===FILLER?' fill':''}">${id===FILLER?'+':ini(pname(id))}</span>`};
 const ini=n=>esc((String(n||'?').trim()[0]||'?').toUpperCase());
 
 /* ---------- data layer ---------- */
@@ -399,11 +406,11 @@ function renderSetup(){
  if(document.activeElement!==$('duration'))$('duration').value=session.duration||60;
  const g=globalBoard().pts,ids=Object.keys(players).sort((a,b)=>(g[b]||0)-(g[a]||0)||pname(a).localeCompare(pname(b),'id'));
  session.picked=session.picked.filter(id=>players[id]);
- $('pick').innerHTML=ids.map(id=>`<button class="chip ${session.picked.includes(id)?'on':''}" data-pick="${id}" aria-pressed="${session.picked.includes(id)}"><span class="ini">${ini(players[id].name)}</span>${esc(players[id].name)}<small>${g[id]||0} poin</small></button>`).join('')||'<span class="mut sm">Belum ada pemain. Tambahkan nama di atas, atau impor data lama di tab Arsip.</span>';
+ $('pick').innerHTML=ids.map(id=>`<button class="chip ${session.picked.includes(id)?'on':''}" data-pick="${id}" aria-pressed="${session.picked.includes(id)}">${face(id,'ini')}${esc(players[id].name)}<small>${g[id]||0} poin</small></button>`).join('')||'<span class="mut sm">Belum ada pemain. Tambahkan nama di atas, atau impor data lama di tab Arsip.</span>';
  $('selCount').textContent=session.picked.length;$('minCount').textContent=session.courtCount*4;
 }
 function side(m,j,r,t){const k=t===1?'s1':'s2',dis=r.locked?'disabled':'',full=total(m)>=21?'disabled':'',cls=t===1?'a':'b';
- return `<div class="side ${cls}"><div class="tname">${team(t===1?m.team1:m.team2)}</div><div class="tlabel">TIM ${t===1?'A':'B'} ${ballTeam(m)===t?BALL:''}</div>
+ return `<div class="side ${cls}"><div class="duo">${(t===1?m.team1:m.team2).map(id=>face(id,'ph')).join('')}</div><div class="tname">${team(t===1?m.team1:m.team2)}</div><div class="tlabel">TIM ${t===1?'A':'B'} ${ballTeam(m)===t?BALL:''}</div>
  <div class="big ${popKey===j+k?'pop':''}">${m[k]??0}</div><div class="ctrl"><button data-b="${j},${k},-1" ${dis} aria-label="Kurangi skor tim ${t===1?'A':'B'}">−</button><button class="plus" data-b="${j},${k},1" ${dis} ${full} aria-label="Tambah skor tim ${t===1?'A':'B'}">+</button></div></div>`}
 function renderSkor(){
  const R=session.rounds;$('noRounds').classList.toggle('hide',!!R.length);$('skorBody').classList.toggle('hide',!R.length);if(!R.length)return;
