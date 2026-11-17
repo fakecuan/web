@@ -153,7 +153,13 @@ textarea#ptx[hidden]{display:none}
 .recdot{width:10px;height:10px;border-radius:50%;background:#e11d48;animation:recbl 1s infinite}@keyframes recbl{50%{opacity:.25}}
 .recpb{width:100%;height:6px;background:#eee;border-radius:3px;overflow:hidden}#recbar{height:100%;width:0;background:#e8661c}
 #recstop{border:1px solid #ddd;background:#fff;border-radius:999px;padding:6px 16px;font:inherit}
-#recb svg circle.rd{fill:#e11d48;stroke:none}</style></head>
+#recb svg circle.rd{fill:#e11d48;stroke:none}.nstpl{display:block;margin:10px 0 4px;padding:8px 10px;background:#f6f6f8;border-radius:8px;color:#444;word-break:break-all}
+.nsopt{display:flex;flex-direction:column;gap:8px;margin-top:10px}.nsopt button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:10px 12px;font:inherit;font-weight:600;cursor:pointer;text-align:left}
+.nsopt button.pri{background:#e8661c;border-color:#e8661c;color:#fff}.sugw{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 2px}.sugw button{width:24px;height:24px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #0002;padding:0;cursor:pointer}
+.swl{font-size:11px;font-weight:600;color:#777;margin:2px 2px 4px}.sw.swm{margin-bottom:8px}
+.tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
+#ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
+#iesf .sugw{margin:-2px 0 6px}</style></head>
 <body>
 <div id="view"></div>
 
@@ -201,6 +207,7 @@ textarea#ptx[hidden]{display:none}
     <input id="tin" type="text" maxlength="40" placeholder="Tulis teks / nama" autocomplete="off">
     <div class="tr2"><label>Font</label><select id="tfont"></select></div>
     <div class="tr2"><label>Warna teks</label><input type="color" id="tcol"><label>Warna stroke</label><input type="color" id="tsc"></div>
+    <div class="tr2 tsug" id="tsug" hidden></div>
     <div class="tr2"><label>Lebar stroke</label><input type="range" id="tsw" min="0" max="30" step="1"><output id="tswv">0</output></div>
   </div>
   <div class="tools" id="tools">
@@ -238,7 +245,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj" hidden><b>File CLO 3D (.zprj)</b><small>Motif tiap bagian dipasang sebagai kain di CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r12</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r13</small>
   <button class="opt" id="ojson" hidden><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -272,7 +279,11 @@ textarea#ptx[hidden]{display:none}
   <div class="mact"><button data-x>Batal</button><button class="pri" id="recgo">● Mulai rekam</button></div></div></div>
 <div class="modal" id="mrecd" hidden><div class="mbox"><b>Video siap</b><video id="recvid" controls loop muted playsinline autoplay></video><small id="recinfo"></small>
   <div class="mact"><button data-x>Tutup</button><button id="recshare" hidden>Bagikan</button><button class="pri" id="recdl">Unduh video</button></div></div></div>
-<div id="recov" hidden><div class="recbox"><img id="recprev" alt="Pratinjau rekaman"><div class="rect"><span class="recdot"></span>Merekam… jangan tutup halaman</div><div class="recpb"><div id="recbar"></div></div><button id="recstop">Batal</button></div></div><div id="toast"></div>
+<div id="recov" hidden><div class="recbox"><img id="recprev" alt="Pratinjau rekaman"><div class="rect"><span class="recdot"></span>Merekam… jangan tutup halaman</div><div class="recpb"><div id="recbar"></div></div><button id="recstop">Batal</button></div></div><div class="modal" id="mns" hidden><div class="mbox"><b>Simpan desain baru</b><small>Desain ini dibuat di model bawaan. Untuk file CLO, desain dipasang ke pola dasar CLO lalu disimpan sebagai .zprj.</small>
+  <small id="nstpl" class="nstpl"></small>
+  <div class="nsopt"><button class="pri" id="nszp">File CLO (.zprj)</button><button id="nschg" hidden>Ganti pola dasar…</button><button id="nsjs">Proyek desain (.json)</button></div>
+  <div class="mact"><button data-x>Batal</button></div></div></div>
+<input type="file" id="ftpl" hidden><div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -686,7 +697,7 @@ function render(id){if(!P[id])return;paint(id);if(id==sel)syncTwins(id)}
 
 /* ---------- warna ---------- */
 function picker(pop,get,set,withAll){
- const build=()=>{const cur=get();pop.innerHTML='<div class=sw>'+COLORS.map(([c,n])=>`<button data-c="${c}" title="${n}" style="background:${c}" class="${c==cur?'on':''}"></button>`).join('')+'</div><div class=cus><input type=color value="'+cur+'"><label>Custom warna</label></div>'+(withAll?'<label class=allrow><input type=checkbox id=allck> Samakan untuk semua bagian</label>':'');
+ const build=()=>{const cur=get();pop.innerHTML=motifSw()+'<div class=sw>'+COLORS.map(([c,n])=>`<button data-c="${c}" title="${n}" style="background:${c}" class="${c==cur?'on':''}"></button>`).join('')+'</div><div class=cus><input type=color value="'+cur+'"><label>Custom warna</label></div>'+(withAll?'<label class=allrow><input type=checkbox id=allck> Samakan untuk semua bagian</label>':'');
   pop.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{set(b.dataset.c,withAll&&pop.querySelector('#allck').checked);build()});
   const ci=pop.querySelector('input[type=color]');ci.oninput=()=>set(ci.value,withAll&&pop.querySelector('#allck').checked);};
  return build}
@@ -1216,12 +1227,13 @@ $('#mirc').onclick=()=>{const p=P[sel],L=cur();if(!L)return;const m=mirrorProps(
 
 /* ---------- editor gambar ---------- */
 const IE={L:null,c:null,x:null,w:0,h:0,M:null,mx:null,mA:null,ov:null,tool:'brush',col:'#ffffff',size:24,hard:.8,op:1,tol:32,contig:false,smode:'new',
-  undo:[],redo:[],vs:1,vx:0,vy:0,drag:null,path:null,cur:null,base:null,adj:null,pts:new Map()};
+  ox:0,oy:0,crop:null,undo:[],redo:[],vs:1,vx:0,vy:0,drag:null,path:null,cur:null,base:null,adj:null,pts:new Map()};
 const iev=$('#iev'),ivx=iev.getContext('2d');
 const TOOLS=[['hand','Geser','<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5a1.5 1.5 0 0 1 3 0v8M17 9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.4L4 15a1.6 1.6 0 0 1 2.7-1.6L8 15"/>'],
   ['rect','Kotak','<rect x="4" y="5" width="16" height="14" stroke-dasharray="3 2"/>'],
   ['lasso','Laso','<path d="M12 4c5 0 8 2.5 8 5.5S16.5 15 12 15s-8-2.5-8-5.5S7 4 12 4z" stroke-dasharray="3 2"/><path d="M6 13c-1 2 0 4 2 4 1 0 1 2 0 3"/>'],
   ['wand','Rentang warna','<path d="M4 20L14 10M15 3v3M19 5l-2 2M21 9h-3M12 5l2 2"/>'],
+  ['crop','Potong','<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/>'],
   ['brush','Kuas','<path d="M14 4l6 6-8 8-6-6z"/><path d="M6 12c-2 0-3 2-3 4 0 1-1 2-1 3 3 0 7-1 7-4"/>'],
   ['eraser','Penghapus','<path d="M4 16l8-8 6 6-6 6H8z"/><path d="M12 20h8"/>'],
   ['bucket','Ember isi','<path d="M5 11l7-7 7 7-7 7z"/><path d="M19 13s2 2.5 2 4a2 2 0 0 1-4 0c0-1.5 2-4 2-4z"/>'],
@@ -1234,18 +1246,20 @@ function ieCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.heig
 /* buka */
 $('#iedit').onclick=()=>{const L=cur();if(!L||L.t=='txt'||!ready(L))return;ieOpen(L)};
 function ieOpen(L){IE.L=L;const im=L.img;let w=im.naturalWidth,h=im.naturalHeight;const s=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
-  IE.c=ieCanvas(w,h);IE.x=IE.c.getContext('2d',{willReadFrequently:true});IE.x.drawImage(im,0,0,w,h);IE.w=w;IE.h=h;IE.M=null;IE.mA=null;IE.ov=null;IE.undo=[];IE.redo=[];IE.changed=false;IE.w0=w;
+  IE.c=ieCanvas(w,h);IE.x=IE.c.getContext('2d',{willReadFrequently:true});IE.x.drawImage(im,0,0,w,h);IE.w=w;IE.h=h;IE.M=null;IE.mA=null;IE.ov=null;IE.undo=[];IE.redo=[];IE.changed=false;IE.w0=w;IE.h0=h;IE.ox=0;IE.oy=0;IE.crop=null;
   $('#ied').hidden=false;document.body.classList.add('iemode');ieSetTool(IE.tool);requestAnimationFrame(()=>{ieFit();ieDraw()});ieUndoUI()}
 function ieClose(apply){if(apply&&IE.changed){const L=IE.L,k=IE.c.width/IE.w0,src=IE.c.toDataURL('image/png'),im=new Image();
-    im.onload=()=>{L.s=L.s*k;L.img=im;L.src=src;delete L.clo;view=null;render(sel);uiTools();toast('Gambar diperbarui')};im.src=src}
+    const p=P[sel],W=p.cv.width,H=p.cv.height,A=fullLayerMat(L,W,H,IE.w0,IE.h0),c=ap(A,IE.ox+IE.w/2,IE.oy+IE.h/2);
+    im.onload=()=>{L.s=L.s*k;L.x=c[0]/W;L.y=c[1]/H;L.img=im;L.src=src;delete L.clo;view=null;render(sel);uiTools();toast('Gambar diperbarui')};im.src=src}
   $('#ied').hidden=true;$('#iesheet').hidden=true;document.body.classList.remove('iemode');IE.L=null;IE.c=null;IE.M=null}
 let ieX0=0;$('#iex').onclick=()=>{if(IE.changed&&Date.now()-ieX0>3000){ieX0=Date.now();toast('Ketuk Batal sekali lagi untuk membuang perubahan');return}ieClose(false)};
 $('#ieok').onclick=()=>{if(!$('#iesheet').hidden)$('#iesapply').click();ieClose(true)};
 /* undo */
-function iePush(){IE.undo.push({d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h});if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;ieUndoUI()}
-function ieRestore(s){if(s.w!==IE.w||s.h!==IE.h){IE.c.width=IE.w=s.w;IE.c.height=IE.h=s.h;IE.M=null;IE.mA=null;IE.ov=null}IE.x.putImageData(s.d,0,0);ieDraw()}
-$('#ieu').onclick=()=>{const s=IE.undo.pop();if(!s)return;IE.redo.push({d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h});ieRestore(s);ieUndoUI()};
-$('#ier').onclick=()=>{const s=IE.redo.pop();if(!s)return;IE.undo.push({d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h});ieRestore(s);ieUndoUI()};
+function ieSnap(){return{d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h,ox:IE.ox,oy:IE.oy}}
+function iePush(){IE.undo.push(ieSnap());if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;ieUndoUI()}
+function ieRestore(s){IE.ox=s.ox||0;IE.oy=s.oy||0;IE.crop=null;if(s.w!==IE.w||s.h!==IE.h){IE.c.width=IE.w=s.w;IE.c.height=IE.h=s.h;IE.M=null;IE.mA=null;IE.ov=null;ieFit()}IE.x.putImageData(s.d,0,0);ieDraw()}
+$('#ieu').onclick=()=>{const s=IE.undo.pop();if(!s)return;IE.redo.push(ieSnap());ieRestore(s);ieUndoUI()};
+$('#ier').onclick=()=>{const s=IE.redo.pop();if(!s)return;IE.undo.push(ieSnap());ieRestore(s);ieUndoUI()};
 function ieUndoUI(){$('#ieu').disabled=!IE.undo.length;$('#ier').disabled=!IE.redo.length}
 /* tampilan */
 function ieFit(){const r=iev.parentElement.getBoundingClientRect(),d=devicePixelRatio||1;iev.width=Math.round(r.width*d);iev.height=Math.round(r.height*d);iev.style.width=r.width+'px';iev.style.height=r.height+'px';
@@ -1256,7 +1270,11 @@ function ieDraw(){if(!IE.c)return;const x=ivx;x.setTransform(1,0,0,1,0,0);x.clea
   x.imageSmoothingEnabled=IE.vs<2;x.drawImage(IE.c,0,0);if(IE.ov)x.drawImage(IE.ov,0,0);
   x.setTransform(1,0,0,1,0,0);x.strokeStyle='#0003';x.lineWidth=1;x.strokeRect(IE.vx-.5,IE.vy-.5,IE.w*IE.vs+1,IE.h*IE.vs+1);
   const P2=(px,py)=>[IE.vx+px*IE.vs,IE.vy+py*IE.vs];
-  if(IE.path&&IE.path.length>1){x.setLineDash([6,4]);x.strokeStyle='#ff7a00';x.lineWidth=2;x.beginPath();IE.path.forEach((p,i)=>{const[a,b]=P2(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(IE.tool=='rect')x.closePath();x.stroke();x.setLineDash([])}
+  if(IE.path&&IE.path.length>1){x.setLineDash([6,4]);x.strokeStyle='#e11d48';x.lineWidth=2;x.beginPath();IE.path.forEach((p,i)=>{const[a,b]=P2(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(IE.tool=='rect')x.closePath();x.stroke();x.setLineDash([])}
+  if(IE.tool=='crop'&&IE.crop){const[c0,c1,c2,c3]=IE.crop,[a,b]=P2(c0,c1),[e,f]=P2(c2,c3),[ix,iy]=P2(0,0),[jx,jy]=P2(IE.w,IE.h);
+    x.fillStyle='rgba(0,0,0,.55)';x.beginPath();x.rect(ix,iy,jx-ix,jy-iy);x.rect(a,b,e-a,f-b);x.fill('evenodd');
+    x.strokeStyle='#fff';x.lineWidth=2;x.strokeRect(a,b,e-a,f-b);x.strokeStyle='#fff8';x.lineWidth=1;x.beginPath();for(let q=1;q<3;q++){x.moveTo(a+(e-a)*q/3,b);x.lineTo(a+(e-a)*q/3,f);x.moveTo(a,b+(f-b)*q/3);x.lineTo(e,b+(f-b)*q/3)}x.stroke();
+    x.fillStyle='#fff';const hs=7;[[a,b],[e,b],[a,f],[e,f]].forEach(([u,v])=>x.fillRect(u-hs,v-hs,hs*2,hs*2))}
   if(IE.cur&&(IE.tool=='brush'||IE.tool=='eraser')){const[a,b]=P2(IE.cur[0],IE.cur[1]);x.strokeStyle='#000a';x.lineWidth=1.5;x.beginPath();x.arc(a,b,IE.size/2*IE.vs,0,7);x.stroke();x.strokeStyle='#fffa';x.beginPath();x.arc(a,b,IE.size/2*IE.vs+1.5,0,7);x.stroke()}}
 const ieXY=e=>{const r=iev.getBoundingClientRect(),d=iev.width/r.width;return[((e.clientX-r.left)*d-IE.vx)/IE.vs,((e.clientY-r.top)*d-IE.vy)/IE.vs]};
 addEventListener('resize',()=>{if(IE.c){ieFit();ieDraw()}});
@@ -1269,7 +1287,7 @@ function selChanged(){IE.mA=null;const m=maskData();if(!m){IE.ov=null;ieDraw();r
   const ov=IE.ov&&IE.ov.width==IE.w&&IE.ov.height==IE.h?IE.ov:ieCanvas(IE.w,IE.h),o=ov.getContext('2d'),id=o.createImageData(IE.w,IE.h),d=id.data,W=IE.w,H=IE.h;let any=false;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,a=m[i*4+3];if(a<128)continue;any=true;
     const edge=x==0||y==0||x==W-1||y==H-1||m[(i-1)*4+3]<128||m[(i+1)*4+3]<128||m[(i-W)*4+3]<128||m[(i+W)*4+3]<128;const k=i*4;
-    if(edge){const s=((x+y)>>2)&1;d[k]=s?255:0;d[k+1]=s?255:120;d[k+2]=s?255:255;d[k+3]=255}else{d[k]=0;d[k+1]=120;d[k+2]=255;d[k+3]=38}}
+    if(edge){const s=((x+y)>>2)&1;d[k]=s?255:225;d[k+1]=s?255:20;d[k+2]=s?255:40;d[k+3]=255}else{d[k]=255;d[k+1]=30;d[k+2]=45;d[k+3]=95}}
   if(!any){IE.M=null;IE.mA=null;IE.ov=null;ieDraw();return}o.putImageData(id,0,0);IE.ov=ov;ieDraw()}
 function selCombine(drawFn){if(!IE.M||IE.smode=='new'){IE.M=ieCanvas(IE.w,IE.h)}const g=IE.M.getContext('2d');if(IE.smode=='new')g.clearRect(0,0,IE.w,IE.h);
   g.save();g.globalCompositeOperation=IE.smode=='sub'?'destination-out':'source-over';drawFn(g);g.restore();selChanged()}
@@ -1281,7 +1299,7 @@ function colorRange(px,py){const d=IE.x.getImageData(0,0,IE.w,IE.h).data,W=IE.w,
   else{const st=[y0*W+x0];out[st[0]]=255;while(st.length){const i=st.pop(),x=i%W,y=(i/W)|0;[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].forEach(([a,b])=>{if(a<0||b<0||a>=W||b>=H)return;const j=b*W+a;if(!out[j]&&near(j)){out[j]=255;st.push(j)}})}}
   selFromArray(out)}
 /* alat */
-function ieSetTool(t){IE.tool=t;document.querySelectorAll('#ietools [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t==t));ieOpts();ieDraw()}
+function ieSetTool(t){IE.tool=t;if(t=='crop'&&!IE.crop)IE.crop=maskBox()||[0,0,IE.w,IE.h];document.querySelectorAll('#ietools [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t==t));ieOpts();ieDraw()}
 $('#ietools').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t)ieSetTool(b.dataset.t);else ieCmd(b.dataset.c)};
 function ieOpts(){const t=IE.tool,o=[];const colorI=`<label class="iec" title="Warna"><input type="color" id="iecol" value="${IE.col}"><span style="background:${IE.col}"></span></label>`;
   const rng=(id,lab,min,max,v,step=1)=>`<label class="ier"><span>${lab}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${v}"><b>${v}</b></label>`;
@@ -1290,6 +1308,7 @@ function ieOpts(){const t=IE.tool,o=[];const colorI=`<label class="iec" title="W
   else if(t=='bucket')o.push(colorI,rng('ietol','Toleransi',0,255,IE.tol));
   else if(t=='wand')o.push(smode,rng('ietol','Toleransi',0,255,IE.tol),`<label class="iek"><input type="checkbox" id="iecg" ${IE.contig?'checked':''}> Bersebelahan saja</label>`);
   else if(t=='rect'||t=='lasso')o.push(smode);
+  else if(t=='crop')o.push('<span class="ieh2" id="iecz">Seret kotak di gambar</span>','<button id="iecapply" class="iesm pri">✂ Potong</button>','<button id="iectrim" class="iesm">Pas ke isi gambar</button>','<button id="iecsel" class="iesm">Ke seleksi</button>','<button id="ieccan" class="iesm">Reset</button>');
   else if(t=='eyedrop')o.push(colorI,'<span class="ieh2">Ketuk gambar untuk mengambil warna</span>');
   else o.push('<span class="ieh2">Seret untuk menggeser, cubit / roda mouse untuk zoom</span>');
   o.push('<button id="iezf2" class="iesm">Pas layar</button>');
@@ -1299,7 +1318,10 @@ function ieOpts(){const t=IE.tool,o=[];const colorI=`<label class="iec" title="W
   const cg=$('#iecg');if(cg)cg.onchange=()=>IE.contig=cg.checked;
   const ci=$('#iecol');if(ci)ci.oninput=()=>{IE.col=ci.value;ci.nextElementSibling.style.background=ci.value};
   document.querySelectorAll('#ieopt [data-sm]').forEach(b=>b.onclick=()=>{IE.smode=b.dataset.sm;ieOpts()});
-  $('#iezf2').onclick=()=>{ieFit();ieDraw()}}
+  $('#iezf2').onclick=()=>{ieFit();ieDraw()};
+  if(t=='crop'){$('#iecapply').onclick=cropApply;$('#iectrim').onclick=()=>{const b=alphaBox();if(!b){toast('Gambar kosong');return}IE.crop=b;cropUI();ieDraw()};
+    $('#iecsel').onclick=()=>{const b=maskBox();if(!b){toast('Belum ada seleksi');return}IE.crop=b;cropUI();ieDraw()};$('#ieccan').onclick=()=>{IE.crop=null;cropUI();ieDraw()};cropUI()}
+  ieSugBind()}
 function setCol(c){IE.col=c;const ci=$('#iecol');if(ci){ci.value=c;ci.nextElementSibling.style.background=c}}
 /* kuas & penghapus */
 let IET=null;function dab(g,x,y){const r=IE.size/2;if(IE.hard>=.99){g.beginPath();g.arc(x,y,r,0,7);g.fill();return}
@@ -1324,6 +1346,10 @@ iev.addEventListener('pointerdown',e=>{if(!IE.c)return;iev.setPointerCapture(e.p
   const p=ieXY(e),t=IE.tool;
   if(t=='hand'||e.button==1){IE.drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:IE.vx,vy:IE.vy};return}
   if(t=='brush'||t=='eraser'){iePush();IE.drag={k:'paint',last:p};strokeSeg(p,p);ieDraw();return}
+  if(t=='crop'){const c=IE.crop,hs=14/IE.vs;
+    if(c){const near=(u,v)=>Math.abs(p[0]-u)<hs&&Math.abs(p[1]-v)<hs;const hd=near(c[0],c[1])?[0,1]:near(c[2],c[1])?[2,1]:near(c[0],c[3])?[0,3]:near(c[2],c[3])?[2,3]:null;
+      if(hd){IE.drag={k:'cropH',h:hd};return}if(p[0]>c[0]&&p[0]<c[2]&&p[1]>c[1]&&p[1]<c[3]){IE.drag={k:'cropM',p,c:c.slice()};return}}
+    IE.drag={k:'cropN',a:p};return}
   if(t=='rect'||t=='lasso'){IE.drag={k:t,a:p};IE.path=[p];return}
   if(t=='wand'){colorRange(p[0],p[1]);return}
   if(t=='bucket'){bucket(p[0],p[1]);return}
@@ -1335,9 +1361,13 @@ iev.addEventListener('pointermove',e=>{if(!IE.c)return;if(IE.pts.has(e.pointerId
     IE.vs=ns;IE.vx=cx-(cx0-D.vx)*ns/D.vs;IE.vy=cy-(cy0-D.vy)*ns/D.vs;ieDraw();return}
   if(D.k=='pan'){IE.vx=D.vx+(e.clientX-D.sx)*d;IE.vy=D.vy+(e.clientY-D.sy)*d;ieDraw();return}
   if(D.k=='paint'){strokeSeg(D.last,p);D.last=p;ieDraw();return}
+  if(D.k=='cropN'){const q=[Math.max(0,Math.min(IE.w,p[0])),Math.max(0,Math.min(IE.h,p[1]))];IE.crop=[Math.min(D.a[0],q[0]),Math.min(D.a[1],q[1]),Math.max(D.a[0],q[0]),Math.max(D.a[1],q[1])].map(v=>Math.max(0,v));cropUI();ieDraw();return}
+  if(D.k=='cropH'){const c=IE.crop;c[D.h[0]]=Math.max(0,Math.min(IE.w,p[0]));c[D.h[1]]=Math.max(0,Math.min(IE.h,p[1]));IE.crop=[Math.min(c[0],c[2]),Math.min(c[1],c[3]),Math.max(c[0],c[2]),Math.max(c[1],c[3])];if(IE.crop[0]!==c[0]||IE.crop[1]!==c[1])D.h=[IE.crop[0]===c[D.h[0]]?0:2,IE.crop[1]===c[D.h[1]]?1:3];cropUI();ieDraw();return}
+  if(D.k=='cropM'){const c=D.c,w=c[2]-c[0],h=c[3]-c[1],dx=Math.max(-c[0],Math.min(IE.w-c[2],p[0]-D.p[0])),dy=Math.max(-c[1],Math.min(IE.h-c[3],p[1]-D.p[1]));IE.crop=[c[0]+dx,c[1]+dy,c[0]+dx+w,c[1]+dy+h];ieDraw();return}
   if(D.k=='rect'){const a=D.a;IE.path=[a,[p[0],a[1]],p,[a[0],p[1]]];ieDraw();return}
   if(D.k=='lasso'){IE.path.push(p);ieDraw()}});
 function ieUp(e){IE.pts.delete(e.pointerId);const D=IE.drag;if(!D)return;if(D.k=='pinch'){if(IE.pts.size<1)IE.drag=null;return}IE.drag=null;
+  if(D.k&&D.k.startsWith('crop')){const c=IE.crop;if(c&&(c[2]-c[0]<3||c[3]-c[1]<3))IE.crop=null;cropUI();ieDraw();return}
   if((D.k=='rect'||D.k=='lasso')&&IE.path){const pts=IE.path;IE.path=null;
     const bb=pts.reduce((b,q)=>[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[0]),Math.max(b[3],q[1])],[1e9,1e9,-1e9,-1e9]);
     if(bb[2]-bb[0]<2&&bb[3]-bb[1]<2){if(IE.smode=='new'){IE.M=null;selChanged()}else ieDraw();return}
@@ -1367,7 +1397,7 @@ function ieCmd(c){if(!IE.c)return;const W=IE.w,H=IE.h;
       pxOp((d,i,w)=>{const p=i/4,x=p%W-W/2,y=((p/W)|0)-H/2,t=cl01(-(x*ux+y*uy)/(2*half)+.5),k=o*w;d[i]+=((c1[0]+(c2[0]-c1[0])*t)-d[i])*k;d[i+1]+=((c1[1]+(c2[1]-c1[1])*t)-d[i+1])*k;d[i+2]+=((c1[2]+(c2[2]-c1[2])*t)-d[i+2])*k})});return}
   if(c=='stk'){sheet('Stroke',[['r','sz','Ukuran (px)',1,Math.max(8,Math.round(Math.max(W,H)/8)),Math.max(2,Math.round(Math.max(W,H)/150))],['col','Warna',IE.col],['sel','pos','Posisi',[['out','Luar'],['in','Dalam'],['mid','Tengah']],'out'],['r','op','Opasitas %',0,100,100]],v=>stroke(v),true);return}}
 /* jendela penyesuaian dengan pratinjau langsung */
-function sheet(title,fields,apply,resize){const base={d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h};IE.adj={base,apply,resize};
+function sheet(title,fields,apply,resize){const base=ieSnap();IE.adj={base,apply,resize};
   $('#iest').textContent=title+(IE.M&&!resize?' (area seleksi)':'');
   $('#iesf').innerHTML=fields.map(f=>{if(f[0]=='r')return`<label class="ier"><span>${f[2]}</span><input type="range" data-k="${f[1]}" min="${f[3]}" max="${f[4]}" value="${f[5]}"><b>${f[5]}</b></label>`;
     if(f[0]=='col'||f[0]=='col2')return`<label class="ier"><span>${f[1]}</span><input type="color" data-k="${f[0]}" value="${f[2]}"></label>`;
@@ -1376,7 +1406,7 @@ function sheet(title,fields,apply,resize){const base={d:IE.x.getImageData(0,0,IE
   $('#iesheet').hidden=false;let raf=0;const run=()=>{raf=0;const v={};$('#iesf').querySelectorAll('[data-k]').forEach(el=>{v[el.dataset.k]=el.type=='checkbox'?el.checked:el.type=='range'?+el.value:el.value});
     $('#iesf').querySelectorAll('input[type=range]').forEach(el=>el.nextElementSibling.textContent=el.value);ieRestoreBase();apply(v);ieDraw()};
   $('#iesf').oninput=()=>{if(!raf)raf=requestAnimationFrame(run)};$('#iesf').onchange=$('#iesf').oninput;run()}
-function ieRestoreBase(){const b=IE.adj.base;if(IE.w!==b.w||IE.h!==b.h){IE.c.width=IE.w=b.w;IE.c.height=IE.h=b.h;IE.M=null;IE.mA=null;IE.ov=null}IE.x.putImageData(b.d,0,0)}
+function ieRestoreBase(){const b=IE.adj.base;IE.ox=b.ox;IE.oy=b.oy;if(IE.w!==b.w||IE.h!==b.h){IE.c.width=IE.w=b.w;IE.c.height=IE.h=b.h;IE.M=null;IE.mA=null;IE.ov=null}IE.x.putImageData(b.d,0,0)}
 $('#iesapply').onclick=()=>{const a=IE.adj;if(!a)return;IE.undo.push(a.base);if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;IE.adj=null;$('#iesheet').hidden=true;ieUndoUI();ieDraw()};
 $('#iescancel').onclick=()=>{if(IE.adj){ieRestoreBase();IE.adj=null}$('#iesheet').hidden=true;if(IE.M)selChanged();else ieDraw()};
 /* warna */
@@ -1391,7 +1421,7 @@ function edt(inside,W,H){/* squared distance to nearest 'inside' pixel */const I
   const col=new Float64Array(H);for(let x=0;x<W;x++){for(let y=0;y<H;y++)col[y]=g[y*W+x];const r=edt1(col,H);for(let y=0;y<H;y++)g[y*W+x]=r[y]}
   const row=new Float64Array(W);for(let y=0;y<H;y++){for(let x=0;x<W;x++)row[x]=g[y*W+x];const r=edt1(row,W);for(let x=0;x<W;x++)g[y*W+x]=r[x]}return g}
 function stroke(v){const sz=v.sz,pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2):sz)+2,c=hex2rgb(v.col),o=v.op/100;
-  if(pad){const old=IE.x.getImageData(0,0,IE.w,IE.h);IE.c.width=IE.w=IE.w+2*pad;IE.c.height=IE.h=IE.h+2*pad;IE.x.putImageData(old,pad,pad);IE.M=null;IE.mA=null;IE.ov=null}
+  if(pad){IE.ox-=pad;IE.oy-=pad;const old=IE.x.getImageData(0,0,IE.w,IE.h);IE.c.width=IE.w=IE.w+2*pad;IE.c.height=IE.h=IE.h+2*pad;IE.x.putImageData(old,pad,pad);IE.M=null;IE.mA=null;IE.ov=null}
   const W=IE.w,H=IE.h,id=IE.x.getImageData(0,0,W,H),d=id.data,ins=new Uint8Array(W*H),out=new Uint8Array(W*H);for(let i=0;i<W*H;i++){const a=d[i*4+3]>=128;ins[i]=a?1:0;out[i]=a?0:1}
   const dOut=v.pos!='in'?edt(ins,W,H):null,dIn=v.pos!='out'?edt(out,W,H):null,R=v.pos=='mid'?sz/2:sz;
   const res=new Uint8ClampedArray(d.length);
@@ -1400,6 +1430,39 @@ function stroke(v){const sz=v.sz,pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2)
     if(v.pos=='out'){/* stroke di bawah gambar */const oa=sa+a*(1-sa);if(oa<=0){res[j+3]=0;continue}res[j]=(d[j]*sa+c[0]*a*(1-sa))/oa;res[j+1]=(d[j+1]*sa+c[1]*a*(1-sa))/oa;res[j+2]=(d[j+2]*sa+c[2]*a*(1-sa))/oa;res[j+3]=oa*255}
     else{/* stroke di atas gambar */const oa=a+sa*(1-a);if(oa<=0){res[j+3]=0;continue}res[j]=(c[0]*a+d[j]*sa*(1-a))/oa;res[j+1]=(c[1]*a+d[j+1]*sa*(1-a))/oa;res[j+2]=(c[2]*a+d[j+2]*sa*(1-a))/oa;res[j+3]=oa*255}}
   IE.x.putImageData(new ImageData(res,W,H),0,0)}
+
+/* ---------- potong (crop) ---------- */
+function cropUI(){const z=$('#iecz'),b=$('#iecapply');if(!z)return;const c=IE.crop;
+  z.textContent=c?Math.round(c[2]-c[0])+' × '+Math.round(c[3]-c[1])+' px':'Seret kotak di gambar';if(b)b.disabled=!c||(c[0]<=0&&c[1]<=0&&c[2]>=IE.w&&c[3]>=IE.h)}
+function boxOf(a,W,H,th){let x0=W,y0=H,x1=-1,y1=-1;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(a[(y*W+x)*4+3]>th){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}return x1<0?null:[x0,y0,x1+1,y1+1]}
+function alphaBox(){return boxOf(IE.x.getImageData(0,0,IE.w,IE.h).data,IE.w,IE.h,8)}
+function maskBox(){const m=maskData();return m?boxOf(m,IE.w,IE.h,127):null}
+function cropApply(){const c=IE.crop;if(!c)return;const x0=Math.max(0,Math.round(c[0])),y0=Math.max(0,Math.round(c[1])),x1=Math.min(IE.w,Math.round(c[2])),y1=Math.min(IE.h,Math.round(c[3])),w=x1-x0,h=y1-y0;
+  if(w<2||h<2){toast('Area potong terlalu kecil');return}iePush();const d=IE.x.getImageData(x0,y0,w,h);IE.c.width=IE.w=w;IE.c.height=IE.h=h;IE.x.putImageData(d,0,0);
+  IE.ox+=x0;IE.oy+=y0;IE.M=null;IE.mA=null;IE.ov=null;IE.crop=null;ieFit();ieSetTool('crop');IE.crop=null;cropUI();ieDraw();toast('Dipotong: '+w+' × '+h+' px')}
+/* ---------- saran warna dari motif ---------- */
+function domColors(srcs,n){const S=48,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d',{willReadFrequently:true}),bk=new Map();
+  srcs.forEach(s=>{try{const w=s.naturalWidth||s.width,h=s.naturalHeight||s.height;if(!w||!h)return;x.clearRect(0,0,S,S);x.drawImage(s,0,0,S,S);const d=x.getImageData(0,0,S,S).data;
+    for(let i=0;i<d.length;i+=4){if(d[i+3]<160)continue;const k=(d[i]>>4)<<8|(d[i+1]>>4)<<4|(d[i+2]>>4);let b=bk.get(k);if(!b){b=[0,0,0,0];bk.set(k,b)}b[0]++;b[1]+=d[i];b[2]+=d[i+1];b[3]+=d[i+2]}}catch(e){}});
+  const all=[...bk.values()].sort((a,b)=>b[0]-a[0]).map(b=>[b[1]/b[0],b[2]/b[0],b[3]/b[0],b[0]]),out=[];
+  for(const c of all){if(out.length>=n)break;if(out.some(o=>Math.hypot(o[0]-c[0],o[1]-c[1],o[2]-c[2])<42))continue;out.push(c)}
+  return out.map(c=>rgb2hex(Math.round(c[0]),Math.round(c[1]),Math.round(c[2])))}
+function motifSrcs(){const s=[];Object.values(P).forEach(p=>p.layers.forEach(L=>{if(L.t!='txt'&&L.img&&ready(L))s.push(L.img)}));return s}
+function motifColors(n=10){const s=motifSrcs();const tx=[];Object.values(P).forEach(p=>p.layers.forEach(L=>{if(L.t=='txt'&&L.c)tx.push(L.c)}));
+  const out=domColors(s,n);tx.forEach(c=>{if(out.length<n+2&&!out.includes(c.toLowerCase()))out.push(c.toLowerCase())});return out}
+function sugRow(cols,attr){return cols.length?`<div class="sugw">${cols.map(c=>`<button type="button" ${attr}="${c}" title="${c}" style="background:${c}"></button>`).join('')}</div>`:''}
+function motifSw(){const c=motifColors(10);return c.length?'<div class=swl>Warna dari motif</div><div class="sw swm">'+c.map(x=>`<button data-c="${x}" title="${x}" style="background:${x}"></button>`).join('')+'</div><div class=swl>Warna lain</div>':''}
+/* editor gambar: warna gambar ini dulu, lalu warna motif lain */
+function ieCols(){const a=IE.c?domColors([IE.c],8):[],b=motifColors(10).filter(c=>!a.includes(c));return a.concat(b).slice(0,14)}
+function ieSugBind(){const ci=$('#iecol');if(!ci)return;const lab=ci.closest('label');if(!lab||lab.nextElementSibling&&lab.nextElementSibling.classList.contains('sugw'))return;
+  lab.insertAdjacentHTML('afterend',sugRow(ieCols(),'data-sc'));const r=lab.nextElementSibling;if(r&&r.classList.contains('sugw'))r.onclick=e=>{const b=e.target.closest('[data-sc]');if(b)setCol(b.dataset.sc)}}
+new MutationObserver(()=>{const f=$('#iesf');f.querySelectorAll('input[type=color]').forEach(ci=>{const lab=ci.closest('label');if(lab.nextElementSibling&&lab.nextElementSibling.classList.contains('sugw'))return;
+  lab.insertAdjacentHTML('afterend',sugRow(ieCols(),'data-sc'));lab.nextElementSibling.onclick=e=>{const b=e.target.closest('[data-sc]');if(!b)return;ci.value=b.dataset.sc;f.dispatchEvent(new Event('input'))}})}).observe($('#iesf'),{childList:true});
+/* teks: saran warna teks & stroke */
+function fillTsug(){const box=$('#tsug');if(!box)return;const c=motifColors(10);box.hidden=!c.length;if(!c.length)return;
+  box.innerHTML='<label>Saran teks</label>'+sugRow(c,'data-tc')+'<label>Saran stroke</label>'+sugRow(c,'data-ts')}
+$('#tsug')&&($('#tsug').onclick=e=>{const b=e.target.closest('[data-tc],[data-ts]');if(!b)return;const el=$(b.dataset.tc?'#tcol':'#tsc');el.value=b.dataset.tc||b.dataset.ts;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))});
+{const _ut=uiTools;uiTools=function(){const r=_ut.apply(this,arguments);try{fillTsug()}catch(e){}return r}}
 
 /* ---------- status simpan: progres, hasil, tanda belum disimpan ---------- */
 let SVT=0,DIRTY=false,SVBUSY=false;
@@ -1499,6 +1562,32 @@ async function recWebCodecs(cv,frame,W,H,FPS,secs,prog,stopped){
   await enc.flush();enc.close();if(err)throw err;mux.finalize();prog(1);return new Uint8Array(tg.buffer)}
 $('#recdl').onclick=async()=>{if(!REC.blob)return;const ok=await saveFile(REC.name,REC.blob);if(ok!==true&&ok!=='declined')toast(ok||'Unduhan gagal')};
 $('#recshare').onclick=async()=>{if(!REC.blob)return;try{await navigator.share({files:[new File([REC.blob],REC.name,{type:REC.blob.type})],title:'Desain skinsuit'})}catch(e){if(e&&e.name!=='AbortError')toast('Bagikan tidak tersedia di sini, pakai Unduh')}};
+
+/* ---------- desain baru → simpan .zprj memakai pola CLO dasar ---------- */
+const TPL={file:null,name:''};
+function tplDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open('skinsuit3d',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+async function tplPut(f){try{const db=await tplDB();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put({name:f.name,blob:f},'tpl');t.oncomplete=res;t.onerror=()=>rej(t.error)})}catch(e){console.warn('tpl simpan',e)}}
+async function tplGet(){if(TPL.file)return TPL;try{const db=await tplDB();const v=await new Promise((res,rej)=>{const t=db.transaction('kv','readonly'),q=t.objectStore('kv').get('tpl');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});if(v&&v.blob){TPL.file=v.blob;TPL.name=v.name}}catch(e){console.warn('tpl baca',e)}return TPL}
+/* setiap file CLO yang dibuka diingat sebagai pola dasar */
+{const _oz=openZprj;openZprj=async function(f){const r=await _oz(f);if(ZP&&f&&!f.__tpl){TPL.file=f;TPL.name=f.name;tplPut(f)}return r}}
+{const _ds=doSave;doSave=async function(forceAs,kind){if(!ZP&&kind!=='json'){newSaveOpen();return}return _ds(forceAs,kind)}}
+async function newSaveOpen(){await tplGet();
+  $('#nstpl').textContent=TPL.file?'Pola dasar: '+TPL.name:'Belum ada pola dasar. Pilih file .zprj berisi pola skinsuit (boleh file lama, gambarnya akan diganti desain ini).';
+  $('#nszp').textContent=TPL.file?'File CLO (.zprj)':'Pilih pola CLO lalu simpan .zprj';$('#nschg').hidden=!TPL.file;$('#mns').hidden=false}
+$('#nsjs').onclick=()=>{$('#mns').hidden=true;doSave(true,'json')};
+$('#nszp').onclick=()=>{if(!TPL.file){$('#ftpl').click();return}$('#mns').hidden=true;newToZprj(TPL.file)};
+$('#nschg').onclick=()=>$('#ftpl').click();
+$('#ftpl').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!/\.(zprj|zip)$/i.test(f.name)){toast('Pilih file .zprj (CLO)');return}TPL.file=f;TPL.name=f.name;tplPut(f);$('#mns').hidden=true;newToZprj(f)};
+async function newToZprj(file){const o=projObj(),nm=FS.json.named?FS.json.n:'desain-skinsuit-baru';
+  const f=file instanceof File?file:new File([file],TPL.name||'pola.zprj');f.__tpl=1;
+  await openZprj(f);if(!ZP){toast('Pola CLO gagal dibuka');return}
+  applyProject(o);
+  /* tunggu semua gambar siap */
+  const t0=performance.now();busy('Menyiapkan desain di pola CLO…');
+  while(performance.now()-t0<15000&&Object.values(P).some(p=>p.layers.some(L=>!ready(L))))await new Promise(r=>setTimeout(r,150));
+  await new Promise(r=>setTimeout(r,800));busy(null);Object.keys(P).forEach(render);
+  FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setDirty(true);
+  toast('Desain dipindah ke pola CLO. Menyimpan…');await saveZprj(true)}
 
 /* awal */
 setAll('#16161a');gBuild();
