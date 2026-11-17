@@ -39,7 +39,7 @@ select.chip{appearance:none;-webkit-appearance:none;padding-right:26px;backgroun
 .btns button,.tools button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border:0;border-radius:12px;background:#f4f3f6;font:12px/1.2 inherit;color:inherit;cursor:pointer}
 .btns svg,.tools svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .btns button:disabled{opacity:.4}
-.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .tools button.on{background:var(--ac);color:#fff}
 #pv{display:block;margin:4px auto;max-width:100%;max-height:34vh;border-radius:12px;touch-action:none;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/16px 16px}
 #others{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -119,6 +119,24 @@ textarea#ptx[hidden]{display:none}
 @media(min-width:760px){#fst .tools,#fst .btns{display:inline-grid;width:calc(50% - 4px);vertical-align:top}}
 #libg .it img{object-fit:contain}#libg .lsec{grid-column:1/-1;font:600 12px system-ui,sans-serif;color:var(--mu);margin-top:4px}#libg .pn{position:absolute;left:0;right:0;bottom:0;padding:2px 4px;background:#000a;color:#fff;font:500 9.5px/1.2 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fsmode #libp{z-index:45;top:calc(max(8px,env(safe-area-inset-top)) + 52px);right:12px;max-height:calc(100vh - 140px)}
+#ied{position:fixed;inset:0;z-index:50;background:#2a2a2f;display:flex;flex-direction:column;color:#eee;font:13px system-ui,sans-serif;touch-action:none}#ied[hidden]{display:none}
+.ieh{display:flex;align-items:center;gap:6px;padding:max(8px,env(safe-area-inset-top)) 10px 8px;background:#1d1d21}.ieh b{flex:1;text-align:center;font-size:15px}
+.ieh .x{background:#ffffff14;color:#eee;border:0}.ieh .x:disabled{opacity:.35}.ietx{height:36px;padding:0 14px;border-radius:10px;border:0;background:#ffffff14;color:#eee;font:600 14px system-ui,sans-serif;cursor:pointer}.ietx.pri,#ied .pri{background:var(--ac);color:#fff}
+.iem{flex:1;min-height:0;position:relative}#iev{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+#ieopt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 10px;background:#1d1d21;border-top:1px solid #ffffff12;min-height:40px}
+#ietools{display:flex;gap:4px;overflow-x:auto;padding:6px 8px max(8px,env(safe-area-inset-bottom));background:#151518;scrollbar-width:thin}
+#ietools button{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:58px;height:52px;padding:0 6px;border:0;border-radius:10px;background:transparent;color:#ddd;font:500 10.5px system-ui,sans-serif;cursor:pointer}
+#ietools button.on{background:var(--ac);color:#fff}#ietools svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#ietools i{flex:none;width:1px;background:#ffffff22;margin:6px 4px}#ietools .cmd{background:#ffffff10;font-size:11.5px;white-space:nowrap;padding:0 10px}
+.ier{display:flex;align-items:center;gap:6px}.ier span{color:#bbb;white-space:nowrap}.ier input[type=range]{width:110px;accent-color:var(--ac)}.ier b{min-width:28px;font-weight:600}
+.iek{display:flex;align-items:center;gap:5px;color:#ddd}.ieh2{color:#aaa}.iesm{height:28px;padding:0 10px;border:0;border-radius:8px;background:#ffffff14;color:#eee;cursor:pointer}
+.iec{position:relative;width:30px;height:30px;border-radius:8px;overflow:hidden;border:2px solid #fff3;cursor:pointer}.iec input{position:absolute;inset:0;opacity:0;cursor:pointer}.iec span{position:absolute;inset:0}
+.ies{display:inline-flex;border-radius:8px;overflow:hidden;border:1px solid #ffffff22}.ies button{height:28px;padding:0 10px;border:0;background:transparent;color:#ddd;cursor:pointer}.ies button.on{background:var(--ac);color:#fff}
+#iesheet{position:absolute;right:10px;bottom:10px;width:min(330px,calc(100% - 20px));background:#1d1d21f2;border:1px solid #ffffff1a;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px #0006}#iesheet[hidden]{display:none}
+#iesheet .ier{justify-content:space-between}#iesheet .ier input[type=range]{flex:1}#iesheet select{background:#2a2a2f;color:#eee;border:1px solid #ffffff22;border-radius:6px;padding:4px}
+#iesheet input[type=color]{width:44px;height:28px;border:0;background:none}.iesb{display:flex;gap:8px;justify-content:flex-end}.iesb button{height:34px;padding:0 14px;border-radius:9px;border:0;background:#ffffff14;color:#eee;font-weight:600;cursor:pointer}
+@media(min-width:900px){#ied{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr auto}#ied[hidden]{display:none}.ieh{grid-column:1/3}#ietools{grid-row:2/4;flex-direction:column;overflow-y:auto;overflow-x:hidden;width:96px;padding:8px 6px}#ietools button{width:100%}#ietools i{width:auto;height:1px;margin:4px 6px}.iem{grid-column:2}#ieopt{grid-column:2}}
+.iemode #fsw{visibility:hidden}
 </style></head>
 <body>
 <div id="view"></div>
@@ -172,6 +190,8 @@ textarea#ptx[hidden]{display:none}
     <button id="fh"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l-5 5 5 5V7zM16 7l5 5-5 5V7z"/></svg>Flip H</button>
     <button id="fv"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l5-5 5 5H7zM7 16l5 5 5-5H7z"/></svg>Flip V</button>
     <button id="rep"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span id="repl">Ulang</span></button>
+    <button id="mirc" title="Salin & cerminkan ke sisi seberang bagian ini"><svg viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7H4l5 10V7zM15 7h5l-5 10V7z"/></svg>Cermin sisi</button>
+    <button id="iedit"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Edit</button>
     <button id="repimg"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="13" rx="2"/><path d="M7 14l3-3 3 3"/><path d="M17 3h4v4M21 3l-6 6"/></svg>Ganti</button>
     <button id="del"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Hapus</button>
   </div>
@@ -201,7 +221,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj" hidden><b>File CLO 3D (.zprj)</b><small>Motif tiap bagian dipasang sebagai kain di CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r6</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r7</small>
   <button class="opt" id="ojson" hidden><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -215,6 +235,9 @@ textarea#ptx[hidden]{display:none}
 <div class="modal" id="mdl" hidden><div class="mbox"><b>File siap disimpan</b><small id="dlinfo"></small>
   <button class="opt" id="dlgo" style="background:var(--ac);color:#fff;border-color:var(--ac)"><b style="color:#fff">Unduh sekarang</b></button>
   <div class="mact"><button data-x>Batal</button></div></div></div>
+<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
+<div class="iem"><canvas id="iev"></canvas><div id="iesheet" hidden><b id="iest"></b><div id="iesf"></div><div class="iesb"><button id="iescancel">Batal</button><button id="iesapply" class="pri">Terapkan</button></div></div></div>
+<div id="ieopt"></div><div id="ietools"></div></div>
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -656,7 +679,7 @@ const pvEnd=()=>{if(pd){pd=null;guide=null;view=null;drawPv()}};pv.addEventListe
 function uiTools(){const p=sel&&P[sel],L=A(p);$('#tools').style.display=L?'grid':'none';
  const ly=$('#lyr');ly.hidden=!(p&&p.layers.length>(window.FSON?0:1));if(p&&p.layers.length>(window.FSON?0:1)){let ni=0;ly.innerHTML=p.layers.map((l,i)=>{const lab=l.t=='txt'?'“'+(l.txt||'Teks').slice(0,10)+'”':(l.clo?String(l.clo.name||'Motif CLO').slice(0,16):i==0&&p.layers[0].bg?'Latar':'Gambar '+(++ni));return `<button data-li="${i}" class="${i==p.ai?'on':''}">${l.t=='txt'?'':`<img src="${l.src}" alt="">`}${lab}</button>`}).reverse().join('')+(p.ai>=0?`<span class=ord><button data-mv="1" title="Ke depan">▲</button><button data-mv="-1" title="Ke belakang">▼</button></span>`:'')}
  $('#txp').hidden=!(L&&L.t=='txt');if(L&&L.t=='txt'){if($('#tin')!==document.activeElement)$('#tin').value=L.txt;$('#tfont').value=L.f;$('#tfont').style.fontFamily=`"${L.f}"`;$('#tcol').value=L.c;$('#tsc').value=L.sc;$('#tsw').value=L.sw;$('#tswv').textContent=L.sw}
- if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep);$('#repl').textContent=['Ulang','Ulang: semua','Ulang: X','Ulang: Y'][L.rep===true?1:(L.rep|0)]||'Ulang';$('#repimg').style.display=L.t=='txt'?'none':''}}
+ if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep);$('#repl').textContent=['Ulang','Ulang: semua','Ulang: X','Ulang: Y'][L.rep===true?1:(L.rep|0)]||'Ulang';$('#repimg').style.display=L.t=='txt'?'none':'';$('#iedit').style.display=L.t=='txt'?'none':''}}
 const cur=()=>A(P[sel]);
 $('#fh').onclick=()=>{const L=cur();L.fx=!L.fx;render(sel);uiTools()};
 $('#fv').onclick=()=>{const L=cur();L.fy=!L.fy;render(sel);uiTools()};
@@ -1043,6 +1066,198 @@ addEventListener('drop',e=>{const f=e.dataTransfer&&e.dataTransfer.files[0];if(!
   if(/\.(zprj|zip|json)$/i.test(f.name)){const k=/\.(zprj|zip)$/i.test(f.name)?'zprj':'json';FS[k].h=null;FS[k].n=f.name.replace(/(\.zprj)?\.(zip|zprj|json)$/i,'');FS[k].named=true;lss('skn_'+k,FS[k].n);fnLabels();loadProject(f)}
   else if(/^image\//.test(f.type)){if(!sel){toast('Ketuk bagian skinsuit dulu');return}readBlob(f)}
   else toast('Jenis file tidak didukung')});
+
+/* ---------- cermin ke sisi seberang (di bagian yang sama) ---------- */
+$('#mirc').onclick=()=>{const p=P[sel],L=cur();if(!L)return;const m=mirrorProps(L);delete m.clo;
+  if(L.t!='txt'){m.img=L.img}addLayer(p,m);view=null;render(sel);uiTools();
+  toast(Math.abs(L.x-.5)<.02?'Disalin & dicerminkan (posisi di tengah, geser untuk melihat)':'Disalin & dicerminkan ke sisi seberang')};
+
+/* ---------- editor gambar ---------- */
+const IE={L:null,c:null,x:null,w:0,h:0,M:null,mx:null,mA:null,ov:null,tool:'brush',col:'#ffffff',size:24,hard:.8,op:1,tol:32,contig:false,smode:'new',
+  undo:[],redo:[],vs:1,vx:0,vy:0,drag:null,path:null,cur:null,base:null,adj:null,pts:new Map()};
+const iev=$('#iev'),ivx=iev.getContext('2d');
+const TOOLS=[['hand','Geser','<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5a1.5 1.5 0 0 1 3 0v8M17 9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.4L4 15a1.6 1.6 0 0 1 2.7-1.6L8 15"/>'],
+  ['rect','Kotak','<rect x="4" y="5" width="16" height="14" stroke-dasharray="3 2"/>'],
+  ['lasso','Laso','<path d="M12 4c5 0 8 2.5 8 5.5S16.5 15 12 15s-8-2.5-8-5.5S7 4 12 4z" stroke-dasharray="3 2"/><path d="M6 13c-1 2 0 4 2 4 1 0 1 2 0 3"/>'],
+  ['wand','Rentang warna','<path d="M4 20L14 10M15 3v3M19 5l-2 2M21 9h-3M12 5l2 2"/>'],
+  ['brush','Kuas','<path d="M14 4l6 6-8 8-6-6z"/><path d="M6 12c-2 0-3 2-3 4 0 1-1 2-1 3 3 0 7-1 7-4"/>'],
+  ['eraser','Penghapus','<path d="M4 16l8-8 6 6-6 6H8z"/><path d="M12 20h8"/>'],
+  ['bucket','Ember isi','<path d="M5 11l7-7 7 7-7 7z"/><path d="M19 13s2 2.5 2 4a2 2 0 0 1-4 0c0-1.5 2-4 2-4z"/>'],
+  ['eyedrop','Pipet','<path d="M14 4l6 6-2 2-6-6zM13 7l-8 8v4h4l8-8"/>']];
+const CMDS=[['selall','Pilih semua'],['seldesel','Batal seleksi'],['selinv','Balik seleksi'],['selalpha','Pilih isi gambar'],['delsel','Hapus isi seleksi'],
+  ['fill','Isi warna'],['hsl','Hue / Saturation'],['lev','Levels'],['cov','Color overlay'],['gov','Gradient overlay'],['stk','Stroke']];
+$('#ietools').innerHTML=TOOLS.map(([k,n,s])=>`<button data-t="${k}" title="${n}"><svg viewBox="0 0 24 24">${s}</svg><span>${n}</span></button>`).join('')+'<i></i>'+CMDS.map(([k,n])=>`<button data-c="${k}" class="cmd">${n}</button>`).join('');
+const cl01=v=>v<0?0:v>1?1:v;
+function ieCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+/* buka */
+$('#iedit').onclick=()=>{const L=cur();if(!L||L.t=='txt'||!ready(L))return;ieOpen(L)};
+function ieOpen(L){IE.L=L;const im=L.img;let w=im.naturalWidth,h=im.naturalHeight;const s=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
+  IE.c=ieCanvas(w,h);IE.x=IE.c.getContext('2d',{willReadFrequently:true});IE.x.drawImage(im,0,0,w,h);IE.w=w;IE.h=h;IE.M=null;IE.mA=null;IE.ov=null;IE.undo=[];IE.redo=[];IE.changed=false;IE.w0=w;
+  $('#ied').hidden=false;document.body.classList.add('iemode');ieSetTool(IE.tool);requestAnimationFrame(()=>{ieFit();ieDraw()});ieUndoUI()}
+function ieClose(apply){if(apply&&IE.changed){const L=IE.L,k=IE.c.width/IE.w0,src=IE.c.toDataURL('image/png'),im=new Image();
+    im.onload=()=>{L.s=L.s*k;L.img=im;L.src=src;delete L.clo;view=null;render(sel);uiTools();toast('Gambar diperbarui')};im.src=src}
+  $('#ied').hidden=true;$('#iesheet').hidden=true;document.body.classList.remove('iemode');IE.L=null;IE.c=null;IE.M=null}
+let ieX0=0;$('#iex').onclick=()=>{if(IE.changed&&Date.now()-ieX0>3000){ieX0=Date.now();toast('Ketuk Batal sekali lagi untuk membuang perubahan');return}ieClose(false)};
+$('#ieok').onclick=()=>{if(!$('#iesheet').hidden)$('#iesapply').click();ieClose(true)};
+/* undo */
+function iePush(){IE.undo.push({d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h});if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;ieUndoUI()}
+function ieRestore(s){if(s.w!==IE.w||s.h!==IE.h){IE.c.width=IE.w=s.w;IE.c.height=IE.h=s.h;IE.M=null;IE.mA=null;IE.ov=null}IE.x.putImageData(s.d,0,0);ieDraw()}
+$('#ieu').onclick=()=>{const s=IE.undo.pop();if(!s)return;IE.redo.push({d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h});ieRestore(s);ieUndoUI()};
+$('#ier').onclick=()=>{const s=IE.redo.pop();if(!s)return;IE.undo.push({d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h});ieRestore(s);ieUndoUI()};
+function ieUndoUI(){$('#ieu').disabled=!IE.undo.length;$('#ier').disabled=!IE.redo.length}
+/* tampilan */
+function ieFit(){const r=iev.parentElement.getBoundingClientRect(),d=devicePixelRatio||1;iev.width=Math.round(r.width*d);iev.height=Math.round(r.height*d);iev.style.width=r.width+'px';iev.style.height=r.height+'px';
+  IE.vs=Math.min(iev.width/IE.w,iev.height/IE.h)*.92;IE.vx=(iev.width-IE.w*IE.vs)/2;IE.vy=(iev.height-IE.h*IE.vs)/2}
+let ckP=null;function checker(){if(ckP)return ckP;const c=ieCanvas(16,16),x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,16,16);x.fillStyle='#d9d9de';x.fillRect(0,0,8,8);x.fillRect(8,8,8,8);return ckP=ivx.createPattern(c,'repeat')}
+function ieDraw(){if(!IE.c)return;const x=ivx;x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,iev.width,iev.height);
+  x.setTransform(IE.vs,0,0,IE.vs,IE.vx,IE.vy);x.fillStyle=checker();x.save();x.setTransform(1,0,0,1,IE.vx,IE.vy);x.fillRect(0,0,IE.w*IE.vs,IE.h*IE.vs);x.restore();
+  x.imageSmoothingEnabled=IE.vs<2;x.drawImage(IE.c,0,0);if(IE.ov)x.drawImage(IE.ov,0,0);
+  x.setTransform(1,0,0,1,0,0);x.strokeStyle='#0003';x.lineWidth=1;x.strokeRect(IE.vx-.5,IE.vy-.5,IE.w*IE.vs+1,IE.h*IE.vs+1);
+  const P2=(px,py)=>[IE.vx+px*IE.vs,IE.vy+py*IE.vs];
+  if(IE.path&&IE.path.length>1){x.setLineDash([6,4]);x.strokeStyle='#ff7a00';x.lineWidth=2;x.beginPath();IE.path.forEach((p,i)=>{const[a,b]=P2(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(IE.tool=='rect')x.closePath();x.stroke();x.setLineDash([])}
+  if(IE.cur&&(IE.tool=='brush'||IE.tool=='eraser')){const[a,b]=P2(IE.cur[0],IE.cur[1]);x.strokeStyle='#000a';x.lineWidth=1.5;x.beginPath();x.arc(a,b,IE.size/2*IE.vs,0,7);x.stroke();x.strokeStyle='#fffa';x.beginPath();x.arc(a,b,IE.size/2*IE.vs+1.5,0,7);x.stroke()}}
+const ieXY=e=>{const r=iev.getBoundingClientRect(),d=iev.width/r.width;return[((e.clientX-r.left)*d-IE.vx)/IE.vs,((e.clientY-r.top)*d-IE.vy)/IE.vs]};
+addEventListener('resize',()=>{if(IE.c){ieFit();ieDraw()}});
+iev.addEventListener('wheel',e=>{if(!IE.c)return;e.preventDefault();const r=iev.getBoundingClientRect(),d=iev.width/r.width,mx=(e.clientX-r.left)*d,my=(e.clientY-r.top)*d,f=e.deltaY<0?1.15:1/1.15,ns=Math.min(40,Math.max(.05,IE.vs*f));
+  IE.vx=mx-(mx-IE.vx)*ns/IE.vs;IE.vy=my-(my-IE.vy)*ns/IE.vs;IE.vs=ns;ieDraw()},{passive:false});
+$('#iezf').onclick=()=>{ieFit();ieDraw()};
+/* seleksi */
+function maskData(){if(!IE.M)return null;if(!IE.mA)IE.mA=IE.M.getContext('2d').getImageData(0,0,IE.w,IE.h).data;return IE.mA}
+function selChanged(){IE.mA=null;const m=maskData();if(!m){IE.ov=null;ieDraw();return}
+  const ov=IE.ov&&IE.ov.width==IE.w&&IE.ov.height==IE.h?IE.ov:ieCanvas(IE.w,IE.h),o=ov.getContext('2d'),id=o.createImageData(IE.w,IE.h),d=id.data,W=IE.w,H=IE.h;let any=false;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,a=m[i*4+3];if(a<128)continue;any=true;
+    const edge=x==0||y==0||x==W-1||y==H-1||m[(i-1)*4+3]<128||m[(i+1)*4+3]<128||m[(i-W)*4+3]<128||m[(i+W)*4+3]<128;const k=i*4;
+    if(edge){const s=((x+y)>>2)&1;d[k]=s?255:0;d[k+1]=s?255:120;d[k+2]=s?255:255;d[k+3]=255}else{d[k]=0;d[k+1]=120;d[k+2]=255;d[k+3]=38}}
+  if(!any){IE.M=null;IE.mA=null;IE.ov=null;ieDraw();return}o.putImageData(id,0,0);IE.ov=ov;ieDraw()}
+function selCombine(drawFn){if(!IE.M||IE.smode=='new'){IE.M=ieCanvas(IE.w,IE.h)}const g=IE.M.getContext('2d');if(IE.smode=='new')g.clearRect(0,0,IE.w,IE.h);
+  g.save();g.globalCompositeOperation=IE.smode=='sub'?'destination-out':'source-over';drawFn(g);g.restore();selChanged()}
+function selFromArray(a){/* a: Uint8Array 0..255 per px */const t=ieCanvas(IE.w,IE.h),tx=t.getContext('2d'),id=tx.createImageData(IE.w,IE.h);for(let i=0;i<a.length;i++){id.data[i*4]=255;id.data[i*4+1]=255;id.data[i*4+2]=255;id.data[i*4+3]=a[i]}tx.putImageData(id,0,0);selCombine(g=>g.drawImage(t,0,0))}
+function colorRange(px,py){const d=IE.x.getImageData(0,0,IE.w,IE.h).data,W=IE.w,H=IE.h,x0=Math.floor(px),y0=Math.floor(py);if(x0<0||y0<0||x0>=W||y0>=H)return;
+  const k=(y0*W+x0)*4,tr=d[k],tg=d[k+1],tb=d[k+2],ta=d[k+3],tol=IE.tol,out=new Uint8Array(W*H);
+  const near=i=>{const j=i*4;if(ta<16)return d[j+3]<16;if(d[j+3]<16)return false;return Math.max(Math.abs(d[j]-tr),Math.abs(d[j+1]-tg),Math.abs(d[j+2]-tb))<=tol};
+  if(!IE.contig){for(let i=0;i<W*H;i++)if(near(i))out[i]=255}
+  else{const st=[y0*W+x0];out[st[0]]=255;while(st.length){const i=st.pop(),x=i%W,y=(i/W)|0;[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].forEach(([a,b])=>{if(a<0||b<0||a>=W||b>=H)return;const j=b*W+a;if(!out[j]&&near(j)){out[j]=255;st.push(j)}})}}
+  selFromArray(out)}
+/* alat */
+function ieSetTool(t){IE.tool=t;document.querySelectorAll('#ietools [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t==t));ieOpts();ieDraw()}
+$('#ietools').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t)ieSetTool(b.dataset.t);else ieCmd(b.dataset.c)};
+function ieOpts(){const t=IE.tool,o=[];const colorI=`<label class="iec" title="Warna"><input type="color" id="iecol" value="${IE.col}"><span style="background:${IE.col}"></span></label>`;
+  const rng=(id,lab,min,max,v,step=1)=>`<label class="ier"><span>${lab}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${v}"><b>${v}</b></label>`;
+  const smode=`<span class="ies"><button data-sm="new" class="${IE.smode=='new'?'on':''}">Baru</button><button data-sm="add" class="${IE.smode=='add'?'on':''}">Tambah</button><button data-sm="sub" class="${IE.smode=='sub'?'on':''}">Kurangi</button></span>`;
+  if(t=='brush'||t=='eraser')o.push((t=='brush'?colorI:''),rng('iesz','Ukuran',1,300,IE.size),rng('iehd','Keras %',0,100,Math.round(IE.hard*100)),rng('ieop','Opasitas %',1,100,Math.round(IE.op*100)));
+  else if(t=='bucket')o.push(colorI,rng('ietol','Toleransi',0,255,IE.tol));
+  else if(t=='wand')o.push(smode,rng('ietol','Toleransi',0,255,IE.tol),`<label class="iek"><input type="checkbox" id="iecg" ${IE.contig?'checked':''}> Bersebelahan saja</label>`);
+  else if(t=='rect'||t=='lasso')o.push(smode);
+  else if(t=='eyedrop')o.push(colorI,'<span class="ieh2">Ketuk gambar untuk mengambil warna</span>');
+  else o.push('<span class="ieh2">Seret untuk menggeser, cubit / roda mouse untuk zoom</span>');
+  o.push('<button id="iezf2" class="iesm">Pas layar</button>');
+  $('#ieopt').innerHTML=o.join('');
+  const bind=(id,f)=>{const el=$('#'+id);if(el)el.oninput=()=>{f(+el.value);const b=el.parentElement.querySelector('b');if(b)b.textContent=el.value}};
+  bind('iesz',v=>IE.size=v);bind('iehd',v=>IE.hard=v/100);bind('ieop',v=>IE.op=v/100);bind('ietol',v=>IE.tol=v);
+  const cg=$('#iecg');if(cg)cg.onchange=()=>IE.contig=cg.checked;
+  const ci=$('#iecol');if(ci)ci.oninput=()=>{IE.col=ci.value;ci.nextElementSibling.style.background=ci.value};
+  document.querySelectorAll('#ieopt [data-sm]').forEach(b=>b.onclick=()=>{IE.smode=b.dataset.sm;ieOpts()});
+  $('#iezf2').onclick=()=>{ieFit();ieDraw()}}
+function setCol(c){IE.col=c;const ci=$('#iecol');if(ci){ci.value=c;ci.nextElementSibling.style.background=c}}
+/* kuas & penghapus */
+let IET=null;function dab(g,x,y){const r=IE.size/2;if(IE.hard>=.99){g.beginPath();g.arc(x,y,r,0,7);g.fill();return}
+  const gr=g.createRadialGradient(x,y,r*IE.hard,x,y,r);const c=g.fillStyle;gr.addColorStop(0,c);gr.addColorStop(1,c.length==7?c+'00':'rgba(0,0,0,0)');const f=g.fillStyle;g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle=f}
+function strokeSeg(a,b){if(!IET||IET.width!=IE.w||IET.height!=IE.h)IET=ieCanvas(IE.w,IE.h);const g=IET.getContext('2d');g.clearRect(0,0,IE.w,IE.h);g.globalCompositeOperation='source-over';g.fillStyle=IE.tool=='eraser'?'#000000':IE.col;
+  const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),st=Math.max(1,IE.size*.15),n=Math.max(1,Math.ceil(L/st));for(let i=a===b?0:1;i<=n;i++)dab(g,a[0]+dx*i/n,a[1]+dy*i/n);
+  if(IE.M){g.globalCompositeOperation='destination-in';g.drawImage(IE.M,0,0)}
+  const x=IE.x;x.save();x.globalAlpha=IE.op;x.globalCompositeOperation=IE.tool=='eraser'?'destination-out':'source-over';x.drawImage(IET,0,0);x.restore()}
+/* ember */
+function bucket(px,py){const id=IE.x.getImageData(0,0,IE.w,IE.h),d=id.data,W=IE.w,H=IE.h,x0=Math.floor(px),y0=Math.floor(py);if(x0<0||y0<0||x0>=W||y0>=H)return;
+  const m=maskData(),k=(y0*W+x0)*4,t=[d[k],d[k+1],d[k+2],d[k+3]],c=hex2rgb(IE.col),tol=IE.tol,seen=new Uint8Array(W*H),st=[y0*W+x0];seen[st[0]]=1;
+  const near=i=>{const j=i*4;if(m&&m[j+3]<128)return false;return Math.max(Math.abs(d[j]-t[0]),Math.abs(d[j+1]-t[1]),Math.abs(d[j+2]-t[2]),Math.abs(d[j+3]-t[3]))<=tol};
+  if(!near(st[0]))return;iePush();
+  while(st.length){const i=st.pop(),j=i*4;d[j]=c[0];d[j+1]=c[1];d[j+2]=c[2];d[j+3]=255;const x=i%W,y=(i/W)|0;
+    if(x>0&&!seen[i-1]&&near(i-1)){seen[i-1]=1;st.push(i-1)}if(x<W-1&&!seen[i+1]&&near(i+1)){seen[i+1]=1;st.push(i+1)}if(y>0&&!seen[i-W]&&near(i-W)){seen[i-W]=1;st.push(i-W)}if(y<H-1&&!seen[i+W]&&near(i+W)){seen[i+W]=1;st.push(i+W)}}
+  IE.x.putImageData(id,0,0);ieDraw()}
+const hex2rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const rgb2hex=(r,g,b)=>'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+/* pointer */
+iev.addEventListener('pointerdown',e=>{if(!IE.c)return;iev.setPointerCapture(e.pointerId);IE.pts.set(e.pointerId,[e.clientX,e.clientY]);
+  if(IE.pts.size==2){if(IE.drag&&IE.drag.k=='paint'){const s0=IE.undo.pop();if(s0)ieRestore(s0);ieUndoUI()}IE.drag={k:'pinch',vs:IE.vs,vx:IE.vx,vy:IE.vy,p:[...IE.pts.values()]};IE.path=null;return}
+  const p=ieXY(e),t=IE.tool;
+  if(t=='hand'||e.button==1){IE.drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:IE.vx,vy:IE.vy};return}
+  if(t=='brush'||t=='eraser'){iePush();IE.drag={k:'paint',last:p};strokeSeg(p,p);ieDraw();return}
+  if(t=='rect'||t=='lasso'){IE.drag={k:t,a:p};IE.path=[p];return}
+  if(t=='wand'){colorRange(p[0],p[1]);return}
+  if(t=='bucket'){bucket(p[0],p[1]);return}
+  if(t=='eyedrop'){const x=Math.floor(p[0]),y=Math.floor(p[1]);if(x<0||y<0||x>=IE.w||y>=IE.h)return;const d=IE.x.getImageData(x,y,1,1).data;if(d[3]<10){toast('Area transparan');return}setCol(rgb2hex(d[0],d[1],d[2]));toast('Warna diambil: '+IE.col)}});
+iev.addEventListener('pointermove',e=>{if(!IE.c)return;if(IE.pts.has(e.pointerId))IE.pts.set(e.pointerId,[e.clientX,e.clientY]);const p=ieXY(e);IE.cur=p;const D=IE.drag,d=iev.width/iev.getBoundingClientRect().width;
+  if(!D){if(IE.tool=='brush'||IE.tool=='eraser')ieDraw();return}
+  if(D.k=='pinch'&&IE.pts.size==2){const[a,b]=[...IE.pts.values()],[a0,b0]=D.p,dist=Math.hypot(a[0]-b[0],a[1]-b[1]),dist0=Math.hypot(a0[0]-b0[0],a0[1]-b0[1])||1,ns=Math.min(40,Math.max(.05,D.vs*dist/dist0));
+    const r=iev.getBoundingClientRect(),cx0=((a0[0]+b0[0])/2-r.left)*d,cy0=((a0[1]+b0[1])/2-r.top)*d,cx=((a[0]+b[0])/2-r.left)*d,cy=((a[1]+b[1])/2-r.top)*d;
+    IE.vs=ns;IE.vx=cx-(cx0-D.vx)*ns/D.vs;IE.vy=cy-(cy0-D.vy)*ns/D.vs;ieDraw();return}
+  if(D.k=='pan'){IE.vx=D.vx+(e.clientX-D.sx)*d;IE.vy=D.vy+(e.clientY-D.sy)*d;ieDraw();return}
+  if(D.k=='paint'){strokeSeg(D.last,p);D.last=p;ieDraw();return}
+  if(D.k=='rect'){const a=D.a;IE.path=[a,[p[0],a[1]],p,[a[0],p[1]]];ieDraw();return}
+  if(D.k=='lasso'){IE.path.push(p);ieDraw()}});
+function ieUp(e){IE.pts.delete(e.pointerId);const D=IE.drag;if(!D)return;if(D.k=='pinch'){if(IE.pts.size<1)IE.drag=null;return}IE.drag=null;
+  if((D.k=='rect'||D.k=='lasso')&&IE.path){const pts=IE.path;IE.path=null;
+    const bb=pts.reduce((b,q)=>[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[0]),Math.max(b[3],q[1])],[1e9,1e9,-1e9,-1e9]);
+    if(bb[2]-bb[0]<2&&bb[3]-bb[1]<2){if(IE.smode=='new'){IE.M=null;selChanged()}else ieDraw();return}
+    selCombine(g=>{g.fillStyle='#fff';g.beginPath();pts.forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.closePath();g.fill()})}
+  ieDraw()}
+iev.addEventListener('pointerup',ieUp);iev.addEventListener('pointercancel',ieUp);iev.addEventListener('pointerleave',()=>{IE.cur=null;if(!IE.drag)ieDraw()});
+/* perintah */
+function pxOp(fn){/* fn(d,i,w) with mask weight w 0..1 */const id=IE.x.getImageData(0,0,IE.w,IE.h),d=id.data,m=maskData();for(let i=0;i<d.length;i+=4){const w=m?m[i+3]/255:1;if(w>0)fn(d,i,w)}IE.x.putImageData(id,0,0)}
+function ieCmd(c){if(!IE.c)return;const W=IE.w,H=IE.h;
+  if(c=='selall'){IE.smode='new';selCombine(g=>{g.fillStyle='#fff';g.fillRect(0,0,W,H)});ieOpts();return}
+  if(c=='seldesel'){IE.M=null;selChanged();return}
+  if(c=='selinv'){const n=ieCanvas(W,H),g=n.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,H);if(IE.M){g.globalCompositeOperation='destination-out';g.drawImage(IE.M,0,0)}IE.M=n;selChanged();return}
+  if(c=='selalpha'){const n=ieCanvas(W,H),g=n.getContext('2d');g.drawImage(IE.c,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#fff';g.fillRect(0,0,W,H);IE.M=n;selChanged();return}
+  if(c=='delsel'){if(!IE.M){toast('Buat seleksi dulu');return}iePush();IE.x.save();IE.x.globalCompositeOperation='destination-out';IE.x.drawImage(IE.M,0,0);IE.x.restore();ieDraw();return}
+  if(c=='fill'){if(!IE.M){toast('Buat seleksi dulu (Kotak, Laso, atau Rentang warna), atau pakai Ember isi');return}
+    sheet('Isi warna',[['col','Warna',IE.col],['r','op','Opasitas %',0,100,100]],(v)=>{const c=hex2rgb(v.col),o=v.op/100;pxOp((d,i,w)=>{const k=w*o;d[i]+= (c[0]-d[i])*k;d[i+1]+=(c[1]-d[i+1])*k;d[i+2]+=(c[2]-d[i+2])*k;d[i+3]+=(255-d[i+3])*k})});return}
+  if(c=='hsl'){sheet('Hue / Saturation',[['r','h','Hue',-180,180,0],['r','s','Saturation',-100,100,0],['r','l','Lightness',-100,100,0],['chk','cz','Colorize',false]],v=>{
+      const dh=v.h,ds=v.s/100,dl=v.l/100;pxOp((d,i,w)=>{let[h,s,l]=rgb2hsl(d[i],d[i+1],d[i+2]);
+        if(v.cz){h=((dh%360)+360)%360;s=cl01(.25+ds*.75)}else{h=h+dh;s=ds>0?s+(1-s)*ds:s*(1+ds)}
+        l=dl>0?l+(1-l)*dl:l*(1+dl);const[r,g,b]=hsl2rgb(((h%360)+360)%360,cl01(s),cl01(l));d[i]+=(r-d[i])*w;d[i+1]+=(g-d[i+1])*w;d[i+2]+=(b-d[i+2])*w})});return}
+  if(c=='lev'){sheet('Levels',[['r','ib','Input hitam',0,253,0],['r','g','Gamma ×100',10,500,100],['r','iw','Input putih',2,255,255],['r','ob','Output hitam',0,255,0],['r','ow','Output putih',0,255,255]],v=>{
+      const ib=Math.min(v.ib,v.iw-1),iw=Math.max(v.iw,ib+1),g=100/v.g,lut=new Uint8ClampedArray(256);for(let a=0;a<256;a++)lut[a]=v.ob+(v.ow-v.ob)*Math.pow(cl01((a-ib)/(iw-ib)),g);
+      pxOp((d,i,w)=>{d[i]+=(lut[d[i]]-d[i])*w;d[i+1]+=(lut[d[i+1]]-d[i+1])*w;d[i+2]+=(lut[d[i+2]]-d[i+2])*w})});return}
+  if(c=='cov'){sheet('Color overlay',[['col','Warna',IE.col],['r','op','Opasitas %',0,100,100]],v=>{const c=hex2rgb(v.col),o=v.op/100;pxOp((d,i,w)=>{const k=o*w;d[i]+=(c[0]-d[i])*k;d[i+1]+=(c[1]-d[i+1])*k;d[i+2]+=(c[2]-d[i+2])*k})});return}
+  if(c=='gov'){sheet('Gradient overlay',[['col','Warna awal',IE.col],['col2','Warna akhir','#000000'],['r','a','Sudut',0,360,90],['r','op','Opasitas %',0,100,100]],v=>{
+      const c1=hex2rgb(v.col),c2=hex2rgb(v.col2),o=v.op/100,an=v.a*Math.PI/180,ux=Math.cos(an),uy=-Math.sin(an),half=(Math.abs(ux)*W+Math.abs(uy)*H)/2;
+      pxOp((d,i,w)=>{const p=i/4,x=p%W-W/2,y=((p/W)|0)-H/2,t=cl01(-(x*ux+y*uy)/(2*half)+.5),k=o*w;d[i]+=((c1[0]+(c2[0]-c1[0])*t)-d[i])*k;d[i+1]+=((c1[1]+(c2[1]-c1[1])*t)-d[i+1])*k;d[i+2]+=((c1[2]+(c2[2]-c1[2])*t)-d[i+2])*k})});return}
+  if(c=='stk'){sheet('Stroke',[['r','sz','Ukuran (px)',1,Math.max(8,Math.round(Math.max(W,H)/8)),Math.max(2,Math.round(Math.max(W,H)/150))],['col','Warna',IE.col],['sel','pos','Posisi',[['out','Luar'],['in','Dalam'],['mid','Tengah']],'out'],['r','op','Opasitas %',0,100,100]],v=>stroke(v),true);return}}
+/* jendela penyesuaian dengan pratinjau langsung */
+function sheet(title,fields,apply,resize){const base={d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h};IE.adj={base,apply,resize};
+  $('#iest').textContent=title+(IE.M&&!resize?' (area seleksi)':'');
+  $('#iesf').innerHTML=fields.map(f=>{if(f[0]=='r')return`<label class="ier"><span>${f[2]}</span><input type="range" data-k="${f[1]}" min="${f[3]}" max="${f[4]}" value="${f[5]}"><b>${f[5]}</b></label>`;
+    if(f[0]=='col'||f[0]=='col2')return`<label class="ier"><span>${f[1]}</span><input type="color" data-k="${f[0]}" value="${f[2]}"></label>`;
+    if(f[0]=='chk')return`<label class="iek"><input type="checkbox" data-k="${f[1]}" ${f[3]?'checked':''}> ${f[2]}</label>`;
+    if(f[0]=='sel')return`<label class="ier"><span>${f[2]}</span><select data-k="${f[1]}">${f[3].map(([v,n])=>`<option value="${v}" ${v==f[4]?'selected':''}>${n}</option>`).join('')}</select></label>`}).join('');
+  $('#iesheet').hidden=false;let raf=0;const run=()=>{raf=0;const v={};$('#iesf').querySelectorAll('[data-k]').forEach(el=>{v[el.dataset.k]=el.type=='checkbox'?el.checked:el.type=='range'?+el.value:el.value});
+    $('#iesf').querySelectorAll('input[type=range]').forEach(el=>el.nextElementSibling.textContent=el.value);ieRestoreBase();apply(v);ieDraw()};
+  $('#iesf').oninput=()=>{if(!raf)raf=requestAnimationFrame(run)};$('#iesf').onchange=$('#iesf').oninput;run()}
+function ieRestoreBase(){const b=IE.adj.base;if(IE.w!==b.w||IE.h!==b.h){IE.c.width=IE.w=b.w;IE.c.height=IE.h=b.h;IE.M=null;IE.mA=null;IE.ov=null}IE.x.putImageData(b.d,0,0)}
+$('#iesapply').onclick=()=>{const a=IE.adj;if(!a)return;IE.undo.push(a.base);if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;IE.adj=null;$('#iesheet').hidden=true;ieUndoUI();ieDraw()};
+$('#iescancel').onclick=()=>{if(IE.adj){ieRestoreBase();IE.adj=null}$('#iesheet').hidden=true;if(IE.M)selChanged();else ieDraw()};
+/* warna */
+function rgb2hsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;if(mx==mn)return[0,0,l];const d=mx-mn,s=l>.5?d/(2-mx-mn):d/(mx+mn);
+  let h=mx==r?(g-b)/d+(g<b?6:0):mx==g?(b-r)/d+2:(r-g)/d+4;return[h*60,s,l]}
+function hsl2rgb(h,s,l){if(!s){const v=l*255;return[v,v,v]}const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q,f=t=>{t=(t%1+1)%1;return t<1/6?p+(q-p)*6*t:t<.5?q:t<2/3?p+(q-p)*(2/3-t)*6:p};h/=360;return[f(h+1/3)*255,f(h)*255,f(h-1/3)*255]}
+/* stroke: jarak euklides dari tepi gambar */
+function edt1(f,n){const d=new Float64Array(n),v=new Int32Array(n),z=new Float64Array(n+1);let k=0;v[0]=0;z[0]=-1e20;z[1]=1e20;
+  for(let q=1;q<n;q++){let s;do{const p=v[k];s=((f[q]+q*q)-(f[p]+p*p))/(2*q-2*p);if(s<=z[k])k--;else break}while(k>=0);k++;v[k]=q;z[k]=s;z[k+1]=1e20}
+  k=0;for(let q=0;q<n;q++){while(z[k+1]<q)k++;const p=v[k];d[q]=(q-p)*(q-p)+f[p]}return d}
+function edt(inside,W,H){/* squared distance to nearest 'inside' pixel */const INF=1e20,g=new Float64Array(W*H);for(let i=0;i<W*H;i++)g[i]=inside[i]?0:INF;
+  const col=new Float64Array(H);for(let x=0;x<W;x++){for(let y=0;y<H;y++)col[y]=g[y*W+x];const r=edt1(col,H);for(let y=0;y<H;y++)g[y*W+x]=r[y]}
+  const row=new Float64Array(W);for(let y=0;y<H;y++){for(let x=0;x<W;x++)row[x]=g[y*W+x];const r=edt1(row,W);for(let x=0;x<W;x++)g[y*W+x]=r[x]}return g}
+function stroke(v){const sz=v.sz,pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2):sz)+2,c=hex2rgb(v.col),o=v.op/100;
+  if(pad){const old=IE.x.getImageData(0,0,IE.w,IE.h);IE.c.width=IE.w=IE.w+2*pad;IE.c.height=IE.h=IE.h+2*pad;IE.x.putImageData(old,pad,pad);IE.M=null;IE.mA=null;IE.ov=null}
+  const W=IE.w,H=IE.h,id=IE.x.getImageData(0,0,W,H),d=id.data,ins=new Uint8Array(W*H),out=new Uint8Array(W*H);for(let i=0;i<W*H;i++){const a=d[i*4+3]>=128;ins[i]=a?1:0;out[i]=a?0:1}
+  const dOut=v.pos!='in'?edt(ins,W,H):null,dIn=v.pos!='out'?edt(out,W,H):null,R=v.pos=='mid'?sz/2:sz;
+  const res=new Uint8ClampedArray(d.length);
+  for(let i=0;i<W*H;i++){let a=0;if(dOut&&!ins[i])a=Math.max(a,cl01(R-Math.sqrt(dOut[i])+.5));if(dIn&&ins[i])a=Math.max(a,cl01(R-Math.sqrt(dIn[i])+.5));a*=o;
+    const j=i*4,sa=d[j+3]/255;
+    if(v.pos=='out'){/* stroke di bawah gambar */const oa=sa+a*(1-sa);if(oa<=0){res[j+3]=0;continue}res[j]=(d[j]*sa+c[0]*a*(1-sa))/oa;res[j+1]=(d[j+1]*sa+c[1]*a*(1-sa))/oa;res[j+2]=(d[j+2]*sa+c[2]*a*(1-sa))/oa;res[j+3]=oa*255}
+    else{/* stroke di atas gambar */const oa=a+sa*(1-a);if(oa<=0){res[j+3]=0;continue}res[j]=(c[0]*a+d[j]*sa*(1-a))/oa;res[j+1]=(c[1]*a+d[j+1]*sa*(1-a))/oa;res[j+2]=(c[2]*a+d[j+2]*sa*(1-a))/oa;res[j+3]=oa*255}}
+  IE.x.putImageData(new ImageData(res,W,H),0,0)}
 
 /* awal */
 setAll('#16161a');gBuild();
