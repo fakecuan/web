@@ -14,6 +14,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-famil
 header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
 header .title{font-weight:700;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header .title small{display:block;font-weight:500;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.ib.lib{color:var(--acc,#00ae42)}
 .ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);display:grid;place-items:center;padding:0;cursor:pointer;flex:none}
 .ib:disabled{opacity:.35}
 .ib svg{width:20px;height:20px}
@@ -157,6 +158,7 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
 <div id="app">
   <header>
     <button class="ib" id="bOpen" title="Buka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+    <button class="ib lib" id="bLib" title="Library online (MakerWorld)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg></button>
     <div class="title">3MF Editor<small id="fname">Belum ada file</small></div>
     <button class="ib" id="bUndo" title="Undo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="ib" id="bRedo" title="Redo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
@@ -174,7 +176,7 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
       <button class="ib" id="vIso" title="3D"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg></button>
     </div>
     <div id="modeBanner"><span id="mbText"></span><button id="mbCancel">Batal</button></div>
-    <div id="empty"><button class="big" id="bOpen2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Buka file 3MF / STL</button><button class="big2" id="bNewText">atau mulai dengan teks</button><p>File dibuka langsung di HP, tidak diunggah ke mana pun. 1 jari: putar kamera · 2 jari: zoom &amp; geser · tahan objek: pilih banyak.</p></div>
+    <div id="empty"><button class="big" id="bOpen2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Buka file 3MF / STL</button><button class="big2" id="bLib2">🌐 Cari model di MakerWorld</button><button class="big2" id="bNewText">atau mulai dengan teks</button><p>File dibuka langsung di HP, tidak diunggah ke mana pun. 1 jari: putar kamera · 2 jari: zoom &amp; geser · tahan objek: pilih banyak.</p></div>
     <div id="chip" style="display:none"></div>
     <div id="sk"><svg id="skSvg"></svg><div id="skTop"><span id="skInfo"></span></div></div>
   </div>
@@ -203,7 +205,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
@@ -1243,6 +1245,11 @@ window.__apkIncoming = async () => {
     const f = new File([await res.blob()], o.name); busy(false); openFiles([f], false);
   } catch (e) { busy(false); toast('Gagal membuka file: ' + e.message); }
 };
+function openLibrary() {
+  if (IS_APK && APK.openLibrary) { APK.openLibrary('https://makerworld.com/'); return; }
+  modal(`<h3>Library online — MakerWorld</h3><p>${IS_APK ? 'Perbarui APK ke versi terbaru supaya file dari MakerWorld bisa langsung terbuka di editor.<br><br>' : ''}MakerWorld akan dibuka di tab baru. Cari model, tekan <b>Download</b> lalu pilih <b>3MF</b>.<br><br>Setelah selesai, kembali ke sini dan tekan tombol <b>folder</b> (Buka), lalu pilih file .3mf dari folder <b>Download</b>.<br><br><small>Di aplikasi Android (APK), file dari MakerWorld langsung terbuka di editor.</small></p><div class="acts"><button class="btn" data-close>Batal</button><button class="btn pri" id="libGo">Buka MakerWorld</button></div>`);
+  $('#libGo').onclick = () => { closeModal(); window.open('https://makerworld.com/', '_blank', 'noopener'); };
+}
 window.__apkBack = () => { const m = $('#modal'); if (m && m.style.display !== 'none' && m.style.display !== '') { closeModal(); return 'handled'; } return state.objects.length ? 'dirty' : 'exit'; };
 if (IS_APK) setTimeout(() => window.__apkIncoming(), 800);
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2400); }
@@ -2926,6 +2933,7 @@ $('#panel').addEventListener('click', e => { const b = e.target.closest('[data-a
 
 // ================= WIRING =================
 $('#bOpen').onclick = $('#bOpen2').onclick = () => $('#fileIn').click();
+$('#bLib').onclick = $('#bLib2').onclick = openLibrary;
 $('#bNewText').onclick = () => { tool = 'text'; collapsed = false; renderTabs(); renderPanel(); setTimeout(() => $('#tstr')?.focus(), 50); };
 $('#fileIn').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) openFiles(f.slice(0, 1), false); };
 $('#fileAdd').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) openFiles(f, true); };
