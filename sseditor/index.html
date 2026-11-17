@@ -516,8 +516,17 @@ function tile(x,L,cx,cy,w,h,W){x.save();x.translate(cx,cy);x.scale(L.fx?-1:1,L.f
  if(L.t=='txt'){const f=fsz(L,W);x.scale(L.sx||1,L.sy||1);x.font=ffont(L,W);x.textAlign='center';x.textBaseline='middle';
   if(L.sw>0){x.lineJoin='round';x.miterLimit=2;x.lineWidth=f*L.sw/50;x.strokeStyle=L.sc;x.strokeText(L.txt,0,f*.04)}x.fillStyle=L.c;x.fillText(L.txt,0,f*.04)}
  else x.drawImage(L.img,-w/2,-h/2,w,h);x.restore()}
+const TCACHE=new WeakMap();
+function tileCanvas(L){const im=L.img,k=(L.fx?1:0)+(L.fy?2:0);let m=TCACHE.get(im);if(!m){m={};TCACHE.set(im,m)}if(m[k])return m[k];
+ let w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;const s=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
+ const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.translate(L.fx?w:0,L.fy?h:0);x.scale(L.fx?-1:1,L.fy?-1:1);x.drawImage(im,0,0,w,h);return m[k]=c}
+/* ubin tanpa sambungan: pola kanvas, bukan gambar per ubin */
+function seamless(x,L,w,h,R){const tc=tileCanvas(L),pt=x.createPattern(tc,L.rep==2?'repeat-x':L.rep==3?'repeat-y':'repeat');
+ pt.setTransform(new DOMMatrix([w/tc.width,0,0,h/tc.height,-w/2,-h/2]));x.fillStyle=pt;
+ const ax=L.rep==3?w/2:R,ay=L.rep==2?h/2:R;x.fillRect(L.rep==3?-w/2:-R,L.rep==2?-h/2:-R,2*ax,2*ay)}
 function drawLayer(x,L,W,H,ext=0){if(!ready(L))return;const[w,h]=dims(L,W);x.save();x.translate(L.x*W,L.y*H);x.rotate((L.r||0)*Math.PI/180);
  if(!L.rep)tile(x,L,0,0,w,h,W);
+ else if(L.t!='txt'&&typeof DOMMatrix!='undefined'){seamless(x,L,w,h,Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2))}
  else{const Dg=Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);const NI=L.rep==3?0:ni,NJ=L.rep==2?0:nj;for(let i=-NI;i<=NI;i++)for(let j=-NJ;j<=NJ;j++)tile(x,L,i*w,j*h,w,h,W)}
  x.restore()}
 function paint(id){histTouch();const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);p.layers.forEach(L=>drawLayer(c,L,W,H));p.tx.needsUpdate=true;if(id==sel)drawPv()}
@@ -930,7 +939,7 @@ function gfxImage(s){const key=s.file+'|'+s.ai+'|'+s.page;if(gimg[key])return gi
   if(zf[s.file])p=bytesImg(zf[s.file]);
   else if(s.ai&&zf[s.ai])p=(async()=>{const L=await loadPdfJs();if(!pdfDocs[s.ai])pdfDocs[s.ai]=L.getDocument({data:zf[s.ai].slice(),isEvalSupported:false}).promise;const doc=await pdfDocs[s.ai];
     const pg=await doc.getPage(Math.min(doc.numPages,Math.max(1,s.page|0)));const v0=pg.getViewport({scale:1}),tgt=Math.min(4096,Math.max(512,Math.max(s.w,s.h)*10)),vp=pg.getViewport({scale:tgt/Math.max(v0.width,v0.height)});
-    const c=document.createElement('canvas');c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);await pg.render({canvasContext:c.getContext('2d'),viewport:vp,background:'rgba(0,0,0,0)'}).promise;return c})().catch(e=>{console.warn('pdf',e);return null});
+    const c=document.createElement('canvas');c.width=Math.max(1,Math.floor(vp.width));c.height=Math.max(1,Math.floor(vp.height));await pg.render({canvasContext:c.getContext('2d'),viewport:vp,background:'rgba(0,0,0,0)'}).promise;return c})().catch(e=>{console.warn('pdf',e);return null});
   else p=Promise.resolve(null);return gimg[key]=p}
 const mm=(A,B)=>[A[0]*B[0]+A[2]*B[1],A[1]*B[0]+A[3]*B[1],A[0]*B[2]+A[2]*B[3],A[1]*B[2]+A[3]*B[3],A[0]*B[4]+A[2]*B[5]+A[4],A[1]*B[4]+A[3]*B[5]+A[5]];
 const minv=A=>{const d=A[0]*A[3]-A[1]*A[2];return[A[3]/d,-A[1]/d,-A[2]/d,A[0]/d,(A[2]*A[5]-A[3]*A[4])/d,(A[1]*A[4]-A[0]*A[5])/d]};
@@ -955,7 +964,8 @@ async function cloLayers(pt,W,H){const out=[];const G0=patG0(pt,W,H);
       const sx=Math.hypot(Mo[0],Mo[1])||1,sy=Math.hypot(Mo[2],Mo[3])||1,T=[Mo[0]/sx,Mo[1]/sx,Mo[2]/sy,Mo[3]/sy,Mo[4],Mo[5]],Tl=mm(minv(Mo),T),Ti=minv(Tl);
       const tw=g.tsize[0],th=g.tsize[1],cs=g.pts.map(q=>ap(Ti,q[0],q[1])),ux0=Math.min(...cs.map(q=>q[0])),ux1=Math.max(...cs.map(q=>q[0])),uy0=Math.min(...cs.map(q=>q[1])),uy1=Math.max(...cs.map(q=>q[1]));
       const rx=g.rep==1||g.rep==3,ry=g.rep==2||g.rep==3,ka=rx?Math.floor(ux0/tw-.5):0,kb=rx?Math.ceil(ux1/tw+.5):0,la=ry?Math.floor(uy0/th-.5):0,lb=ry?Math.ceil(uy1/th+.5):0;
-      if((kb-ka+1)*(lb-la+1)<6000)for(let i=ka;i<=kb;i++)for(let j=la;j<=lb;j++){x.setTransform(...mm(S,mm(Tl,[tw/IW,0,0,-th/IH,i*tw-tw/2,j*th+th/2])));x.drawImage(img,0,0)}
+      {const pt=x.createPattern(img,rx&&ry?'repeat':rx?'repeat-x':'repeat-y');pt.setTransform(new DOMMatrix([tw/IW,0,0,-th/IH,-tw/2,th/2]));x.setTransform(...mm(S,Tl));x.fillStyle=pt;
+        const fx0=rx?ux0-tw:-tw/2,fx1=rx?ux1+tw:tw/2,fy0=ry?uy0-th:-th/2,fy1=ry?uy1+th:th/2;x.fillRect(fx0,fy0,fx1-fx0,fy1-fy0)}
       img=c;IW=cw;IH=ch}
     const K=[(x1-x0)/IW,0,0,-(y1-y0)/IH,x0,y1],Lc=mm(G0,mm(Mo,K));
     const src=toSrc(img),im=await loadImg(src);if(!im)continue;
