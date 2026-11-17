@@ -44,11 +44,14 @@ public class MainActivity extends Activity {
     static final int RC_CHOOSER = 11;
     static final int RC_SAVE = 12;
     static final int RC_LIB = 13;
+    static final int RC_OPEN = 14;
 
     WebView web;
     ValueCallback<Uri[]> chooserCb;
     OutputStream saveOut;
+    Uri lastSave;
     final Map<String, Uri> incoming = new HashMap<>();
+    final Map<String, OutputStream> outs = new HashMap<>();
     String incomingToken;
 
     @Override
@@ -129,6 +132,46 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    String register(Uri u) {
+        String k = UUID.randomUUID().toString().replace("-", "");
+        synchronized (incoming) {
+            incoming.put(k, u);
+        }
+        return k;
+    }
+
+    Uri uriOf(String k) {
+        synchronized (incoming) {
+            return k == null ? null : incoming.get(k);
+        }
+    }
+
+    String infoJson(String k) {
+        Uri u = uriOf(k);
+        if (u == null) return "";
+        try {
+            JSONObject o = new JSONObject();
+            o.put("token", k);
+            o.put("name", displayName(u));
+            o.put("writable", !"file".equals(u.getScheme()));
+            return o.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    void takePerm(Uri u) {
+        try {
+            getContentResolver().takePersistableUriPermission(u,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        } catch (Exception e) {
+            try {
+                getContentResolver().takePersistableUriPermission(u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     String displayName(Uri u) {
         String n = null;
         try (Cursor c = getContentResolver().query(u, null, null, null, null)) {
@@ -157,6 +200,8 @@ public class MainActivity extends Activity {
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("application/octet-stream");
                 i.putExtra(Intent.EXTRA_TITLE, name == null || name.isEmpty() ? "model.3mf" : name);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                 try {
                     startActivityForResult(i, RC_SAVE);
                 } catch (Exception e) {
@@ -167,6 +212,14 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String chunk(String b64) {
+            if (saveOut == null && lastSave != null) {
+                try {
+                    saveOut = getContentResolver().openOutputStream(lastSave, "wt");
+                } catch (Exception e) {
+                    return "Tidak bisa menulis: " + e.getMessage();
+                }
+                lastSave = null;
+            }
             if (saveOut == null) return "File belum dibuka";
             try {
                 saveOut.write(Base64.decode(b64, Base64.DEFAULT));
@@ -190,24 +243,82 @@ public class MainActivity extends Activity {
             }
         }
 
-        /** file yang dikirim dari aplikasi lain: {"token":..,"name":..} atau "" */
+        /** file yang dikirim dari aplikasi lain: {"token","name","writable"} atau "" */
         @JavascriptInterface
         public String incoming() {
             String k = incomingToken;
             incomingToken = null;
-            if (k == null) return "";
-            Uri u;
-            synchronized (incoming) {
-                u = incoming.get(k);
-            }
-            if (u == null) return "";
+            return k == null ? "" : infoJson(k);
+        }
+
+        @JavascriptInterface
+        public String info(String token) {
+            return infoJson(token);
+        }
+
+        /** pilih file untuk dibuka (izin baca + tulis, supaya Simpan bisa menimpa) */
+        @JavascriptInterface
+        public void pickOpen() {
+            runOnUiThread(() -> {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                try {
+                    startActivityForResult(i, RC_OPEN);
+                } catch (Exception e) {
+                    js("window.__apkOpened&&__apkOpened(null)");
+                }
+            });
+        }
+
+        /** tulis ulang (menimpa) file token */
+        @JavascriptInterface
+        public String begin(String token) {
+            Uri u = uriOf(token);
+            if (u == null) return "file tidak dikenal";
             try {
-                JSONObject o = new JSONObject();
-                o.put("token", k);
-                o.put("name", displayName(u));
-                return o.toString();
+                OutputStream o = getContentResolver().openOutputStream(u, "wt");
+                if (o == null) return "tidak bisa menulis ke file ini";
+                synchronized (outs) {
+                    OutputStream old = outs.put(token, o);
+                    if (old != null) try { old.close(); } catch (Exception ignored) { }
+                }
+                return "ok";
             } catch (Exception e) {
-                return "";
+                return "tidak ada izin menulis";
+            }
+        }
+
+        @JavascriptInterface
+        public String chunkTo(String token, String b64) {
+            OutputStream o;
+            synchronized (outs) {
+                o = outs.get(token);
+            }
+            if (o == null) return "file belum dibuka untuk ditulis";
+            try {
+                o.write(Base64.decode(b64, Base64.DEFAULT));
+                return "ok";
+            } catch (Exception e) {
+                return "gagal menulis: " + e.getMessage();
+            }
+        }
+
+        @JavascriptInterface
+        public String endTo(String token) {
+            OutputStream o;
+            synchronized (outs) {
+                o = outs.remove(token);
+            }
+            if (o == null) return "ok";
+            try {
+                o.flush();
+                o.close();
+                return "ok";
+            } catch (Exception e) {
+                return "gagal menutup file: " + e.getMessage();
             }
         }
 
@@ -252,32 +363,38 @@ public class MainActivity extends Activity {
         if (rc == RC_LIB) {
             if (res == RESULT_OK && data != null && data.getStringExtra(LibraryActivity.RESULT_PATH) != null) {
                 Uri u = Uri.fromFile(new java.io.File(data.getStringExtra(LibraryActivity.RESULT_PATH)));
-                String k = UUID.randomUUID().toString().replace("-", "");
-                synchronized (incoming) {
-                    incoming.put(k, u);
-                }
-                incomingToken = k;
+                incomingToken = register(u);
                 js("window.__apkIncoming&&__apkIncoming()");
             }
             return;
         }
-        if (rc == RC_SAVE) {
-            boolean ok = false;
-            if (res == RESULT_OK && data != null && data.getData() != null) {
-                try {
-                    ContentResolver cr = getContentResolver();
-                    OutputStream o;
-                    try {
-                        o = cr.openOutputStream(data.getData(), "wt");
-                    } catch (Exception e) {
-                        o = cr.openOutputStream(data.getData(), "w");
-                    }
-                    saveOut = o;
-                    ok = o != null;
-                } catch (Exception ignored) {
-                }
+        if (rc == RC_OPEN) {
+            if (res != RESULT_OK || data == null || data.getData() == null) {
+                js("window.__apkOpened&&__apkOpened(null)");
+                return;
             }
-            js("window.__apkWrite&&__apkWrite(" + ok + ")");
+            Uri u = data.getData();
+            takePerm(u);
+            String info = infoJson(register(u));
+            js("window.__apkOpened&&__apkOpened(" + (info.isEmpty() ? "null" : info) + ")");
+            return;
+        }
+        if (rc == RC_SAVE) {
+            if (res != RESULT_OK || data == null || data.getData() == null) {
+                js("window.__apkWrite&&__apkWrite(false)");
+                return;
+            }
+            Uri u = data.getData();
+            takePerm(u);
+            String k = register(u);
+            lastSave = u;
+            // cara lama (chunk/end) tetap didukung
+            try {
+                if (saveOut != null) saveOut.close();
+            } catch (Exception ignored) {
+            }
+            saveOut = null;
+            js("window.__apkWrite&&__apkWrite(true," + JSONObject.quote(k) + ")");
         }
     }
 
