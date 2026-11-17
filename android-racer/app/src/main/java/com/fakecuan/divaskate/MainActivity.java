@@ -1,6 +1,7 @@
 package com.fakecuan.divaskate;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,13 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Pembungkus Android untuk game Diva Skate di https://fakecuan.github.io/web/racer/
  * Game selalu dimuat dari internet, jadi pembaruan index.html langsung sampai tanpa instal ulang.
@@ -21,6 +29,8 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     static final String HOST = "fakecuan.github.io";
     static final String BASE = "https://fakecuan.github.io/web/racer/";
+    static final String REL_API = "https://api.github.com/repos/fakecuan/web/releases/tags/diva-skate-latest";
+    static final String APK_URL = "https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk";
 
     WebView web;
     long lastBack = 0;
@@ -70,6 +80,35 @@ public class MainActivity extends Activity {
             }
         });
         if (b != null) web.restoreState(b); else web.loadUrl(BASE);
+        cekUpdate();
+    }
+
+    /** Cek versi APK terbaru di GitHub Releases; kalau lebih baru, tawarkan update. */
+    void cekUpdate() {
+        new Thread(() -> {
+            try {
+                @SuppressWarnings("deprecation") int mine = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+                HttpURLConnection c = (HttpURLConnection) new URL(REL_API).openConnection();
+                c.setConnectTimeout(8000); c.setReadTimeout(8000);
+                c.setRequestProperty("Accept", "application/vnd.github+json");
+                if (c.getResponseCode() != 200) return;
+                StringBuilder sb = new StringBuilder();
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(c.getInputStream()))) { String l; while ((l = r.readLine()) != null) sb.append(l); }
+                Matcher m = Pattern.compile("\"name\"\\s*:\\s*\"Diva Skate APK 1\\.(\\d+)\"").matcher(sb);
+                if (!m.find()) return;
+                int latest = Integer.parseInt(m.group(1));
+                if (latest <= mine) return;
+                runOnUiThread(() -> {
+                    if (isFinishing()) return;
+                    new AlertDialog.Builder(this)
+                        .setTitle("Versi baru tersedia")
+                        .setMessage("Aplikasi Diva Skate versi 1." + latest + " sudah ada (kamu memakai 1." + mine + "). Unduh lalu pasang di atas versi lama, data tidak hilang.")
+                        .setPositiveButton("UPDATE", (d, w) -> { try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(APK_URL))); } catch (Exception e) { } })
+                        .setNegativeButton("NANTI", null)
+                        .show();
+                });
+            } catch (Exception e) { }
+        }).start();
     }
 
     void immersive() {

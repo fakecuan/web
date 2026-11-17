@@ -9,6 +9,8 @@ APK dibuat otomatis oleh GitHub Actions (`.github/workflows/diva-skate-apk.yml`)
 
 https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk
 
+Saat dibuka, aplikasi mengecek versi APK terbaru di Releases dan menawarkan UPDATE bila ada versi baru.
+
 Tombol kembali HP: menutup pop up / kembali ke menu sebelumnya di game; di menu utama,
 tekan dua kali untuk keluar.
 
