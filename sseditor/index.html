@@ -137,6 +137,11 @@ textarea#ptx[hidden]{display:none}
 #iesheet input[type=color]{width:44px;height:28px;border:0;background:none}.iesb{display:flex;gap:8px;justify-content:flex-end}.iesb button{height:34px;padding:0 14px;border-radius:9px;border:0;background:#ffffff14;color:#eee;font-weight:600;cursor:pointer}
 @media(min-width:900px){#ied{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr auto}#ied[hidden]{display:none}.ieh{grid-column:1/3}#ietools{grid-row:2/4;flex-direction:column;overflow-y:auto;overflow-x:hidden;width:96px;padding:8px 6px}#ietools button{width:100%}#ietools i{width:auto;height:1px;margin:4px 6px}.iem{grid-column:2}#ieopt{grid-column:2}}
 .iemode #fsw{visibility:hidden}
+#busyp{width:min(280px,70vw);height:6px;border-radius:3px;background:#0001;overflow:hidden}#busyp[hidden]{display:none}#busyp i{display:block;height:100%;width:2%;background:var(--ac);transition:width .25s}#busypc{color:var(--mu);font-size:12px}
+.svr{position:fixed;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 4px);transform:translateX(-50%);z-index:70;max-width:min(520px,calc(100vw - 24px));padding:10px 14px;border-radius:12px;box-shadow:0 8px 24px #0003;display:flex;flex-direction:column;gap:2px;font:13px system-ui,sans-serif;color:#fff;cursor:pointer}.svr[hidden]{display:none}
+.svr b{font-size:14px}.svr.ok{background:#1f8a4c}.svr.err{background:#c62828}.svr.warn{background:#7a6a1a}
+#bsave{position:relative}#bsave.dirty::after{content:"";position:absolute;top:6px;left:22px;width:8px;height:8px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 2px #fff}
+#paste,#fromp{display:none!important}.btns{grid-template-columns:repeat(3,1fr)!important}
 </style></head>
 <body>
 <div id="view"></div>
@@ -163,7 +168,7 @@ textarea#ptx[hidden]{display:none}
 </div>
 
 <div id="tip">Ketuk bagian skinsuit untuk menambah gambar</div>
-<div id="busy" hidden><div class="spin"></div><span id="busyt">Membuka…</span></div>
+<div id="busy" hidden><div class="spin"></div><span id="busyt">Membuka…</span><div id="busyp" hidden><i></i></div><small id="busypc"></small></div>
 
 <div id="libp" hidden><div class="lh"><b>Library</b><button class="x" id="libx" aria-label="Tutup">✕</button></div>
     <button id="libpaste" class="lpaste">Tempel dari papan klip</button>
@@ -198,7 +203,7 @@ textarea#ptx[hidden]{display:none}
   <div class="btns">
     <button id="paste"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h4"/></svg>Tempel</button>
     <button id="fromp"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/></svg>Bagian lain</button>
-    <button id="fromd"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>Perangkat</button>
+    <button id="fromd"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>Gambar</button>
     <button id="addtxt"><svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Teks</button>
     <button id="cprompt"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>Salin prompt</button>
   </div>
@@ -221,7 +226,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj" hidden><b>File CLO 3D (.zprj)</b><small>Motif tiap bagian dipasang sebagai kain di CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r8</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r9</small>
   <button class="opt" id="ojson" hidden><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -238,6 +243,15 @@ textarea#ptx[hidden]{display:none}
 <div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
 <div class="iem"><canvas id="iev"></canvas><div id="iesheet" hidden><b id="iest"></b><div id="iesf"></div><div class="iesb"><button id="iescancel">Batal</button><button id="iesapply" class="pri">Terapkan</button></div></div></div>
 <div id="ieopt"></div><div id="ietools"></div></div>
+<div class="modal" id="mimg" hidden><div class="mbox"><b>Tambah gambar</b><small>Pilih sumber gambar untuk bagian ini.</small>
+  <button class="opt" id="iclip"><b>Clipboard</b><small>Gambar yang baru Anda salin (mis. dari ChatGPT / Pinterest)</small></button>
+  <button class="opt" id="ilib"><b>Library</b><small>Motif dari semua bagian pola + gambar yang pernah dipakai</small></button>
+  <button class="opt" id="idev"><b>Perangkat</b><small>Pilih file gambar di HP / komputer</small></button>
+  <div class="mact"><button data-x>Batal</button></div></div></div>
+<div class="modal" id="msvf" hidden><div class="mbox"><b>Gagal menyimpan</b><small id="svfm"></small><small>Perubahan Anda masih ada di aplikasi. Coba lagi, atau simpan dengan nama lain (jangan menimpa file yang sedang terbuka di CLO).</small>
+  <button class="opt" id="svfretry"><b>Coba lagi</b></button><button class="opt" id="svfas"><b>Simpan sebagai…</b></button>
+  <div class="mact"><button data-x>Tutup</button></div></div></div>
+<div id="svr" class="svr" hidden></div>
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -764,8 +778,8 @@ applySleeve();
 let DL=null;(function initDL(n){try{if(window.claude&&claude.use){claude.use('downloads').then(x=>{DL=x}).catch(()=>{});return}}catch(e){}if(n<20)setTimeout(()=>initDL(n+1),250)})(0);
 async function saveFile(name,data){
  if(DL&&/\.zprj$/i.test(name)){const u=new Uint8Array(await (data instanceof Blob?data:new Blob([data])).arrayBuffer());data=new Blob([fflate.zipSync({[name]:[u,{level:0}]})]);name+='.zip'}
- if(DL){try{await DL.save({filename:name,data});toast(/\.zprj\.zip$/i.test(name)?'Tersimpan: '+name+'. Ekstrak ZIP-nya untuk mendapat file .zprj':'Tersimpan: '+name);return}catch(e){if(e&&e.code=='declined')return;if(e&&e.code=='rate_limited'){toast('Tunggu sebentar lalu coba lagi');return}console.warn('downloads',e);toast('Simpan lewat Claude gagal ('+((e&&e.code)||e)+'), mencoba unduhan biasa')}}
- try{const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Mengunduh '+name)}catch(e){toast('Unduhan tidak tersedia di tampilan ini')}}
+ if(DL){try{await DL.save({filename:name,data});toast(/\.zprj\.zip$/i.test(name)?'Tersimpan: '+name+'. Ekstrak ZIP-nya untuk mendapat file .zprj':'Tersimpan: '+name);return true}catch(e){if(e&&e.code=='declined')return 'declined';if(e&&e.code=='rate_limited'){return 'Ada penyimpanan lain yang sedang berjalan, tunggu sebentar lalu coba lagi'}console.warn('downloads',e);toast('Simpan lewat Claude gagal ('+((e&&e.code)||e)+'), mencoba unduhan biasa')}}
+ try{const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Mengunduh '+name);return true}catch(e){return 'Unduhan tidak tersedia di tampilan ini'}}
 document.querySelectorAll('.modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target==m||e.target.hasAttribute('data-x'))m.hidden=true})});
 function resetAll(){Object.values(P).forEach(p=>{p.layers=[];p.ai=-1;p.base='#16161a'});MIR={sleeve:1,leg:1,cuff:1,long:1};ls=0;applySleeve();select(null);Object.keys(P).forEach(render);$('#cdot').style.background='#16161a'}
 $('#bnew').onclick=()=>{$('#mnew').hidden=false};
@@ -785,9 +799,9 @@ async function getTarget(kind,forceAs){const f=FS[kind];
  if(canPick()){try{const h=await showSaveFilePicker({suggestedName:f.n+'.'+kind,types:[{description:f.desc,accept:{[f.mime]:['.'+kind]}}]});f.h=h;f.n=h.name.replace(/\.[^.]+$/,'');f.named=true;lss('skn_'+kind,f.n);fnLabels();return{h}}catch(e){if(e&&e.name=='AbortError')return null}}
  if(forceAs||!f.named){const n=await askName(kind);if(n==null)return null;f.n=n;f.named=true;lss('skn_'+kind,n);fnLabels()}
  return{name:f.n+'.'+kind}}
-async function writeTarget(kind,tg,blob){if(tg.h){try{const w=await tg.h.createWritable();await w.write(blob);await w.close();toast('Tersimpan: '+tg.h.name);return}catch(e){FS[kind].h=null;console.error(e);const m=(e&&(e.name+': '+e.message))||String(e);toast('Gagal menulis file');setTimeout(()=>{try{alert('Gagal menulis file.\n\n'+m+'\n\nKalau file ini sedang terbuka di CLO, tutup dulu di CLO atau simpan dengan nama lain.')}catch(_){}},50);return}}
- await saveFile(tg.name,blob)}
-async function doSave(forceAs){if(ZP){await saveZprj(forceAs);return}const tg=await getTarget('json',forceAs);if(tg)await writeTarget('json',tg,projBlob())}
+async function writeTarget(kind,tg,blob){if(tg.h){try{const w=await tg.h.createWritable();await w.write(blob);await w.close();toast('Tersimpan: '+tg.h.name);return true}catch(e){FS[kind].h=null;console.error(e);return 'Gagal menulis file ('+((e&&(e.name+': '+e.message))||String(e))+'). Kalau file ini sedang terbuka di CLO, tutup dulu di CLO atau simpan dengan nama lain.'}}
+ return await saveFile(tg.name,blob)}
+async function doSave(forceAs,kind){if(ZP&&kind!='json'){await saveZprj(forceAs);return}svStart();let tg;try{tg=await getTarget('json',forceAs)}catch(e){svFail((e&&e.message)||String(e));return}if(!tg){svCancel();return}busy('Menyimpan proyek…',60);const b=projBlob();const ok=await writeTarget('json',tg,b);busy(null);if(ok===true)svOk(tg.h?tg.h.name:tg.name,b.size,!tg.h);else if(ok!=='declined')svFail(ok||'Gagal menyimpan');else svCancel()}
 function fnLabels(){const sk=ZP?'zprj':'json';$('#bsave').title=FS[sk].named?'Simpan ke '+FS[sk].n+'.'+sk:'Simpan';$('#pdfnm').textContent=FS.pdf.named?'Disimpan sebagai '+FS.pdf.n+'.pdf':''}
 $('#bsave').onclick=()=>doSave(false);$('#bsaveas').onclick=()=>doSave(true);
 $('#opdfas').onclick=()=>exportPDF(true);fnLabels();
@@ -883,7 +897,7 @@ let HS=[],HI=-1,hLock=false,hT=null;
 function snap(){const parts={};Object.entries(P).forEach(([id,p])=>parts[id]={base:p.base,ai:p.ai,layers:p.layers.map(l=>({...l}))});return{ls,MIR:{...MIR},parts}}
 function skey(o){return JSON.stringify(o,(k,v)=>k=='img'?undefined:(k=='src'&&typeof v=='string'?v.length+v.slice(-40):v))}
 function histTouch(){if(hLock)return;clearTimeout(hT);hT=setTimeout(histCommit,350)}
-function histCommit(){if(hLock)return;const o=snap(),k=skey(o);if(HI>=0&&HS[HI].k==k)return;HS=HS.slice(0,HI+1);HS.push({o,k});if(HS.length>60)HS.shift();HI=HS.length-1;histBtns()}
+function histCommit(){if(hLock)return;const o=snap(),k=skey(o);if(HI>=0&&HS[HI].k==k)return;if(HI>=0&&typeof setDirty=='function')setDirty(true);HS=HS.slice(0,HI+1);HS.push({o,k});if(HS.length>60)HS.shift();HI=HS.length-1;histBtns()}
 function histBtns(){$('#undo').disabled=$('#undo2').disabled=HI<=0;$('#redo').disabled=$('#redo2').disabled=HI>=HS.length-1}
 function histGo(d){clearTimeout(hT);histCommit();const j=HI+d;if(j<0||j>=HS.length)return;HI=j;const o=HS[j].o;hLock=true;
  try{ls=o.ls;MIR={...o.MIR};Object.entries(o.parts).forEach(([id,v])=>{const p=P[id];p.base=v.base;p.ai=v.ai;p.layers=v.layers.map(l=>({...l}))});applySleeve();
@@ -892,7 +906,7 @@ function histGo(d){clearTimeout(hT);histCommit();const j=HI+d;if(j<0||j>=HS.leng
 $('#undo').onclick=$('#undo2').onclick=()=>histGo(-1);$('#redo').onclick=$('#redo2').onclick=()=>histGo(1);
 addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.target.closest('input,textarea,[contenteditable]')){const k=e.key.toLowerCase();if(k=='z'){e.preventDefault();histGo(e.shiftKey?1:-1)}else if(k=='y'){e.preventDefault();histGo(1)}}});
 /* ---------- file CLO (.zprj): buka & simpan ---------- */
-const busy=(t)=>{const b=$('#busy');if(t){$('#busyt').textContent=t;b.hidden=false}else b.hidden=true};
+const busy=(t,pct)=>{const b=$('#busy');if(t){$('#busyt').textContent=t;b.hidden=false;const bar=$('#busyp');if(pct==null){bar.hidden=true}else{bar.hidden=false;bar.firstElementChild.style.width=Math.max(2,Math.min(100,pct))+'%';$('#busypc').textContent=Math.round(pct)+'%'}}else b.hidden=true};
 const tick=()=>new Promise(r=>setTimeout(r,30));
 /* cocokkan nama pola CLO ke bagian aplikasi (kaki, manset, lengan, kerah, badan) */
 function mapPatternIds(pats){
@@ -954,7 +968,7 @@ async function openZprj(f){busy('Membuka file CLO…');await tick();
     if(fresh){applyProject(st.design);toast('File CLO dibuka beserta desainnya')}
     else{window.__gfxMiss=[];const n=await importCloGraphics(st);const miss=[...new Set(window.__gfxMiss)];
       toast((st.design?'File sudah diubah di CLO, dimuat dari data CLO terbaru. ':'File CLO dibuka. ')+(n?n+' motif CLO jadi lapisan terpisah.':'')+(miss.length?' '+miss.length+' motif tidak bisa dimuat: '+miss.slice(0,4).join(', '):''))}
-    loadAvatar(st)}
+    loadAvatar(st);setTimeout(()=>setDirty(false),700)}
   catch(e){console.error(e);busy(null);const m=(e&&e.message)||String(e);toast('File .zprj tidak bisa dibuka: '+m);setTimeout(()=>{try{alert('File .zprj tidak bisa dibuka.\n\nPesan: '+m)}catch(_){}},50)}
   finally{busy(null)}}
 /* gambar desain bagian → tekstur kain CLO (ukuran = kotak pola dalam mm, digeser agar pas di koordinat CLO) */
@@ -976,17 +990,20 @@ async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.
   const blob=await new Promise(r=>o.toBlob(r,'image/png'));return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H}}
 async function zprjBlob(){try{return await zprjBlob_()}finally{busy(null)}}
 async function zprjBlob_(){const T0=performance.now();const panels=[],ps=Object.values(P),tag=Math.random().toString(36).slice(2,7);
-  for(let i=0;i<ps.length;i++){const p=ps[i];busy('Menyiapkan motif '+(NAME[p.d.id]||p.d.id)+' ('+(i+1)+'/'+ps.length+')…');await tick();
+  for(let i=0;i<ps.length;i++){const p=ps[i];busy('Menyimpan: motif '+(NAME[p.d.id]||p.d.id)+' ('+(i+1)+'/'+ps.length+')…',5+80*i/ps.length);await tick();
     const t=await panelTexture(p),nm=String(NAME[p.d.id]||p.d.id).replace(/[^A-Za-z0-9]+/g,'_');
     panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:t.data,w:t.w,h:t.h,label:'SKN '+nm})}
-  busy('Menyusun file .zprj…');await tick();const T1=performance.now();
+  busy('Menyimpan: menyusun file .zprj…',88);await tick();const T1=performance.now();
   const out=CLO.writeZprj(ZP,panels,projObj(),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
-async function saveZprj(forceAs){if(!ZP){toast('Buka file .zprj dulu');return}const tg=await getTarget('zprj',forceAs);if(!tg)return;
-  try{const b=await zprjBlob();busy(null);
-    if(tg.h){await writeTarget('zprj',tg,b);return}
-    readyDl(tg.name,b)}catch(e){console.error(e);busy(null);const m=(e&&e.message)||String(e);toast('Gagal menyimpan .zprj: '+m);setTimeout(()=>{try{alert('Gagal menyimpan .zprj.\n\nPesan: '+m)}catch(_){}},50)}finally{busy(null)}}
+async function saveZprj(forceAs){if(!ZP){toast('Buka file .zprj dulu');return}
+  svStart();let tg;try{tg=await getTarget('zprj',forceAs)}catch(e){svFail('Tidak bisa memilih lokasi simpan: '+((e&&e.message)||e));return}
+  if(!tg){svCancel();return}
+  try{const b=await zprjBlob();
+    if(tg.h){busy('Menyimpan: menulis ke '+tg.h.name+'…',95);await tick();const ok=await writeTarget('zprj',tg,b);busy(null);if(ok===true)svOk(tg.h.name,b.size);else svFail(ok||'Gagal menulis file');return}
+    busy(null);svEnd();readyDl(tg.name,b)}
+  catch(e){console.error(e);svFail((e&&e.message)||String(e))}finally{busy(null)}}
 $('#ozprj').onclick=()=>{$('#mch').hidden=true;saveZprj(true)};
-$('#ojson').onclick=async()=>{$('#mch').hidden=true;const tg=await getTarget('json',true);if(tg)await writeTarget('json',tg,projBlob())};
+$('#ojson').onclick=()=>{$('#mch').hidden=true;doSave(true,'json')};
 /* ---------- grafik CLO (artwork PNG/PDF) → lapisan "Motif CLO" ---------- */
 const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';let pdfjsP=null;const pdfDocs={},gimg={};
 function loadScript(u){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>rej(new Error('gagal memuat pdf.js'));document.head.appendChild(s)})}
@@ -1048,7 +1065,7 @@ async function importCloGraphics(st){let n=0;const ps=Object.values(P);
 /* file sudah jadi → minta satu ketukan lagi supaya unduhan diizinkan browser */
 function readyDl(name,blob){const mb=(blob.size/1048576).toFixed(1);const wrap=typeof DL!=='undefined'&&DL&&/\.zprj$/i.test(name);
   $('#dlinfo').textContent=name+' ('+mb+' MB)'+(wrap?'. Di Claude, file disimpan sebagai .zip: ekstrak untuk mendapat .zprj.':'');
-  $('#dlgo').onclick=()=>{$('#mdl').hidden=true;saveFile(name,blob)};$('#mdl').hidden=false}
+  $('#dlgo').onclick=async()=>{$('#mdl').hidden=true;const ok=await saveFile(name,blob);if(ok===true)svOk(name,blob.size,true);else if(ok!=='declined')svFail(ok||'Unduhan gagal')};$('#mdl').hidden=false}
 
 /* ---------- edit pola layar penuh ---------- */
 window.FSON=false;const fsHome=[];
@@ -1277,6 +1294,25 @@ function stroke(v){const sz=v.sz,pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2)
     if(v.pos=='out'){/* stroke di bawah gambar */const oa=sa+a*(1-sa);if(oa<=0){res[j+3]=0;continue}res[j]=(d[j]*sa+c[0]*a*(1-sa))/oa;res[j+1]=(d[j+1]*sa+c[1]*a*(1-sa))/oa;res[j+2]=(d[j+2]*sa+c[2]*a*(1-sa))/oa;res[j+3]=oa*255}
     else{/* stroke di atas gambar */const oa=a+sa*(1-a);if(oa<=0){res[j+3]=0;continue}res[j]=(c[0]*a+d[j]*sa*(1-a))/oa;res[j+1]=(c[1]*a+d[j+1]*sa*(1-a))/oa;res[j+2]=(c[2]*a+d[j+2]*sa*(1-a))/oa;res[j+3]=oa*255}}
   IE.x.putImageData(new ImageData(res,W,H),0,0)}
+
+/* ---------- status simpan: progres, hasil, tanda belum disimpan ---------- */
+let SVT=0,DIRTY=false;
+function setDirty(v){DIRTY=v;$('#bsave').classList.toggle('dirty',!!v);$('#bsave').title=v?'Ada perubahan yang belum disimpan':'Semua perubahan sudah disimpan'}
+function svStart(){clearTimeout(SVT);busy('Menyimpan: menyiapkan…',2);SVT=setTimeout(()=>{if(!$('#busy').hidden){busy(null);svFail('Penyimpanan macet lebih dari 3 menit. Coba lagi, atau simpan dengan nama lain.')}},180000)}
+function svEnd(){clearTimeout(SVT)}
+function svCancel(){svEnd();busy(null);svMsg('warn','Simpan dibatalkan','File tidak disimpan.')}
+function svOk(name,size,dl){svEnd();busy(null);setDirty(false);const t=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  svMsg('ok',dl?'Unduhan dimulai':'Tersimpan',(name||'')+(size?' ('+(size/1048576).toFixed(1)+' MB)':'')+' · '+t+(dl?' · cek folder Unduhan':''))}
+function svFail(msg){svEnd();busy(null);console.warn('save fail',msg);svMsg('err','Gagal menyimpan',msg+'');$('#msvf b').textContent='Gagal menyimpan';$('#svfm').textContent=msg+'';$('#msvf').hidden=false}
+function svMsg(kind,title,sub){const e=$('#svr');e.className='svr '+kind;e.innerHTML=`<b>${kind=='ok'?'✓ ':kind=='err'?'✕ ':'! '}${title}</b><span>${String(sub).replace(/</g,'&lt;')}</span>`;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,kind=='err'?12000:6000)}
+$('#svr').onclick=()=>$('#svr').hidden=true;
+$('#svfretry').onclick=()=>{$('#msvf').hidden=true;doSave(false)};$('#svfas').onclick=()=>{$('#msvf').hidden=true;doSave(true)};
+addEventListener('beforeunload',e=>{if(DIRTY){e.preventDefault();e.returnValue=''}});
+/* tombol Gambar: clipboard / library / perangkat */
+$('#fromd').onclick=()=>{if(!sel)return;$('#mimg').hidden=false};
+$('#iclip').onclick=()=>{$('#mimg').hidden=true;$('#paste').onclick()};
+$('#ilib').onclick=e=>{e.stopPropagation();$('#mimg').hidden=true;libRender();$('#libp').hidden=false};
+$('#idev').onclick=()=>{$('#mimg').hidden=true;$('#file').click()};
 
 /* awal */
 setAll('#16161a');gBuild();
