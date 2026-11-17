@@ -159,11 +159,11 @@ textarea#ptx[hidden]{display:none}
 .swl{font-size:11px;font-weight:600;color:#777;margin:2px 2px 4px}.sw.swm{margin-bottom:8px}
 .tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
 #ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
-#iesf .sugw{margin:-2px 0 6px}</style></head>
+#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}</style></head>
 <body>
 <div id="view"></div>
 
-<div id="tl">
+<div id="tl"><span id="verb" title="Versi aplikasi"></span>
   <button class="chip" id="cbtn"><span class="dot" id="cdot"></span><span>Warna skinsuit</span></button>
   <div class="pop" id="cpop" hidden></div>
   <select class="chip" id="slv" aria-label="Model lengan"><option value="0">Lengan pendek</option><option value="1">Lengan panjang</option></select>
@@ -247,7 +247,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r17</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r18</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -1648,6 +1648,8 @@ $('#twinc').onclick=()=>{const L=cur(),t=twinOf(sel);if(!L||!t)return;
   $('#mtwt').textContent='Salin ke '+(NAME[t]||t).toLowerCase();$('#mtwin').hidden=false};
 $('#twnf').onclick=()=>twinCopy(false);$('#twfl').onclick=()=>twinCopy(true);
 {const _ut=uiTools;uiTools=function(){const r=_ut.apply(this,arguments);try{const b=$('#twinc'),t=sel&&twinOf(sel);b.hidden=!t;b.style.display=t?'':'none';if(t)b.querySelector('span').textContent='Ke '+(NAME[t]||t).toLowerCase()}catch(e){}return r}}
+/* nomor versi di layar */
+try{const v=($('#appver').textContent.match(/(\d{4}-\d\d-\d\d)\s*(r\d+)/)||[]);$('#verb').textContent=v[2]?'Versi '+v[2]+' · '+v[1].slice(8)+'/'+v[1].slice(5,7):$('#appver').textContent}catch(e){}
 
 /* awal */
 setAll('#16161a');gBuild();
