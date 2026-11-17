@@ -47,5 +47,10 @@
                 <data android:mimeType="model/stl" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".LibraryActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|uiMode"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>

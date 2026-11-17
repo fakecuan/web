@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     static final String FILE_PREFIX = "/__3mf/f/";
     static final int RC_CHOOSER = 11;
     static final int RC_SAVE = 12;
+    static final int RC_LIB = 13;
 
     WebView web;
     ValueCallback<Uri[]> chooserCb;
@@ -210,6 +211,16 @@ public class MainActivity extends Activity {
             }
         }
 
+        /** library online (MakerWorld): file yang diunduh langsung dibuka di editor */
+        @JavascriptInterface
+        public void openLibrary(String url) {
+            runOnUiThread(() -> {
+                Intent i = new Intent(MainActivity.this, LibraryActivity.class);
+                i.putExtra(LibraryActivity.EXTRA_URL, url);
+                startActivityForResult(i, RC_LIB);
+            });
+        }
+
         @JavascriptInterface
         public void exitApp() {
             runOnUiThread(MainActivity.this::finish);
@@ -236,6 +247,18 @@ public class MainActivity extends Activity {
             }
             chooserCb.onReceiveValue(r);
             chooserCb = null;
+            return;
+        }
+        if (rc == RC_LIB) {
+            if (res == RESULT_OK && data != null && data.getStringExtra(LibraryActivity.RESULT_PATH) != null) {
+                Uri u = Uri.fromFile(new java.io.File(data.getStringExtra(LibraryActivity.RESULT_PATH)));
+                String k = UUID.randomUUID().toString().replace("-", "");
+                synchronized (incoming) {
+                    incoming.put(k, u);
+                }
+                incomingToken = k;
+                js("window.__apkIncoming&&__apkIncoming()");
+            }
             return;
         }
         if (rc == RC_SAVE) {
