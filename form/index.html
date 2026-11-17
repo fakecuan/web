@@ -11,44 +11,29 @@
 body{margin:0;background:radial-gradient(ellipse at 80% -10%,#49223b 0,transparent 38%),var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 .wrap{max-width:760px;margin:auto;padding:24px 16px 48px}
 header{text-align:center;padding:22px 10px 28px}
-.logo{font-size:clamp(34px,9vw,54px);font-weight:950;letter-spacing:.11em;line-height:1;color:#fff}
-.logo span{color:var(--pink)}
+.logo{font-size:clamp(34px,9vw,54px);font-weight:950;letter-spacing:.11em;line-height:1;color:#fff}.logo span{color:var(--pink)}
 .kicker{margin-top:10px;color:#d5a6bd;font-size:11px;letter-spacing:.24em;font-weight:800}
 .intro{color:var(--muted);font-size:14px;max-width:520px;margin:15px auto 0}
-.progress{display:flex;gap:7px;justify-content:center;margin:22px auto 0}
-.progress i{height:4px;width:42px;border-radius:10px;background:#444}
-.progress i:first-child{background:var(--pink)}
+.progress{display:flex;gap:7px;justify-content:center;margin:22px auto 0}.progress i{height:4px;width:42px;border-radius:10px;background:#444}.progress i:first-child{background:var(--pink)}
 .card{background:rgba(23,23,28,.96);border:1px solid var(--line);border-radius:20px;padding:22px;margin:14px 0;box-shadow:0 12px 35px #0003}
-.section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.num{width:30px;height:30px;border-radius:10px;background:#3b2432;color:#ff9fc8;display:grid;place-items:center;font-weight:900;font-size:13px}
-h2{font-size:16px;margin:0;font-weight:800}
-.sub{font-size:12px;color:var(--muted);margin-top:2px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.field{display:flex;flex-direction:column;gap:7px;min-width:0}
-.field.full{grid-column:1/-1}
+.section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.num{width:30px;height:30px;border-radius:10px;background:#3b2432;color:#ff9fc8;display:grid;place-items:center;font-weight:900;font-size:13px}
+h2{font-size:16px;margin:0;font-weight:800}.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field.full{grid-column:1/-1}
 label{font-size:12px;font-weight:750;color:#e8e8ed}
-.optional{font-weight:500;color:var(--muted)}
-input,textarea,select{width:100%;border:1px solid #3a3a45;background:#101014;color:var(--ink);border-radius:11px;padding:13px 14px;font:inherit;font-size:14px;outline:none;transition:.2s}
-input:focus,textarea:focus,select:focus{border-color:var(--pink);box-shadow:0 0 0 3px #f06aa522}
-input::placeholder,textarea::placeholder{color:#777783}
-textarea{resize:vertical;min-height:82px}
-.helper{font-size:11px;color:var(--muted)}
-.guide-link{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;padding:14px 15px;border:1px solid #75435d;border-radius:13px;background:linear-gradient(110deg,#30202a,#211a22);color:#fff;text-decoration:none;transition:.2s}.guide-link:hover{border-color:var(--pink);background:#382331}.guide-link strong{display:block;font-size:13px}.guide-link small{display:block;color:#d0b4c1;font-size:11px;margin-top:3px}.guide-arrow{flex:0 0 auto;color:#ff9fc8;font-size:20px;font-weight:900}
-.size-modal{display:none;position:fixed;inset:0;z-index:1000;background:#000b;padding:12px;overflow:auto;align-items:center;justify-content:center}.size-modal.open{display:flex}.size-modal-box{width:min(100%,650px);max-height:95vh;overflow:auto;background:#f3f6fc;color:#111827;border-radius:17px}.size-modal-head{position:sticky;top:0;background:#082c88;color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center}.modal-close{width:38px;margin:0;padding:0;background:#ffffff22;color:white;box-shadow:none;font-size:24px}.size-modal-body{padding:15px}.guide-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.guide-fields label{color:#18233b;font-size:12px}.guide-fields input{margin-top:5px;background:#fff;color:#111827;border-color:#ccd5e5;padding:9px}.guide-error{display:none;color:#b42318;background:#fff0ef;padding:9px;margin-top:9px;font-size:12px}.guide-result{background:#eaf0ff;color:#082c88;padding:12px;border-radius:10px;margin-top:10px;font-weight:700}.guide-table-wrap{overflow:auto;margin-top:13px;font-size:12px}.guide-table{width:100%;border-collapse:collapse;margin-top:6px}.guide-table th,.guide-table td{padding:7px;text-align:left;border-bottom:1px solid #dce2ef}.guide-table th{background:#eaf0ff}.guide-table tr.active{background:#ffe8f5;font-weight:900}.guide-note{font-size:11px;color:#5d6880}.size-modal-body button{background:#1265e8;color:#fff;box-shadow:none}.size-modal-body button:disabled{opacity:.45}@media(max-width:560px){.guide-fields{grid-template-columns:1fr}}.terms{display:grid;gap:13px}
-.term{display:flex;gap:11px;align-items:flex-start;font-size:13px;color:#d9d9e0}
-.term b{color:#fff}
-.dot{flex:0 0 23px;height:23px;border-radius:8px;background:#30222b;color:#ff9fc8;display:grid;place-items:center;font-size:11px;font-weight:900}
-.bank{margin-top:17px;padding:14px;border:1px dashed #75435d;background:#281c25;border-radius:13px}
-.bank small{display:block;color:#c7a7b7;font-size:11px}
-.bank strong{display:block;font-size:16px;letter-spacing:.04em;margin-top:3px}
-.bank .owner{font-size:12px;color:#e5cbd8}
-.agree{display:flex;gap:11px;align-items:flex-start;font-size:13px;color:#dedee5;margin-top:18px}
-.agree input{width:18px;height:18px;flex:0 0 18px;margin:1px 0 0;accent-color:var(--pink)}
-button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linear-gradient(100deg,#ed5f9c,#ff8ab8);color:#220d18;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 9px 25px #e95b9633;margin-top:18px}
-button:active{transform:translateY(1px)}
-.foot{text-align:center;color:#777783;font-size:11px;margin-top:20px}
-.required{color:#ff8ab8}
-@media(max-width:560px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:18px}.wrap{padding:16px 13px 35px}}
+input,textarea{width:100%;border:1px solid #3a3a45;background:#101014;color:var(--ink);border-radius:11px;padding:13px 14px;font:inherit;font-size:14px;outline:none;transition:.2s}
+input:focus,textarea:focus{border-color:var(--pink);box-shadow:0 0 0 3px #f06aa522}input::placeholder,textarea::placeholder{color:#777783}
+textarea{resize:vertical;min-height:82px}.helper{font-size:11px;color:var(--muted)}
+.terms{display:grid;gap:13px}
+button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linear-gradient(100deg,#ed5f9c,#ff8ab8);color:#220d18;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 9px 25px #e95b9633;margin-top:18px}button:active{transform:translateY(1px)}
+.foot{text-align:center;color:#777783;font-size:11px;margin-top:20px}.required{color:#ff8ab8}
+.guide-open{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:0 0 18px;padding:14px 15px;border:1px solid #75435d;border-radius:13px;background:linear-gradient(110deg,#30202a,#211a22);color:#fff;text-align:left;box-shadow:none}
+.guide-open strong{display:block;font-size:13px}.guide-open small{display:block;color:#d0b4c1;font-size:11px;margin-top:3px}.guide-open span:last-child{font-size:20px;color:#ff9fc8}
+.guide-modal{display:none;position:fixed;inset:0;z-index:9999;background:#000c;padding:12px;align-items:center;justify-content:center}.guide-modal.open{display:flex}
+.guide-dialog{width:min(960px,100%);height:min(92vh,900px);background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 70px #0008}
+.guide-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#17171c;color:#fff;padding:10px 14px;font-size:13px;font-weight:800}
+.guide-close{width:auto;margin:0;padding:8px 13px;background:#383841;color:#fff;box-shadow:none;font-size:13px;border-radius:9px}
+.guide-frame{border:0;width:100%;height:100%;background:#f3f6fc}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:18px}.wrap{padding:16px 13px 35px}.guide-modal{padding:6px}.guide-dialog{height:95vh;border-radius:12px}}
 </style>
 </head>
 <body>
@@ -59,120 +44,45 @@ button:active{transform:translateY(1px)}
   <p class="intro">Isi formulir di bawah ini untuk memulai pemesanan skinsuit custom. Pastikan data ukuran dan alamat sudah benar.</p>
   <div class="progress" aria-hidden="true"><i></i><i></i><i></i></div>
 </header>
-
 <form id="orderForm">
   <section class="card">
     <div class="section-head"><div class="num">01</div><div><h2>Data Pemesan</h2><div class="sub">Informasi kontak pelanggan</div></div></div>
     <div class="grid">
-      <div class="field">
-        <label for="nama">Nama lengkap <span class="required">*</span></label>
-        <input id="nama" name="nama" placeholder="Nama pemesan" required>
-      </div>
-      <div class="field">
-        <label for="hp">No. HP / WhatsApp <span class="required">*</span></label>
-        <input id="hp" name="hp" type="tel" placeholder="08xxxxxxxxxx" required>
-      </div>
+      <div class="field"><label for="nama">Nama lengkap <span class="required">*</span></label><input id="nama" name="nama" placeholder="Nama pemesan" required></div>
+      <div class="field"><label for="hp">No. HP / WhatsApp <span class="required">*</span></label><input id="hp" name="hp" type="tel" placeholder="08xxxxxxxxxx" required></div>
     </div>
   </section>
-
   <section class="card">
     <div class="section-head"><div class="num">02</div><div><h2>Ukuran Skinsuit</h2><div class="sub">Masukkan ukuran untuk setiap pemesan</div></div></div>
-    <button class="guide-link" id="openSizeGuide" type="button"><span><strong>📏 LIHAT PANDUAN UKURAN D.VA SKATE</strong><small>Tekan untuk membuka panduan tanpa meninggalkan form.</small></span><span class="guide-arrow">＋</span></button>
-<div id="sizeModal" class="size-modal" aria-hidden="true"><div class="size-modal-box" role="dialog" aria-modal="true"><div class="size-modal-head"><b>Panduan Ukuran D.VA SKATE</b><button type="button" id="closeSizeGuide" class="modal-close">×</button></div><div class="size-modal-body">
-<div class="guide-fields"><label>Tinggi badan (cm)<input id="gHeight" type="number" min="50" max="230" placeholder="Contoh: 145"></label><label>Berat badan (kg)<input id="gWeight" type="number" min="5" max="250" placeholder="Contoh: 35"></label><label>Lingkar dada (cm)<input id="gChest" type="number" min="35" max="150" placeholder="Opsional"></label></div>
-<div id="guideError" class="guide-error"></div><div id="guideResult" class="guide-result">Isi data untuk melihat rekomendasi.</div>
-<div class="guide-table-wrap"><b>Tabel ukuran D.VA SKATE</b><table class="guide-table"><thead><tr><th>Ukuran</th><th>Tinggi (cm)</th><th>LD acuan (cm)</th></tr></thead><tbody id="guideRows"></tbody></table></div>
-<p class="guide-note">Rekomendasi merupakan estimasi awal, bukan jaminan kecocokan. Jika hasil berada di batas antarukuran, konfirmasikan kepada admin.</p><button type="button" id="useGuideSize" disabled>GUNAKAN REKOMENDASI UKURAN</button>
-</div></div></div>
-    <div class="grid">
-      <div class="field full">
-        <label for="ukuran">Ukuran Skinsuit <span class="required">*</span></label>
-        <textarea id="ukuran" name="ukuran" placeholder="Contoh:&#10;1. Nama – 2S (lengan pendek)&#10;2. Nama – XS (lengan panjang)" required></textarea>
-        <div class="helper">Jika memesan lebih dari satu, tuliskan setiap nama, ukuran, dan model lengan.</div>
-      </div>
-    </div>
+    <button class="guide-open" id="openGuide" type="button"><span><strong>📏 BUKA PANDUAN UKURAN D.VA SKATE</strong><small>Tekan untuk melihat kalkulator dan tabel ukuran tanpa meninggalkan form pemesanan.</small></span><span aria-hidden="true">＋</span></button>
+    <div class="grid"><div class="field full"><label for="ukuran">Ukuran Skinsuit <span class="required">*</span></label><textarea id="ukuran" name="ukuran" placeholder="Contoh:&#10;1. Nama – 2S (lengan pendek)&#10;2. Nama – XS (lengan panjang)" required></textarea><div class="helper">Jika memesan lebih dari satu, tuliskan setiap nama, ukuran, dan model lengan.</div></div></div>
   </section>
-
   <section class="card">
     <div class="section-head"><div class="num">03</div><div><h2>Alamat Pengiriman</h2><div class="sub">Tuliskan alamat tujuan pengiriman selengkap mungkin</div></div></div>
-    <div class="field">
-      <label for="alamat">Alamat lengkap <span class="required">*</span></label>
-      <textarea id="alamat" name="alamat" placeholder="Nama jalan, nomor rumah, RT/RW, Kelurahan/Desa, Kecamatan, Kota/Kabupaten, Kode Pos, dan patokan alamat" required></textarea>
-      <div class="helper">Mohon cantumkan Kelurahan/Desa, Kecamatan, Kota/Kabupaten, dan Kode Pos di dalam kotak alamat ini.</div>
-    </div>
+    <div class="field"><label for="alamat">Alamat lengkap <span class="required">*</span></label><textarea id="alamat" name="alamat" placeholder="Nama jalan, nomor rumah, RT/RW, Kelurahan/Desa, Kecamatan, Kota/Kabupaten, Kode Pos, dan patokan alamat" required></textarea><div class="helper">Mohon cantumkan Kelurahan/Desa, Kecamatan, Kota/Kabupaten, dan Kode Pos di dalam kotak alamat ini.</div></div>
     <button type="submit">KIRIM PESANAN VIA WHATSAPP <span aria-hidden="true">↗</span></button>
     <div class="helper" style="text-align:center;margin-top:10px">Pesanan akan dikirim ke WhatsApp admin D.VA SKATE untuk dikonfirmasi.</div>
   </section>
 </form>
 <div class="foot">© D.VA SKATE · CUSTOM INLINE SKATE SKINSUIT</div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../supabase-config.js"></script>
+<div class="guide-modal" id="guideModal" role="dialog" aria-modal="true" aria-label="Panduan ukuran D.VA SKATE">
+  <div class="guide-dialog"><div class="guide-toolbar"><span>PANDUAN UKURAN D.VA SKATE</span><button class="guide-close" id="closeGuide" type="button">✕ Tutup</button></div><iframe class="guide-frame" id="guideFrame" title="Kalkulator dan tabel ukuran D.VA SKATE" loading="lazy"></iframe></div>
+</div>
 <script>
 const ADMIN_WA = "628561902897";
-const supaReady=window.DVA_SUPABASE_URL&&window.DVA_SUPABASE_ANON_KEY&&!window.DVA_SUPABASE_URL.includes("ISI_");
-const db=supaReady?window.supabase.createClient(window.DVA_SUPABASE_URL,window.DVA_SUPABASE_ANON_KEY):null;
-
-const GUIDE=[
- ['12S',90,99,50],['11S',100,110,52],['10S',111,120,54],['9S',121,125,56],['8S',126,130,58],['7S',131,135,60],['6S',136,140,62],['5S',141,145,64],['4S',146,150,66],['3S',151,155,68],['2S',156,158,70],['XS',159,162,72],['S',163,165,76],['M',166,170,80],['L',171,175,84],['XL',176,180,86],['2XL',181,999,88]
-];
-const ge=id=>document.getElementById(id);let chosenGuideSize=null;
-function guideRecalc(){
- const h=ge('gHeight').value===''?null:Number(ge('gHeight').value),w=ge('gWeight').value===''?null:Number(ge('gWeight').value),c=ge('gChest').value===''?null:Number(ge('gChest').value);
- ge('guideError').style.display='none';chosenGuideSize=null;ge('useGuideSize').disabled=true;
- if((h!==null&&(h<50||h>230))||(w!==null&&(w<5||w>250))||(c!==null&&(c<35||c>150))){ge('guideError').textContent='Data di luar rentang yang diperbolehkan.';ge('guideError').style.display='block';return}
- const rec=[];
- if(h!==null&&w!==null){const row=GUIDE.find(x=>h>=x[1]&&h<=x[2]);const base=row?row[3]:(h<90?50:88);const ref=17*Math.pow(h/100,2);const est=base+Math.max(-2,Math.min(4,(w-ref)*.2));rec.push({label:'Estimasi tinggi + berat',raw:est,rounded:Math.ceil(est/2)*2})}
- if(c!==null)rec.push({label:'Lingkar dada terukur',raw:c,rounded:Math.ceil(c/2)*2});
- const tbody=ge('guideRows');tbody.innerHTML=GUIDE.map(x=>'<tr><td>'+x[0]+'</td><td>'+(x[2]===999?'>180':x[1]+'–'+x[2])+'</td><td>'+x[3]+'</td></tr>').join('');
- if(!rec.length){ge('guideResult').textContent='Isi tinggi + berat badan atau lingkar dada.';return}
- rec.forEach(r=>{r.size=(GUIDE.find(x=>x[3]>=r.rounded)||GUIDE[GUIDE.length-1])[0]});
- chosenGuideSize=rec[rec.length-1].size;ge('useGuideSize').disabled=false;
- ge('guideResult').innerHTML=rec.map(r=>r.label+': <b style="font-size:22px">'+r.size+'</b><br><small>LD '+r.raw.toFixed(1)+' cm, dibulatkan '+r.rounded+' cm</small>').join('<hr>');
- tbody.innerHTML=GUIDE.map(x=>'<tr class="'+(rec.some(r=>r.size===x[0])?'active':'')+'"><td>'+x[0]+'</td><td>'+(x[2]===999?'>180':x[1]+'–'+x[2])+'</td><td>'+x[3]+'</td></tr>').join('');
-}
-['gHeight','gWeight','gChest'].forEach(id=>ge(id).addEventListener('input',guideRecalc));
-ge('openSizeGuide').onclick=()=>{ge('sizeModal').classList.add('open');ge('sizeModal').setAttribute('aria-hidden','false');guideRecalc()};
-function closeGuide(){ge('sizeModal').classList.remove('open');ge('sizeModal').setAttribute('aria-hidden','true')}
-ge('closeSizeGuide').onclick=closeGuide;ge('sizeModal').onclick=e=>{if(e.target===ge('sizeModal'))closeGuide()};
-ge('useGuideSize').onclick=()=>{if(chosenGuideSize){const old=ge('ukuran').value.trim();ge('ukuran').value=(old?old+'\n':'')+'Rekomendasi panduan: '+chosenGuideSize;closeGuide()}};
-
-document.getElementById("orderForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-  if(!this.reportValidity()) return;
+document.getElementById("orderForm").addEventListener("submit", function(e){
+  e.preventDefault(); if(!this.reportValidity()) return;
   const v = id => document.getElementById(id).value.trim();
-  const orderPayload={customer_name:v("nama"),phone:v("hp"),size_details:v("ukuran"),shipping_address:v("alamat"),status:"Baru",source:"form"};
-  if(!db){alert("Database Supabase belum dikonfigurasi. Silakan hubungi admin.");return;}
-  const {data:stored,error:saveError}=await db.from("orders").insert(orderPayload).select("id").single();
-  if(saveError){alert("Pesanan belum tersimpan: "+saveError.message);return;}
-  const lines = [
-    "*FORMAT ORDER PEMESANAN D.VA SKATE*",
-    "",
-    `ID Pesanan: ${stored.id}`,
-    `Nama: ${v("nama")}`,
-    `No. HP: ${v("hp")}`,
-    `Ukuran Skinsuit:\n${v("ukuran")}`,
-    "",
-    "*ALAMAT PENGIRIMAN*",
-    `Nama Penerima: ${v("nama")}`,
-    `No. HP Penerima: ${v("hp")}`,
-    `Alamat: ${v("alamat")}`,
-    "",
-    "*KETENTUAN PEMESANAN*",
-    "1. Konsultasi desain.",
-    "2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.",
-    "3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.",
-    "4. Skinsuit selesai proses produksi akan dikirim ke customer.",
-    "5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.",
-    "",
-    "*REKENING PEMBAYARAN*",
-    "Bank: BCA",
-    "No. Rekening: 5260526296",
-    "Atas Nama: Rifki Debi"
-  ].filter(x => x !== "");
-  const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\n"))}`;
-  window.open(url,"_blank","noopener,noreferrer");
+  const lines = ["*FORMAT ORDER PEMESANAN D.VA SKATE*","",`Nama: ${v("nama")}`,`No. HP: ${v("hp")}`,`Ukuran Skinsuit:\n${v("ukuran")}`,"","*ALAMAT PENGIRIMAN*",`Nama Penerima: ${v("nama")}`,`No. HP Penerima: ${v("hp")}`,`Alamat: ${v("alamat")}`,"","*KETENTUAN PEMESANAN*","1. Konsultasi desain.","2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.","3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.","4. Skinsuit selesai proses produksi akan dikirim ke customer.","5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.","","*REKENING PEMBAYARAN*","Bank: BCA","No. Rekening: 5260526296","Atas Nama: Rifki Debi"].filter(x => x !== "");
+  window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\n"))}`,"_blank","noopener,noreferrer");
 });
+const modal=document.getElementById("guideModal"),frame=document.getElementById("guideFrame");
+document.getElementById("openGuide").addEventListener("click",()=>{if(!frame.src)frame.src="size-guide.html";modal.classList.add("open");document.body.style.overflow="hidden"});
+function closeGuide(){modal.classList.remove("open");document.body.style.overflow=""}
+document.getElementById("closeGuide").addEventListener("click",closeGuide);
+modal.addEventListener("click",e=>{if(e.target===modal)closeGuide()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&modal.classList.contains("open"))closeGuide()});
 </script>
 </body>
 </html>
