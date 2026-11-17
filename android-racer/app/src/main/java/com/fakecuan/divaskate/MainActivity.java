@@ -54,7 +54,8 @@ public class MainActivity extends Activity {
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setUserAgentString(s.getUserAgentString() + " DivaSkateApp/1");
+        int vc = 1; try { vc = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode; } catch (Exception e) { }
+        s.setUserAgentString(s.getUserAgentString() + " DivaSkateApp/" + vc);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);

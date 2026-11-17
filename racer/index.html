@@ -5029,6 +5029,115 @@ setInterval(()=>{if(!online||!olRoom||state!=='done')return;const ag=$('again'),
   const p=ag.parentNode;if(p&&p===ch.parentNode)p.style.gridTemplateColumns='1.2fr 1fr 1fr'}
  if(ch.textContent.indexOf('KELUAR')<0)ch.textContent='KELUAR'},250);
 
+/* ===== VERSI GAME + FRAME PEMBERITAHUAN DI HALAMAN UTAMA ===== */
+const GAME_VER='1.42';
+/* catatan versi / mode baru (terbaru di atas) */
+const NEWS_BUILTIN=[
+ {d:'2026-11-17',i:'📣',t:'Frame pemberitahuan & nomor versi',b:'Info mode baru, rekor 200 m, dan pengumuman dari admin tampil di halaman utama.'},
+ {d:'2026-11-17',i:'📲',t:'Aplikasi Android Diva Skate',b:'Pasang APK resmi. Isi game ter-update otomatis; aplikasi memberi tahu bila ada versi APK baru.',u:'https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk',ul:'UNDUH APK'},
+ {d:'2026-11-16',i:'👆',t:'Geser layar untuk kembali',b:'Di semua menu, geser cepat ke kiri/kanan untuk kembali. Nama di Waktu Terbaik 200 m bisa ditap: profil, chat, tambah teman.'},
+ {d:'2026-11-15',i:'🤝',t:'Relay & Team Sprint: PEGANG lalu DORONG',b:'Pegang pinggul rekan, isi bar kuning→hijau, dorong saat penuh untuk kecepatan maksimal. Relay: rekan menunggu di tikungan ke-2, garis diskualifikasi di gapura start.'},
+ {d:'2026-11-15',i:'🐱',t:'Mode baru: Kucing & Anjing',b:'Kejar-kejaran di lapangan sekolah. Ada di Kasual dan Online.'},
+ {d:'2026-11-15',i:'↻',t:'Online: MAIN LAGI tanpa ke lobby',b:'Setelah pertandingan online pilih MAIN LAGI (tanding ulang langsung), LOBBY, atau KELUAR.'},
+];
+const NWS={rows:[],rec:[],app:null,t:0,shown:false,adm:[]};
+const nwsLS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+function nwsAppVer(){const m=/DivaSkateApp\/(\d+)/.exec(navigator.userAgent||'');return m?+m[1]:0}
+function nwsFmtDate(d){try{const x=new Date(d);if(isNaN(x))return'';const now=new Date();const days=Math.floor((now-x)/864e5);
+ if(days<=0)return'hari ini';if(days===1)return'kemarin';if(days<7)return days+' hari lalu';return x.toLocaleDateString('id-ID',{day:'numeric',month:'short'})}catch(e){return''}}
+async function nwsLoad(force){if(!force&&Date.now()-NWS.t<60000)return;NWS.t=Date.now();
+ /* pengumuman admin */
+ try{const r=await rpc('skate_news_list',{});if(r&&r.ok&&Array.isArray(r.rows))NWS.adm=r.rows}catch(e){}
+ /* rekor 200 m */
+ const rec=[];for(const [k,lbl] of [['ds200','Dobbin Sprint 200 m'],['dtt200','DTT 200 m']]){try{const r=await rpc('skate_best_top',{p_race:k});const x=r&&r.ok&&r.rows&&r.rows[0];
+  if(x){const key='nwsRec_'+k,sig=x.name+'|'+(+x.time).toFixed(3),old=nwsLS(key);let at=+(nwsLS(key+'_at')||0);if(old!==sig){at=Date.now();nwsLS(key,sig);nwsLS(key+'_at',String(at))}
+   rec.push({id:'rec'+k,i:'🏆',t:'Rekor '+lbl+': '+x.name+' '+formatTime(Number(x.time)),b:x.name+' memegang waktu terbaik '+lbl+'. Bisa kamu kalahkan?',ts:at||Date.now(),rec:true,act:'best'})}}catch(e){}}
+ NWS.rec=rec;
+ /* aplikasi Android: ada APK lebih baru? */
+ const av=nwsAppVer();if(av&&location.protocol==='https:'){try{const r=await fetch('https://api.github.com/repos/fakecuan/web/releases/tags/diva-skate-latest');if(r.ok){const j=await r.json();const m=/APK 1\.(\d+)/.exec(j.name||'');if(m&&+m[1]>av)NWS.app={id:'app'+m[1],i:'📲',t:'Versi aplikasi 1.'+m[1]+' tersedia',b:'Kamu memakai aplikasi 1.'+av+'. Unduh lalu pasang di atas versi lama, data tidak hilang.',ts:Date.now(),u:'https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk',ul:'UPDATE APLIKASI',pin:true}}}catch(e){}}
+ nwsBuild();nwsRender()}
+function nwsBuild(){const out=[];
+ if(NWS.app)out.push(NWS.app);
+ for(const a of NWS.adm)out.push({id:'adm'+a.id,i:a.icon||'📢',t:a.title,b:a.body||'',ts:Date.parse(a.created_at)||0,pin:!!a.pinned,adm:true,aid:a.id});
+ for(const r of NWS.rec)out.push(r);
+ for(const n of NEWS_BUILTIN)out.push({id:'v'+n.d+n.t,i:n.i,t:n.t,b:n.b,ts:Date.parse(n.d+'T12:00:00+07:00'),u:n.u,ul:n.ul});
+ out.sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.ts-a.ts);NWS.rows=out}
+const nwsSeen=()=>+(nwsLS('nwsSeen')||0);
+(()=>{const st=document.createElement('style');st.textContent=`
+#newsCard{position:fixed;z-index:11;display:none;flex-direction:column;background:linear-gradient(180deg,rgba(18,52,120,.9),rgba(9,30,78,.93));border:2px solid rgba(130,200,255,.7);border-radius:16px;box-shadow:0 6px 18px #0006;padding:7px 9px 8px;color:#fff;font-family:"Exo 2",system-ui,sans-serif;overflow:hidden}
+#newsCard .nwH span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#newsCard .nwH{display:flex;align-items:center;justify-content:space-between;gap:6px;font:italic 900 12px "Exo 2",system-ui;letter-spacing:.4px;margin-bottom:4px;white-space:nowrap}
+#newsCard .nwH button{border:0!important;background:#ffffff1f!important;color:#fff!important;border-radius:12px!important;padding:3px 9px!important;margin:0!important;width:auto!important;min-height:0!important;box-shadow:none!important;font:italic 800 11px "Exo 2",system-ui!important;white-space:nowrap;cursor:pointer}
+#newsCard .nwH button:before,#newsCard .nwH button:after,#newsCard .nwI:before,#newsCard .nwI:after{display:none!important}
+#newsCard .nwL{display:flex;flex-direction:column;gap:4px;overflow:hidden;min-height:0}
+#newsCard .nwI{display:flex!important;align-items:center;gap:7px;background:#ffffff12!important;border-radius:10px!important;padding:5px 7px!important;margin:0!important;min-height:0!important;box-shadow:none!important;cursor:pointer;min-width:0;border:0!important;color:#fff!important;text-align:left;width:100%!important}
+#newsCard .nwI i{font-style:normal;font-size:17px;flex:none;width:22px;text-align:center}
+#newsCard .nwI span{flex:1;min-width:0;font:800 12px/1.25 "Exo 2",system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#newsCard .nwI small{flex:none;font:700 10px "Exo 2",system-ui;opacity:.75}
+#newsCard .nwI.pin{background:linear-gradient(90deg,rgba(255,200,40,.28),rgba(255,255,255,.08))}
+.nwNew{flex:none;background:#e8302a;color:#fff;border-radius:8px;padding:1px 6px;font:italic 900 9.5px "Exo 2",system-ui}
+#gameVer{position:fixed;z-index:11;left:50%;transform:translateX(-50%);bottom:calc(6px + env(safe-area-inset-bottom,0px));font:italic 800 11px "Exo 2",system-ui;color:#ffffffcc;text-shadow:0 1px 3px #000a;pointer-events:none;display:none;white-space:nowrap}
+#newsModal{position:fixed;inset:0;z-index:10026;background:#0009;display:flex;align-items:center;justify-content:center;padding:14px}
+#newsModal .box{width:min(420px,100%);max-height:84vh;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(22,66,150,.98),rgba(10,36,98,.99));color:#fff;border:2px solid #78c3ff;border-radius:18px;padding:12px;box-shadow:0 12px 40px #0008}
+#newsModal .hd{display:flex;align-items:center;justify-content:space-between;font:italic 900 17px "Exo 2",system-ui;margin-bottom:8px}
+#newsModal .hd button{border:0;border-radius:50%;width:32px;height:32px;background:#ffffff22;color:#fff;font-size:18px;cursor:pointer}
+#newsModal .ls{overflow:auto;display:flex;flex-direction:column;gap:7px}
+#newsModal .it{background:#ffffff12;border-radius:12px;padding:9px 10px}
+#newsModal .it.pin{background:linear-gradient(90deg,rgba(255,200,40,.25),rgba(255,255,255,.08))}
+#newsModal .it b{display:flex;gap:7px;align-items:flex-start;font:800 14px/1.25 "Exo 2",system-ui}
+#newsModal .it p{margin:5px 0 0 29px;font:600 12.5px/1.4 system-ui,sans-serif;color:#dbe8ff}
+#newsModal .it .mt{margin:5px 0 0 29px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:700 11px system-ui;color:#a9c4ee}
+#newsModal .it a,#newsModal .it .lk{display:inline-block;background:#e8302a;color:#fff;border-radius:14px;padding:4px 12px;font:italic 900 12px "Exo 2",system-ui;text-decoration:none;border:0;cursor:pointer}
+#newsModal .it .del{background:#ffffff22}`;document.head.appendChild(st);
+ const c=document.createElement('div');c.id='newsCard';c.innerHTML='<div class="nwH"><span>📣 PEMBERITAHUAN</span><button type="button" id="nwAll">LIHAT SEMUA ›</button></div><div class="nwL" id="nwList"></div>';document.body.appendChild(c);
+ c.addEventListener('click',e=>{const it=e.target.closest('[data-nw]');audioReady();nwsOpen(it?it.dataset.nw:null)});
+ const v=document.createElement('div');v.id='gameVer';document.body.appendChild(v)})();
+function nwsRender(){const L=$('nwList');if(!L)return;const seen=nwsSeen();const c=$('newsCard');
+ const max=Math.max(1,c&&c._max||3);const rows=NWS.rows.slice(0,max);
+ L.innerHTML=rows.map(n=>`<button type="button" class="nwI${n.pin?' pin':''}" data-nw="${escapeHTML(n.id)}"><i>${escapeHTML(n.i)}</i><span>${escapeHTML(n.t)}</span>${n.ts>seen?'<b class="nwNew">BARU</b>':`<small>${nwsFmtDate(n.ts)}</small>`}</button>`).join('')||'<div style="font:700 12px system-ui;opacity:.7;padding:4px">Belum ada pemberitahuan.</div>';
+ const nNew=NWS.rows.filter(n=>n.ts>seen).length;const a=$('nwAll');if(a)a.textContent=nNew?nNew+' BARU ›':'SEMUA ›'}
+function nwsOpen(id){const old=$('newsModal');if(old)old.remove();
+ const m=document.createElement('div');m.id='newsModal';const adm=isAdminAcct();
+ m.innerHTML=`<div class="box"><div class="hd"><span>📣 PEMBERITAHUAN</span><button type="button" data-x aria-label="Tutup">×</button></div><div class="ls">${NWS.rows.map(n=>`<div class="it${n.pin?' pin':''}" id="nwm_${escapeHTML(n.id)}"><b><span>${escapeHTML(n.i)}</span><span>${escapeHTML(n.t)}</span></b>${n.b?`<p>${escapeHTML(n.b)}</p>`:''}<div class="mt"><span>${nwsFmtDate(n.ts)}${n.adm?' • admin':''}${n.pin?' • 📌':''}</span>${n.u?`<a href="${escapeHTML(n.u)}" target="_blank" rel="noopener">${escapeHTML(n.ul||'BUKA')}</a>`:''}${n.act==='best'?'<button type="button" class="lk" data-best>LIHAT DAFTAR</button>':''}${adm&&n.adm?`<button type="button" class="lk del" data-del="${n.aid}">🗑 HAPUS</button>`:''}</div></div>`).join('')}</div></div>`;
+ document.body.appendChild(m);
+ m.addEventListener('click',async e=>{if(e.target===m||e.target.closest('[data-x]')){m.remove();return}
+  if(e.target.closest('[data-best]')){m.remove();menuBest200();return}
+  const d=e.target.closest('[data-del]');if(d){d.disabled=true;d.textContent='Menghapus…';const r=await rpc('skate_news_delete',{p_name:acct.name,p_token:acct.token,p_id:+d.dataset.del});if(r&&r.ok){await nwsLoad(true);nwsOpen()}else{d.disabled=false;d.textContent='Gagal'}}});
+ if(id){const el=document.getElementById('nwm_'+id);if(el)setTimeout(()=>el.scrollIntoView({block:'center'}),30)}
+ nwsLS('nwsSeen',String(Date.now()));nwsRender()}
+/* letakkan frame tepat di bawah frame menu utama */
+function nwsPlace(){const c=$('newsCard'),v=$('gameVer');if(!c||!v)return;
+ const on=state==='menu'&&typeof menuMain!=='undefined'&&menuMain&&$('overlay')&&$('overlay').style.display!=='none'&&!$('newsModal');
+ const vt='Diva Skate v'+GAME_VER+(nwsAppVer()?' • Aplikasi 1.'+nwsAppVer():'');if(v.textContent!==vt)v.textContent=vt;v.style.display=state==='menu'&&menuMain?'block':'none';
+ if(!on){if(c.style.display!=='none')c.style.display='none';NWS.shown=false;return}
+ const d=$('dialog');if(!d)return;const r=d.getBoundingClientRect();const top=r.bottom+8,avail=innerHeight-top-(innerWidth-r.right<70?84:30);
+ if(avail<62){c.style.display='none';return}
+ const max=Math.max(1,Math.min(4,Math.floor((avail-34)/34)));
+ Object.assign(c.style,{display:'flex',left:r.left+'px',width:r.width+'px',top:top+'px',maxHeight:avail+'px'});
+ if(c._max!==max){c._max=max;nwsRender()}
+ if(!NWS.shown){NWS.shown=true;nwsLoad()}}
+setInterval(nwsPlace,300);addEventListener('resize',nwsPlace);
+nwsBuild();
+
+/* ===== ADMIN: tulis pengumuman ===== */
+{const _ac=adminChooser;adminChooser=function(){_ac();const b=$('adBack');if(!b||$('adNews'))return;const n=document.createElement('button');n.className='secondary';n.id='adNews';n.textContent='📢 PENGUMUMAN';n.onclick=()=>{audioReady();adminNewsScreen()};b.parentNode.insertBefore(n,b)}}
+function adminNewsScreen(){if(!isAdminAcct()){menu();return}state='adminnews';
+ const icons=['📢','🆕','🏆','🎉','⚠️','🛠️','🎁','📅'];
+ olDialog(`<h1>📢 PENGUMUMAN</h1><p class="mini">Tulisan ini muncul di frame Pemberitahuan halaman utama semua pemain.</p>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin:6px 0" id="anIc">${icons.map((x,i)=>`<button type="button" class="btnS" data-ic="${x}" style="min-width:42px;font-size:18px;${i?'':'outline:3px solid #ffd23f'}">${x}</button>`).join('')}</div>
+  <input id="anTitle" maxlength="90" placeholder="Judul (wajib), mis. Turnamen Sabtu jam 19.00" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:0;font:700 14px system-ui;margin-bottom:6px">
+  <textarea id="anBody" maxlength="600" rows="3" placeholder="Isi (opsional)" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:0;font:600 13px system-ui;resize:vertical"></textarea>
+  <label style="display:flex;gap:8px;align-items:center;margin:6px 0;font-weight:800"><input type="checkbox" id="anPin"> 📌 Sematkan di atas</label>
+  <button class="primary" id="anSend">KIRIM PENGUMUMAN</button><div id="anMsg" class="mini" style="min-height:16px;margin:4px 0"></div>
+  <button class="secondary" id="anList">📋 LIHAT / HAPUS PENGUMUMAN</button><button class="secondary" id="anBack">⬅ KEMBALI</button>`,true);
+ let ic='📢';$('anIc').querySelectorAll('[data-ic]').forEach(b=>b.onclick=()=>{ic=b.dataset.ic;$('anIc').querySelectorAll('[data-ic]').forEach(x=>x.style.outline='');b.style.outline='3px solid #ffd23f'});
+ bind('anBack',()=>adminChooser());bind('anList',async()=>{await nwsLoad(true);nwsOpen()});
+ bind('anSend',async()=>{const t=$('anTitle').value.trim();if(!t){$('anMsg').textContent='Judul wajib diisi.';return}$('anSend').disabled=true;$('anMsg').textContent='Mengirim…';
+  const r=await rpc('skate_news_post',{p_name:acct.name,p_token:acct.token,p_icon:ic,p_title:t,p_body:$('anBody').value.trim(),p_pinned:$('anPin').checked});
+  $('anSend').disabled=false;
+  if(r&&r.ok){$('anMsg').textContent='✅ Terkirim! Sudah tampil di halaman utama.';$('anTitle').value='';$('anBody').value='';nwsLoad(true)}
+  else $('anMsg').textContent=(r&&r.err==='nosetup')?'❌ Database belum disiapkan: jalankan racer/supabase-news.sql di Supabase.':'❌ Gagal mengirim'+(r&&r.err?' ('+r.err+')':'')+'.'})}
+
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
 </script></body></html>
