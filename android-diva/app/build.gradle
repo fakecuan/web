@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.application'
+}
+
+def vc = (System.getenv("VC") ?: "1") as int
+
+android {
+    namespace 'com.fakecuan.divaskinsuit'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.fakecuan.divaskinsuit'
+        minSdk 26
+        targetSdk 34
+        versionCode vc
+        versionName "1." + vc
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

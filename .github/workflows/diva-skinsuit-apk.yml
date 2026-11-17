@@ -1,0 +1,75 @@
+name: Diva Skate Skinsuit APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android-diva/**"
+      - ".github/workflows/diva-skinsuit-apk.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: diva-skinsuit-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-diva
+    env:
+      VC: ${{ github.run_number }}
+      KS_B64: ${{ secrets.DIVA_KEYSTORE_BASE64 }}
+      KS_PASS_SECRET: ${{ secrets.DIVA_KEYSTORE_PASSWORD }}
+      KS_ALIAS_SECRET: ${{ secrets.DIVA_KEY_ALIAS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build APK
+        run: |
+          set -o pipefail
+          gradle --no-daemon assembleRelease 2>&1 | tee build.log || {
+            grep -E "error:|What went wrong|FAILURE|Could not|> " build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          }
+
+      - name: Tanda tangani APK
+        run: |
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS_SECRET" ] && [ -n "$KS_ALIAS_SECRET" ]; then
+            echo "$KS_B64" | base64 -d > release.jks; KS=release.jks; export KS_PASS="$KS_PASS_SECRET"; ALIAS="$KS_ALIAS_SECRET"
+          else
+            KS=signing/diva-skinsuit.jks; export KS_PASS=divaskate2026; ALIAS=divaskinsuit
+          fi
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          IN=app/build/outputs/apk/release/app-release-unsigned.apk
+          "$BT/zipalign" -f -p 4 "$IN" aligned.apk
+          "$BT/apksigner" sign --ks "$KS" --ks-key-alias "$ALIAS" --ks-pass env:KS_PASS --key-pass env:KS_PASS --out DivaSkateSkinsuit.apk aligned.apk
+          "$BT/apksigner" verify DivaSkateSkinsuit.apk
+          rm -f release.jks
+          ls -la DivaSkateSkinsuit.apk
+
+      - name: Unggah ke Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="diva-skinsuit-latest"
+          gh release delete "$TAG" -y --cleanup-tag || true
+          git push origin ":refs/tags/$TAG" || true
+          gh release create "$TAG" DivaSkateSkinsuit.apk \
+            --target "${{ github.sha }}" \
+            --title "Diva Skate Skinsuit APK 1.${{ github.run_number }}" \
+            --notes "APK Android Diva Skate Skinsuit. Aplikasi memuat https://fakecuan.github.io/web/sseditor/, jadi fitur ikut ter-update tanpa instal ulang. Pasang di atas versi sebelumnya untuk update. Link tetap: https://github.com/fakecuan/web/releases/download/diva-skinsuit-latest/DivaSkateSkinsuit.apk" \
+            --latest=false
