@@ -201,7 +201,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj" hidden><b>File CLO 3D (.zprj)</b><small>Motif tiap bagian dipasang sebagai kain di CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r5</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r6</small>
   <button class="opt" id="ojson" hidden><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -345,7 +345,8 @@ let GSTY=null,FABS=null;
 function readGraphicStyles(pac){const out={byOv:{},vis:{}};const pe=pac.get('mapPatternEditor'),gl=pe&&pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle');if(!gl||!gs)return out;
   const styles=gs.all().map(s=>{let t=null;walk(s,m=>{if(!t&&m.has('listTexture')){const l=m.get('listTexture');if(l.length)t=l.at(0)}});if(!t)return null;
     return{file:t.get('qsFileName'),ai:t.get('qsAIFileName')||'',page:t.get('qsAIFilePageNo'),w:t.get('v2Size')[0],h:t.get('v2Size')[1]}});
-  gl.all().forEach(g=>{const st=styles[g.get('uiGraphicStyleIndex')];const gv=g.get('mapElement').get('bVisible')!==0;const o=g.get('listOverlayFabricShape2D');if(!st||!o)return;o.all().forEach(ov=>{const id=ov.get('mapElement').get('uiID');out.byOv[id]=st;out.vis[id]=gv})});
+  const cwv={};try{pac.get('mapColorWay').get('mapNewColorway').get('listColorway').at(0).get('mapAssign').get('listGraphicToStyle').all().forEach(x=>{cwv[x.get('uiItemID')]=x.get('bVisible')!==0})}catch(e){}
+  gl.all().forEach(g=>{const st=styles[g.get('uiGraphicStyleIndex')];const gv=g.get('mapElement').get('bVisible')!==0&&cwv[g.get('mapElement').get('uiID')]!==false;const o=g.get('listOverlayFabricShape2D');if(!st||!o)return;o.all().forEach(ov=>{const id=ov.get('mapElement').get('uiID');out.byOv[id]=st;out.vis[id]=gv})});
   return out}
 function hideGraphics(pac,patternIdx){const pl=pac.get('mapPatternEditor').get('mapPatternList').get('listPattern');const ids={};
   patternIdx.forEach(i=>{const pt=pl.at(i).get('listPrintTexture');if(pt)pt.all().forEach(ov=>{ids[ov.get('mapElement').get('uiID')]=1;hideOv(ov)})});
@@ -362,6 +363,16 @@ function applyGfxOps(pac,ops){const pl=pac.get('mapPatternEditor').get('mapPatte
         ['baRest','baTex'].forEach(k=>{const r=me.raw(k);if(!r)return;const f=new Float32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength));
           for(let i=0;i<f.length;i+=2){const x=f[i],y=f[i+1];f[i]=D[0]*x+D[2]*y+D[4];f[i+1]=D[1]*x+D[3]*y+D[5]}me.set(k,new Uint8Array(f.buffer))})}}
     return true};
+  // colorway: CLO takes graphic visibility (and placement) from listGraphicToStyle
+  const gOf={},oldMo={};const glx=pac.get('mapPatternEditor').get('listMVGraphic');
+  if(glx)glx.all().forEach(g=>{const gid=g.get('mapElement').get('uiID'),o=g.get('listOverlayFabricShape2D');if(o)o.all().forEach(ov=>{const id=ov.get('mapElement').get('uiID');gOf[id]=gid;oldMo[id]=ov.get('mapShape2D').get('mapTransformer2D').get('m3Matrix')})});
+  const cws=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapNewColorway')&&pac.get('mapColorWay').get('mapNewColorway').get('listColorway');
+  if(cws)cws.all().forEach(cw=>{const as=cw.get('mapAssign'),l=as&&as.get('listGraphicToStyle');if(!l)return;
+    l.all().forEach(x=>{const gid=x.get('uiItemID');const o=ops.find(op=>gOf[op.uid]===gid);if(!o)return;
+      if(x.has('bVisible'))x.set('bVisible',o.visible?1:0);
+      if(o.visible&&o.Mo&&oldMo[o.uid]){const a=oldMo[o.uid],b=o.Mo;const dx=b[6]-a[6],dy=b[7]-a[7],da=(Math.atan2(b[1],b[0])-Math.atan2(a[1],a[0]))*180/Math.PI;
+        if(Math.abs(dx)>1e-4||Math.abs(dy)>1e-4){const p=x.get('v2Position');if(p)x.set('v2Position',[p[0]+dx,p[1]+dy])}
+        if(Math.abs(da)>1e-4&&x.has('fAngle')){let v=x.get('fAngle')+da;v=((v+180)%360+360)%360-180;x.set('fAngle',v)}}})});
   pl.all().forEach((p,pi)=>{const pt=p.get('listPrintTexture');if(pt)pt.all().forEach(ov=>fix(ov,pi))});
   const gl=pac.get('mapPatternEditor').get('listMVGraphic');
   if(gl)gl.all().forEach(g=>{const o=g.get('listOverlayFabricShape2D');if(!o)return;let any=null;
