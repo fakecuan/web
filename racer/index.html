@@ -3771,6 +3771,15 @@ bestPlayerTap=async function(name){
  if(!own&&acct)(async()=>{try{const f=await loadFollowingNames();const b=$('faFollow');if(b&&f.has(name.toLowerCase())){b.disabled=true;b.textContent='✓ SUDAH BERTEMAN'}}catch(e){}})();
 };
 
+/* ===== tombol KEMBALI HP (aplikasi Android): tutup pop up / kembali ke menu sebelumnya ===== */
+window.__divaBack=function(){try{
+ for(const id of ['exitConfirm','friendActionModal','directChatModal']){const m=document.getElementById(id);if(m&&m.style.display!=='none'&&m.offsetParent!==null){if(id==='exitConfirm'){const n=$('exNo');if(n){n.click();return true}}else{if(id==='directChatModal'&&typeof closeDirectChat==='function')closeDirectChat();else m.remove();return true}}}
+ if(typeof TAGX!=='undefined'&&TAGX.on){const h=document.getElementById('tagHost');const x=h&&h.shadowRoot&&h.shadowRoot.getElementById('exitB');if(x){x.click();return true}}
+ if(['race','count','runup'].includes(state)){const x=$('offlineExit');if(x){x.click();return true}}
+ const o=$('overlay');if(o&&o.style.display!=='none'){const d=$('dialog');if(d){const b=$('bTopBack')||$('bBack')||[...d.querySelectorAll('button')].find(b=>b.offsetParent&&/^\s*(⬅|←|◀)|KEMBALI/.test(b.textContent));if(b){b.click();return true}}
+  if(typeof menuMain!=='undefined'&&!menuMain&&typeof menu==='function'){menu();return true}}
+ return false}catch(e){return false}};
+
 /* ================= MODE BARU: TIME TRIAL (hantu) & BATTLE ARENA ================= */
 raceSpecs.mtt={label:'TIME TRIAL 2 KM',count:1,meters:MARA_LEN,laps:1,elim:false,marathon:true,tt:true};
 raceSpecs.battle={label:'BATTLE ARENA',count:6,meters:1e9,laps:99,elim:false,battle:true};
