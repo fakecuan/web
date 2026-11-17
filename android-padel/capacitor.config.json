@@ -1,0 +1,13 @@
+{
+  "appId": "com.fakecuan.thewinnerpadel",
+  "appName": "The Winner Padel",
+  "webDir": "www",
+  "server": {
+    "url": "https://fakecuan.github.io/web/padel/",
+    "androidScheme": "https",
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "backgroundColor": "#0a2552"
+  }
+}
