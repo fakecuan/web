@@ -33,6 +33,7 @@ public class MainActivity extends Activity {
     static final String APK_URL = "https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk";
 
     WebView web;
+    Intent pending;
     long lastBack = 0;
 
     @Override
@@ -60,6 +61,7 @@ public class MainActivity extends Activity {
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);
 
+        web.addJavascriptInterface(new Bridge(this), "DivaApp");
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             @Override
@@ -71,6 +73,8 @@ public class MainActivity extends Activity {
                 return true;
             }
             @Override
+            public void onPageFinished(WebView v, String url) { kirimNotifTap(); }
+            @Override
             public void onReceivedError(WebView v, WebResourceRequest r, WebResourceError e) {
                 if (r.isForMainFrame()) {
                     v.loadData("<html><body style='margin:0;background:#0b2a6a;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center'>"
@@ -81,7 +85,12 @@ public class MainActivity extends Activity {
             }
         });
         if (b != null) web.restoreState(b); else web.loadUrl(BASE);
+        pending = getIntent();
         cekUpdate();
+        Notif.channel(this);
+        if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED)
+            requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 11);
+        NotifJob.schedule(this);
     }
 
     /** Cek versi APK terbaru di GitHub Releases; kalau lebih baru, tawarkan update. */
@@ -133,8 +142,20 @@ public class MainActivity extends Activity {
         });
     }
 
-    @Override protected void onPause() { super.onPause(); web.onPause(); web.evaluateJavascript("window.dispatchEvent(new Event('blur'))", null); }
-    @Override protected void onResume() { super.onResume(); web.onResume(); immersive(); }
+    @Override protected void onNewIntent(Intent i) { super.onNewIntent(i); pending = i; kirimNotifTap(); }
+
+    /** Notifikasi ditap: buka chat / daftar notifikasi di game. */
+    void kirimNotifTap() {
+        if (pending == null || web == null) return;
+        String kind = pending.getStringExtra("nkind"), sender = pending.getStringExtra("nsender");
+        if (kind == null && sender == null) { pending = null; return; }
+        pending = null;
+        String k = kind == null ? "" : kind.replace("'", ""), s = sender == null ? "" : sender.replace("'", "");
+        web.evaluateJavascript("window.__divaOpenNotif&&window.__divaOpenNotif('" + k + "','" + s + "')", null);
+    }
+
+    @Override protected void onPause() { Notif.foreground = false; super.onPause(); web.onPause(); web.evaluateJavascript("window.dispatchEvent(new Event('blur'))", null); }
+    @Override protected void onResume() { Notif.foreground = true; super.onResume(); web.onResume(); immersive(); }
     @Override protected void onSaveInstanceState(Bundle o) { super.onSaveInstanceState(o); web.saveState(o); }
     @Override protected void onDestroy() { if (web != null) web.destroy(); super.onDestroy(); }
 }

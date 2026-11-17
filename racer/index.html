@@ -5138,6 +5138,27 @@ function adminNewsScreen(){if(!isAdminAcct()){menu();return}state='adminnews';
   if(r&&r.ok){$('anMsg').textContent='✅ Terkirim! Sudah tampil di halaman utama.';$('anTitle').value='';$('anBody').value='';nwsLoad(true)}
   else $('anMsg').textContent=(r&&r.err==='nosetup')?'❌ Database belum disiapkan: jalankan racer/supabase-news.sql di Supabase.':'❌ Gagal mengirim'+(r&&r.err?' ('+r.err+')':'')+'.'})}
 
+/* ===== MASUK OTOMATIS dengan akun terakhir + NOTIFIKASI ANDROID (aplikasi APK) ===== */
+const DAPP=(()=>{try{return window.DivaApp&&typeof window.DivaApp.notify==='function'?window.DivaApp:null}catch(e){return null}})();
+/* sesi akun disalin ke aplikasi supaya notifikasi tetap dicek saat aplikasi ditutup */
+{const _sa=setAcct;setAcct=function(r,t){_sa(r,t);try{if(DAPP&&acct)DAPP.setSession(acct.name,acct.token)}catch(e){}}}
+{const _lo=logout;logout=async function(){try{if(DAPP)DAPP.clearSession()}catch(e){}return _lo()}}
+/* buka game: langsung masuk dengan akun terakhir (tanpa harus buka menu online) */
+(async()=>{await new Promise(r=>setTimeout(r,700));if(acct)return;const s=loadSession();if(!s||!s.name||!s.token)return;
+ const r=await rpc('skate_resume',{p_name:s.name,p_token:s.token});if(acct)return;
+ if(r&&r.ok){setAcct(r,s.token);try{if(state==='menu'&&menuMain&&$('overlay').style.display!=='none')menu()}catch(e){}try{refreshNotifications()}catch(e){}}
+ else if(r&&(r.err==='session'||r.err==='notfound')){lsDel('skate_session');try{if(DAPP)DAPP.clearSession()}catch(e){}}})();
+/* notifikasi baru (pesan, teman baru, dll.) -> notifikasi Android saat aplikasi di latar belakang */
+{const _rn=refreshNotifications;refreshNotifications=async function(){await _rn();if(!DAPP||!acct)return;
+ for(const n of notifUnread||[]){try{DAPP.notify('n'+Number(n.id),String(n.title||'Diva Skate'),String(n.preview||'Buka Diva Skate untuk melihat'),String(n.kind||''),String(n.sender||''))}catch(e){}}}}
+/* ajakan main (lewat lobi online) */
+{const _si=showInviteModal;showInviteModal=function(from,code,nm){_si(from,code,nm);try{if(DAPP)DAPP.notify('inv'+code+'|'+from,'🎮 Ajakan main dari '+from,(nm||'Room')+' • kode room '+code,'invite',String(from))}catch(e){}}}
+/* ajakan main juga dikirim sebagai pesan, supaya teman yang sedang menutup aplikasi tetap dapat notifikasi */
+{const _if=inviteFriend;inviteFriend=async function(name){const before=online&&olCode?olCode:'';await _if(name);try{const code=online&&olCode?olCode:before;if(acct&&code)rpc('skate_dm_send',{p_name:acct.name,p_token:acct.token,p_target:name,p_body:'🎮 Ayo main Diva Skate bareng! Masuk ke room kode '+code+' di MAIN ONLINE.'})}catch(e){}}}
+/* notifikasi Android ditap -> buka chat / daftar notifikasi */
+window.__divaOpenNotif=async function(kind,sender){for(let i=0;i<30&&!acct;i++)await new Promise(r=>setTimeout(r,250));if(!acct)return;
+ try{if(kind==='message'&&sender){openDirectChat(sender);return}if(kind==='invite'){showNotifications();return}if(sender){profileBackTarget=()=>menu();viewPlayerProfile(sender);return}showNotifications()}catch(e){}};
+
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
 </script></body></html>
