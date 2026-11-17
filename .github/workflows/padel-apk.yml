@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: padel-apk
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,13 +27,6 @@ jobs:
       KS_ALIAS: ${{ secrets.PADEL_KEY_ALIAS }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cek kunci tanda tangan
-        run: |
-          if [ -z "$KS_B64" ] || [ -z "$KS_PASS" ] || [ -z "$KS_ALIAS" ]; then
-            echo "::error::Secrets PADEL_KEYSTORE_BASE64, PADEL_KEYSTORE_PASSWORD dan PADEL_KEY_ALIAS belum diisi (Settings > Secrets and variables > Actions)."
-            exit 1
-          fi
 
       - uses: actions/setup-node@v4
         with:
@@ -60,11 +57,15 @@ jobs:
 
       - name: Tanda tangani APK
         run: |
-          echo "$KS_B64" | base64 -d > release.jks
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ] && [ -n "$KS_ALIAS" ]; then
+            echo "$KS_B64" | base64 -d > release.jks; KS=release.jks
+          else
+            KS=signing/the-winner-padel.jks; export KS_PASS='_vqwe0FzOrMMatNaUuQVMFiw'; KS_ALIAS=padel
+          fi
           BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
           IN=android/app/build/outputs/apk/release/app-release-unsigned.apk
           "$BT/zipalign" -f -p 4 "$IN" aligned.apk
-          "$BT/apksigner" sign --ks release.jks --ks-key-alias "$KS_ALIAS" --ks-pass env:KS_PASS --key-pass env:KS_PASS --out TheWinnerPadel.apk aligned.apk
+          "$BT/apksigner" sign --ks "$KS" --ks-key-alias "$KS_ALIAS" --ks-pass env:KS_PASS --key-pass env:KS_PASS --out TheWinnerPadel.apk aligned.apk
           "$BT/apksigner" verify TheWinnerPadel.apk
           rm -f release.jks
 
@@ -72,8 +73,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="padel-apk-v1.${{ github.run_number }}"
+          TAG="padel-apk-latest"
+          gh release delete "$TAG" -y --cleanup-tag || true
+          git push origin ":refs/tags/$TAG" || true
           gh release create "$TAG" TheWinnerPadel.apk \
+            --target "${{ github.sha }}" \
             --title "The Winner Padel APK 1.${{ github.run_number }}" \
-            --notes "APK Android untuk The Winner Padel. Aplikasi memuat https://fakecuan.github.io/web/padel/, jadi isinya ikut ter-update tanpa instal ulang. Pasang di atas versi sebelumnya untuk update." \
-            --latest
+            --notes "APK Android The Winner Padel. Aplikasi memuat https://fakecuan.github.io/web/padel/, jadi isinya ikut ter-update tanpa instal ulang. Pasang di atas versi sebelumnya untuk update. Link tetap: https://github.com/fakecuan/web/releases/download/padel-apk-latest/TheWinnerPadel.apk" \
+            --latest=false
