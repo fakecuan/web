@@ -180,6 +180,16 @@ td.pts{font-family:var(--display);font-weight:800;font-size:19px;color:var(--bal
 .modal.open{display:flex}
 .box{background:#0f2c62;border:1px solid var(--line);border-radius:22px;padding:18px;width:min(520px,100%);max-height:calc(100% - 32px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.5);animation:up .22s ease-out}
 @keyframes up{from{transform:translateY(12px);opacity:.6}}
+/* crop foto */
+.crop{position:fixed;inset:0;z-index:70;background:rgba(3,12,30,.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.crop.open{display:flex}
+.crop .box{width:min(400px,100%)}
+.cropStage{position:relative;width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:#04122b;touch-action:none;cursor:grab;user-select:none}
+.cropStage:active{cursor:grabbing}
+.cropStage canvas{width:100%;height:100%;display:block}
+.zoomRow{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
+.zoomRow input{flex:1;accent-color:var(--ball)}
+.zoomRow svg{width:18px;height:18px;color:var(--mut);flex:none}
 .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ink);color:var(--court);padding:11px 16px;border-radius:14px;font-size:13px;font-weight:700;z-index:60;max-width:90vw;display:none;box-shadow:0 12px 30px rgba(0,0,0,.35)}
 .toast.show{display:block;animation:up .2s ease-out}
 .hide{display:none!important}
@@ -280,6 +290,12 @@ td.pts{font-family:var(--display);font-weight:800;font-size:19px;color:var(--bal
 </nav>
 
 <div id="modal" class="modal"><div id="modalBox" class="box"></div></div>
+<div id="crop" class="crop" role="dialog" aria-modal="true" aria-labelledby="cropTitle"><div class="box">
+ <div class="row between" style="margin-bottom:12px"><div><div class="h" id="cropTitle" style="font-size:17px">Atur foto profil</div><div class="mut xs">Geser untuk memposisikan, cubit atau pakai slider untuk zoom</div></div></div>
+ <div class="cropStage" id="cropStage"><canvas id="cropCanvas"></canvas></div>
+ <div class="zoomRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5M8 11h6"/></svg><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5M8 11h6M11 8v6"/></svg></div>
+ <div class="row" style="margin-top:12px"><button class="btn ghost" id="cropRot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Putar</button><button class="btn ghost" id="cropReset">Reset</button><span class="grow"></span><button class="btn ghost" id="cropCancel">Batal</button><button class="btn pri" id="cropOk">Pakai foto</button></div>
+</div></div>
 <div id="toast" class="toast" role="status"></div>
 
 <script type="module">
@@ -462,20 +478,54 @@ function openProfile(id){const p=players[id];if(!p)return;const {g,rank}=rankMap
  const stat=(l,v)=>`<div style="background:rgba(3,14,36,.45);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center"><div style="font-family:var(--display);font-weight:800;font-size:22px">${v}</div><div class="mut xs">${l}</div></div>`;
  modal(`<div class="row" style="margin-bottom:14px;flex-wrap:nowrap"><span id="pfAv">${avatar(p,64)}</span><div class="grow"><div class="eyebrow">${rank[id]?'Peringkat #'+rank[id]:'Belum ada peringkat'}</div><div style="font-family:var(--display);font-weight:800;font-size:26px;line-height:1;text-transform:uppercase">${esc(p.name)}</div></div><button class="btn ghost" id="pfX" aria-label="Tutup">✕</button></div>
  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">${stat('Poin',g.pts[id]||0)}${stat('Main',s.played)}${stat('Menang',s.won)}${stat('Kalah',s.lost)}</div>
- <div class="stack"><label class="btn" style="justify-self:start">Ganti foto<input id="pfPhoto" type="file" accept="image/*" class="hide"></label>
+ <div class="stack"><div class="row"><label class="btn">${(p.photo||p.photoUrl)?'Ganti foto':'Pilih foto'}<input id="pfPhoto" type="file" accept="image/*" class="hide"></label><button class="btn ghost" id="pfCrop" ${(p.photo||p.photoUrl)?'':'hidden'}>Crop foto</button></div>
  <input id="pfName" class="field" maxlength="60" value="${esc(p.name)}" placeholder="Nama" aria-label="Nama"><input id="pfDom" class="field" maxlength="100" value="${esc(p.domicile)}" placeholder="Domisili" aria-label="Domisili"><textarea id="pfQuote" class="field" rows="2" maxlength="240" placeholder="Motto" aria-label="Motto">${esc(p.quote)}</textarea>
  <div class="row"><button class="btn pri" id="pfSave">Simpan profil</button><span class="grow"></span><button class="btn dan" id="pfDel">Hapus</button></div></div>
  <div class="h" style="margin:18px 0 6px">Riwayat · ${hist.length}</div>${hist.map(a=>{const pt={},st={};if(a.matches?.length)tally(a.matches,pt,st);else(a.points||[]).forEach(x=>pt[x.playerId]=x.points);return `<div class="row between" style="padding:8px 0;border-top:1px solid var(--line);font-size:13px"><span>${esc(a.name)} <span class="mut xs">${esc(a.date||'')}</span></span><b style="color:var(--ball)">${pt[id]||0}</b></div>`}).join('')||'<p class="mut xs">Belum ada riwayat.</p>'}`);
  let photo=p.photo||'';const hadUrl=!!p.photoUrl;
  $('pfX').onclick=closeModal;
- $('pfPhoto').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await resize(f);$('pfAv').innerHTML=avatar({photo},64)};
+ $('pfPhoto').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const url=URL.createObjectURL(f);const out=await cropPhoto(url);URL.revokeObjectURL(url);if(!out)return;photo=out;$('pfAv').innerHTML=avatar({photo},64);$('pfCrop').hidden=false;toast('Foto siap. Tekan Simpan profil.')};
+ $('pfCrop').onclick=async()=>{const src=photo||p.photoUrl;if(!src)return;const out=await cropPhoto(src);if(!out)return;photo=out;$('pfAv').innerHTML=avatar({photo},64);toast('Crop siap. Tekan Simpan profil.')};
  $('pfSave').onclick=async()=>{const name=$('pfName').value.trim().replace(/\s+/g,' ');if(!name)return toast('Nama wajib diisi.');
   if(Object.entries(players).some(([k,x])=>k!==id&&norm(x.name)===norm(name)))return toast('Nama sudah dipakai pemain lain.');
   await putPlayer(id,{name,domicile:$('pfDom').value.trim(),quote:$('pfQuote').value.trim(),photo,...(photo&&hadUrl?{photoUrl:''}:{})});closeModal();toast('Profil disimpan.')};
  $('pfDel').onclick=async()=>{if(!await ask('Hapus '+p.name+'?',hist.length?`Pemain ini punya ${hist.length} riwayat. Poin di arsip tetap ada, tapi namanya tampil sebagai "?".`:'Pemain akan dihapus dari daftar.','Hapus',true))return;
   delete players[id];session.picked=session.picked.filter(x=>x!==id);saveSession();renderAll();await delDoc('player',id);toast('Pemain dihapus.')};
 }
-function resize(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const S=240,c=document.createElement('canvas');c.width=c.height=S;const k=Math.min(img.width,img.height);c.getContext('2d').drawImage(img,(img.width-k)/2,(img.height-k)/2,k,k,0,0,S,S);URL.revokeObjectURL(img.src);res(c.toDataURL('image/jpeg',.82))};img.onerror=rej;img.src=URL.createObjectURL(file)})}
+/* crop foto: geser, zoom (slider/cubit/scroll), putar 90°; hasil 320×320 JPEG */
+const CROP={img:null,s:1,min:1,cx:0,cy:0,rot:0,res:null,ptr:new Map(),pinch:null};
+function cropPhoto(src){return new Promise(res=>{const img=new Image();img.crossOrigin='anonymous';
+ img.onload=()=>{CROP.img=img;CROP.res=res;CROP.rot=0;$('crop').classList.add('open');cropFit();};
+ img.onerror=()=>{toast('Foto ini tidak bisa dibuka untuk di-crop. Pilih ulang fotonya.',4000);res(null)};img.src=src})}
+function cropView(){return $('cropStage').clientWidth||300}
+function cropFit(){const {img}=CROP,V=cropView();CROP.min=V/Math.min(img.width,img.height);CROP.s=CROP.min;CROP.cx=img.width/2;CROP.cy=img.height/2;$('cropZoom').value=1;cropDraw()}
+function cropClamp(){const {img,s}=CROP,V=cropView(),h=V/(2*s);
+ // batas dihitung di sumbu gambar asli; tampilan persegi jadi sama untuk kedua sumbu
+ const W=img.width,H=img.height;CROP.cx=Math.min(W-h,Math.max(h,CROP.cx));CROP.cy=Math.min(H-h,Math.max(h,CROP.cy))}
+function cropPaint(ctx,size,scale){const {img}=CROP;ctx.save();ctx.translate(size/2,size/2);ctx.rotate(CROP.rot*Math.PI/180);ctx.scale(scale,scale);ctx.drawImage(img,-CROP.cx,-CROP.cy);ctx.restore()}
+function cropDraw(){const c=$('cropCanvas'),V=cropView(),d=window.devicePixelRatio||1;c.width=V*d;c.height=V*d;const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);
+ cropClamp();ctx.imageSmoothingQuality='high';cropPaint(ctx,V,CROP.s);
+ ctx.fillStyle='rgba(3,12,30,.6)';ctx.beginPath();ctx.rect(0,0,V,V);ctx.arc(V/2,V/2,V/2-6,0,Math.PI*2,true);ctx.fill();
+ ctx.strokeStyle='rgba(220,242,75,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(V/2,V/2,V/2-6,0,Math.PI*2);ctx.stroke()}
+function cropZoomTo(z){CROP.s=CROP.min*Math.max(1,Math.min(4,z));$('cropZoom').value=CROP.s/CROP.min;cropDraw()}
+function cropPan(dx,dy){const r=-CROP.rot*Math.PI/180,c=Math.cos(r),sn=Math.sin(r);CROP.cx-=(dx*c-dy*sn)/CROP.s;CROP.cy-=(dx*sn+dy*c)/CROP.s;cropDraw()}
+function cropClose(out){$('crop').classList.remove('open');const r=CROP.res;CROP.res=null;CROP.ptr.clear();r&&r(out)}
+(()=>{const st=$('cropStage');
+ st.addEventListener('pointerdown',e=>{st.setPointerCapture(e.pointerId);CROP.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});if(CROP.ptr.size===2){const [a,b]=[...CROP.ptr.values()];CROP.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:CROP.s/CROP.min}}});
+ st.addEventListener('pointermove',e=>{const prev=CROP.ptr.get(e.pointerId);if(!prev)return;const now={x:e.clientX,y:e.clientY};CROP.ptr.set(e.pointerId,now);
+  if(CROP.ptr.size===2&&CROP.pinch){const [a,b]=[...CROP.ptr.values()];cropZoomTo(CROP.pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/CROP.pinch.d)}
+  else if(CROP.ptr.size===1)cropPan(now.x-prev.x,now.y-prev.y)});
+ const up=e=>{CROP.ptr.delete(e.pointerId);if(CROP.ptr.size<2)CROP.pinch=null};
+ st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
+ st.addEventListener('wheel',e=>{e.preventDefault();cropZoomTo(CROP.s/CROP.min*(e.deltaY<0?1.08:1/1.08))},{passive:false});
+ $('cropZoom').oninput=e=>cropZoomTo(+e.target.value);
+ $('cropRot').onclick=()=>{CROP.rot=(CROP.rot+90)%360;cropDraw()};
+ $('cropReset').onclick=()=>{CROP.rot=0;cropFit()};
+ $('cropCancel').onclick=()=>cropClose(null);
+ $('cropOk').onclick=()=>{try{const O=320,c=document.createElement('canvas');c.width=c.height=O;const ctx=c.getContext('2d');ctx.imageSmoothingQuality='high';cropPaint(ctx,O,CROP.s*O/cropView());cropClose(c.toDataURL('image/jpeg',.85))}
+  catch(e){toast('Foto ini tidak bisa di-crop di browser. Pilih ulang fotonya dari galeri.',4000);cropClose(null)}};
+ window.addEventListener('resize',()=>{if($('crop').classList.contains('open')){const z=CROP.s/CROP.min;const {img}=CROP,V=cropView();CROP.min=V/Math.min(img.width,img.height);CROP.s=CROP.min*z;cropDraw()}});
+})();
 
 /* ---------- import / export ---------- */
 async function importFile(file){let d;try{d=JSON.parse(await file.text())}catch{return toast('File bukan JSON yang valid.')}
