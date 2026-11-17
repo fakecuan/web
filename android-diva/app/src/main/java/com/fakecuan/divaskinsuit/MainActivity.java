@@ -3,6 +3,7 @@ package com.fakecuan.divaskinsuit;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +34,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Pembungkus Android untuk https://fakecuan.github.io/web/sseditor/
@@ -224,6 +227,51 @@ public class MainActivity extends Activity {
                     js("window.__divaPick&&__divaPick(" + JSONObject.quote(req) + ",null)");
                 }
             });
+        }
+
+        /** isi papan klip: gambar (token file) atau teks */
+        @JavascriptInterface
+        public String clipImage() {
+            final String[] out = {""};
+            final CountDownLatch done = new CountDownLatch(1);
+            runOnUiThread(() -> {
+                try {
+                    ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData c = cm == null ? null : cm.getPrimaryClip();
+                    if (c != null) {
+                        for (int i = 0; i < c.getItemCount() && out[0].isEmpty(); i++) {
+                            ClipData.Item it = c.getItemAt(i);
+                            Uri u = it.getUri();
+                            if (u != null) {
+                                String mime = null;
+                                try { mime = getContentResolver().getType(u); } catch (Exception ignored) { }
+                                if (mime == null || mime.startsWith("image/")) {
+                                    Target t = new Target();
+                                    t.uri = u;
+                                    t.name = displayName(u);
+                                    String k = register(t);
+                                    JSONObject o = new JSONObject(info(k, t));
+                                    o.put("mime", mime == null ? "" : mime);
+                                    out[0] = o.toString();
+                                }
+                            }
+                        }
+                        if (out[0].isEmpty() && c.getItemCount() > 0) {
+                            CharSequence tx = c.getItemAt(0).coerceToText(MainActivity.this);
+                            if (tx != null && tx.length() > 0) {
+                                JSONObject o = new JSONObject();
+                                o.put("text", tx.toString());
+                                out[0] = o.toString();
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    out[0] = "";
+                }
+                done.countDown();
+            });
+            try { done.await(3, TimeUnit.SECONDS); } catch (InterruptedException ignored) { }
+            return out[0];
         }
 
         @JavascriptInterface
