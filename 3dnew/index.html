@@ -118,6 +118,12 @@ button,.btn{font:inherit;cursor:pointer}
 .mc-pattern-option[aria-pressed="true"]{border:2px solid var(--accent,#8061dc);background:#8061dc18}
 .mc-pattern-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:66px;aspect-ratio:1}
 .mc-pattern-grid span{border-radius:3px;background:#d9dce4;min-width:0;min-height:0}
+.mc-txt{border:1px solid var(--line,#454b5a);border-radius:10px;padding:6px 9px}
+.mc-txt summary{cursor:pointer;font-size:12px;font-weight:600}
+.mc-txt-body{display:grid;gap:8px;margin-top:8px}
+.mc-txt-grid{display:grid;grid-template-columns:repeat(3,56px);gap:6px}
+.mc-txt-grid input{width:56px;height:40px;text-align:center;font-size:15px;padding:2px;border-radius:8px;border:1px solid var(--line,#454b5a);background:var(--bg,transparent);color:inherit}
+.mc-txt-grid input:focus-visible{outline:3px solid var(--accent,#8061dc);outline-offset:1px}
 .mc-colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .mc-colors label{display:grid;gap:5px;font-size:12px;color:var(--muted,#999)}
 .mc-colors select{width:100%;min-width:0;border:1px solid var(--line,#454b5a);border-radius:10px;padding:11px 8px;background:var(--panel,#202633);color:inherit;font:inherit}
@@ -1475,8 +1481,39 @@ const MC_PATTERNS=[
  {id:"frame",name:"Bingkai",map:[1,1,1,1,2,1,1,1,1]},
  {id:"stripe",name:"Garis diagonal",map:[1,1,2,1,2,3,2,3,3]}
 ];
-const MC_DEFAULT={pattern:"checker",base:"#F6A6C8",c1:"#F2F2EF",c2:"#E65391",c3:"#91C8F2"};
-let mcOrders=[{...MC_DEFAULT}];
+const MC_DEFAULT={pattern:"checker",base:"#F6A6C8",c1:"#F2F2EF",c2:"#E65391",c3:"#91C8F2",tc:"#23262B",th:0.8,ts:100};
+const MC_CAP_TOP=3.948, MC_TXT_MAX=3, MC_TXT_AREA=10.8;
+const MC_TH_OPTS=[[0.4,"0,4 mm (2 lapis @0,2)"],[0.6,"0,6 mm (3 lapis @0,2)"],[0.8,"0,8 mm (standar)"],[0.84,"0,84 mm (3 lapis @0,28)"],[1.0,"1,0 mm"],[1.2,"1,2 mm"],[1.6,"1,6 mm"]];
+const MC_TS_OPTS=[60,70,80,90,100];
+const mcOpen=new WeakSet();
+function mcNorm(o){
+ if(!Array.isArray(o.txt))o.txt=[];
+ o.txt=Array.from({length:9},(_,i)=>String(o.txt[i]||""));
+ if(!o.tc)o.tc=MC_DEFAULT.tc;
+ o.th=Number(o.th)>0?Number(o.th):MC_DEFAULT.th;
+ o.ts=Number(o.ts)>0?Number(o.ts):MC_DEFAULT.ts;
+ return o;
+}
+const mcFresh=()=>mcNorm({...MC_DEFAULT});
+const mcHasText=o=>mcNorm(o).txt.some(t=>t.trim());
+const mcFmt=n=>String(n).replace(".",",");
+function mcTextGeo(o,i){
+ const t=mcNorm(o).txt[i];if(!t||!t.trim())return null;
+ const m=textMetrics(t);if(!m)return null;
+ const mx=Math.min(MC_TXT_AREA/(EM_PER_N*m.w),MC_TXT_AREA/(EM_PER_N*m.h));
+ return textGeo(t,Math.max(3,mx*o.ts/100),o.th);
+}
+function mcTextMesh(o,i){
+ const g=mcTextGeo(o,i);if(!g)return null;
+ const mesh=shiftMesh(weld(g),0,0,MC_CAP_TOP);g.dispose();return mesh;
+}
+const mcTextGeos=[];
+function mcTextLines(o){
+ mcNorm(o);const f=o.txt.map((t,i)=>t.trim()?`${i+1}="${t.trim()}"`:null).filter(Boolean);
+ if(!f.length)return "";
+ return `   Teks keycap: ${f.join(", ")}\n   Warna teks: ${mcColorName(o.tc)}, tinggi ${mcFmt(o.th)} mm, ukuran ${Math.round(o.ts)}%\n   (Nomor key seperti numpad: 1 kiri-depan, 9 kanan-belakang)\n`;
+}
+let mcOrders=[mcFresh()];
 const mcBox=$("multiClickerOrders");
 const mcRoot=new THREE.Group();mcRoot.rotation.x=-Math.PI/2;mcRoot.visible=false;scene.add(mcRoot);
 const mcBaseGeo=geo(D.base),mcKeyGeo=geo(D.key);
@@ -1492,6 +1529,7 @@ function mcSelect(kind,val,extra=""){
  return `<select data-color="${kind}" ${extra}>${MC_PALETTE.map(([name,hex])=>`<option value="${hex}" ${String(val).toLowerCase()===hex.toLowerCase()?"selected":""}>${name}</option>`).join("")}</select>`;
 }
 function renderMcOrders(){
+ mcOrders.forEach(mcNorm);
  mcBox.innerHTML=mcOrders.map((o,i)=>{
   const used=mcUsedColors(o);
   return `<div class="multi-clicker-card" data-mcrow="${i}">
@@ -1516,10 +1554,25 @@ function renderMcOrders(){
     <label class="mc-color3" ${used<3?"hidden":""}>KEYCAP 3 ${mcSelect("c3",o.c3)}</label>
    </div>
    <small class="help">${used<3?"Pola ini memakai "+used+" warna keycap. Keycap 3 tidak digunakan.":"Maksimal 3 warna keycap digunakan."}</small>
+   <details class="mc-txt" ${mcOpen.has(o)?"open":""}>
+    <summary>Teks pada keycap${mcHasText(o)?" ("+o.txt.filter(t=>t.trim()).length+" terisi)":" (opsional)"}</summary>
+    <div class="mc-txt-body">
+     <div class="mc-txt-grid" role="group" aria-label="Teks tiap keycap">
+      ${[6,7,8,3,4,5,0,1,2].map(k=>`<input type="text" class="cooper-in" data-mctxt="${k}" maxlength="${MC_TXT_MAX}" value="${String(o.txt[k]).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}" placeholder="${k+1}" aria-label="Teks keycap ${k+1}" autocomplete="off" spellcheck="false">`).join("")}
+     </div>
+     <small class="help">Susunan sama seperti di preview (baris bawah = depan). Maksimal ${MC_TXT_MAX} karakter per keycap, tulisan otomatis muat di keycap.</small>
+     <div class="mc-colors">
+      <label>WARNA TEKS <select data-mctc>${MC_PALETTE.map(([name,hex])=>`<option value="${hex}" ${String(o.tc).toLowerCase()===hex.toLowerCase()?"selected":""}>${name}</option>`).join("")}</select></label>
+      <label>TINGGI TEKS <select data-mcth>${MC_TH_OPTS.map(([v,l])=>`<option value="${v}" ${Math.abs(o.th-v)<1e-6?"selected":""}>${l}</option>`).join("")}${MC_TH_OPTS.some(([v])=>Math.abs(o.th-v)<1e-6)?"":`<option value="${o.th}" selected>${mcFmt(o.th)} mm</option>`}</select></label>
+      <label>UKURAN TEKS <select data-mcts>${MC_TS_OPTS.map(v=>`<option value="${v}" ${Math.round(o.ts)===v?"selected":""}>${v}%${v===100?" (maks. muat)":""}</option>`).join("")}</select></label>
+     </div>
+    </div>
+   </details>
   </div>`;
  }).join("");
 }
-function mcBuildPreview(){
+function mcBuildPreview(keepCam){
+ mcOrders.forEach(mcNorm);mcTextGeos.splice(0).forEach(g=>g.dispose());
  if(active===P1){mcRoot.visible=true;root.visible=false;root2.visible=false;root3.visible=false;}
  mcRoot.clear();const mcKeys=[];
  const cols=Math.ceil(Math.sqrt(mcOrders.length)),rows=Math.ceil(mcOrders.length/cols);
@@ -1531,6 +1584,7 @@ function mcBuildPreview(){
   map.forEach((n,i)=>{
    const key=shade(new THREE.Mesh(mcKeyGeo,mcMat(palette[n-1])));
    key.position.set((i%3-1)*PITCH,(Math.floor(i/3)-1)*PITCH,12.6);
+   const tg=mcTextGeo(o,i);if(tg){mcTextGeos.push(tg);const tm=shade(new THREE.Mesh(tg,mcMat(o.tc)));tm.position.set(0,0,MC_CAP_TOP-.02);key.add(tm)}
    group.add(key);mcKeys.push(key);
   });
   const col=ri%cols,row=Math.floor(ri/cols);
@@ -1540,10 +1594,12 @@ function mcBuildPreview(){
  const spanX=(cols-1)*cell/2+42,spanY=(rows-1)*cell/2+42;
  half=Math.max(48,spanX,spanY);
  shadowBox(half);
+ if(!keepCam){
  controls.target.set(0,0,0);
  const d=Math.max(120,(half+5)/(Math.tan(cam.fov*Math.PI/360)*Math.min(cam.aspect||1,1.6)));
  const v=cam.position.clone().sub(controls.target);if(v.lengthSq()<1)v.copy(dir);v.setLength(d);
  cam.position.copy(controls.target).add(v);controls.update();
+ }
  regLive(P1,mcKeys);
 }
 function mcUpdate(){
@@ -1568,7 +1624,30 @@ mcBox.addEventListener("change",e=>{
  const o=mcOrders[+row.dataset.mcrow];if(!o)return;
  const k=e.target.dataset.color;if(k&&Object.hasOwn(o,k)){o[k]=e.target.value;mcUpdate()}
 });
-$("addClickerOrder").onclick=()=>{mcOrders.push({...MC_DEFAULT});mcUpdate()};
+mcBox.addEventListener("input",e=>{
+ const inp=e.target.closest("[data-mctxt]");if(!inp)return;
+ const row=inp.closest("[data-mcrow]"),o=row&&mcOrders[+row.dataset.mcrow];if(!o)return;
+ const clean=[...inp.value].filter(c=>FT.g[c]).slice(0,MC_TXT_MAX).join("");
+ if(clean!==inp.value)inp.value=clean;
+ mcNorm(o).txt[+inp.dataset.mctxt]=clean;
+ const sm=row.querySelector(".mc-txt summary");if(sm)sm.textContent="Teks pada keycap"+(mcHasText(o)?" ("+o.txt.filter(t=>t.trim()).length+" terisi)":" (opsional)");
+ mcBuildPreview(true);
+});
+mcBox.addEventListener("change",e=>{
+ const el=e.target.closest("[data-mctc],[data-mcth],[data-mcts]");if(!el)return;
+ const row=el.closest("[data-mcrow]"),o=row&&mcOrders[+row.dataset.mcrow];if(!o)return;
+ mcNorm(o);
+ if(el.hasAttribute("data-mctc"))o.tc=el.value;
+ else if(el.hasAttribute("data-mcth"))o.th=Number(el.value);
+ else o.ts=Number(el.value);
+ mcBuildPreview(true);
+});
+mcBox.addEventListener("toggle",e=>{
+ const d=e.target;if(!d.classList||!d.classList.contains("mc-txt"))return;
+ const row=d.closest("[data-mcrow]"),o=row&&mcOrders[+row.dataset.mcrow];if(!o)return;
+ d.open?mcOpen.add(o):mcOpen.delete(o);
+},true);
+$("addClickerOrder").onclick=()=>{mcOrders.push(mcFresh());mcUpdate()};
 function mcMaterialIndex(mats,cache,name,hex){
  const key=hex.toLowerCase();
  if(!cache.has(key)){cache.set(key,mats.length);mats.push(`<base name="${name}" displaycolor="${hex.toUpperCase()}"/>`)}
@@ -1943,7 +2022,7 @@ function randomizeAll(){
  }
 }
 function resetAll(){
- if(active===P1){mcOrders=[{...MC_DEFAULT}];mcUpdate()}
+ if(active===P1){mcOrders=[mcFresh()];mcUpdate()}
  else if(active===P2){multiOrders=[{name:"ANDI",...MULTI_DEFAULT}];renderMultiOrders();previewMultiOrders();refresh()}
  else if(active===P3){cloverOrders=[{...CLOVER_DEFAULT}];cloverRender();cloverPreview()}
  else{bkOrders=[{...BK_DEFAULT}];bkRender();bkPreview()}
@@ -1971,12 +2050,15 @@ buildMultiNames3MF=async function(){
 };
 buildMultiClicker3MF=async function(){
  const B=M3(D.base),K=M3(D.key),groups=[],cols=2,dx=88,dy=88;
+ mcOrders.forEach(mcNorm);
  mcOrders.forEach((o,ri)=>{
   const row=Math.floor(ri/cols),col=ri%cols,tx=96+col*dx,ty=96+row*dy;
   groups.push({name:`Pesanan ${ri+1} - Base`,x:tx,y:ty,z:8.1,parts:[{name:"Base",mesh:B,color:o.base}]});
   const map=mcPattern(o.pattern).map,pal=[o.c1,o.c2,o.c3];
   for(let i=0;i<9;i++){const q=PLATE[i+1],hex=pal[map[i]-1];
-   groups.push({name:`Pesanan ${ri+1} - Key ${i+1}`,x:tx+(q[0]-PLATE[0][0]),y:ty+(q[1]-PLATE[0][1]),z:q[2],parts:[{name:"Keycap",mesh:K,color:hex}]})}
+   const parts=[{name:"Keycap",mesh:K,color:hex}],tm=mcTextMesh(o,i);
+   if(tm)parts.push({name:"Teks "+o.txt[i],mesh:tm,color:o.tc});
+   groups.push({name:`Pesanan ${ri+1} - Key ${i+1}`,x:tx+(q[0]-PLATE[0][0]),y:ty+(q[1]-PLATE[0][1]),z:q[2],parts})}
  });
  return bambuPack(groups,"Clicker 3x3");
 };
@@ -2051,7 +2133,7 @@ refresh();
    });
   }else if(active===P1){
    mcOrders.forEach((o,i)=>{
-    lines.push(`${i+1}. Clicker 3×3\n   Pola: ${mcPattern(o.pattern).name}\n   Base: ${mcColorName(o.base)}\n   Warna key: ${[...new Set([o.c1,o.c2,o.c3].filter(Boolean))].map(mcColorName).join(", ")}\n   1 pcs — ${money(40000)}`);
+    lines.push(`${i+1}. Clicker 3×3\n   Pola: ${mcPattern(o.pattern).name}\n   Base: ${mcColorName(o.base)}\n   Warna key: ${[...new Set([o.c1,o.c2,o.c3].filter(Boolean))].map(mcColorName).join(", ")}\n${mcTextLines(o)}   1 pcs — ${money(40000)}`);
     total+=40000;
    });
   }else if(active===P3){
@@ -2289,24 +2371,107 @@ window.addEventListener('message',ev=>{
 
 <style id="ds-global-color-swatches">
 .ds-color-swatch{display:inline-block;width:15px;height:15px;min-width:15px;border:1px solid #8c8c8c;border-radius:4px;vertical-align:-3px;margin:0 6px 0 3px;box-shadow:inset 0 0 0 1px #ffffff55}
+.cs-native{display:none!important}
+.cs-wrap{display:block;position:relative;width:100%;min-width:0}
+.clover-order-top .cs-wrap{max-width:125px}
+.cs-btn{display:flex;align-items:center;gap:6px;width:100%;min-width:0;box-sizing:border-box;text-align:left;font:inherit;font-size:12.5px;color:var(--ink,inherit);background:var(--bg,transparent);border:1px solid var(--line,#777);border-radius:8px;padding:6px 8px;cursor:pointer}
+.cs-btn .ds-color-swatch{margin:0;vertical-align:baseline;flex:none}
+.cs-btn .cs-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-btn .cs-caret{flex:none;opacity:.7;font-size:11px}
+.cs-btn:focus-visible,.cs-list:focus-visible{outline:3px solid var(--accent,#8061dc);outline-offset:1px}
+.cs-list{position:fixed;z-index:100000;box-sizing:border-box;margin:0;padding:4px;overflow:auto;overscroll-behavior:contain;background:var(--panel,#fff);color:var(--ink,#18202b);border:1px solid var(--line,#999);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.28);font-size:13px}
+.cs-list[hidden]{display:none}
+.cs-opt{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.cs-opt .ds-color-swatch{margin:0;vertical-align:baseline;width:18px;height:18px;min-width:18px}
+.cs-opt[aria-selected="true"]{font-weight:700}
+.cs-opt[aria-selected="true"]::after{content:"✓";margin-left:auto;opacity:.8}
+.cs-opt.act{background:color-mix(in srgb,var(--ink,#000) 12%,transparent)}
 </style>
 <script id="ds-global-color-swatches-js">
 (()=>{
  const hex=v=>/^#[0-9a-f]{6}$/i.test(v||'');
- const update=sel=>{
-  if(!sel||!sel.options||!sel.options.length)return;
-  const opt=sel.options[sel.selectedIndex];if(!opt||!hex(opt.value))return;
-  let chip=sel.previousElementSibling;
-  if(!chip||!chip.classList.contains('ds-color-swatch')){
-   chip=document.createElement('span');chip.className='ds-color-swatch';chip.setAttribute('aria-hidden','true');sel.parentNode.insertBefore(chip,sel);
-  }
-  chip.style.backgroundColor=opt.value;chip.title=opt.textContent.trim();
+ const list=document.createElement('div');list.className='cs-list';list.setAttribute('role','listbox');list.tabIndex=-1;list.hidden=true;
+ let cur=null,act=-1;
+ const sw=c=>{const e=document.createElement('span');e.className='ds-color-swatch';e.setAttribute('aria-hidden','true');e.style.backgroundColor=c;return e};
+ const sync=sel=>{
+  const w=sel.parentNode;if(!w||!w.classList||!w.classList.contains('cs-wrap'))return;
+  const o=sel.options[sel.selectedIndex];if(!o)return;
+  const btn=w.querySelector('.cs-btn');btn.querySelector('.ds-color-swatch').style.backgroundColor=o.value;
+  btn.querySelector('.cs-name').textContent=o.textContent.trim();btn.title=o.textContent.trim();
  };
- const scan=root=>{
-  (root.matches&&root.matches('select')?[root]:[]).concat([...root.querySelectorAll('select')]).forEach(update);
+ const close=(focusBtn)=>{
+  if(!cur)return;list.hidden=true;cur.btn.setAttribute('aria-expanded','false');
+  if(focusBtn&&cur.btn.isConnected)cur.btn.focus();cur=null;
  };
- document.addEventListener('change',e=>{if(e.target.matches('select'))update(e.target)});
- const observer=new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)})));
+ const setAct=i=>{
+  const items=list.children;if(!items.length)return;
+  act=Math.max(0,Math.min(items.length-1,i));
+  [...items].forEach((it,k)=>it.classList.toggle('act',k===act));
+  items[act].scrollIntoView({block:'nearest'});
+ };
+ const choose=i=>{
+  if(!cur)return;const sel=cur.sel,o=sel.options[i];close(true);
+  if(!o)return;
+  if(sel.value!==o.value){sel.value=o.value;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}))}
+  if(sel.isConnected)sync(sel);
+ };
+ const open=(sel,btn)=>{
+  if(cur&&cur.sel===sel){close(true);return}
+  close();cur={sel,btn};list.innerHTML='';
+  [...sel.options].forEach((o,i)=>{
+   const it=document.createElement('div');it.className='cs-opt';it.setAttribute('role','option');
+   it.setAttribute('aria-selected',String(i===sel.selectedIndex));
+   it.appendChild(sw(o.value));const t=document.createElement('span');t.textContent=o.textContent.trim();it.appendChild(t);
+   it.addEventListener('pointerdown',e=>e.preventDefault());
+   it.addEventListener('click',()=>choose(i));
+   list.appendChild(it);
+  });
+  list.hidden=false;btn.setAttribute('aria-expanded','true');
+  const r=btn.getBoundingClientRect(),vh=innerHeight,vw=innerWidth;
+  list.style.minWidth=Math.max(r.width,170)+'px';list.style.maxHeight=Math.min(280,vh-16)+'px';
+  document.body.appendChild(list);
+  const h=list.offsetHeight,below=vh-r.bottom-8,above=r.top-8;
+  let top=(h<=below||below>=above)?r.bottom+4:r.top-h-4;top=Math.max(8,Math.min(top,vh-h-8));
+  const wd=list.offsetWidth;list.style.left=Math.max(8,Math.min(r.left,vw-wd-8))+'px';list.style.top=top+'px';
+  list.focus({preventScroll:true});setAct(sel.selectedIndex);
+ };
+ list.addEventListener('keydown',e=>{
+  const k=e.key;
+  if(k==='ArrowDown'){e.preventDefault();setAct(act+1)}
+  else if(k==='ArrowUp'){e.preventDefault();setAct(act-1)}
+  else if(k==='Home'){e.preventDefault();setAct(0)}
+  else if(k==='End'){e.preventDefault();setAct(1e9)}
+  else if(k==='Enter'||k===' '){e.preventDefault();choose(act)}
+  else if(k==='Escape'){e.preventDefault();close(true)}
+  else if(k==='Tab'){close()}
+ });
+ document.addEventListener('pointerdown',e=>{if(cur&&!list.contains(e.target)&&!cur.btn.contains(e.target))close()},true);
+ addEventListener('resize',()=>close());
+ document.addEventListener('scroll',e=>{if(cur&&!list.contains(e.target))close()},true);
+ const build=sel=>{
+  if(!sel||sel.dataset.csDone||!sel.options||!sel.options.length)return;
+  if(![...sel.options].every(o=>hex(o.value)))return;
+  sel.dataset.csDone='1';
+  const prev=sel.previousElementSibling;if(prev&&prev.classList.contains('ds-color-swatch'))prev.remove();
+  const w=document.createElement('span');w.className='cs-wrap';
+  sel.parentNode.insertBefore(w,sel);w.appendChild(sel);
+  sel.classList.add('cs-native');sel.tabIndex=-1;sel.setAttribute('aria-hidden','true');
+  const btn=document.createElement('button');btn.type='button';btn.className='cs-btn';
+  btn.setAttribute('aria-haspopup','listbox');btn.setAttribute('aria-expanded','false');
+  btn.setAttribute('aria-label',sel.getAttribute('aria-label')||'Pilih warna');
+  btn.appendChild(sw('#ffffff'));
+  const nm=document.createElement('span');nm.className='cs-name';btn.appendChild(nm);
+  const cr=document.createElement('span');cr.className='cs-caret';cr.setAttribute('aria-hidden','true');cr.textContent='⌄';btn.appendChild(cr);
+  btn.addEventListener('click',()=>open(sel,btn));
+  btn.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();open(sel,btn)}});
+  w.insertBefore(btn,sel);sync(sel);
+ };
+ const scan=root=>{(root.matches&&root.matches('select')?[root]:[]).concat([...root.querySelectorAll('select')]).forEach(build)};
+ document.addEventListener('change',e=>{if(e.target&&e.target.matches&&e.target.matches('select.cs-native'))sync(e.target)});
+ const observer=new MutationObserver(records=>{
+  records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)}));
+  if(cur&&!cur.btn.isConnected)close();
+ });
  const start=()=>{scan(document);observer.observe(document.body,{childList:true,subtree:true})};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
