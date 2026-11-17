@@ -226,7 +226,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj" hidden><b>File CLO 3D (.zprj)</b><small>Motif tiap bagian dipasang sebagai kain di CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r10</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r11</small>
   <button class="opt" id="ojson" hidden><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -451,6 +451,8 @@ function maxId(pac){let mx=0;walk(pac,m=>{for(const e of m.e){if(e.t===T_U32&&/^
 const hex=n=>{let s='';for(let i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s};
 const uuid=()=>'{'+hex(8)+'-'+hex(4)+'-4'+hex(3)+'-a'+hex(3)+'-'+hex(12)+'}';
 function setStr(m,k,v){if(m.has(k))m.set(k,v);if(m.has(k+'UTF8'))m.set(k+'UTF8',v)}
+function setTexFile(t,file){setStr(t,'qsFileName',file);setStr(t,'qsUniqueFileName',file);setStr(t,'qsAIFileName','');if(t.has('qsAIFilePageNo'))t.set('qsAIFilePageNo',-1);if(t.has('qsAIFileLayerNo'))t.set('qsAIFileLayerNo',-1);if(t.has('enImageType'))t.set('enImageType',5);if(t.has('bAIFindBR'))t.set('bAIFindBR',0)}
+function anyBaseTex(node){let r=null;if(node&&!node.has&&node.all){for(const x of node.all()){r=anyBaseTex(x);if(r)return r}return null}walk(node,m=>{if(!r&&m.has('listTexture'))m.get('listTexture').all().forEach(t=>{if(!r&&t.get('enType')===0)r=t})});return r}
 function setColor(cm,rgb,name){if(!cm)return;cm.set('v4Color',[...rgb,1]);setStr(cm,'qsName',name)}
 /* put a base-colour texture on the front face of every material copy inside node */
 function texturize(node,tex,idFor,uuFor){
@@ -463,14 +465,80 @@ function texturize(node,tex,idFor,uuFor){
       if(fm.has('qsUuid'))setStr(fm,'qsUuid',uuFor(fm.get('qsUuid')))
       const lt=fm.get('listTexture');let tpl=null;const keep=[];
       lt.all().forEach(t=>{if(t.get('enType')===0)tpl=tpl||t;else keep.push(t)});
+      if(!tpl&&tex.baseTpl)tpl=tex.baseTpl;
       if(!tpl){const any=lt.all()[0];if(!any)return;tpl=clone(any);tpl.set('enType',0)}else tpl=clone(tpl);
+      setTexFile(tpl,tex.file);
       setStr(tpl,'qsFileName',tex.file);tpl.set('v2Size',[tex.w,tex.h]);if(tpl.has('v2PhysicalSize'))tpl.set('v2PhysicalSize',[tex.w,tex.h]);
       tpl.set('v2Translation',[0,0]);if(tpl.has('fSignedAngle'))tpl.set('fSignedAngle',0);
       if(tpl.has('enWrapS'))tpl.set('enWrapS',10497);if(tpl.has('enWrapT'))tpl.set('enWrapT',10497);
       if(tpl.has('bColorInverted'))tpl.set('bColorInverted',0);
       const nl=new CList(T_MAP,[tpl,...keep],null);nl.dirty=true;fm.set('listTexture',nl)})})}
 
-/* panels: [{pattern:index, file:'name.jpg', data:Uint8Array, w:mm, h:mm, label}] */
+/* ---- baked artwork as a CLO graphic (keeps one fabric) ---- */
+function canBakeGraphics(pac){const pe=pac.get('mapPatternEditor'),gl=pe&&pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle');return!!(gl&&gl.length&&gs&&gs.length&&gl.at(0).get('listOverlayFabricShape2D')&&gl.at(0).get('listOverlayFabricShape2D').length)}
+function setGraphicTex(node,pn){walk(node,m=>{if(!m.has('listTexture'))return;m.get('listTexture').all().forEach(t=>{if(t.get('enType')!==0)return;setTexFile(t,pn.file);
+  if(t.has('v2Size'))t.set('v2Size',[pn.w,pn.h]);if(t.has('v2PhysicalSize'))t.set('v2PhysicalSize',[pn.w,pn.h]);if(t.has('v2Translation'))t.set('v2Translation',[0,0]);if(t.has('fSignedAngle'))t.set('fSignedAngle',0)})})}
+function reId(node,idFor,uuFor){walk(node,m=>{for(const e of m.e){if(e.k==='uiID'&&e.t===T_U32)m.set('uiID',idFor(m.get('uiID')));else if((e.k==='qsUuid'||e.k==='qsUuidUTF8')&&e.t===T_STR){const v=m.get(e.k);if(v)m.set(e.k,uuFor(v))}}})}
+function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle'),pl=pe.get('mapPatternList').get('listPattern');
+  const tg=gl.at(0),tstyle=gs.at(tg.get('uiGraphicStyleIndex')|0),tStyleId=tstyle.get('mapElement').get('uiID');
+  const idm={},uum={},idFor=o=>idm[o]||(idm[o]=nid()),uuFor=o=>uum[o]||(uum[o]=uuid());
+  let gid=(pe.get('uiMaxGID')|0)+1;pe.set('uiMaxGID',gid);
+  // style
+  const sty=clone(tstyle);reId(sty,idFor,uuFor);setStr(sty.get('mapElement'),'qsName',pn.label);setGraphicTex(sty,pn);gs.push(sty);const si=gs.length-1,styleId=sty.get('mapElement').get('uiID');
+  // overlay
+  const ov=clone(tg.get('listOverlayFabricShape2D').at(0));reId(ov,idFor,uuFor);
+  setStr(ov.get('mapElement'),'qsName',pn.label);ov.set('uiPatternGID',gid);if(ov.has('uiLineGID'))ov.set('uiLineGID',0);ov.set('uiParentPatternSelfIndex',pn.pattern);
+  ov.set('fZOffsetV6',0.05);ov.set('enRepeatType',0);ov.set('v2TextureSize',[pn.w,pn.h]);if(ov.has('fAspectRatioHeightPerWidth'))ov.set('fAspectRatioHeightPerWidth',pn.h/pn.w);
+  const sh=ov.get('mapShape2D'),hw=pn.w/2,hh=pn.h/2,corner=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]];
+  sh.get('listPoint').all().forEach((q,k)=>{const o=q.get('v2Position');const c=corner[k]||[Math.sign(o[0]||1)*hw,Math.sign(o[1]||1)*hh];q.set('v2Position',c)});
+  sh.get('mapTransformer2D').set('m3Matrix',pn.Mo);
+  const fsx=ov.get('mapFabricShape2D');setStr(fsx.get('mapElement'),'qsName',pn.label);
+  const gli=fsx.get('listGrainLineInfo');if(gli)gli.all().forEach(g=>{g.set('v2Translation',[-hw,-hh]);g.set('fAngle',0)});
+  const vi=fsx.get('mapVisibilityInfoList'),vl=vi&&vi.get('listVisibilityInfo');if(vl)vl.all().forEach(x=>x.has('bVisible')&&x.set('bVisible',1));fsx.get('mapElement').set('bVisible',1);ov.get('mapElement').set('bVisible',1);
+  if(fsx.has('mapFabric'))setGraphicTex(fsx.get('mapFabric'),pn);
+  const om=fsx.get('mapMesh2D'),pm=pl.at(pn.pattern).get('mapFabricShape2D').get('mapMesh2D');
+  ['baRest','baTri','uiVertexCount2D','uiTriangleCount','uiBaseTriangleCount','uiBaseVertexCount'].forEach(k=>{if(pm.has(k)&&om.has(k)){const e=pm.ent(k);om.set(k,e.raw.slice(),e.t)}});
+  om.set('baTex',pm.raw('baRest').slice(),om.ent('baTex').t);
+  // graphic
+  const g=clone(tg);reId(g,idFor,uuFor);setStr(g.get('mapElement'),'qsName',pn.label);g.get('mapElement').set('bVisible',1);g.set('uiGraphicStyleIndex',si);
+  const ol=new CList(T_MAP,[ov],null);ol.dirty=true;g.set('listOverlayFabricShape2D',ol);gl.push(g);const gId=g.get('mapElement').get('uiID');
+  // pattern copy (bottom of the stack)
+  let pt=pl.at(pn.pattern).get('listPrintTexture');if(!pt){pt=new CList(T_MAP,[],null);pl.at(pn.pattern).set('listPrintTexture',pt)}
+  pt.all();if(!pt.length)pt.et=T_MAP;pt.items.unshift(clone(ov));pt.dirty=true;
+  // colorway
+  const cws=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapNewColorway')&&pac.get('mapColorWay').get('mapNewColorway').get('listColorway');let chip=nid();
+  if(cws)cws.all().forEach(cw=>{const as=cw.get('mapAssign'),l=as&&as.get('listGraphicToStyle');
+    if(l&&l.length){const x=clone(l.at(0));x.set('uiItemID',gId);x.set('uiStyleID',styleId);x.set('bVisible',1);x.set('fAngle',Math.atan2(pn.Mo[1],pn.Mo[0])*180/Math.PI);x.set('v2Position',[pn.Mo[6],pn.Mo[7]]);l.push(x)}
+    const ca=cw.get('mapAssignStyleChip'),c2=ca&&ca.get('listGraphicItemStyleToStyleChip');if(c2&&c2.length){const y=clone(c2.at(0));y.set('uiStyleID',styleId);y.set('uiStyleChipID',chip);c2.push(y)}});
+  const sca=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapStyleChipAssign'),vv=sca&&sca.get('listGraphicItemStyleToStyleChipVector');
+  if(vv&&vv.length){const ex=vv.all().find(x=>x.get('uiStyleID')===tStyleId)||vv.at(0);const c=clone(ex);reId(c,idFor,uuFor);c.set('uiStyleID',styleId);const ls=c.get('listStyleChip');if(ls&&ls.length&&ls.at(0).get('mapElement'))ls.at(0).get('mapElement').set('uiID',chip);setGraphicTex(c,pn);vv.push(c)}}
+/* one fabric: put every pattern back on the original fabric and drop fabrics an earlier save added (SKN ...) */
+function useSingleFabric(pac){const fabs=pac.get('listFabric');if(!fabs||fabs.length<2)return;const all=fabs.all(),isSkn=f=>/^SKN /.test(f.get('qsName')||'');
+  const keepIdx=all.findIndex(f=>!isSkn(f));if(keepIdx<0)return;const base=all[keepIdx],baseId=base.get('uiID'),dropIds=new Set(all.filter(isSkn).map(f=>f.get('uiID')));if(!dropIds.size)return;
+  const kept=all.filter(f=>!isSkn(f)),newIdx=kept.indexOf(base);const nl=new CList(T_MAP,kept,null);nl.dirty=true;pac.set('listFabric',nl);
+  pac.get('mapPatternEditor').get('mapPatternList').get('listPattern').all().forEach(p=>{const fs=p.get('mapFabricShape2D');const cur=all[fs.get('iFabricIndex')|0];const ni=cur&&!isSkn(cur)?kept.indexOf(cur):newIdx;fs.set('iFabricIndex',ni);
+    const sh=p.get('mapShape2D');if(sh.has('iFabricIndex')&&sh.get('iFabricIndex')>=0)sh.set('iFabricIndex',ni)});
+  const cwr=pac.get('mapColorWay'),cws=cwr&&cwr.get('mapNewColorway')&&cwr.get('mapNewColorway').get('listColorway');
+  if(cws)cws.all().forEach(cw=>{const as=cw.get('mapAssign');if(as&&as.get('listPatternToFabric'))as.get('listPatternToFabric').all().forEach(x=>{if(dropIds.has(x.get('uiStyleID')))x.set('uiStyleID',baseId)});
+    const ca=cw.get('mapAssignStyleChip'),l=ca&&ca.get('listFabricToStyleChip');if(l){const k=l.all().filter(x=>!dropIds.has(x.get('uiStyleID')));const n=new CList(l.et,k,null);n.dirty=true;ca.set('listFabricToStyleChip',n)}});
+  const sca=cwr&&cwr.get('mapStyleChipAssign'),v=sca&&sca.get('listFabricToStyleChipVector');if(v){const k=v.all().filter(x=>!dropIds.has(x.get('uiStyleID')));const n=new CList(v.et,k,null);n.dirty=true;sca.set('listFabricToStyleChipVector',n)}}
+/* panels: [{pattern:index, file:'name.jpg', data:Uint8Array, w:mm, h:mm, label, Mo?}] — with Mo: graphic mode */
+/* buang grafik SKN lama yang sudah tidak dipakai (sudah dipanggang ulang) beserta gaya & filenya */
+const isSKN=s=>/^SKN[ _]/.test(s||'');
+function dropFrom(l,pred){if(!l)return;const keep=[];l.all().forEach(x=>{if(!pred(x))keep.push(x)});if(keep.length!==l.length){l.items=keep;l.dirty=true}}
+function purgeSKN(pac,uids){const pe=pac.get('mapPatternEditor'),pl=pe.get('mapPatternList').get('listPattern'),gl=pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle');if(!gl||!gs)return;
+  const ov={};uids.forEach(u=>ov[u]=1);const gids={},sidx={};
+  gl.all().forEach(g=>{const o=g.get('listOverlayFabricShape2D');if(!o||!isSKN(g.get('mapElement').get('qsName')))return;if(o.all().some(x=>ov[x.get('mapElement').get('uiID')])){gids[g.get('mapElement').get('uiID')]=1;sidx[g.get('uiGraphicStyleIndex')]=1;o.all().forEach(x=>ov[x.get('mapElement').get('uiID')]=2)}});
+  if(!Object.keys(gids).length)return;
+  pl.all().forEach(p=>dropFrom(p.get('listPrintTexture'),x=>ov[x.get('mapElement').get('uiID')]===2));
+  dropFrom(gl,g=>gids[g.get('mapElement').get('uiID')]);
+  const used={};gl.all().forEach(g=>used[g.get('uiGraphicStyleIndex')]=1);
+  const rm=Object.keys(sidx).map(Number).filter(i=>!used[i]&&isSKN(gs.at(i).get('mapElement').get('qsName'))).sort((a,b)=>b-a);const sids={};rm.forEach(i=>sids[gs.at(i).get('mapElement').get('uiID')]=1);
+  rm.forEach(i=>{gs.items.splice(i,1);gs.dirty=true;gl.all().forEach(g=>{const k=g.get('uiGraphicStyleIndex');if(k>i)g.set('uiGraphicStyleIndex',k-1)})});
+  const cr=pac.get('mapColorWay');if(cr){const nc=cr.get('mapNewColorway');if(nc)nc.get('listColorway').all().forEach(cw=>{const as=cw.get('mapAssign');if(as)dropFrom(as.get('listGraphicToStyle'),x=>gids[x.get('uiItemID')]);
+      const ca=cw.get('mapAssignStyleChip');if(ca)dropFrom(ca.get('listGraphicItemStyleToStyleChip'),x=>sids[x.get('uiStyleID')])});
+    const sa=cr.get('mapStyleChipAssign');if(sa)dropFrom(sa.get('listGraphicItemStyleToStyleChipVector'),x=>sids[x.get('uiStyleID')])}}
+function referencedFiles(pac){const r={};walk(pac,m=>{['qsUniqueFileName','qsFileName'].forEach(k=>{if(m.has(k)){const v=m.get(k);if(typeof v==='string')r[v.replace(/^.*[\\/]/,'')]=1}})});return r}
 function writeZprj(st,panels,design,gfxOps){
   const pac=clone(st.pac);let nextId=maxId(pac)+1;const nid=()=>nextId++;
   const pl=pac.get('mapPatternEditor').get('mapPatternList').get('listPattern');
@@ -479,7 +547,12 @@ function writeZprj(st,panels,design,gfxOps){
   const assign=cw&&cw.get('mapAssign'),chipA=cw&&cw.get('mapAssignStyleChip');
   const scv=cwRoot&&cwRoot.get('mapStyleChipAssign')&&cwRoot.get('mapStyleChipAssign').get('listFabricToStyleChipVector');
   const newFiles={};
+  const gMode=panels.length&&panels.every(p=>p.Mo)&&canBakeGraphics(pac);
+  if(gMode||(panels.length===0&&canBakeGraphics(pac)))useSingleFabric(pac);
+  const baseTpl=anyBaseTex(fabs);
   panels.forEach(pn=>{
+    if(gMode){addBakedGraphic(pac,pn,nid);newFiles[pn.file]=pn.data;return}
+    pn.baseTpl=baseTpl;
     const p=pl.at(pn.pattern),fs=p.get('mapFabricShape2D'),itemId=fs.get('mapElement').get('uiID');
     const srcIdx=Math.max(0,fs.get('iFabricIndex')|0),src=fabs.at(Math.min(srcIdx,fabs.length-1)),srcId=src.get('uiID');
     const f=clone(src),fid=nid();f.set('uiID',fid);setStr(f,'qsName',pn.label);setStr(f,'qsFabricName',pn.label);if(f.has('qsUuid'))setStr(f,'qsUuid',uuid());
@@ -500,8 +573,10 @@ function writeZprj(st,panels,design,gfxOps){
     if(chipA){const l=chipA.get('listFabricToStyleChip');if(l&&l.length){const x=clone(l.at(0));x.set('uiStyleID',fid);x.set('uiStyleChipID',chipId);l.push(x)}}
     newFiles[pn.file]=pn.data});
   if(gfxOps)applyGfxOps(pac,gfxOps);
+  if(gMode&&gfxOps)purgeSKN(pac,gfxOps.filter(o=>!o.visible).map(o=>o.uid));
   // rebuild zpac
-  const zf={...st.zf};zf[st.pn]=serMap(pac);Object.assign(zf,newFiles);if(design)design.pacSig=sig(zf[st.pn]);
+  const zf={...st.zf};
+  if(gMode||canBakeGraphics(pac)){const ref=referencedFiles(pac);Object.keys(zf).forEach(n=>{if(/^SKN_.*\.png$/i.test(n)&&!ref[n]&&!newFiles[n])delete zf[n]})}zf[st.pn]=serMap(pac);Object.assign(zf,newFiles);if(design)design.pacSig=sig(zf[st.pn]);
   const cj=Object.keys(zf).find(n=>n==='clofiles.json');
   if(cj){try{const o=JSON.parse(TD.decode(zf[cj]));const any=Object.values(o)[0]||'';const dir=any.replace(/[^/\\]*$/,'');Object.keys(newFiles).forEach(n=>o[n]=dir+n);zf[cj]=TE.encode(JSON.stringify(o,null,1))}catch(e){}}
   const lv=(o)=>{const r={};for(const n in o){const b=o[n];r[n]=[b,{level:(/\.(avt|png|jpe?g|zpac)$/i.test(n)||b.length>8e6)?0:(/\.pac$/i.test(n)?1:6)}]}return r};
@@ -514,7 +589,7 @@ function resolveFile(zf,names){const keys=Object.keys(zf);for(const n of names){
   for(const n of names){if(!n)continue;const base=n.replace(/^.*[\\/]/,''),i=base.lastIndexOf('.'),stem=i>0?base.slice(0,i):base,ext=i>0?base.slice(i).toLowerCase():'';
     if(zf[base])return base;const re=new RegExp('^'+stem.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'_\\d+'+ext.replace('.','\\.')+'$','i');const hit=keys.find(k=>re.test(k));if(hit)return hit}
   return null}
-G.CLO={resolveFile,parseMap,parseList,serMap,serList,CMap,CList,readZprj,writeZprj,readPatterns,walk,clone,DESIGN};
+G.CLO={resolveFile,canBakeGraphics,parseMap,parseList,serMap,serList,CMap,CList,readZprj,writeZprj,readPatterns,walk,clone,DESIGN};
 })(typeof window!=='undefined'?window:globalThis);
 </script>
 <script>
@@ -974,13 +1049,20 @@ async function openZprj(f){busy('Membuka file CLO…');await tick();
 /* gambar desain bagian → tekstur kain CLO (ukuran = kotak pola dalam mm, digeser agar pas di koordinat CLO) */
 const ZFLIPV=false;
 /* lapisan grafik CLO yang tetap 'hidup' (ditulis balik ke CLO): di atas semua lapisan buatan aplikasi dan tidak diulang */
-function liveSplit(p){let top=-1;p.layers.forEach((L,i)=>{if(!L.clo||L.rep)top=i});return p.layers.map((L,i)=>!!(L.clo&&!L.rep&&i>top&&ready(L)))}
+function liveSplit(p){let top=-1;p.layers.forEach((L,i)=>{if(!L.clo||L.rep||L.bg)top=i});return p.layers.map((L,i)=>!!(L.clo&&!L.rep&&!L.bg&&i>top&&ready(L)))}
 function gfxOps(){const ops=[];Object.values(P).forEach(p=>{if(p.d.zp==null)return;const pt=ZP.patterns[p.d.zp],live=liveSplit(p),W=p.cv.width,H=p.cv.height,G0i=minv(patG0(pt,W,H)),seen={};
   p.layers.forEach((L,i)=>{if(!L.clo||L.clo.pat!==pt.i)return;seen[L.clo.uid]=1;
     if(!live[i]){ops.push({uid:L.clo.uid,pattern:pt.i,visible:false});return}
     const IW=L.img.naturalWidth,IH=L.img.naturalHeight,Mo=mm(G0i,mm(fullLayerMat(L,W,H,IW,IH),minv(L.clo.K)));
     ops.push({uid:L.clo.uid,pattern:pt.i,visible:true,Mo:[Mo[0],Mo[1],0,Mo[2],Mo[3],0,Mo[4],Mo[5],1]})});
   (pt.gfx||[]).forEach(g=>{if(!seen[g.uid])ops.push({uid:g.uid,pattern:pt.i,visible:false})})});return ops}
+/* mode grafik: gambar bagian apa adanya (menutupi kotak pola), posisinya lewat matriks grafik */
+async function panelArtwork(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0;
+  const baked=p.layers.filter((L,i)=>!live[i]);const plain=!baked.length&&(!pt.fabColor||String(p.base).toLowerCase()===String(pt.fabColor).toLowerCase());if(plain)return null;
+  const ppm=Math.min(4,2048/Math.max(W,H)),iw=Math.max(8,Math.round(W*ppm)),ih=Math.max(8,Math.round(H*ppm));
+  const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);baked.forEach(L=>drawLayer(c,L,iw,ih));
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const G0=patG0(pt,iw,ih),K=[W/iw,0,0,-H/ih,-W/2,H/2],M=mm(minv(G0),minv(K));
+  return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H,Mo:[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1]}}
 async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,ppm=Math.min(4,2048/Math.max(W,H)),iw=Math.max(8,Math.round(W*ppm)),ih=Math.max(8,Math.round(H*ppm));
   const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);p.layers.forEach((L,i)=>{if(!live[i])drawLayer(c,L,iw,ih)});
   const o=document.createElement('canvas');o.width=iw;o.height=ih;const oc=o.getContext('2d');
@@ -990,8 +1072,11 @@ async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.
   const blob=await new Promise(r=>o.toBlob(r,'image/png'));return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H}}
 async function zprjBlob(){try{return await zprjBlob_()}finally{busy(null)}}
 async function zprjBlob_(){const T0=performance.now();const panels=[],ps=Object.values(P),tag=Math.random().toString(36).slice(2,7);
+  const gm=CLO.canBakeGraphics(ZP.pac);
   for(let i=0;i<ps.length;i++){const p=ps[i];busy('Menyimpan: motif '+(NAME[p.d.id]||p.d.id)+' ('+(i+1)+'/'+ps.length+')…',5+80*i/ps.length);await tick();
-    const t=await panelTexture(p),nm=String(NAME[p.d.id]||p.d.id).replace(/[^A-Za-z0-9]+/g,'_');
+    const nm=String(NAME[p.d.id]||p.d.id).replace(/[^A-Za-z0-9]+/g,'_');
+    if(gm){const a=await panelArtwork(p);if(a)panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:a.data,w:a.w,h:a.h,Mo:a.Mo,label:'SKN '+nm});continue}
+    const t=await panelTexture(p);
     panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:t.data,w:t.w,h:t.h,label:'SKN '+nm})}
   busy('Menyimpan: menyusun file .zprj…',88);await tick();const T1=performance.now();
   const out=CLO.writeZprj(ZP,panels,projObj(),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
