@@ -12,7 +12,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.provider.Settings;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.view.View;
@@ -33,7 +38,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Pattern;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -475,6 +483,125 @@ public class MainActivity extends Activity {
             }
         }
 
+        /* ---------- akses semua file di HP (seperti file manager) ---------- */
+        @JavascriptInterface
+        public boolean fsAllowed() {
+            if (Build.VERSION.SDK_INT >= 30) return Environment.isExternalStorageManager();
+            return checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        @JavascriptInterface
+        public void fsRequest() {
+            runOnUiThread(() -> {
+                try {
+                    if (Build.VERSION.SDK_INT >= 30) {
+                        Intent i = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
+                        try {
+                            startActivity(i);
+                        } catch (Exception e) {
+                            startActivity(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+                        }
+                    } else {
+                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 21);
+                    }
+                } catch (Exception ignored) {
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public String fsRoot() {
+            return Environment.getExternalStorageDirectory().getAbsolutePath();
+        }
+
+        JSONObject fo(File f) throws Exception {
+            JSONObject o = new JSONObject();
+            o.put("id", f.getAbsolutePath());
+            o.put("name", f.getName());
+            o.put("dir", f.isDirectory());
+            o.put("size", f.isDirectory() ? -1 : f.length());
+            o.put("mod", f.lastModified());
+            o.put("parent", f.getParent());
+            return o;
+        }
+
+        @JavascriptInterface
+        public String fsList(String path) {
+            try {
+                File d = new File(path);
+                File[] l = d.listFiles();
+                if (l == null) return "{\"error\":\"Folder tidak bisa dibaca\"}";
+                JSONArray a = new JSONArray();
+                for (File f : l) if (!f.getName().startsWith(".")) a.put(fo(f));
+                return a.toString();
+            } catch (Exception e) {
+                return "{\"error\":" + JSONObject.quote(String.valueOf(e.getMessage())) + "}";
+            }
+        }
+
+        /** cari file desain terbaru (berjalan di latar, hasil lewat __divaRecent) */
+        @JavascriptInterface
+        public void fsRecent(String req, String exts, int max) {
+            new Thread(() -> {
+                String out = "[]";
+                try {
+                    Pattern pt = Pattern.compile("\\.(" + exts + ")$", Pattern.CASE_INSENSITIVE);
+                    List<File> found = new ArrayList<>();
+                    int[] seen = {0};
+                    walk(Environment.getExternalStorageDirectory(), 0, pt, found, seen);
+                    found.sort((x, y) -> Long.compare(y.lastModified(), x.lastModified()));
+                    JSONArray a = new JSONArray();
+                    for (int i = 0; i < found.size() && i < max; i++) a.put(fo(found.get(i)));
+                    out = a.toString();
+                } catch (Exception ignored) {
+                }
+                js("window.__divaRecent&&__divaRecent(" + JSONObject.quote(req) + "," + out + ")");
+            }).start();
+        }
+
+        void walk(File d, int depth, Pattern pt, List<File> found, int[] seen) {
+            if (depth > 6 || seen[0] > 40000) return;
+            File[] l = d.listFiles();
+            if (l == null) return;
+            for (File f : l) {
+                seen[0]++;
+                String n = f.getName();
+                if (n.startsWith(".")) continue;
+                if (f.isDirectory()) {
+                    if (depth == 0 && n.equals("Android")) continue;
+                    walk(f, depth + 1, pt, found, seen);
+                } else if (pt.matcher(n).find()) found.add(f);
+            }
+        }
+
+        @JavascriptInterface
+        public String fsOpen(String path) {
+            try {
+                Target t = new Target();
+                t.file = new File(path);
+                t.name = t.file.getName();
+                return info(register(t), t);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        /** file baru (atau menimpa) di folder; ditulis lewat begin/chunk/end */
+        @JavascriptInterface
+        public String fsCreate(String dir, String name) {
+            try {
+                String safe = name.replaceAll("[\\\\/:*?\"<>|]", "_");
+                Target t = new Target();
+                t.file = new File(dir, safe);
+                t.name = safe;
+                JSONObject o = new JSONObject(info(register(t), t));
+                o.put("id", t.file.getAbsolutePath());
+                return o.toString();
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
         @JavascriptInterface
         public void exitApp() {
             runOnUiThread(MainActivity.this::finish);
@@ -484,6 +611,18 @@ public class MainActivity extends Activity {
         public void reload() {
             runOnUiThread(MainActivity.this::loadApp);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (web != null) web.evaluateJavascript("window.__divaResume&&__divaResume()", null);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int rc, String[] p, int[] r) {
+        super.onRequestPermissionsResult(rc, p, r);
+        if (web != null) web.evaluateJavascript("window.__divaResume&&__divaResume()", null);
     }
 
     @Override
