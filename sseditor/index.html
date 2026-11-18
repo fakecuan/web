@@ -109,6 +109,9 @@ textarea#ptx[hidden]{display:none}
 .fbe{padding:26px 12px;text-align:center;color:#777;font-size:14px;line-height:1.5}.fbe input{display:block;width:100%;box-sizing:border-box;height:40px;margin:10px 0;border:1px solid #ddd;border-radius:10px;padding:0 10px;font:14px system-ui,sans-serif}
 .fbadd{display:block;margin:12px auto;border:0;background:#e8661c;color:#fff;border-radius:20px;padding:10px 18px;font:600 14px system-ui,sans-serif}.fbsub{padding:12px 6px 4px;font:600 12px system-ui,sans-serif;color:#e8661c;text-transform:uppercase;letter-spacing:.04em}.fbnote{display:block;text-align:center;color:#888;font-size:12px;padding:0 16px}
 .fbft{display:flex;gap:8px;flex:none}.fbft button{flex:1;height:40px;border-radius:12px;border:1px solid #ddd;background:#fff;font:14px system-ui,sans-serif}.fbft .pri{background:#e8661c;border-color:#e8661c;color:#fff;font-weight:600}
+#mprop .mbox{width:min(94vw,440px)}.prophd{display:flex;align-items:center;gap:8px}.prophd b{flex:1;font-size:17px}.prophd button{border:1px solid #ddd;background:#fff;border-radius:18px;padding:6px 12px;font:13px system-ui,sans-serif}.prophd #propx{border:0;background:#f1f1f3;border-radius:50%;width:34px;height:34px;padding:0}
+#propbody{overflow-y:auto;margin:0 -6px}.ptab{width:100%;border-collapse:collapse;font-size:14px}.ptab td{padding:7px 6px;border-bottom:1px solid #f1f1f1;vertical-align:top}.ptab td:first-child{color:#666;width:52%}.ptab td:last-child{font-weight:500;word-break:break-word}
+.ptab th{text-align:left;padding:14px 6px 4px;font:600 12px system-ui,sans-serif;color:#e8661c;text-transform:uppercase;letter-spacing:.04em}.pnote{display:block;color:#888;font-size:12px;padding:10px 6px 2px;text-align:center}
 #mname{z-index:45}#mname input{height:40px;border:1px solid #ddd;border-radius:10px;padding:0 10px;font:16px system-ui,sans-serif;flex:1;min-width:0}.nrow{display:flex;align-items:center;gap:6px}
 #busy{position:fixed;inset:0;z-index:60;background:#fffc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font:500 14px system-ui,sans-serif}#busy[hidden]{display:none}.spin{width:34px;height:34px;border-radius:50%;border:3px solid #0001;border-top-color:var(--ac);animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 #avb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
@@ -194,6 +197,7 @@ textarea#ptx[hidden]{display:none}
   <button class="chip rb" id="libb" title="Library gambar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><circle cx="8" cy="10" r="1.5"/><path d="M17 15l-4-4-7 7"/></svg><span id="libn" hidden></span></button>
   <button class="chip rb" id="recb" title="Rekam video putar 360° untuk Instagram" aria-label="Rekam video"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M15.5 10.5l6-3.5v10l-6-3.5"/><circle class="rd" cx="9" cy="12" r="2.6"/></svg></button>
   <button class="chip rb" id="avb" title="Tampilkan / sembunyikan avatar" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg></button>
+  <button class="chip rb" id="propb" title="Properti: ukuran skinsuit & info file" aria-label="Properti"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.6v.1" stroke-width="2.6"/></svg></button>
   <button class="chip rb" id="undo" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
   <button class="chip rb" id="redo" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
 
@@ -262,13 +266,14 @@ textarea#ptx[hidden]{display:none}
 <div id="fbcrumb" hidden></div><div id="fblist"></div>
 <div class="fbft"><button id="fbsys">Pemilih file sistem…</button><button class="pri" id="fbhere" hidden>Simpan di folder ini</button></div>
 </div></div>
+<div class="modal" id="mprop" hidden><div class="mbox"><div class="prophd"><b>Properti</b><button id="propcopy">Salin</button><button id="propx" data-x aria-label="Tutup">✕</button></div><div id="propbody"></div></div></div>
 <div class="modal" id="mname" hidden><div class="mbox"><b id="mnt">Simpan sebagai</b><div class="nrow"><input id="nin" type="text" autocomplete="off" spellcheck="false"><span id="next">.json</span></div><small id="nhint"></small><div class="mact"><button id="ncan">Batal</button><button class="pri" id="nok">Simpan</button></div></div></div>
 <div class="modal" id="mch" hidden><div class="mbox"><b>Export</b>
   <button class="opt" id="opng"><b>Preview gambar (PNG)</b><small>Depan, belakang, kiri, kanan dalam satu gambar</small></button>
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r37</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r38</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -2119,11 +2124,11 @@ async function gdTok(){if(gdOk())return GD_TOK.t;return await gdLogin()}
 async function gdFetch(url,opt={},again){const t=await gdTok();const r=await fetch(url,{...opt,headers:{...(opt.headers||{}),Authorization:'Bearer '+t}});
   if(r.status===401&&!again){GD_TOK=null;LS.set('gdTok',null);return gdFetch(url,opt,true)}
   if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(e){}throw new Error('Drive '+r.status+(m?': '+m:''))}return r}
-const GFIELDS='nextPageToken,files(id,name,mimeType,modifiedTime,size,starred,parents,shortcutDetails)';
+const GFIELDS='nextPageToken,files(id,name,mimeType,modifiedTime,createdTime,size,starred,parents,shortcutDetails)';
 async function gdQuery(q,orderBy,max){let out=[],pt='';do{const u='https://www.googleapis.com/drive/v3/files?'+new URLSearchParams({q,fields:GFIELDS,pageSize:'1000',orderBy:orderBy||'folder,modifiedTime desc',supportsAllDrives:'true',includeItemsFromAllDrives:'true',...(pt?{pageToken:pt}:{})});
   const j=await(await gdFetch(u)).json();out=out.concat(j.files||[]);pt=j.nextPageToken}while(pt&&out.length<(max||3000));
   return out.filter(f=>!/^application\/vnd\.google-apps\.(?!folder|shortcut)/.test(f.mimeType)).map(f=>{const sc=f.mimeType===GDS&&f.shortcutDetails;const m=sc?sc.targetMimeType:f.mimeType;
-    if(sc&&/^application\/vnd\.google-apps\.(?!folder)/.test(m))return null;return{src:'gd',id:sc?sc.targetId:f.id,name:f.name,dir:m===GDF,size:f.size!=null?+f.size:-1,mod:Date.parse(f.modifiedTime)||0,starred:!!f.starred,parent:(f.parents||[])[0]||'root'}}).filter(Boolean)}
+    if(sc&&/^application\/vnd\.google-apps\.(?!folder)/.test(m))return null;return{src:'gd',id:sc?sc.targetId:f.id,name:f.name,dir:m===GDF,size:f.size!=null?+f.size:-1,mod:Date.parse(f.modifiedTime)||0,created:Date.parse(f.createdTime)||0,starred:!!f.starred,parent:(f.parents||[])[0]||'root'}}).filter(Boolean)}
 async function gdDownload(it){const r=await gdFetch('https://www.googleapis.com/drive/v3/files/'+it.id+'?alt=media&supportsAllDrives=true');const tot=+r.headers.get('content-length')||it.size||0,rd=r.body.getReader(),parts=[];let got=0;
   for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;busy('Mengunduh '+it.name+'… '+(got/1048576).toFixed(1)+' MB',tot?Math.min(99,got/tot*100):null)}
   return new File(parts,it.name,{type:mimeOf(it.name)})}
@@ -2223,7 +2228,7 @@ async function openItem(it){
   if(!PROJ.test(it.name)&&!LIBF.test(it.name)){toast('Jenis file ini tidak bisa dibuka di sini');return}
   let f,h=null;try{busy('Membuka '+it.name+'…',1);if(it.src==='gd'){f=await gdDownload(it)}else{h=it.src==='fs'?fsOpenH(it.id):devOpenH(it.tree,it.id,it.name);f=await h.getFile()}}
   catch(e){busy(null);toast('Gagal membuka: '+e.message);return}finally{busy(null)}
-  addHist(it);fbClose();
+  addHist(it);fbClose();window.FBMETA={name:it.name,created:it.created||0,mod:it.mod||0,size:it.size||f.size};
   if(LIBF.test(it.name)){const inp=$('#libfile');if(inp&&inp.onchange){inp.onchange({target:{files:[f],value:''}});toast('Ditambahkan ke library: '+it.name)}return}
   const k=/\.(zprj|zip)$/i.test(it.name)?'zprj':'json',own=/\.(zprj|json)$/i.test(it.name);
   FS[k].h=null;FS[k].drive=null;FS[k].dev=null;
@@ -2275,10 +2280,68 @@ async function folderTarget(kind,r,f){let name;
   return _gt(kind,forceAs)}}
 {const _wt=writeTarget;writeTarget=async function(kind,tg,blob){if(!tg||!tg.drive)return _wt.apply(this,arguments);
   try{const r=await gdUpload(tg.drive,blob);busy(null);FS[kind].drive={id:r.id||tg.drive.id,name:r.name||tg.drive.name,parent:tg.drive.parent};FS[kind].h=null;FS[kind].dev=null;
-    addHist({src:'gd',id:FS[kind].drive.id,name:FS[kind].drive.name,parent:tg.drive.parent,size:blob.size});toast('Tersimpan di Google Drive: '+FS[kind].drive.name);return true}
+    addHist({src:'gd',id:FS[kind].drive.id,name:FS[kind].drive.name,parent:tg.drive.parent,size:blob.size});toast('Tersimpan di Google Drive: '+FS[kind].drive.name);window.FBMETA={name:FS[kind].drive.name,created:(window.FBMETA&&window.FBMETA.name===FS[kind].drive.name&&window.FBMETA.created)||Date.now(),mod:Date.now(),size:blob.size};return true}
   catch(e){busy(null);console.error(e);return'Gagal menyimpan ke Drive: '+e.message}}}
 {const _fl=fnLabels;fnLabels=function(){_fl.apply(this,arguments);try{const sk=ZP?'zprj':'json',f=FS[sk];if(f.drive)$('#bsave').title='Simpan ke Google Drive ('+f.drive.name+')'}catch(e){}}}
 })()}
+
+/* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
+let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
+{const _oz=openZprj;openZprj=async function(f){if(f&&!f.__tpl)ZFILE={name:f.name,size:f.size,mod:f.lastModified||0,opened:Date.now()};else if(f&&f.__tpl)ZFILE={name:f.name,size:f.size,tpl:1,opened:Date.now()};return _oz.apply(this,arguments)}}
+{const _ok=svOk;svOk=function(name,size,dl){LASTSAVE={name,size,t:Date.now(),dl:!!dl};return _ok.apply(this,arguments)}}
+/* profil lebar pola: lebar (mm) pada ketinggian y, dalam arah tampilan editor (atas = atas) */
+function patProf(pt){const W=pt.tb[2]-pt.tb[0],H=pt.tb[3]-pt.tb[1],G=patG0(pt,W,H),t=pt.tex,n=t.length/2,X=new Float32Array(n),Y=new Float32Array(n);
+  for(let i=0;i<n;i++){const x=t[2*i],y=t[2*i+1];X[i]=G[0]*x+G[2]*y+G[4];Y[i]=G[1]*x+G[3]*y+G[5]}
+  const tri=pt.tri,E=[];for(let k=0;k<tri.length;k+=3){E.push(tri[k],tri[k+1],tri[k+1],tri[k+2],tri[k+2],tri[k])}
+  let y0=1e9,y1=-1e9;for(let i=0;i<n;i++){if(Y[i]<y0)y0=Y[i];if(Y[i]>y1)y1=Y[i]}
+  const at=y=>{let lo=1e9,hi=-1e9;for(let k=0;k<E.length;k+=2){const a=E[k],b=E[k+1],ya=Y[a],yb=Y[b];if(ya===yb||(ya-y)*(yb-y)>0)continue;const x=X[a]+(y-ya)/(yb-ya)*(X[b]-X[a]);if(x<lo)lo=x;if(x>hi)hi=x}return hi>lo?hi-lo:0};
+  let x0=1e9,x1=-1e9;for(let i=0;i<n;i++){if(X[i]<x0)x0=X[i];if(X[i]>x1)x1=X[i]}
+  const atX=x=>{let lo=1e9,hi=-1e9;for(let k=0;k<E.length;k+=2){const a=E[k],b=E[k+1],xa=X[a],xb=X[b];if(xa===xb||(xa-x)*(xb-x)>0)continue;const y=Y[a]+(x-xa)/(xb-xa)*(Y[b]-Y[a]);if(y<lo)lo=y;if(y>hi)hi=y}return hi>lo?hi-lo:0};
+  return{W,H,y0,y1,x0,x1,at,atX}}
+/* garis dada / lengan atas: titik di mana lengkung kerung lengan berubah jadi jahitan samping */
+function underarm(pr){const S=2,top=pr.y0,L=pr.y1-pr.y0,w=[];for(let y=top+S;y<=top+L*.55;y+=S)w.push(pr.at(y));
+  const a=Math.max(1,Math.round(w.length*.05));let im=a;for(let i=a;i<w.length*.8;i++)if(w[i]<w[im])im=i;
+  for(let i=im;i<w.length-5;i++){if((w[i+5]-w[i])/(5*S)<.25&&w[i]>w[im]+4)return{y:top+S*(i+1),w:w[i]}}
+  const i=Math.min(w.length-1,Math.round(w.length*.45));return{y:top+S*(i+1),w:w[i],guess:1}}
+function maxW(pr,f0,f1){let m=0;for(let y=pr.y0+(pr.y1-pr.y0)*f0;y<=pr.y0+(pr.y1-pr.y0)*f1;y+=2)m=Math.max(m,pr.at(y));return m}
+const pCm=v=>v==null||!isFinite(v)||v<=0?'–':(v/10).toFixed(1).replace('.',',')+' cm';
+function argMax(pr,f0,f1){let m=0,y=0;for(let v=pr.y0+(pr.y1-pr.y0)*f0;v<=pr.y0+(pr.y1-pr.y0)*f1;v+=2){const w=pr.at(v);if(w>m){m=w;y=v}}return{w:m,y}}
+const atF=(pr,f)=>pr.at(pr.y0+(pr.y1-pr.y0)*f);
+function sizeRows(){if(!ZP)return null;const g=id=>P[id]&&P[id].d.zp!=null?ZP.patterns[P[id].d.zp]:null;const R=[];
+  const F=g('torsoF'),B=g('torsoB'),Sl=g('sleeveR')||g('longR')||g('sleeveL')||g('longL'),Lg=g('legR')||g('legL'),Cf=g('cuffR')||g('cuffL'),Co=g('collar');
+  try{if(F||B){R.push(['h','Badan']);const pf=F&&patProf(F),pb=B&&patProf(B),cf=pf&&argMax(pf,.2,.6),cb=pb&&argMax(pb,.2,.6);
+    if(pf)R.push(['Panjang badan depan (leher–selangkangan)',pCm(pf.H)]);if(pb)R.push(['Panjang badan belakang',pCm(pb.H)]);
+    if(cf)R.push(['Lebar dada depan',pCm(cf.w)]);if(cb)R.push(['Lebar dada belakang',pCm(cb.w)]);
+    if(cf&&cb)R.push(['Lingkar dada (depan + belakang)',pCm(cf.w+cb.w)]);
+    if(pf&&pb)R.push(['Lingkar pinggul (depan + belakang)',pCm(atF(pf,.85)+atF(pb,.85))]);
+    if(pf)R.push(['Lebar bahu depan',pCm(maxW(pf,.02,.12))])}}catch(e){console.warn('ukur badan',e)}
+  try{if(Sl){const p=patProf(Sl),u=argMax(p,.2,.75);R.push(['h','Lengan'+(P.longR&&P.longR.d.zp!=null?' (panjang)':'')]);R.push(['Panjang lengan (puncak–ujung)',pCm(p.H)],['Lingkar lengan atas',pCm(u.w)],['Lingkar ujung lengan',pCm(atF(p,.985))])}}catch(e){console.warn('ukur lengan',e)}
+  try{if(Lg){const p=patProf(Lg),t=argMax(p,.3,.85);R.push(['h','Kaki']);R.push(['Panjang kaki (sisi luar)',pCm(p.H)],['Panjang kaki dalam (selangkangan–ujung)',pCm(p.y1-t.y)+' (perkiraan)'],['Lingkar paha',pCm(t.w)]);
+    if(Cf){const c=patProf(Cf);R.push(['Lingkar ujung kaki (manset)',pCm(Math.max(c.W,c.H))],['Tinggi manset kaki',pCm(Math.min(c.W,c.H))])}else R.push(['Lingkar ujung kaki',pCm(atF(p,.93))])}}catch(e){console.warn('ukur kaki',e)}
+  try{if(Co){const c=patProf(Co);R.push(['h','Leher']);R.push(['Lingkar kerah',pCm(Math.max(c.W,c.H))],['Tinggi kerah',pCm(Math.min(c.W,c.H))])}}catch(e){console.warn('ukur kerah',e)}
+  return R}
+const pFdt=t=>t?new Date(t).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'–';
+const pFsz=b=>b>0?(b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1).replace('.',',')+' MB'):'–';
+function fileRows(){const R=[['h','File']],k=ZP?'zprj':'json',f=FS[k],M=window.FBMETA;
+  const name=f&&f.named?f.n+'.'+k:(ZFILE&&!ZFILE.tpl?ZFILE.name:'(belum disimpan)');R.push(['Nama file',name]);
+  const S=(typeof SIZES!='undefined'&&SIZES&&SIZES.find(x=>x.id===CURSIZE));R.push(['Ukuran pola',S?S.label:(CURSIZE||'tidak dikenal')]);
+  let kd='';try{kd=KNAME[ZP?tplKind():curKind()]}catch(e){}if(kd)R.push(['Model',kd[0].toUpperCase()+kd.slice(1)]);
+  const loc=f&&f.drive?'Google Drive':f&&f.dev?(f.dev.fs?'HP: '+String(f.dev.parent||'').replace(/^\/storage\/emulated\/0\/?/,'Memori/'):'HP'):f&&f.h?'File di perangkat':ZFILE&&ZFILE.tpl?'Pola dasar aplikasi':'Unduhan';R.push(['Lokasi',loc]);
+  if(M&&M.name===name){if(M.created)R.push(['Tanggal dibuat',pFdt(M.created)]);if(M.mod)R.push(['Terakhir diubah',pFdt(M.mod)]);if(M.size>0)R.push(['Ukuran file',pFsz(M.size)])}
+  else if(ZFILE&&!ZFILE.tpl){if(ZFILE.mod)R.push(['Terakhir diubah',pFdt(ZFILE.mod)]);if(ZFILE.size)R.push(['Ukuran file',pFsz(ZFILE.size)])}
+  if(ZFILE)R.push(['Dibuka',pFdt(ZFILE.opened)]);
+  if(LASTSAVE)R.push(['Terakhir disimpan',pFdt(LASTSAVE.t)+(LASTSAVE.size?' · '+pFsz(LASTSAVE.size):'')]);
+  let nl=0;Object.values(P).forEach(p=>nl+=(p.layers||[]).filter(l=>!l.bg).length);R.push(['Jumlah gambar/teks',String(nl)]);
+  if(ZP)R.push(['Jumlah pola',String(ZP.patterns.length)],['Avatar',(typeof avg!='undefined'&&avg)?'Ada':'Tidak ada']);
+  return R}
+function propOpen(){const m=$('#mprop'),b=$('#propbody');let R=fileRows();const S=sizeRows();
+  const html=rows=>rows.map(r=>r[0]==='h'?`<tr><th colspan="2">${r[1]}</th></tr>`:`<tr><td>${r[0]}</td><td>${String(r[1]).replace(/</g,'&lt;')}</td></tr>`).join('');
+  b.innerHTML=`<table class="ptab">${html(R)}${S?html(S):''}</table>`+(S?'<small class="pnote">Ukuran diukur dari bentangan pola (garis pola, sebelum dijahit). Lingkar = lebar pola yang melingkar.</small>':`<div class="pnote">Ukuran pola tampil setelah pola CLO dimuat.<button class="fbadd" id="propload">Muat pola ${CURSIZE||'7S'}</button></div>`);
+  if(!S&&$('#propload'))$('#propload').onclick=async()=>{m.hidden=true;try{await switchModel(curKind(),true)}catch(e){}if(ZP)propOpen()};
+  m.hidden=false;
+  $('#propcopy').onclick=()=>{const t=[...R,...(S||[])].map(r=>r[0]==='h'?'\n'+r[1].toUpperCase():r[0]+': '+r[1]).join('\n').trim();
+    (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Disalin')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Disalin')}catch(e){}ta.remove()})}}
+$('#propb').onclick=propOpen;$('#propx').onclick=()=>{$('#mprop').hidden=true};
 
 /* awal */
 setAll('#16161a');gBuild();
