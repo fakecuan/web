@@ -247,7 +247,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r24</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r25</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -519,6 +519,21 @@ function canBakeGraphics(pac){if(hasGfxTpl(pac))return true;const pe=pac.get('ma
 function setGraphicTex(node,pn){walk(node,m=>{if(!m.has('listTexture'))return;m.get('listTexture').all().forEach(t=>{if(t.get('enType')!==0)return;setTexFile(t,pn.file);
   if(t.has('v2Size'))t.set('v2Size',[pn.w,pn.h]);if(t.has('v2PhysicalSize'))t.set('v2PhysicalSize',[pn.w,pn.h]);if(t.has('v2Translation'))t.set('v2Translation',[0,0]);if(t.has('fSignedAngle'))t.set('fSignedAngle',0)})})}
 function reId(node,idFor,uuFor){walk(node,m=>{for(const e of m.e){if(e.k==='uiID'&&e.t===T_U32)m.set('uiID',idFor(m.get('uiID')));else if((e.k==='qsUuid'||e.k==='qsUuidUTF8')&&e.t===T_STR){const v=m.get(e.k);if(v)m.set(e.k,uuFor(v))}}})}
+let BAKEPOS={};
+function clipMesh(pm,M,Mo,hw,hh){const f=r=>new Float32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength)),u=r=>new Uint32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength));
+  const rest=f(pm.raw('baRest')),tri=u(pm.raw('baTri')),ap=(m,x,y)=>[x*m[0]+y*m[3]+m[6],x*m[1]+y*m[4]+m[7]];
+  let C=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([x,y])=>{const q=ap(Mo,x,y);return ap(M,q[0],q[1])});
+  let ar=0;for(let i=0;i<4;i++){const a=C[i],b=C[(i+1)%4];ar+=a[0]*b[1]-b[0]*a[1]}if(ar<0)C=C.reverse();
+  const bx0=Math.min(...C.map(c=>c[0])),bx1=Math.max(...C.map(c=>c[0])),by0=Math.min(...C.map(c=>c[1])),by1=Math.max(...C.map(c=>c[1]));
+  const V=[],T=[],idx=new Map(),vid=p=>{const k=Math.round(p[0]*1000)+','+Math.round(p[1]*1000);let i=idx.get(k);if(i===undefined){i=V.length/2;V.push(p[0],p[1]);idx.set(k,i)}return i};
+  const inside=(p,a,b)=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0])>=-1e-9;
+  const inter=(p,q,a,b)=>{const r=[q[0]-p[0],q[1]-p[1]],s=[b[0]-a[0],b[1]-a[1]],d=r[0]*s[1]-r[1]*s[0];if(Math.abs(d)<1e-12)return q;const t=((a[0]-p[0])*s[1]-(a[1]-p[1])*s[0])/d;return[p[0]+t*r[0],p[1]+t*r[1]]};
+  for(let k=0;k<tri.length;k+=3){let P=[0,1,2].map(j=>[rest[2*tri[k+j]],rest[2*tri[k+j]+1]]);
+    if(Math.max(...P.map(p=>p[0]))<bx0||Math.min(...P.map(p=>p[0]))>bx1||Math.max(...P.map(p=>p[1]))<by0||Math.min(...P.map(p=>p[1]))>by1)continue;
+    let ta=(P[1][0]-P[0][0])*(P[2][1]-P[0][1])-(P[1][1]-P[0][1])*(P[2][0]-P[0][0]);const flip=ta<0;if(flip)P=[P[0],P[2],P[1]];
+    for(let e=0;e<4&&P.length;e++){const a=C[e],b=C[(e+1)%4],O=[];for(let i=0;i<P.length;i++){const p=P[i],q=P[(i+1)%P.length],pi=inside(p,a,b),qi=inside(q,a,b);if(pi){O.push(p);if(!qi)O.push(inter(p,q,a,b))}else if(qi)O.push(inter(p,q,a,b))}P=O}
+    if(P.length<3)continue;const ids=P.map(vid);for(let i=1;i+1<ids.length;i++){const a=ids[0],b=ids[i],c=ids[i+1];if(a===b||b===c||a===c)continue;if(flip)T.push(a,c,b);else T.push(a,b,c)}}
+  return{rest:new Float32Array(V),tri:new Uint32Array(T)}}
 function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle'),pl=pe.get('mapPatternList').get('listPattern');
   const own=hasGfxTpl(pac),tg=own?gl.at(0):kitMap('g'),tstyle=own?gs.at(tg.get('uiGraphicStyleIndex')|0):kitMap('s'),tStyleId=tstyle.get('mapElement').get('uiID');
   const fixL=l=>{if(l&&!l.length){l.all();l.et=T_MAP}return l};fixL(gl);fixL(gs);
@@ -529,7 +544,7 @@ function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.
   // overlay
   const ov=clone(tg.get('listOverlayFabricShape2D').at(0));reId(ov,idFor,uuFor);
   setStr(ov.get('mapElement'),'qsName',pn.label);ov.set('uiPatternGID',gid);if(ov.has('uiLineGID'))ov.set('uiLineGID',0);ov.set('uiParentPatternSelfIndex',pn.pattern);
-  ov.set('fZOffsetV6',0.05);ov.set('enRepeatType',0);ov.set('v2TextureSize',[pn.w,pn.h]);if(ov.has('fAspectRatioHeightPerWidth'))ov.set('fAspectRatioHeightPerWidth',pn.h/pn.w);
+  ov.set('fZOffsetV6',pn.z!=null?pn.z:0.05);ov.set('enRepeatType',0);ov.set('v2TextureSize',[pn.w,pn.h]);if(ov.has('fAspectRatioHeightPerWidth'))ov.set('fAspectRatioHeightPerWidth',pn.h/pn.w);
   const sh=ov.get('mapShape2D'),hw=pn.w/2,hh=pn.h/2,corner=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]];
   sh.get('listPoint').all().forEach((q,k)=>{const o=q.get('v2Position');const c=corner[k]||[Math.sign(o[0]||1)*hw,Math.sign(o[1]||1)*hh];q.set('v2Position',c)});
   sh.get('mapTransformer2D').set('m3Matrix',pn.Mo);
@@ -537,15 +552,20 @@ function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.
   const gli=fsx.get('listGrainLineInfo');if(gli)gli.all().forEach(g=>{g.set('v2Translation',[-hw,-hh]);g.set('fAngle',0)});
   const vi=fsx.get('mapVisibilityInfoList'),vl=vi&&vi.get('listVisibilityInfo');if(vl)vl.all().forEach(x=>x.has('bVisible')&&x.set('bVisible',1));fsx.get('mapElement').set('bVisible',1);ov.get('mapElement').set('bVisible',1);
   if(fsx.has('mapFabric'))setGraphicTex(fsx.get('mapFabric'),pn);
-  const om=fsx.get('mapMesh2D'),pm=pl.at(pn.pattern).get('mapFabricShape2D').get('mapMesh2D');
-  ['baRest','baTri','uiVertexCount2D','uiTriangleCount','uiBaseTriangleCount','uiBaseVertexCount'].forEach(k=>{if(pm.has(k)&&om.has(k)){const e=pm.ent(k);om.set(k,e.raw.slice(),e.t)}});
-  om.set('baTex',pm.raw('baRest').slice(),om.ent('baTex').t);
+  const om=fsx.get('mapMesh2D'),pp=pl.at(pn.pattern),pm=pp.get('mapFabricShape2D').get('mapMesh2D');
+  /* jaring grafik = segitiga pola yang dipotong kotak grafik (cara CLO sendiri) */
+  const cm=clipMesh(pm,pp.get('mapShape2D').get('mapTransformer2D').get('m3Matrix'),pn.Mo,hw,hh);
+  const B=a=>new Uint8Array(a.buffer.slice(0));
+  om.set('baRest',B(cm.rest),om.ent('baRest').t);om.set('baTex',B(cm.rest),om.ent('baTex').t);om.set('baTri',B(cm.tri),om.ent('baTri').t);
+  if(om.has('uiVertexCount2D'))om.set('uiVertexCount2D',cm.rest.length/2);if(om.has('uiTriangleCount'))om.set('uiTriangleCount',cm.tri.length/3);
+  if(om.has('uiBaseVertexCount'))om.set('uiBaseVertexCount',0);if(om.has('uiBaseTriangleCount'))om.set('uiBaseTriangleCount',0);
+  const mpl=om.get('listMeshPointList');if(mpl&&mpl.length){mpl.all();mpl.items=[];mpl.dirty=true}
   // graphic
   const g=clone(tg);reId(g,idFor,uuFor);setStr(g.get('mapElement'),'qsName',pn.label);g.get('mapElement').set('bVisible',1);g.set('uiGraphicStyleIndex',si);
   const ol=new CList(T_MAP,[ov],null);ol.dirty=true;g.set('listOverlayFabricShape2D',ol);gl.push(g);const gId=g.get('mapElement').get('uiID');
   // pattern copy (bottom of the stack)
   let pt=pl.at(pn.pattern).get('listPrintTexture');if(!pt){pt=new CList(T_MAP,[],null);pl.at(pn.pattern).set('listPrintTexture',pt)}
-  pt.all();if(!pt.length)pt.et=T_MAP;pt.items.unshift(clone(ov));pt.dirty=true;
+  pt.all();if(!pt.length)pt.et=T_MAP;const ins=BAKEPOS[pn.pattern]|0;pt.items.splice(ins,0,clone(ov));BAKEPOS[pn.pattern]=ins+1;pt.dirty=true;
   // colorway
   const cws=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapNewColorway')&&pac.get('mapColorWay').get('mapNewColorway').get('listColorway');let chip=nid();
   if(cws)cws.all().forEach(cw=>{const as=cw.get('mapAssign'),l=as&&as.get('listGraphicToStyle');
@@ -581,7 +601,7 @@ function purgeSKN(pac,uids){const pe=pac.get('mapPatternEditor'),pl=pe.get('mapP
       const ca=cw.get('mapAssignStyleChip');if(ca)dropFrom(ca.get('listGraphicItemStyleToStyleChip'),x=>sids[x.get('uiStyleID')])});
     const sa=cr.get('mapStyleChipAssign');if(sa)dropFrom(sa.get('listGraphicItemStyleToStyleChipVector'),x=>sids[x.get('uiStyleID')])}}
 function referencedFiles(pac){const r={};walk(pac,m=>{['qsUniqueFileName','qsFileName'].forEach(k=>{if(m.has(k)){const v=m.get(k);if(typeof v==='string')r[v.replace(/^.*[\\/]/,'')]=1}})});return r}
-function writeZprj(st,panels,design,gfxOps){
+function writeZprj(st,panels,design,gfxOps){BAKEPOS={};
   const pac=clone(st.pac);let nextId=maxId(pac)+1;const nid=()=>nextId++;
   const pl=pac.get('mapPatternEditor').get('mapPatternList').get('listPattern');
   const fabs=pac.get('listFabric');
@@ -1109,6 +1129,25 @@ async function panelArtwork(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[t
   const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);baked.forEach(L=>drawLayer(c,L,iw,ih));
   const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const G0=patG0(pt,iw,ih),K=[W/iw,0,0,-H/ih,-W/2,H/2],M=mm(minv(G0),minv(K));
   return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H,Mo:[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1]}}
+/* mode grafik per lapisan: tiap gambar/teks jadi grafik CLO sendiri (bisa digeser/diubah di CLO PC) */
+const pngOf=cv=>new Promise(r=>cv.toBlob(b=>b.arrayBuffer().then(x=>r(new Uint8Array(x))),'image/png'));
+function cropMo(pt,W,H,ppm,x0,y0,cw,ch){const iw=W*ppm,ih=H*ppm,G0=patG0(pt,iw,ih),pcx=x0+cw/2,pcy=y0+ch/2,K=[W/iw,0,0,-H/ih,-pcx*W/iw,pcy*H/ih],M=mm(minv(G0),minv(K));return[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1]}
+async function panelPieces(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,out=[];
+  const baked=p.layers.map((L,i)=>[L,i]).filter(([L,i])=>!live[i]);
+  if(pt.fabColor==null||String(p.base).toLowerCase()!==String(pt.fabColor).toLowerCase()){const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.fillStyle=p.base;x.fillRect(0,0,16,16);
+    out.push({data:await pngOf(c),w:W,h:H,Mo:cropMo(pt,W,H,16/W,0,0,16,16*H/W>0?16*H/W:16),name:'Warna dasar'});out[0].Mo=cropMo(pt,W,H,1,0,0,W,H)}
+  for(const[L,i]of baked){if(!ready(L))continue;
+    /* cari batas isi lapisan (resolusi rendah) */
+    const s0=Math.min(1.5,600/Math.max(W,H)),a=document.createElement('canvas');a.width=Math.ceil(W*s0);a.height=Math.ceil(H*s0);const ax=a.getContext('2d',{willReadFrequently:true});drawLayer(ax,L,a.width,a.height);
+    const d=ax.getImageData(0,0,a.width,a.height).data;let x0=a.width,y0=a.height,x1=-1,y1=-1;for(let y=0;y<a.height;y++)for(let x=0;x<a.width;x++)if(d[(y*a.width+x)*4+3]>2){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    if(x1<0)continue;x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(a.width,x1+2);y1=Math.min(a.height,y1+2);
+    const mx0=x0/s0,my0=y0/s0,mw=(x1-x0)/s0,mh=(y1-y0)/s0;
+    /* gambar ulang hanya area itu dengan resolusi tinggi */
+    const ppm=Math.min(10,2048/Math.max(mw,mh)),cw=Math.max(2,Math.round(mw*ppm)),ch=Math.max(2,Math.round(mh*ppm));const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');
+    x.translate(-mx0*ppm,-my0*ppm);drawLayer(x,L,W*ppm,H*ppm);
+    const nm=L.t=='txt'?'Teks '+String(L.txt||'').slice(0,20):(L.name||('Gambar '+(i+1)));
+    out.push({data:await pngOf(c),w:cw/ppm,h:ch/ppm,Mo:cropMo(pt,W,H,ppm,mx0*ppm,my0*ppm,cw,ch),name:nm});await tick()}
+  const n=out.length;out.forEach((o,k)=>o.z=+(0.01+0.08*(n>1?k/(n-1):0)).toFixed(4));return out}
 async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,ppm=Math.min(4,2048/Math.max(W,H)),iw=Math.max(8,Math.round(W*ppm)),ih=Math.max(8,Math.round(H*ppm));
   const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);p.layers.forEach((L,i)=>{if(!live[i])drawLayer(c,L,iw,ih)});
   const o=document.createElement('canvas');o.width=iw;o.height=ih;const oc=o.getContext('2d');
@@ -1121,7 +1160,7 @@ async function zprjBlob_(){const T0=performance.now();const panels=[],ps=Object.
   const gm=CLO.canBakeGraphics(ZP.pac);
   for(let i=0;i<ps.length;i++){const p=ps[i];busy('Menyimpan: motif '+(NAME[p.d.id]||p.d.id)+' ('+(i+1)+'/'+ps.length+')…',5+80*i/ps.length);await tick();
     const nm=String(NAME[p.d.id]||p.d.id).replace(/[^A-Za-z0-9]+/g,'_');
-    if(gm){const a=await panelArtwork(p);if(a)panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:a.data,w:a.w,h:a.h,Mo:a.Mo,label:'SKN '+nm});continue}
+    if(gm){const arr=await panelPieces(p);arr.forEach((a,k)=>panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+(k+1)+'_'+tag+'.png',data:a.data,w:a.w,h:a.h,Mo:a.Mo,z:a.z,label:'SKN '+(NAME[p.d.id]||nm)+' · '+a.name}));continue}
     const t=await panelTexture(p);
     panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:t.data,w:t.w,h:t.h,label:'SKN '+nm})}
   busy('Menyimpan: menyusun file .zprj…',88);await tick();const T1=performance.now();
@@ -1781,6 +1820,8 @@ $('#slv').onchange=async e=>{const k=e.target.value,prev=curKind();if(k===prev)r
   const t=await getTpl(k);if(!t){syncSlv();return}const f=t.file instanceof File?t.file:new File([t.file],t.name);f.__tpl=1;
   await openZprj(f);if(!ZP){syncSlv();return}o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setTimeout(()=>setDirty(had),900);syncSlv();toast('Model: '+KNAME[k]+' (pola CLO)')};
 setTimeout(syncSlv,0);
+/* versi aplikasi ikut tersimpan di data desain (untuk melacak masalah) */
+{const _po=projObj;projObj=function(){const o=_po.apply(this,arguments);try{o.rv=($('#appver').textContent.match(/r\d+/)||[''])[0]}catch(e){}return o}}
 
 /* awal */
 setAll('#16161a');gBuild();
