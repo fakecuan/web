@@ -313,7 +313,7 @@ setTimeout(async()=>{const ims=[...$('pasteZone').querySelectorAll('img')];for(c
 $('exportBtn').addEventListener('click',()=>{const head=['No Order','No PO','Tanggal','Nama','No HP','Ukuran','Alamat','Status','Jumlah Pcs','Total Tagihan','Keuntungan','Catatan'];const rows=orders.map(o=>[o.order_number,o.po_number,date(o.created_at),o.customer_name,o.customer_phone,o.size_details,o.shipping_address,o.status,calcOrder(o.size_details).pcs,billed(o)?totalOf(o):'',billed(o)?Math.round(totalOf(o)*PROFIT_RATE):'',o.admin_note]);const csv=[head,...rows].map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='rekap-pesanan-dva-skate.csv';a.click();URL.revokeObjectURL(a.href)});
 // ---------- Login sidik jari (hanya APK Android, lewat plugin Capacitor) ----------
 const NATIVE=!!(window.Capacitor?.isNativePlatform?.());
-const bioPlugin=()=>window.Capacitor?.Plugins?.BiometricAuth;
+const bioPlugin=()=>window.Capacitor?.Plugins?.BiometricAuthNative||window.Capacitor?.Plugins?.BiometricAuth;
 const SSTO=()=>window.Capacitor?.Plugins?.SecureStorage;
 const BIO_KEY='dvaAdminPw';
 async function bioSupported(){ // true, atau teks penyebab bila tidak tersedia
