@@ -166,7 +166,7 @@ textarea#ptx[hidden]{display:none}
 <div id="tl"><span id="verb" title="Versi aplikasi"></span>
   <button class="chip" id="cbtn"><span class="dot" id="cdot"></span><span>Warna skinsuit</span></button>
   <div class="pop" id="cpop" hidden></div>
-  <select class="chip" id="slv" aria-label="Model lengan"><option value="0">Lengan pendek</option><option value="1">Lengan panjang</option></select>
+  <select class="chip" id="szsel" aria-label="Ukuran pola" title="Ukuran pola"></select><select class="chip" id="slv" aria-label="Model lengan"><option value="0">Lengan pendek</option><option value="1">Lengan panjang</option></select>
 </div>
 
 <div id="tr">
@@ -247,7 +247,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r29</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r30</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -1852,12 +1852,13 @@ $('#slv').innerHTML=Object.keys(KNAME).map(k=>`<option value="${k}">${KNAME[k][0
 {const _as=applySleeve;applySleeve=function(){_as.apply(this,arguments);try{syncSlv()}catch(e){}}}
 {const _oz=openZprj;openZprj=async function(f){const r=await _oz.apply(this,arguments);syncSlv();return r}}
 function remapSleeves(o,toLong){const a=toLong?'sleeve':'long',b=toLong?'long':'sleeve';['L','R'].forEach(s=>{const src=o.parts[a+s];if(src&&(!o.parts[b+s]||!(o.parts[b+s].layers||[]).length))o.parts[b+s]=src});return o}
-$('#slv').onchange=async e=>{const k=e.target.value,prev=curKind();if(k===prev)return;
-  if(!ZP&&(k=='s'||k=='l')){ls=k=='l'?1:0;['L','R'].forEach(s=>{const a=P[(ls?'sleeve':'long')+s],b=P[(ls?'long':'sleeve')+s];b.base=a.base;if(a.layers.length){b.layers=a.layers.map(cloneL);b.ai=b.layers.length-1}render(b.d.id)});
+async function switchModel(k,force){const prev=curKind();if(k===prev&&!force)return;
+  if(!ZP&&(k=='s'||k=='l')&&(typeof curSizeBic!='function'||curSizeBic())){ls=k=='l'?1:0;['L','R'].forEach(s=>{const a=P[(ls?'sleeve':'long')+s],b=P[(ls?'long':'sleeve')+s];b.base=a.base;if(a.layers.length){b.layers=a.layers.map(cloneL);b.ai=b.layers.length-1}render(b.d.id)});
     if(sel&&!vis(P[sel].d))select(null);applySleeve();toast(ls?'Model lengan panjang':'Model lengan pendek');return}
   const o=remapSleeves(projObj(),k=='l'||k=='rl'),had=Object.values(o.parts).some(p=>(p.layers||[]).length),nm=ZP?FS.zprj.n:(FS.json.named?FS.json.n:'desain-skinsuit-baru');
   const t=await getTpl(k);if(!t){syncSlv();return}const f=t.file instanceof File?t.file:new File([t.file],t.name);f.__tpl=1;
-  await openZprj(f);if(!ZP){syncSlv();return}o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setTimeout(()=>setDirty(had),900);syncSlv();toast('Model: '+KNAME[k]+' (pola CLO)')};
+  await openZprj(f);if(!ZP){syncSlv();return}o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setTimeout(()=>setDirty(had),900);syncSlv();toast('Model: '+(typeof CURSIZE!='undefined'?CURSIZE+' · ':'')+KNAME[k])}
+$('#slv').onchange=e=>switchModel(e.target.value);
 setTimeout(syncSlv,0);
 /* versi aplikasi ikut tersimpan di data desain (untuk melacak masalah) */
 {const _po=projObj;projObj=function(){const o=_po.apply(this,arguments);try{o.rv=($('#appver').textContent.match(/r\d+/)||[''])[0]}catch(e){}return o}}
@@ -2006,6 +2007,40 @@ $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;tr
     const[a,b]=[...pts.values()];st={d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,z:vz}}});
   W.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(st&&pts.size>=2){const[a,b]=[...pts.values()];vz=cl(st.z*Math.hypot(a[0]-b[0],a[1]-b[1])/st.d,1,8);if(vz<1.03)vz=1;view=null;drawPv()}});
   const end=e=>{pts.delete(e.pointerId);if(pts.size<2)st=null};W.addEventListener('pointerup',end);W.addEventListener('pointercancel',end)}
+
+/* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
+let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
+const SZURLS=['pola/ukuran/','https://fakecuan.github.io/web/sseditor/pola/ukuran/'];
+function curSizeBic(){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);return!S||!!S.bic}
+async function szFetch(path,opt){let err;for(const b of(SZBASE?[SZBASE]:SZURLS)){try{const r=await fetch(b+path,opt);if(r.ok){SZBASE=b;return r}err=new Error(r.status)}catch(e){err=e}}throw err}
+async function loadSizes(){try{SIZES=await(await szFetch('sizes.json',{cache:'no-store'})).json()}catch(e){SIZES=[{id:'7S',label:'7S',bic:true}]}szUI()}
+function szUI(){const s=$('#szsel');if(!s||!SIZES)return;const g=(t,a)=>a.length?`<optgroup label="${t}">${a.map(x=>`<option value="${x.id}">${x.label}</option>`).join('')}</optgroup>`:'';
+  const kid=SIZES.filter(x=>/^\d+S$/.test(x.id)),ad=SIZES.filter(x=>/^(XS|S|M|L|XL|XXL)$/.test(x.id)),oth=SIZES.filter(x=>!kid.includes(x)&&!ad.includes(x));
+  s.innerHTML=(CURSIZE==''?'<option value="">File ini</option>':'')+g('Anak',kid)+g('Dewasa',ad)+g('Lainnya',oth);s.value=CURSIZE;slvAvail()}
+function slvAvail(){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE),bic=!S||S.bic;document.querySelectorAll('#slv option').forEach(o=>{const k=o.value;o.disabled=!bic&&(k=='rs'||k=='rl'||((k=='l')&&!(S&&S.l)))})}
+async function packGet(name,onp){let c=null;try{c=await caches.open('diva-pola-v1');const m=await c.match(name);if(m)return new Uint8Array(await m.arrayBuffer())}catch(e){c=null}
+  const r=await szFetch(name);const tot=+r.headers.get('content-length')||0,rd=r.body.getReader(),parts=[];let got=0;for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;onp&&onp(got,tot)}
+  const u=new Uint8Array(got);let o=0;for(const p of parts){u.set(p,o);o+=p.length}try{if(c)await c.put(name,new Response(u))}catch(e){}return u}
+async function buildSizeTpl(file){const idx=await(await szFetch('index.json',{cache:'no-store'})).json(),e=idx.files[file];if(!e)throw new Error('Pola '+file+' tidak ada');
+  const need=[...new Set(e.parts.map(p=>p[0]))],data={};let done=0;
+  for(const pi of need){const nm=idx.packs[pi];data[pi]=await packGet(nm,(g,t)=>busy('Mengunduh pola '+file.replace('.zprj','')+'… '+Math.round((done+g)/1048576)+' MB',null));done+=data[pi].length}
+  const out=new Uint8Array(e.size);let o=0;for(const[pi,off,len]of e.parts){out.set(data[pi].subarray(off,off+len),o);o+=len}
+  try{const h=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1',out))).map(b=>b.toString(16).padStart(2,'0')).join('');if(h!==e.sha1)throw new Error('File pola rusak, coba lagi')}catch(err){if(/rusak/.test(err.message))throw err}
+  return new File([out],file)}
+{const _gt=getTpl;getTpl=async function(k){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);if(!S||S.bic)return _gt(k);
+  const file=(k=='l'||k=='rl')?S.l:(k=='s'?S.s:null);if(!file){toast('Ukuran '+S.label+' belum punya pola '+KNAME[k]);return null}
+  const key=CURSIZE+'|'+k;if(SZC[key])return SZC[key];try{busy('Menyiapkan pola '+S.label+'…',1);const f=await buildSizeTpl(file);busy(null);SZC[key]={file:f,name:file};return SZC[key]}catch(e){busy(null);toast('Pola '+S.label+' gagal diunduh: '+e.message);return null}}}
+/* ganti ukuran: pola & model ikut, desain menyesuaikan proporsi */
+$('#szsel').onchange=async e=>{const v=e.target.value,old=CURSIZE;if(!v)return;CURSIZE=v;try{localStorage.setItem('szCur',v)}catch(_){}
+  const S=SIZES.find(x=>x.id===v);let k=curKind();if(S&&!S.bic){if(k=='rs')k='s';if(k=='rl')k='l';if(k=='l'&&!S.l){k='s';toast('Ukuran '+S.label+' belum ada lengan panjang, pakai lengan pendek')}}
+  slvAvail();if(S&&S.bic&&!ZP){syncSlv();return}
+  const before=ZP;await switchModel(k,true);if(ZP===before&&old!==v){CURSIZE=old;try{localStorage.setItem('szCur',old)}catch(_){}szUI()}};
+/* file CLO yang dibuka: kenali ukurannya dari tinggi pola badan depan */
+function detectSize(){if(!ZP||!SIZES)return;const p=P.torsoF,pt=p&&p.d.zp!=null&&ZP.patterns[p.d.zp];if(!pt)return;const h=Math.max(pt.tb[2]-pt.tb[0],pt.tb[3]-pt.tb[1]);
+  let best=null,bd=1e9;SIZES.forEach(s=>{if(!s.fh)return;const d=Math.abs(s.fh-h);if(d<bd){bd=d;best=s}});CURSIZE=best&&bd<=Math.max(4,h*.012)?best.id:'';szUI()}
+{const _oz=openZprj;openZprj=async function(f){const r=await _oz.apply(this,arguments);try{detectSize()}catch(e){}return r}}
+{const _rb=restoreBuiltin;restoreBuiltin=function(){const r=_rb.apply(this,arguments);CURSIZE='7S';szUI();return r}}
+loadSizes();
 
 /* awal */
 setAll('#16161a');gBuild();
