@@ -464,6 +464,7 @@ body.ds-pen-holder-open #penHolderEditor{
 @media(max-width:340px){.ds-home .ds-home-products{grid-template-columns:1fr}}
 </style>
 <style id="ds-home-ico-img">.ds-pc-ico img{display:block;height:56px;width:auto;max-width:100%;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}</style><style id="ds-bag-charm-css">.ds-home .pc-lemon{--tint:#fff6c7;--edge:#ffe07a}.ds-home .pc-lemon{grid-template-columns:150px 1fr}.ds-home .pc-lemon .ds-pc-ico{width:150px}.ds-home .ds-product-card:nth-child(6){animation-delay:.4s}.bc-in{text-transform:uppercase;letter-spacing:.06em;font-weight:700}.bc-info{margin:0;font-size:12px}</style>
+<style id="ds-ver-chips">#nameV1,#nameV2,#nameV3,#nameV4,#nameV5{white-space:nowrap;padding-left:10px;padding-right:10px}[aria-label="Versi Clicker Nama"]{flex-wrap:wrap}</style>
 </head>
 <body>
 <main>
@@ -524,6 +525,11 @@ body.ds-pen-holder-open #penHolderEditor{
     <button class="chip" id="nameV2" aria-pressed="false">Versi 2</button>
     <button class="chip" id="nameV3" aria-pressed="false">Versi 3</button>
     <button class="chip" id="nameV4" aria-pressed="false">Versi 4</button>
+    <button class="chip" id="nameV5" aria-pressed="false">Versi 5</button>
+   </div>
+   <div class="chips" id="nameGridRow" role="group" aria-label="Susunan key" style="display:none;margin-top:8px">
+    <button class="chip" id="nameG22" aria-pressed="true">2×2 (4 huruf)</button>
+    <button class="chip" id="nameG32" aria-pressed="false">3×2 (6 huruf)</button>
    </div>
    <p class="help" id="nameVersionHelp">Pilih versi model terlebih dahulu. Daftar nama dapat berisi beberapa pesanan.</p>
   </section>
@@ -924,7 +930,7 @@ function refresh(){
   $("mSame").setAttribute("aria-pressed",S2.mode==="same");$("mAlt").setAttribute("aria-pressed",S2.mode==="alt");
   $("modeHelp").textContent=S2.mode==="same"?"Semua keycap satu warna, semua huruf satu warna.":"Key ke-1, 3, 5… memakai warna keycap dan huruf di bawah. Key ke-2, 4, 6… dibalik: keycap jadi warna huruf, huruf jadi warna keycap.";
   const alt=S2.mode==="alt";
-  lines=["Nama: "+(S2.name||"(belum diisi)"),"Versi: "+(S2.version===4?"4 (vertikal + ring)":S2.version===3?"3 (3MF asli)":S2.version===2?"2 (3MF asli)":"1"),"Base: "+nameOf(S2.base),alt?"Selang-seling. Key ganjil: keycap "+nameOf(S2.kc)+", huruf "+nameOf(S2.ft)+". Key genap dibalik.":"Keycap: "+nameOf(S2.kc)+", huruf: "+nameOf(S2.ft)];
+  lines=["Nama: "+(S2.name||"(belum diisi)"),"Versi: "+(S2.version===5?"5 (base "+S2.grid+")":S2.version===4?"4 (vertikal + ring)":S2.version===3?"3 (3MF asli)":S2.version===2?"2 (3MF asli)":"1"),"Base: "+nameOf(S2.base),alt?"Selang-seling. Key ganjil: keycap "+nameOf(S2.kc)+", huruf "+nameOf(S2.ft)+". Key genap dibalik.":"Keycap: "+nameOf(S2.kc)+", huruf: "+nameOf(S2.ft)];
   $("wa").href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent("Halo, saya mau pesan Clicker Nama:\n"+lines.join("\n"))}
  else{
   pk3B();pk3K();pk3T();
@@ -1248,7 +1254,8 @@ const V3_GLYPHS=Object.fromEntries(Object.entries(NAME_V3_DATA.glyphs).map(([c,m
 }));
 const V3_REST=8.5;   // posisi chunky keycap baru pada base Compact Fidget
 const V3_ROW=56;     // jarak antar pesanan di plate (base 26 mm + baris keycap 21,2 mm + celah)
-const verMax=(v=S2.version)=>(v===3||v===4)?7:v===2?8:10;
+function gridCols(){return S2.grid==="3x2"?3:2}
+const verMax=(v=S2.version)=>v===5?gridCols()*2:(v===3||v===4)?7:v===2?8:10;
 const verChar=(c,v=S2.version)=>v>=2?/[A-Z]/.test(c):!!N.glyphs[c];
 const V3_CACHE={},V3_LAYOUT={};
 function v3Layout(n){
@@ -1279,24 +1286,43 @@ function v4Parts(n){
  const ring=weld(g);g.dispose();
  return V4_CACHE[n]={base:{p,i:m.i},ring,top,bot,ringTop:cy+RO/2,ys:L.slots.map(x=>-x),width:L.width};
 }
+const V5_CACHE={};
+function v5Parts(cols){
+ if(V5_CACHE[cols])return V5_CACHE[cols];
+ const L=v3Layout(cols),m=L.mesh,pitch=20.5,nv=m.p.length/3,ys=[pitch/2,-pitch/2];
+ const p=new Float32Array(m.p.length*2),idx=new Uint32Array(m.i.length*2);
+ let xmin=1e9,xmax=-1e9,ymax=-1e9,ymin=1e9;
+ for(let r=0;r<2;r++){const o=r*m.p.length;
+  for(let j=0;j<m.p.length;j+=3){const x=m.p[j],y=m.p[j+1]+ys[r];p[o+j]=x;p[o+j+1]=y;p[o+j+2]=m.p[j+2];xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);ymax=Math.max(ymax,y);ymin=Math.min(ymin,y)}
+  for(let k=0;k<m.i.length;k++)idx[r*m.i.length+k]=m.i[k]+r*nv}
+ /* ring gantungan di sudut kiri atas, tipis 3 mm di lapisan dasar */
+ const RO=8.5,RI=4.6,RT=3,R=4,d=R+RO/2-1.9,k=Math.SQRT1_2;
+ const cx=xmin+R-d*k,cy=ymax-R+d*k,po=[],pi=[];
+ for(let q=0;q<48;q++){const a=q/48*Math.PI*2;po.push(new THREE.Vector2(cx+Math.cos(a)*RO/2,cy+Math.sin(a)*RO/2));pi.push(new THREE.Vector2(cx+Math.cos(a)*RI/2,cy+Math.sin(a)*RI/2))}
+ const S=new THREE.Shape(po);S.holes.push(new THREE.Path(pi.reverse()));
+ const g=new THREE.ExtrudeGeometry(S,{depth:RT,bevelEnabled:false,curveSegments:1});g.translate(0,0,-8);
+ const ring=weld(g);g.dispose();
+ return V5_CACHE[cols]={base:{p,i:idx},ring,bot:ymin,top:ymax,ringTop:Math.max(ymax,cy+RO/2),left:Math.min(xmin,cx-RO/2),right:xmax,width:xmax-Math.min(xmin,cx-RO/2),slots:L.slots,ys,cols};
+}
 function v3Rebuild(){
  root2.clear();held=-1;
  const ch=[...S2.name];n2=ch.length;
- if(n2<1||n2>7||ch.some(c=>!/[A-Z]/.test(c)))return;
- const L=v3Layout(n2);
+ if(n2<1||n2>verMax()||ch.some(c=>!/[A-Z]/.test(c)))return;
+ const v5=S2.version===5,V5=v5?v5Parts(gridCols()):null;
+ const L=v3Layout(v5?gridCols():n2);
  const v4=S2.version===4,V4=v4?v4Parts(n2):null;
- const base=shade(new THREE.Mesh(v3Geo(v4?"b4_"+n2:"b"+n2,()=>v4?V4.base:L.mesh),mat(S2.base)));
+ const base=shade(new THREE.Mesh(v3Geo(v5?"b5_"+V5.cols:v4?"b4_"+n2:"b"+n2,()=>v5?V5.base:v4?V4.base:L.mesh),mat(S2.base)));
  root2.add(base);P2.mats=[base.material];P2.keys=[];
- if(v4){const rg=shade(new THREE.Mesh(v3Geo("r4_"+n2,()=>V4.ring),base.material));root2.add(rg)}
+ if(v4||v5){const rg=shade(new THREE.Mesh(v3Geo(v5?"r5_"+V5.cols:"r4_"+n2,()=>v5?V5.ring:V4.ring),base.material));root2.add(rg)}
  ch.forEach((c,i)=>{
   const [kc,fc]=keyCol(i),kg=new THREE.Group();
-  kg.userData.i=i;kg.position.set(v4?0:L.slots[i],v4?V4.ys[i]:0,V3_REST);
+  kg.userData.i=i;kg.position.set(v5?V5.slots[i%V5.cols]:v4?0:L.slots[i],v5?V5.ys[Math.floor(i/V5.cols)]:v4?V4.ys[i]:0,V3_REST);
   const cap=shade(new THREE.Mesh(v3Geo("k",()=>V3_KEY),mat(kc)));
   const gl=shade(new THREE.Mesh(v3Geo("g"+c,()=>V3_GLYPHS[c]),mat(fc)));
   kg.add(cap,gl);kg.userData.g=gl;root2.add(kg);P2.keys.push(kg);P2.mats.push(cap.material,gl.material);
  });
  P2.st=P2.keys.map(()=>({p:0,v:0,t:0}));P2.body=base;
- if(active===P2){half=L.width/2+12;shadowBox(half);fit()}
+ if(active===P2){half=v5?Math.max(V5.width,V5.ringTop-V5.bot)/2+12:L.width/2+12;shadowBox(half);fit()}
 }
 </script>
 
@@ -1363,7 +1389,7 @@ function validateMultiOrder(o,index){
  if(!name.length)throw new Error(`Nama pesanan ${index+1} belum diisi.`);
  if(name.length>max)throw new Error(`Nama ${o.name} melebihi batas ${max} huruf.`);
  if(S2.version===2 && (name.length<2||name.some(c=>!/[A-Z]/.test(c))))throw new Error(`Versi 2: ${o.name} harus 2–8 huruf A–Z.`);
- if((S2.version===3||S2.version===4) && name.some(c=>!/[A-Z]/.test(c)))throw new Error(`Versi ${S2.version}: ${o.name} harus 1–7 huruf A–Z.`);
+ if(S2.version>=3 && name.some(c=>!/[A-Z]/.test(c)))throw new Error(`Versi ${S2.version}: ${o.name} harus 1–${max} huruf A–Z.`);
  if(S2.version===1 && name.some(c=>!N.glyphs[c]))throw new Error(`Nama ${o.name} memiliki karakter yang belum tersedia.`);
  return name.join("");
 }
@@ -1376,8 +1402,9 @@ function previewMultiOrders(){
  // Each order is copied as contents only. Cloning root2 itself would duplicate
  // its -90 degree rotation and turn the glyphs upside down.
  const maxChars=Math.max(...multiOrders.map(o=>(o.name||"NAMA").length),2);
- const cellX=S2.version===4?46:S2.version===3?Math.max(190,maxChars*24+48):Math.max(118,maxChars*12+42);
- const cellY=S2.version===4?maxChars*20.5+44:S2.version===3?150:78;
+ const g5=S2.version===5?v5Parts(gridCols()):null;
+ const cellX=g5?g5.width+18:S2.version===4?46:S2.version===3?Math.max(190,maxChars*24+48):Math.max(118,maxChars*12+42);
+ const cellY=g5?(g5.ringTop-g5.bot)+16:S2.version===4?maxChars*20.5+44:S2.version===3?150:78;
  multiOrders.forEach((o,index)=>{
   const name=validateMultiOrder({...o,name:o.name||"NAMA"},index);
   Object.assign(S2,{name,base:o.base,kc:o.cap,ft:o.letter,mode:o.model==="2"?"alt":"same"});
@@ -1391,8 +1418,8 @@ function previewMultiOrders(){
  root2.clear();rows.forEach(row=>root2.add(row));
  P2.keys=[];P2.st=[];P2.body=null;P2.mats=[];
  const ks=[];root2.traverse(o=>{if(o.userData&&typeof o.userData.i==="number")ks.push(o)});regLive(P2,ks);
- const spanX=(cols-1)*cellX/2+(S2.version===4?24:S2.version===3?(maxChars*23.5+32)/2: (maxChars*11.1+18)/2);
- const spanY=(gridRows-1)*cellY/2+(S2.version===4?(maxChars*20.5+20)/2+8:S2.version===3?62:42);
+ const spanX=(cols-1)*cellX/2+(g5?g5.width/2+10:S2.version===4?24:S2.version===3?(maxChars*23.5+32)/2: (maxChars*11.1+18)/2);
+ const spanY=(gridRows-1)*cellY/2+(g5?(g5.ringTop-g5.bot)/2+10:S2.version===4?(maxChars*20.5+20)/2+8:S2.version===3?62:42);
  half=Math.max(32,spanX,spanY);
  shadowBox(half+8);
  controls.target.set(0,0,0);
@@ -1440,24 +1467,31 @@ $("addNameRow").onclick=()=>{
 };
 function applyVersionMulti(v){
  S2.version=v;
- [1,2,3,4].forEach(k=>$("nameV"+k).setAttribute("aria-pressed",k===v?"true":"false"));
+ [1,2,3,4,5].forEach(k=>$("nameV"+k).setAttribute("aria-pressed",k===v?"true":"false"));
  $("nameVersionHelp").textContent=v===1?
   "Versi 1 — model Clicker Nama lama. Maksimal 10 karakter per nama.":v===2?
   "Versi 2 — base dan keycap asli 3MF. Maksimal 2–8 huruf A–Z per nama.":v===3?
-  "Versi 3 — base dan keycap dari 3MF Kliker Nama V3. 1–7 huruf A–Z per nama, muat sekitar 4 nama per plate.":
-  "Versi 4 — susunan vertikal (huruf dari atas ke bawah) dengan ring gantungan di ujung atas. 1–7 huruf A–Z per nama.";
+  "Versi 3 — base dan keycap dari 3MF Kliker Nama V3. 1–7 huruf A–Z per nama, muat sekitar 4 nama per plate.":v===4?
+  "Versi 4 — susunan vertikal (huruf dari atas ke bawah) dengan ring gantungan di ujung atas. 1–7 huruf A–Z per nama.":
+  "Versi 5 — base kotak "+(S2.grid==="3x2"?"3×2":"2×2")+" dengan ring di sudut, cap hanya huruf. 1–"+verMax(5)+" huruf A–Z per nama (huruf mengisi key dari kiri atas).";
+ $("nameGridRow").style.display=v===5?"":"none";
+ $("nameG22").setAttribute("aria-pressed",S2.grid!=="3x2"?"true":"false");
+ $("nameG32").setAttribute("aria-pressed",S2.grid==="3x2"?"true":"false");
  multiOrders.forEach(o=>{
   o.name=[...String(o.name||"").toUpperCase()].filter(c=>verChar(c,v)).slice(0,verMax(v)).join("");
   if(v===2&&o.name.length===1)o.name+="A";
   if(v>=2&&!o.name)o.name="ANDA";
  });
- {const d=v===4?new THREE.Vector3(0,.95,.4).normalize():dir.clone();cam.position.copy(controls.target).add(d.multiplyScalar(300))}
+ {const d=(v===4||v===5)?new THREE.Vector3(0,.95,.4).normalize():dir.clone();cam.position.copy(controls.target).add(d.multiplyScalar(300))}
  renderMultiOrders();previewMultiOrders();refresh();
 }
 $("nameV1").onclick=()=>applyVersionMulti(1);
 $("nameV2").onclick=()=>applyVersionMulti(2);
 $("nameV3").onclick=()=>applyVersionMulti(3);
 $("nameV4").onclick=()=>applyVersionMulti(4);
+$("nameV5").onclick=()=>applyVersionMulti(5);
+$("nameG22").onclick=()=>{S2.grid="2x2";applyVersionMulti(5)};
+$("nameG32").onclick=()=>{S2.grid="3x2";applyVersionMulti(5)};
 function addMaterial(list,name,hex){list.push(`<base name="${name}" displaycolor="${hex.toUpperCase()}"/>`);return list.length-1}
 function meshObject(id,name,pi,m){
  return `<object id="${id}" type="model" name="${name}" pid="1" pindex="${pi}"><mesh><vertices>${vx(m)}</vertices><triangles>${tr(m)}</triangles></mesh></object>`;
@@ -1526,7 +1560,7 @@ $("dl").onclick=async()=>{
   multiOrders.forEach((o,i)=>validateMultiOrder(o,i));
   msg.textContent="Menyiapkan satu file 3MF untuk seluruh daftar nama…";
   const data=await buildMultiNames3MF();
-  const filename=(S2.version===4?"clicker-nama-v4-pesanan-":S2.version===3?"clicker-nama-v3-pesanan-":"clicker-nama-pesanan-")+multiOrders.length+"-nama.3mf";
+  const filename=(S2.version===5?"clicker-nama-v5-pesanan-":S2.version===4?"clicker-nama-v4-pesanan-":S2.version===3?"clicker-nama-v3-pesanan-":"clicker-nama-pesanan-")+multiOrders.length+"-nama.3mf";
   const url=URL.createObjectURL(new Blob([data],{type:"application/vnd.ms-package.3dmanufacturing-3dmodel+zip"}));
   const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),2500);msg.textContent="Unduhan 3MF dimulai.";
@@ -2110,8 +2144,9 @@ const nmCache=new Map(),nmMesh=(k,f)=>{let m=nmCache.get(k);if(!m){m=f();nmCache
 const liftZ=g=>{g.z=-Math.min(...g.parts.map(p=>meshMinZ(p.mesh)));return g};
 buildMultiNames3MF=async function(){
  const groups=[],cnt=multiOrders.length;
- if(S2.version===4){
-  const cells=multiOrders.map((o,ri)=>{const name=validateMultiOrder(o,ri),n=name.length,P=v4Parts(n);return{o,name,n,P,w:Math.max(30,n*20+6),h:22+(P.ringTop-P.bot)+4}});
+ if(S2.version===4||S2.version===5){
+  const v5x=S2.version===5;
+  const cells=multiOrders.map((o,ri)=>{const name=validateMultiOrder(o,ri),n=name.length,P=v5x?v5Parts(gridCols()):v4Parts(n);return{o,name,n,P,w:v5x?Math.max(P.width+12,n*20+6):Math.max(30,n*20+6),h:22+(P.ringTop-P.bot)+4}});
   let cx=8,cy=8,rowH=0;const boxes=[];
   cells.forEach(c=>{
    if(cx>8&&cx+c.w>248){cx=8;cy+=rowH+8;rowH=0}
@@ -2124,7 +2159,7 @@ buildMultiNames3MF=async function(){
    boxes.push([cx,cy,cx+c.w,cy+c.h]);rowH=Math.max(rowH,c.h);cx+=c.w+8;
   });
   {const ox=128-(Math.min(...boxes.map(b=>b[0]))+Math.max(...boxes.map(b=>b[2])))/2,oy=128-(Math.min(...boxes.map(b=>b[1]))+Math.max(...boxes.map(b=>b[3])))/2;groups.forEach(g=>{g.x+=ox;g.y+=oy})}
-  return bambuPack(groups,"Clicker Nama V4");
+  return bambuPack(groups,"Clicker Nama V"+S2.version);
  }
  multiOrders.forEach((o,ri)=>{
   const name=validateMultiOrder(o,ri),n=name.length,alt=o.model==="2",y0=128+(ri-(cnt-1)/2)*60,ky=y0-27;
@@ -2221,7 +2256,7 @@ refresh();
    multiOrders.forEach((o,i)=>{
     const nm=validateMultiOrder(o,i),n=[...nm].length,price=namePrice(n);
     const model=(o.model==="2"?"Model 2 — Cap dan huruf selang-seling":"Model 1 — Cap dan huruf seragam");
-    lines.push(`${i+1}. ${nm}\n   Versi: ${S2.version}\n   Model: ${model}\n   Base: ${colorLabel(o.base)}\n   Cap: ${colorLabel(o.cap)}\n   Huruf: ${colorLabel(o.letter)}\n   ${n} huruf — ${money(price)}`);
+    lines.push(`${i+1}. ${nm}\n   Versi: ${S2.version}${S2.version===5?" ("+S2.grid+")":""}\n   Model: ${model}\n   Base: ${colorLabel(o.base)}\n   Cap: ${colorLabel(o.cap)}\n   Huruf: ${colorLabel(o.letter)}\n   ${n} huruf — ${money(price)}`);
     total+=price;
    });
   }else if(active===P1){
@@ -2333,6 +2368,7 @@ refresh();
    savedAt:new Date().toISOString(),
    activeProduct:activeId(),
    nameVersion:typeof S2!=="undefined"?S2.version:1,
+   nameGrid:typeof S2!=="undefined"?S2.grid:"2x2",
    customer:{
     name:$("dsCustomerName").value,
     phone:$("dsCustomerPhone").value,
@@ -2381,7 +2417,8 @@ refresh();
   document.getElementById("penHolderEditor").contentWindow.postMessage({type:"ds-ph-customer-restore",name:String(c.name||""),phone:String(c.phone||""),address:String(c.address||"")},"*");
   mcOrders=clone(next.mc);renderMcOrders();mcBuildPreview();
   multiOrders=clone(next.names);
-  applyVersionMulti([1,2,3,4].includes(Number(data.nameVersion))?Number(data.nameVersion):1);
+  S2.grid=data.nameGrid==="3x2"?"3x2":"2x2";
+  applyVersionMulti([1,2,3,4,5].includes(Number(data.nameVersion))?Number(data.nameVersion):1);
   cloverOrders=clone(next.clover);cloverRender();cloverPreview();
   window.__ds.bkOrders=clone(next.basket);window.__ds.bkRender();window.__ds.bkPreview();
   if(Array.isArray(data.orders.bagCharm)&&data.orders.bagCharm.length)window.__dsBag.setOrders(validArray(data.orders.bagCharm,"Bag Charm"));
