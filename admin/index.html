@@ -90,7 +90,7 @@ function calcOrder(text){
     const line=raw.trim();if(!line)continue;
     const p=parseLine(line);
     // Baris tanpa ukuran yang hanya berisi keterangan lengan/jumlah dianggap melengkapi item sebelumnya.
-    if(!p.hasSize&&items.length&&(p.model||p.qty)&&!/[a-z]{4,}/i.test(line.replace(/(lengan|panjang|pendek|rok|pcs|buah|pasang|dan|pakai)/gi,''))){const last=items[items.length-1];if(p.model)last.model=p.model;if(p.qty)last.qty=p.qty;continue}
+    if(!p.hasSize&&items.length&&(p.model||p.qty)&&!(p.model&&p.qty)&&!/[a-z]{4,}/i.test(line.replace(/(lengan|panjang|pendek|rok|pcs|buah|pasang|dan|pakai)/gi,''))){const last=items[items.length-1];if(p.model)last.model=p.model;if(p.qty)last.qty=p.qty;continue}
     items.push({model:p.model||'pendek',qty:p.qty||1,size:p.size||'Lainnya'});
   }
   const count={pendek:0,panjang:0,rok:0};let total=0,pcs=0;
