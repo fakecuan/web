@@ -69,9 +69,8 @@ button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linea
 <div class="guide-modal" id="guideModal" role="dialog" aria-modal="true" aria-label="Panduan ukuran D.VA SKATE">
   <div class="guide-dialog"><div class="guide-toolbar"><span>PANDUAN UKURAN D.VA SKATE</span><button class="guide-close" id="closeGuide" type="button">✕ Tutup</button></div><iframe class="guide-frame" id="guideFrame" title="Kalkulator dan tabel ukuran D.VA SKATE" loading="lazy"></iframe></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script>
+<script type="module">
+import { submitOrder } from "./orders-db.js";
 const ADMIN_WA = "628561902897";
 document.getElementById("orderForm").addEventListener("submit", async function(e){
   e.preventDefault();
@@ -79,30 +78,21 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
   const v = id => document.getElementById(id).value.trim();
   const lines = ["*FORMAT ORDER PEMESANAN D.VA SKATE*","",`Nama: ${v("nama")}`,`No. HP: ${v("hp")}`,`Ukuran Skinsuit:\n${v("ukuran")}`,"","*ALAMAT PENGIRIMAN*",`Nama Penerima: ${v("nama")}`,`No. HP Penerima: ${v("hp")}`,`Alamat: ${v("alamat")}`,"","*KETENTUAN PEMESANAN*","1. Konsultasi desain.","2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.","3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.","4. Skinsuit selesai proses produksi akan dikirim ke customer.","5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.","","*REKENING PEMBAYARAN*","Bank: BCA","No. Rekening: 5260526296","Atas Nama: Rifki Debi"].filter(x => x !== "");
   const waUrl = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\n"))}`;
-  const cfg=window.DVA_SUPABASE_CONFIG||{};
-  if(!cfg.url||!cfg.anonKey||cfg.url.includes("PROJECT-REF")||cfg.anonKey.includes("SUPABASE_ANON")){
-    // Database belum dikonfigurasi: tetap kirim pesanan lewat WhatsApp agar pelanggan tidak terhambat.
-    window.location.href=waUrl;
-    return;
-  }
+  const btn=this.querySelector('button[type="submit"]');
+  btn.disabled=true;const label=btn.innerHTML;btn.textContent="MENYIMPAN PESANAN…";
   const waWindow=window.open("about:blank","_blank");
   try{
-    const db=window.supabase.createClient(cfg.url,cfg.anonKey);
-    const {error}=await db.from("orders").insert({
-      customer_name:v("nama"),
-      customer_phone:v("hp"),
-      size_details:v("ukuran"),
-      shipping_address:v("alamat"),
-      status:"Baru",
-      source:"form"
-    });
-    if(error) throw error;
-    if(waWindow) waWindow.location.href=waUrl;
-    else window.location.href=waUrl;
+    await Promise.race([
+      submitOrder({customer_name:v("nama"),customer_phone:v("hp"),size_details:v("ukuran"),shipping_address:v("alamat")}),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),12000))
+    ]);
   }catch(err){
-    if(waWindow) waWindow.close();
-    alert("Pesanan belum tersimpan ke database. Periksa koneksi internet atau hubungi admin.\n\nDetail: "+err.message);
+    // Pesanan tetap dikirim lewat WhatsApp walaupun penyimpanan gagal.
+    console.warn("Gagal menyimpan pesanan:",err);
   }
+  btn.disabled=false;btn.innerHTML=label;
+  if(waWindow) waWindow.location.href=waUrl;
+  else window.location.href=waUrl;
 });
 const modal=document.getElementById("guideModal"),frame=document.getElementById("guideFrame");
 document.getElementById("openGuide").addEventListener("click",()=>{if(!frame.src)frame.src="size-guide.html";modal.classList.add("open");document.body.style.overflow="hidden"});

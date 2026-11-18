@@ -23,7 +23,7 @@
 <body>
 <div class="top"><div><div class="brand">D.VA <span>SKATE</span></div><small>ORDER MANAGEMENT</small></div><div id="topActions" class="hidden"><button id="logoutBtn" class="btn light" type="button">Keluar</button></div></div>
 <main class="wrap">
-<section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masuk untuk mengelola pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Email admin</label><input id="email" type="email" autocomplete="username" required placeholder="admin@email.com"></div><div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form></section>
+<section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masukkan password untuk melihat pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Password admin</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form></section>
 <section id="dashboard" class="hidden">
 <div class="heading"><div><h1>Pesanan Masuk</h1><div class="muted">Kelola status dan detail order pelanggan.</div></div><button id="refreshBtn" class="btn light" type="button">↻ Refresh</button></div>
 <div class="stats" id="stats"></div>
@@ -40,13 +40,11 @@
 <div class="field" style="grid-column:1/-1"><label>Ukuran / detail pesanan</label><textarea id="editSizes" required></textarea></div>
 <div class="field" style="grid-column:1/-1"><label>Alamat pengiriman</label><textarea id="editAddress" required></textarea></div>
 <div class="field" style="grid-column:1/-1"><label>Catatan admin</label><textarea id="editNote" placeholder="Catatan produksi, pembayaran, dll."></textarea></div>
-</div><div class="dialog-actions"><button id="cancelEdit" class="btn light" type="button">Batal</button><button id="saveEdit" class="btn pink" type="submit">Simpan perubahan</button></div></form></div></div>
+</div><div class="dialog-actions"><button id="deleteOrder" class="btn danger" type="button" style="margin-right:auto">Hapus</button><button id="cancelEdit" class="btn light" type="button">Batal</button><button id="saveEdit" class="btn pink" type="submit">Simpan perubahan</button></div></form></div></div>
 <div id="toast" class="toast hidden"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../form/supabase-config.js"></script>
-<script>
-const cfg=window.DVA_SUPABASE_CONFIG||{};
-const ready=cfg.url&&cfg.anonKey&&!cfg.url.includes('PROJECT-REF')&&!cfg.anonKey.includes('SUPABASE_ANON');
-const db=ready?window.supabase.createClient(cfg.url,cfg.anonKey):null;
+<script type="module">
+import { unlock } from "../form/orders-db.js";
+let store=null;
 const statuses=['Baru','Menunggu DP','Sudah DP','Produksi','Selesai','Dikirim'];
 let orders=[],toastTimer;
 const $=id=>document.getElementById(id);
@@ -56,7 +54,7 @@ function date(v){return new Date(v).toLocaleString('id-ID',{dateStyle:'medium',t
 function slug(s){return s.toLowerCase().replaceAll(' ','-')}
 function showLogin(){ $('loginPanel').classList.remove('hidden');$('dashboard').classList.add('hidden');$('topActions').classList.add('hidden') }
 function showDashboard(){ $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');$('topActions').classList.remove('hidden') }
-async function loadOrders(){if(!db)return;const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false}).limit(1000);if(error){toast('Gagal memuat: '+error.message);return}orders=data||[];render()}
+async function loadOrders(){if(!store)return;$('ordersBody').innerHTML='<tr><td colspan="8" class="empty">Memuat pesanan…</td></tr>';try{orders=await store.list()}catch(e){$('ordersBody').innerHTML='<tr><td colspan="8" class="empty">Gagal memuat pesanan: '+esc(e.message)+'</td></tr>';return}render()}
 function renderStats(){const counts=statuses.map(s=>orders.filter(o=>o.status===s).length);$('stats').innerHTML=[['Total',orders.length],...statuses.map((s,i)=>[s,counts[i]])].map(([name,count])=>'<div class="stat"><span>'+name+'</span><strong>'+count+'</strong></div>').join('')}
 function render(){renderStats();let list=[...orders];const q=$('search').value.trim().toLowerCase(),st=$('statusFilter').value;if(q)list=list.filter(o=>[o.order_number,o.customer_name,o.customer_phone,o.size_details,o.shipping_address].join(' ').toLowerCase().includes(q));if(st)list=list.filter(o=>o.status===st);if($('sortFilter').value==='old')list.reverse();$('ordersBody').innerHTML=list.length?list.map(row).join(''):'<tr><td colspan="8" class="empty">Belum ada pesanan yang cocok.</td></tr>'}
 function waLink(p){let n=String(p||'').replace(/\D/g,'');if(n.startsWith('0'))n='62'+n.slice(1);return 'https://wa.me/'+n}
@@ -74,14 +72,16 @@ return '<tr>'+
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function openEdit(id){const o=orders.find(x=>x.id===id);if(!o)return;$('editId').value=o.id;$('editName').value=o.customer_name||'';$('editPhone').value=o.customer_phone||'';$('editStatus').value=o.status;$('editTotal').value=o.total_amount??'';$('editDP').value=o.dp_amount??'';$('editShipping').value=o.shipping_cost??'';$('editSizes').value=o.size_details||'';$('editAddress').value=o.shipping_address||'';$('editNote').value=o.admin_note||'';$('editModal').classList.remove('hidden')}
 function closeEdit(){$('editModal').classList.add('hidden')}
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!db){$('loginError').textContent='Supabase belum dikonfigurasi. Isi URL dan anon key pada form/supabase-config.js.';$('loginError').classList.remove('hidden');return}$('loginBtn').disabled=true;const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});$('loginBtn').disabled=false;if(error){$('loginError').textContent=error.message;$('loginError').classList.remove('hidden');return}$('loginError').classList.add('hidden');showDashboard();await loadOrders()});
-$('logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();orders=[];showLogin()});
+async function doLogin(pw){store=await unlock(pw);try{sessionStorage.setItem('dvaAdminPw',pw)}catch{}showDashboard();await loadOrders()}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;try{await doLogin($('password').value);$('loginError').classList.add('hidden');$('password').value=''}catch(err){$('loginError').textContent=err.message;$('loginError').classList.remove('hidden')}$('loginBtn').disabled=false});
+$('logoutBtn').addEventListener('click',()=>{store=null;orders=[];try{sessionStorage.removeItem('dvaAdminPw')}catch{}showLogin()});
 $('refreshBtn').addEventListener('click',loadOrders);['search','statusFilter','sortFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
-$('ordersBody').addEventListener('change',async e=>{const sel=e.target.closest('[data-status]');if(!sel)return;sel.disabled=true;const {error}=await db.from('orders').update({status:sel.value}).eq('id',sel.dataset.status);sel.disabled=false;if(error){toast('Gagal mengubah status: '+error.message);return}const o=orders.find(x=>x.id===sel.dataset.status);if(o)o.status=sel.value;render();toast('Status diperbarui')});
+$('ordersBody').addEventListener('change',async e=>{const sel=e.target.closest('[data-status]');if(!sel)return;sel.disabled=true;try{await store.setStatus(sel.dataset.status,sel.value)}catch(err){sel.disabled=false;toast('Gagal mengubah status: '+err.message);return}sel.disabled=false;const o=orders.find(x=>x.id===sel.dataset.status);if(o)o.status=sel.value;render();toast('Status diperbarui')});
 $('ordersBody').addEventListener('click',e=>{const b=e.target.closest('[data-edit]');if(b)openEdit(b.dataset.edit)});
 ['closeModal','cancelEdit'].forEach(id=>$(id).addEventListener('click',closeEdit));
-$('editForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('editId').value;const payload={customer_name:$('editName').value.trim(),customer_phone:$('editPhone').value.trim(),status:$('editStatus').value,total_amount:$('editTotal').value===''?null:Number($('editTotal').value),dp_amount:$('editDP').value===''?null:Number($('editDP').value),shipping_cost:$('editShipping').value===''?null:Number($('editShipping').value),size_details:$('editSizes').value.trim(),shipping_address:$('editAddress').value.trim(),admin_note:$('editNote').value.trim()};$('saveEdit').disabled=true;const {error}=await db.from('orders').update(payload).eq('id',id);$('saveEdit').disabled=false;if(error){toast('Gagal menyimpan: '+error.message);return}closeEdit();toast('Pesanan berhasil diperbarui');await loadOrders()});
+$('editForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('editId').value;const num=v=>v===''?null:Number(v);const data={customer_name:$('editName').value.trim(),customer_phone:$('editPhone').value.trim(),total_amount:num($('editTotal').value),dp_amount:num($('editDP').value),shipping_cost:num($('editShipping').value),size_details:$('editSizes').value.trim(),shipping_address:$('editAddress').value.trim(),admin_note:$('editNote').value.trim()};$('saveEdit').disabled=true;try{await store.save(id,$('editStatus').value,data)}catch(err){$('saveEdit').disabled=false;toast('Gagal menyimpan: '+err.message);return}$('saveEdit').disabled=false;closeEdit();toast('Pesanan berhasil diperbarui');await loadOrders()});
+$('deleteOrder').addEventListener('click',async()=>{const id=$('editId').value;const o=orders.find(x=>x.id===id);if(!confirm('Hapus pesanan #'+(o?.order_number??'')+' atas nama '+(o?.customer_name??'')+'? Data tidak bisa dikembalikan.'))return;try{await store.remove(id)}catch(err){toast('Gagal menghapus: '+err.message);return}closeEdit();toast('Pesanan dihapus');await loadOrders()});
 $('exportBtn').addEventListener('click',()=>{const head=['No Order','Tanggal','Nama','No HP','Ukuran','Alamat','Status','Total','DP','Ongkir','Catatan'];const rows=orders.map(o=>[o.order_number,o.created_at,o.customer_name,o.customer_phone,o.size_details,o.shipping_address,o.status,o.total_amount,o.dp_amount,o.shipping_cost,o.admin_note]);const csv=[head,...rows].map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='rekap-pesanan-dva-skate.csv';a.click();URL.revokeObjectURL(a.href)});
-(async()=>{if(!ready){$('loginError').textContent='Konfigurasi Supabase belum diisi. Tambahkan Project URL dan anon/public key pada form/supabase-config.js.';$('loginError').classList.remove('hidden');return}const {data}=await db.auth.getSession();if(data.session){showDashboard();await loadOrders()}else showLogin();db.auth.onAuthStateChange((_event,session)=>{if(!session)showLogin()})})();
+(async()=>{let pw=null;try{pw=sessionStorage.getItem('dvaAdminPw')}catch{}if(pw){try{await doLogin(pw);return}catch{}}showLogin()})();
 </script>
 </body></html>
