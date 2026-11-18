@@ -5,6 +5,8 @@ const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const SIZE_ORDER = ['12S','11S','10S','9S','8S','7S','6S','5S','4S','3S','2S','XXS','XS','S','M','L','XL','2XL','XXL','3XL','Custom','Lainnya'];
 
+// Keuntungan = 66% dari harga (omzet pesanan Selesai).
+export const PROFIT_RATE = 0.66;
 let state = { year: 'all', metric: 'omzet' };
 
 const css = `
@@ -14,7 +16,7 @@ const css = `
 .rp-seg{display:inline-flex;background:#f0f0f5;border-radius:10px;padding:3px}
 .rp-seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:12px;color:#6a6a78}
 .rp-seg button.on{background:#fff;color:#17171c;box-shadow:0 1px 3px #0001}
-.rp-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.rp-kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:16px}
 .rp-kpi{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px}
 .rp-kpi span{display:block;color:var(--muted);font-size:11px;font-weight:700}
 .rp-kpi strong{display:block;font-size:22px;margin-top:3px;white-space:nowrap}
@@ -44,7 +46,7 @@ const css = `
 .rp-scroll{max-height:340px;overflow:auto}
 .rp .rp-table thead{display:table-header-group}.rp .rp-table tbody tr{display:table-row;border:0;padding:0;margin:0;border-radius:0}.rp .rp-table tbody td{display:table-cell;padding:8px 6px}.rp .rp-table tbody td:before{content:none}
 .rp-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-@media(max-width:1000px){.rp-kpis{grid-template-columns:repeat(3,1fr)}.rp-grid,.rp-3{grid-template-columns:1fr}}
+@media(max-width:1200px){.rp-kpis{grid-template-columns:repeat(4,1fr)}}@media(max-width:1000px){.rp-kpis{grid-template-columns:repeat(3,1fr)}.rp-grid,.rp-3{grid-template-columns:1fr}}
 @media(max-width:480px){.rp-kpis{grid-template-columns:repeat(2,1fr)}.rp-kpi strong{font-size:18px}}
 `;
 
@@ -131,6 +133,7 @@ export function renderReport(el, allOrders, h) {
   const omzet = rows.reduce((a, r) => a + r.omzet, 0);
   const selesai = rows.filter(r => billed(r.o));
   const avg = selesai.length ? omzet / selesai.length : 0;
+  const profit = Math.round(omzet * PROFIT_RATE);
   const pending = rows.filter(r => r.o.status !== 'Selesai');
   const pendingPcs = pending.reduce((a, r) => a + r.pcs, 0);
 
@@ -185,7 +188,8 @@ export function renderReport(el, allOrders, h) {
 
   // Insight otomatis
   const ins = [];
-  if (bestMonth) ins.push(['🏆', `Bulan terbaik: <b>${bestMonth.label}</b> dengan ${bestMonth.pcs} pcs${bestMonth.omzet ? ' dan omzet ' + money(bestMonth.omzet) : ''}.`]);
+  if (bestMonth) ins.push(['🏆', `Bulan terbaik: <b>${bestMonth.label}</b> dengan ${bestMonth.pcs} pcs${bestMonth.omzet ? ', omzet ' + money(bestMonth.omzet) + ', untung ' + money(Math.round(bestMonth.omzet * PROFIT_RATE)) : ''}.`]);
+  if (omzet) ins.unshift(['💰', `Total keuntungan <b>${money(profit)}</b> (${Math.round(PROFIT_RATE * 100)}% dari omzet ${money(omzet)}).`]);
   const full = months.filter(m => m.orders);
   if (full.length >= 2) {
     const a = full.at(-1), b = full.at(-2);
@@ -203,13 +207,13 @@ export function renderReport(el, allOrders, h) {
   if (clubs[0]) ins.push(['🛼', `Klub dengan pesanan terbanyak: <b>${esc(clubs[0].label)}</b> (${clubs[0].pcs} pcs).`]);
   if (pending.length) ins.push(['⏳', `<b>${pending.length} pesanan</b> (${pendingPcs} pcs) masih Pending/Produksi dan belum ditagih.`]);
 
-  const metricPts = months.map(m => ({ label: m.label, tick: m.tick, v: state.metric === 'omzet' ? m.omzet : state.metric === 'pcs' ? m.pcs : m.orders, m }));
-  const fmt = state.metric === 'omzet'
-    ? { axis: v => v ? short(v) : '0', tip: p => `Omzet ${money(p.m.omzet)}<br>${p.m.pcs} pcs · ${p.m.orders} pesanan` }
+  const metricPts = months.map(m => ({ label: m.label, tick: m.tick, v: state.metric === 'omzet' ? m.omzet : state.metric === 'untung' ? Math.round(m.omzet * PROFIT_RATE) : state.metric === 'pcs' ? m.pcs : m.orders, m }));
+  const fmt = state.metric === 'omzet' || state.metric === 'untung'
+    ? { axis: v => v ? short(v) : '0', tip: p => `Keuntungan ${money(Math.round(p.m.omzet * PROFIT_RATE))}<br>Omzet ${money(p.m.omzet)}<br>${p.m.pcs} pcs · ${p.m.orders} pesanan` }
     : state.metric === 'pcs'
       ? { axis: v => String(Math.round(v)), tip: p => `${p.m.pcs} pcs<br>${p.m.orders} pesanan${p.m.omzet ? ' · ' + money(p.m.omzet) : ''}` }
       : { axis: v => String(Math.round(v)), tip: p => `${p.m.orders} pesanan<br>${p.m.pcs} pcs` };
-  const metricTitle = { omzet: 'Omzet per bulan', pcs: 'Jumlah pcs per bulan', orders: 'Jumlah pesanan per bulan' }[state.metric];
+  const metricTitle = { omzet: 'Omzet per bulan', untung: 'Keuntungan per bulan (' + Math.round(PROFIT_RATE * 100) + '% dari omzet)', pcs: 'Jumlah pcs per bulan', orders: 'Jumlah pesanan per bulan' }[state.metric];
 
   const modelColors = { pendek: 'var(--s1)', panjang: 'var(--s2)', rok: 'var(--s3)' };
   const mixBar = totalPcs ? Object.keys(model).filter(k => model[k]).map(k => `<div style="width:${model[k] / totalPcs * 100}%;background:${modelColors[k]}" data-tip="${encodeURIComponent(`<b>${MODEL_LABEL[k]}</b>${model[k]} pcs · ${pct(model[k], totalPcs)}%`)}"></div>`).join('') : '';
@@ -225,6 +229,7 @@ export function renderReport(el, allOrders, h) {
     <div class="rp-kpi"><span>Total pesanan</span><strong>${orders.length.toLocaleString('id-ID')}</strong><small>${selesai.length.toLocaleString('id-ID')} selesai</small></div>
     <div class="rp-kpi"><span>Total pcs</span><strong>${totalPcs.toLocaleString('id-ID')}</strong><small>skinsuit</small></div>
     <div class="rp-kpi"><span>Omzet</span><strong>${short(omzet).replace(' ', '&nbsp;')}</strong><small>${money(omzet)}</small></div>
+    <div class="rp-kpi" style="border-color:#bfe6d2;background:#f3fbf7"><span>Keuntungan (${Math.round(PROFIT_RATE * 100)}%)</span><strong style="color:#087e55">${short(profit).replace(' ', '&nbsp;')}</strong><small>${money(profit)}</small></div>
     <div class="rp-kpi"><span>Rata-rata / pesanan</span><strong>${short(Math.round(avg))}</strong><small>${money(Math.round(avg))}</small></div>
     <div class="rp-kpi"><span>Pelanggan</span><strong>${custs.length.toLocaleString('id-ID')}</strong><small>${repeat.length} pesan ulang</small></div>
     <div class="rp-kpi"><span>Belum ditagih</span><strong>${pending.length}</strong><small>${pendingPcs} pcs pending/produksi</small></div>
@@ -233,9 +238,9 @@ export function renderReport(el, allOrders, h) {
     <div class="rp-card">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
         <div><h3>${metricTitle}</h3><div class="muted">Arahkan kursor / sentuh batang untuk detail.</div></div>
-        <div class="rp-seg" id="rpMetric"><button data-m="omzet" class="${state.metric === 'omzet' ? 'on' : ''}">Omzet</button><button data-m="pcs" class="${state.metric === 'pcs' ? 'on' : ''}">Pcs</button><button data-m="orders" class="${state.metric === 'orders' ? 'on' : ''}">Pesanan</button></div>
+        <div class="rp-seg" id="rpMetric"><button data-m="omzet" class="${state.metric === 'omzet' ? 'on' : ''}">Omzet</button><button data-m="untung" class="${state.metric === 'untung' ? 'on' : ''}">Untung</button><button data-m="pcs" class="${state.metric === 'pcs' ? 'on' : ''}">Pcs</button><button data-m="orders" class="${state.metric === 'orders' ? 'on' : ''}">Pesanan</button></div>
       </div>
-      ${months.length ? barChart(metricPts, fmt, 'var(--s1)', el.clientWidth - (innerWidth <= 480 ? 28 : 40) - (innerWidth > 1000 ? el.clientWidth * 0.4 : 0)) : '<div class="muted">Belum ada data.</div>'}
+      ${months.length ? barChart(metricPts, fmt, state.metric === 'untung' ? 'var(--s3)' : 'var(--s1)', el.clientWidth - (innerWidth <= 480 ? 28 : 40) - (innerWidth > 1000 ? el.clientWidth * 0.4 : 0)) : '<div class="muted">Belum ada data.</div>'}
     </div>
     <div class="rp-card"><h3>Ringkasan & insight</h3><div class="muted">Dihitung otomatis dari data pesanan.</div>
       <ul class="rp-insight">${ins.map(([i, t]) => `<li><i>${i}</i><span>${t}</span></li>`).join('') || '<li>Belum ada data.</li>'}</ul></div>
@@ -254,8 +259,8 @@ export function renderReport(el, allOrders, h) {
   </div>
   <div class="rp-grid">
     <div class="rp-card"><h3>Rekap per PO</h3><div class="muted">${pos.length} PO · terbaru di atas</div>
-      <div class="rp-scroll"><table class="rp-table"><thead><tr><th>No. PO</th><th class="n">Pesanan</th><th class="n">Pcs</th><th class="n">Omzet</th></tr></thead><tbody>
-      ${pos.map(p => `<tr><td>${esc(p.po)}</td><td class="n">${p.orders}</td><td class="n">${p.pcs}</td><td class="n">${p.omzet ? money(p.omzet) : '—'}</td></tr>`).join('')}
+      <div class="rp-scroll"><table class="rp-table"><thead><tr><th>No. PO</th><th class="n">Pesanan</th><th class="n">Pcs</th><th class="n">Omzet</th><th class="n">Untung</th></tr></thead><tbody>
+      ${pos.map(p => `<tr><td>${esc(p.po)}</td><td class="n">${p.orders}</td><td class="n">${p.pcs}</td><td class="n">${p.omzet ? money(p.omzet) : '—'}</td><td class="n">${p.omzet ? money(Math.round(p.omzet * PROFIT_RATE)) : '—'}</td></tr>`).join('')}
       </tbody></table></div></div>
     <div class="rp-card"><h3>Pelanggan teratas</h3><div class="muted">berdasarkan jumlah pcs</div>
       <div class="rp-scroll"><table class="rp-table"><thead><tr><th>Pelanggan</th><th class="n">Order</th><th class="n">Pcs</th><th class="n">Omzet</th></tr></thead><tbody>
