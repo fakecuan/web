@@ -97,6 +97,8 @@ export async function unlock(password){
       }
     },
     // Gambar desain: thumbnail kecil di dokumen pesanan, gambar penuh di koleksi terpisah.
+    // Tambah pesanan manual dari admin (tanggal bisa diatur).
+    async create(status,createdAt,data){await ready();const ref=await addDoc(collection(db,COLLECTION),{v:1,status,source:'admin',createdAt:Timestamp.fromDate(createdAt),...await seal(data)});return ref.id},
     // current = daftar gambar pesanan saat ini (dari list()); mengembalikan daftar baru.
     async addImage(id,current,thumb,full){await ready();const k=newKey();await setDoc(doc(db,IMAGES,imgDocId(id,k)),{full});const next=[...current,{k,thumb}];await updateDoc(doc(db,COLLECTION,id),{images:next,thumb:deleteField()});return next},
     async getImage(id,k){await ready();const s=await getDoc(doc(db,IMAGES,imgDocId(id,k)));return s.exists()?s.data().full:null},

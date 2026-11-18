@@ -27,7 +27,7 @@
 <main class="wrap">
 <section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masukkan password untuk melihat pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Password admin</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form></section>
 <section id="dashboard" class="hidden">
-<div class="heading"><div><h1>Pesanan Masuk</h1><div class="muted">Kelola status dan detail order pelanggan.</div></div><button id="refreshBtn" class="btn light" type="button">↻ Refresh</button></div>
+<div class="heading"><div><h1>Pesanan Masuk</h1><div class="muted">Kelola status dan detail order pelanggan.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="addBtn" class="btn pink" type="button">＋ Tambah pesanan</button><button id="refreshBtn" class="btn light" type="button">↻ Refresh</button></div></div>
 <div class="tabs"><button class="tab on" data-tab="ordersView" type="button">📋 Pesanan</button><button class="tab" data-tab="reportView" type="button">📊 Laporan</button></div>
 <div id="ordersView">
 <div class="stats" id="stats"></div>
@@ -36,13 +36,13 @@
 <div class="table-wrap"><table><thead><tr><th>No. Order</th><th>No. PO</th><th>Desain</th><th>Tanggal</th><th>Pelanggan</th><th>No. HP</th><th>Ukuran</th><th>Alamat</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="ordersBody"><tr><td colspan="11" class="empty">Memuat pesanan…</td></tr></tbody></table></div>
 </section></div><div id="reportView" class="hidden"></div></section>
 </main>
-<div id="editModal" class="modal hidden"><div class="dialog"><div class="dialog-head"><h2>Edit Pesanan</h2><button id="closeModal" class="btn light" type="button">✕</button></div><form id="editForm"><input id="editId" type="hidden"><div class="grid">
-<div class="field"><label>No. PO</label><input id="editPO" placeholder="Isi No. PO"></div><div class="field"><label>Tanggal masuk</label><input id="editDate" disabled></div>
-<div class="field"><label>Nama pelanggan</label><input id="editName" required></div><div class="field"><label>No. HP / WhatsApp</label><input id="editPhone" required></div>
+<div id="editModal" class="modal hidden"><div class="dialog"><div class="dialog-head"><h2 id="editTitle">Edit Pesanan</h2><button id="closeModal" class="btn light" type="button">✕</button></div><form id="editForm"><input id="editId" type="hidden"><div class="grid">
+<div class="field"><label>No. PO</label><input id="editPO" placeholder="Isi No. PO"></div><div class="field"><label>Tanggal masuk</label><input id="editDate" type="date" disabled></div>
+<div class="field"><label>Nama pelanggan</label><input id="editName" required></div><div class="field"><label>No. HP / WhatsApp</label><input id="editPhone" placeholder="08xxxxxxxxxx"></div>
 <div class="field"><label>Status pesanan</label><select id="editStatus"><option>Pending</option><option>Produksi</option><option>Selesai</option></select></div>
 <div class="field"><label>Total tagihan (Rp)</label><input id="editTotal" type="number" min="0" step="1000" placeholder="Otomatis"><div id="editCalc" class="sub"></div></div>
 <div class="field" style="grid-column:1/-1"><label>Ukuran / detail pesanan</label><textarea id="editSizes" required></textarea></div>
-<div class="field" style="grid-column:1/-1"><label>Alamat pengiriman</label><textarea id="editAddress" required></textarea></div>
+<div class="field" style="grid-column:1/-1"><label>Alamat pengiriman</label><textarea id="editAddress"></textarea></div>
 <div class="field" style="grid-column:1/-1"><label>Catatan admin</label><textarea id="editNote" placeholder="Catatan produksi, pembayaran, dll."></textarea></div>
 </div><div class="dialog-actions"><button id="deleteOrder" class="btn danger" type="button" style="margin-right:auto">Hapus</button><button id="cancelEdit" class="btn light" type="button">Batal</button><button id="saveEdit" class="btn pink" type="submit">Simpan perubahan</button></div></form></div></div>
 <div id="importModal" class="modal hidden"><div class="dialog" style="width:min(760px,100%)"><div class="dialog-head"><h2>Import pesanan dari Google Sheet</h2><button id="closeImport" class="btn light" type="button">✕</button></div>
@@ -59,7 +59,7 @@
 <input id="imgFile" type="file" accept="image/*" multiple class="hidden"></div></div>
 <div id="toast" class="toast hidden"></div>
 <script type="module">
-import { unlock } from "../form/orders-db.js?v=8";
+import { unlock } from "../form/orders-db.js?v=9";
 import { renderReport } from "./report.js?v=2";
 let store=null;
 const statuses=['Pending','Produksi','Selesai'];
@@ -133,7 +133,10 @@ return '<tr>'+
 '<td data-label="Aksi"><div class="row-actions"><button class="btn light" data-edit="'+o.id+'">Edit</button></div></td>'+
 '</tr>'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function openEdit(id){const o=orders.find(x=>x.id===id);if(!o)return;$('editId').value=o.id;setTimeout(updateEditCalc);$('editPO').value=o.po_number||'';$('editDate').value=date(o.created_at);$('editName').value=o.customer_name||'';$('editPhone').value=o.customer_phone||'';$('editStatus').value=o.status;$('editTotal').value=o.total_amount??'';$('editSizes').value=o.size_details||'';$('editAddress').value=o.shipping_address||'';$('editNote').value=o.admin_note||'';$('editModal').classList.remove('hidden')}
+function openEdit(id){const o=orders.find(x=>x.id===id);if(!o)return;$('editId').value=o.id;setTimeout(updateEditCalc);$('editPO').value=o.po_number||'';$('editDate').type='text';$('editDate').disabled=true;$('editDate').value=date(o.created_at);$('editTitle').textContent='Edit Pesanan';$('deleteOrder').classList.remove('hidden');$('saveEdit').textContent='Simpan perubahan';$('editName').value=o.customer_name||'';$('editPhone').value=o.customer_phone||'';$('editStatus').value=o.status;$('editTotal').value=o.total_amount??'';$('editSizes').value=o.size_details||'';$('editAddress').value=o.shipping_address||'';$('editNote').value=o.admin_note||'';$('editModal').classList.remove('hidden')}
+function openNew(){$('editForm').reset();$('editId').value='';$('editTitle').textContent='Tambah Pesanan';$('deleteOrder').classList.add('hidden');$('saveEdit').textContent='Simpan pesanan';
+const d=new Date();$('editDate').type='date';$('editDate').disabled=false;$('editDate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('editStatus').value='Pending';$('editTotal').value='';updateEditCalc();$('editModal').classList.remove('hidden');$('editName').focus()}
+$('addBtn').addEventListener('click',openNew);
 function closeEdit(){$('editModal').classList.add('hidden')}
 async function doLogin(pw){store=await unlock(pw);try{sessionStorage.setItem('dvaAdminPw',pw)}catch{}showDashboard();await loadOrders()}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;try{await doLogin($('password').value);$('loginError').classList.add('hidden');$('password').value=''}catch(err){$('loginError').textContent=err.message;$('loginError').classList.remove('hidden')}$('loginBtn').disabled=false});
@@ -149,7 +152,7 @@ $('ordersBody').addEventListener('click',e=>{const b=e.target.closest('[data-edi
 ['closeModal','cancelEdit'].forEach(id=>$(id).addEventListener('click',closeEdit));
 function updateEditCalc(){const on=$('editStatus').value==='Selesai';$('editTotal').disabled=!on;$('editTotal').closest('.field').style.opacity=on?1:.55;if(!on){const c=calcOrder($('editSizes').value);$('editTotal').placeholder='Belum ditagih';$('editCalc').textContent=c.summary+'. Tagihan muncul setelah status Selesai.';return}const c=calcOrder($('editSizes').value);$('editTotal').placeholder='Otomatis: '+money(c.total);$('editCalc').textContent=c.summary+'. Kosongkan untuk hitung otomatis.'}
 $('editSizes').addEventListener('input',updateEditCalc);$('editStatus').addEventListener('change',updateEditCalc);
-$('editForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('editId').value;const num=v=>v===''?null:Number(v);const data={po_number:$('editPO').value.trim(),customer_name:$('editName').value.trim(),customer_phone:$('editPhone').value.trim(),total_amount:num($('editTotal').value),size_details:$('editSizes').value.trim(),shipping_address:$('editAddress').value.trim(),admin_note:$('editNote').value.trim()};$('saveEdit').disabled=true;try{await store.save(id,$('editStatus').value,data)}catch(err){$('saveEdit').disabled=false;toast('Gagal menyimpan: '+err.message);return}$('saveEdit').disabled=false;closeEdit();toast('Pesanan berhasil diperbarui');await loadOrders()});
+$('editForm').addEventListener('submit',async e=>{e.preventDefault();const id=$('editId').value;const num=v=>v===''?null:Number(v);const data={po_number:$('editPO').value.trim(),customer_name:$('editName').value.trim(),customer_phone:$('editPhone').value.trim(),total_amount:num($('editTotal').value),size_details:$('editSizes').value.trim(),shipping_address:$('editAddress').value.trim(),admin_note:$('editNote').value.trim()};$('saveEdit').disabled=true;try{if(id)await store.save(id,$('editStatus').value,data);else{const dv=$('editDate').value;const cd=dv?new Date(dv+'T12:00:00'):new Date();await store.create($('editStatus').value,cd,data)}}catch(err){$('saveEdit').disabled=false;toast('Gagal menyimpan: '+err.message);return}$('saveEdit').disabled=false;closeEdit();toast(id?'Pesanan berhasil diperbarui':'Pesanan baru ditambahkan');await loadOrders()});
 $('deleteOrder').addEventListener('click',async()=>{const id=$('editId').value;const o=orders.find(x=>x.id===id);if(!confirm('Hapus pesanan #'+(o?.order_number??'')+' atas nama '+(o?.customer_name??'')+'? Data tidak bisa dikembalikan.'))return;try{await store.remove(id,o?.images||[])}catch(err){toast('Gagal menghapus: '+err.message);return}closeEdit();toast('Pesanan dihapus');await loadOrders()});
 // ---------- Import Google Sheet (format sheet "Pesanan" lama) ----------
 let importRows=[];
