@@ -41,7 +41,7 @@ button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linea
 .design-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
 .design-actions button,.design-remove{margin:0;padding:12px;font-size:13px;border-radius:11px;box-shadow:none;background:#26262e;color:#fff;border:1px solid #3a3a45;font-weight:800}
 .design-actions button.primary{background:linear-gradient(100deg,#ed5f9c,#ff8ab8);color:#220d18;border:0}
-.design-preview{display:flex;gap:12px;align-items:center}
+.design-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}.design-item{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#fff}.design-item img{width:100%;height:100%;object-fit:cover;display:block}.design-item .x{position:absolute;top:4px;right:4px;width:26px;height:26px;margin:0;padding:0;border-radius:99px;background:#000b;color:#fff;font-size:13px;box-shadow:none;border:0}.design-item.busy{display:grid;place-items:center;background:#202027;color:#a6a6b2;font-size:11px}.design-preview{display:flex;gap:12px;align-items:center}
 .design-preview img{width:92px;height:92px;object-fit:cover;border-radius:10px;background:#fff;flex:none}
 .design-preview .info{flex:1;min-width:0;font-size:13px;color:#e8e8ed}
 .design-remove{width:auto;padding:8px 12px;margin-top:8px;font-size:12px}
@@ -70,12 +70,12 @@ button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linea
     <div class="grid"><div class="field full"><label for="ukuran">Ukuran Skinsuit <span class="required">*</span></label><textarea id="ukuran" name="ukuran" placeholder="Contoh:&#10;1. Nama – 2S (lengan pendek)&#10;2. Nama – XS (lengan panjang)" required></textarea><div class="helper">Jika memesan lebih dari satu, tuliskan setiap nama, ukuran, dan model lengan.</div></div></div>
     <div class="field" style="margin-top:16px"><label>Gambar desain <span style="color:var(--muted);font-weight:600">(opsional)</span></label>
       <div class="design-box" id="designBox" tabindex="0">
-        <div id="designEmpty" class="design-empty">Lampirkan contoh/desain yang diinginkan.<br><span class="helper">Di komputer bisa juga <b>Ctrl+V</b> di sini.</span></div>
-        <div id="designPreview" class="design-preview" hidden><img id="designImg" alt="Gambar desain"><div class="info"><div id="designInfo">Gambar siap dikirim</div><button type="button" class="design-remove" id="designRemove">✕ Hapus gambar</button></div></div>
+        <div id="designEmpty" class="design-empty">Lampirkan contoh/desain yang diinginkan. Bisa lebih dari satu gambar.<br><span class="helper">Di komputer bisa juga <b>Ctrl+V</b> di sini.</span></div>
+        <div id="designList" class="design-list" hidden></div><div id="designInfo" class="helper" style="margin-top:8px" hidden></div>
         <div class="design-actions"><button type="button" id="designPick">📁 Pilih dari perangkat</button><button type="button" id="designClip">📋 Tempel dari clipboard</button></div>
         <div id="designPaste" contenteditable="true" class="helper" style="margin-top:10px;padding:10px;border:1px dashed #3a3a45;border-radius:10px;text-align:center;outline:none" hidden>Tekan lama di sini lalu pilih <b>Tempel</b></div>
       </div>
-      <input id="designFile" type="file" accept="image/*" hidden>
+      <input id="designFile" type="file" accept="image/*" multiple hidden>
     </div>
 
   </section>
@@ -92,40 +92,43 @@ button{width:100%;border:0;border-radius:13px;padding:16px 18px;background:linea
   <div class="guide-dialog"><div class="guide-toolbar"><span>PANDUAN UKURAN D.VA SKATE</span><button class="guide-close" id="closeGuide" type="button">✕ Tutup</button></div><iframe class="guide-frame" id="guideFrame" title="Kalkulator dan tabel ukuran D.VA SKATE" loading="lazy"></iframe></div>
 </div>
 <script type="module">
-import { submitOrder, prepareImage } from "./orders-db.js?v=7";
+import { submitOrder, prepareImage } from "./orders-db.js?v=8";
 const ADMIN_WA = "628561902897";
 // ---------- Gambar desain (opsional) ----------
-let design=null,designBusy=null;
+let designs=[],designBusy=0,designWait=[];
 const $d=id=>document.getElementById(id);
-async function setDesign(blob){
-  if(!blob||!/^image\//.test(blob.type||'image/')){alert("Yang dipilih bukan gambar.");return}
-  $d("designEmpty").hidden=true;$d("designPreview").hidden=false;$d("designPaste").hidden=true;$d("designInfo").textContent="Memproses gambar…";
-  designBusy=prepareImage(blob).then(img=>{design=img;$d("designImg").src=img.thumb;$d("designInfo").textContent="Gambar desain siap dikirim ✓"}).catch(err=>{clearDesign();alert(err.message)}).finally(()=>{designBusy=null});
+function drawDesigns(){const has=designs.length||designBusy;$d("designEmpty").hidden=!!has;$d("designList").hidden=!has;$d("designInfo").hidden=!designs.length;
+  $d("designList").innerHTML=designs.map((d,i)=>`<div class="design-item"><img src="${d.thumb}" alt="Desain ${i+1}"><button type="button" class="x" data-rm="${i}" aria-label="Hapus gambar">✕</button></div>`).join("")+(designBusy?'<div class="design-item busy">Memproses…</div>':"");
+  $d("designInfo").textContent=designs.length+" gambar desain siap dikirim ✓"}
+function setDesign(blob){
+  if(!blob||!/^image\//.test(blob.type||"image/")){alert("Yang dipilih bukan gambar.");return}
+  if(designs.length+designBusy>=10){alert("Maksimal 10 gambar per pesanan.");return}
+  designBusy++;$d("designPaste").hidden=true;drawDesigns();
+  const p=prepareImage(blob).then(img=>{designs.push(img)}).catch(err=>alert(err.message)).finally(()=>{designBusy--;drawDesigns()});designWait.push(p);
 }
-function clearDesign(){design=null;$d("designImg").removeAttribute("src");$d("designPreview").hidden=true;$d("designEmpty").hidden=false}
+$d("designList").addEventListener("click",e=>{const b=e.target.closest("[data-rm]");if(b){designs.splice(+b.dataset.rm,1);drawDesigns()}});
 $d("designPick").addEventListener("click",()=>$d("designFile").click());
-$d("designFile").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)setDesign(f)});
-$d("designRemove").addEventListener("click",clearDesign);
+$d("designFile").addEventListener("change",e=>{const fs=[...e.target.files];e.target.value="";fs.forEach(setDesign)});
 $d("designClip").addEventListener("click",async()=>{
-  try{if(!navigator.clipboard?.read)throw 0;for(const it of await navigator.clipboard.read()){const t=it.types.find(x=>x.startsWith("image/"));if(t){setDesign(await it.getType(t));return}}alert("Clipboard tidak berisi gambar. Salin gambarnya dulu, lalu coba lagi.")}
+  try{if(!navigator.clipboard?.read)throw 0;let got=0;for(const it of await navigator.clipboard.read()){const t=it.types.find(x=>x.startsWith("image/"));if(t){setDesign(await it.getType(t));got++}}if(!got)alert("Clipboard tidak berisi gambar. Salin gambarnya dulu, lalu coba lagi.")}
   catch{$d("designPaste").hidden=false;$d("designPaste").focus()}
 });
-document.addEventListener("paste",e=>{const it=[...(e.clipboardData?.items||[])].find(x=>x.kind==="file"&&x.type.startsWith("image/"));if(it){e.preventDefault();setDesign(it.getAsFile());return}
-  if(e.target.closest&&e.target.closest("#designPaste"))setTimeout(async()=>{const im=$d("designPaste").querySelector("img");if(im){try{setDesign(await (await fetch(im.src)).blob())}catch{alert("Gambar tidak bisa dibaca, coba Pilih dari perangkat.")}}$d("designPaste").innerHTML="Tekan lama di sini lalu pilih <b>Tempel</b>"},60)});
-["dragover","dragleave","drop"].forEach(ev=>$d("designBox").addEventListener(ev,e=>{e.preventDefault();$d("designBox").classList.toggle("drag",ev==="dragover");if(ev==="drop"){const f=[...e.dataTransfer.files].find(f=>f.type.startsWith("image/"));if(f)setDesign(f)}}));
+document.addEventListener("paste",e=>{const its=[...(e.clipboardData?.items||[])].filter(x=>x.kind==="file"&&x.type.startsWith("image/"));if(its.length){e.preventDefault();its.forEach(it=>setDesign(it.getAsFile()));return}
+  if(e.target.closest&&e.target.closest("#designPaste"))setTimeout(async()=>{for(const im of $d("designPaste").querySelectorAll("img")){try{setDesign(await (await fetch(im.src)).blob())}catch{alert("Gambar tidak bisa dibaca, coba Pilih dari perangkat.")}}$d("designPaste").innerHTML="Tekan lama di sini lalu pilih <b>Tempel</b>"},60)});
+["dragover","dragleave","drop"].forEach(ev=>$d("designBox").addEventListener(ev,e=>{e.preventDefault();$d("designBox").classList.toggle("drag",ev==="dragover");if(ev==="drop")[...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")).forEach(setDesign)}));
 document.getElementById("orderForm").addEventListener("submit", async function(e){
   e.preventDefault();
   if(!this.reportValidity()) return;
   const v = id => document.getElementById(id).value.trim();
-  const lines = ["*FORMAT ORDER PEMESANAN D.VA SKATE*","",`Nama: ${v("nama")}`,`No. HP: ${v("hp")}`,`Ukuran Skinsuit:\n${v("ukuran")}`,"","*ALAMAT PENGIRIMAN*",`Nama Penerima: ${v("nama")}`,`No. HP Penerima: ${v("hp")}`,`Alamat: ${v("alamat")}`,...(design||designBusy?["","Gambar desain: sudah dilampirkan di form order"]:[]),"","*KETENTUAN PEMESANAN*","1. Konsultasi desain.","2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.","3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.","4. Skinsuit selesai proses produksi akan dikirim ke customer.","5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.","","*REKENING PEMBAYARAN*","Bank: BCA","No. Rekening: 5260526296","Atas Nama: Rifki Debi"].filter(x => x !== "");
+  const lines = ["*FORMAT ORDER PEMESANAN D.VA SKATE*","",`Nama: ${v("nama")}`,`No. HP: ${v("hp")}`,`Ukuran Skinsuit:\n${v("ukuran")}`,"","*ALAMAT PENGIRIMAN*",`Nama Penerima: ${v("nama")}`,`No. HP Penerima: ${v("hp")}`,`Alamat: ${v("alamat")}`,...(designs.length||designBusy?["",`Gambar desain: ${designs.length+designBusy} gambar dilampirkan di form order`]:[]),"","*KETENTUAN PEMESANAN*","1. Konsultasi desain.","2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.","3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.","4. Skinsuit selesai proses produksi akan dikirim ke customer.","5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.","","*REKENING PEMBAYARAN*","Bank: BCA","No. Rekening: 5260526296","Atas Nama: Rifki Debi"].filter(x => x !== "");
   const waUrl = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\n"))}`;
   const btn=this.querySelector('button[type="submit"]');
   btn.disabled=true;const label=btn.innerHTML;btn.textContent="MENYIMPAN PESANAN…";
   const waWindow=window.open("about:blank","_blank");
   try{
     await Promise.race([
-      (async()=>{if(designBusy)await designBusy;await submitOrder({customer_name:v("nama"),customer_phone:v("hp"),size_details:v("ukuran"),shipping_address:v("alamat")},design)})(),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),(design||designBusy)?30000:12000))
+      (async()=>{await Promise.allSettled(designWait);await submitOrder({customer_name:v("nama"),customer_phone:v("hp"),size_details:v("ukuran"),shipping_address:v("alamat")},designs)})(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),(designs.length||designBusy)?20000+designs.length*8000:12000))
     ]);
   }catch(err){
     // Pesanan tetap dikirim lewat WhatsApp walaupun penyimpanan gagal.

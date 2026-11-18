@@ -35,12 +35,18 @@ async function open(sealed,priv){
   return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(sealed.iv)},aes,unb64(sealed.ct))));
 }
 
-// image (opsional): {thumb, full} dari prepareImage().
-export async function submitOrder(data,image){
+// Gambar desain: daftar {k, thumb} di dokumen pesanan; gambar penuh di dvaOrderImages/<id>_<k>.
+// (Data lama: satu field `thumb` + dvaOrderImages/<id>, dibaca sebagai gambar dengan k = '').
+const imgDocId=(id,k)=>k?id+'_'+k:id;
+const newKey=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+// images (opsional): array {thumb, full} dari prepareImage().
+export async function submitOrder(data,images=[]){
   await ready();
   const sealed=await seal(data);
-  const ref=await addDoc(collection(db,COLLECTION),{v:1,status:'Pending',createdAt:serverTimestamp(),...(image?{thumb:image.thumb}:{}),...sealed});
-  if(image) await setDoc(doc(db,IMAGES,ref.id),{full:image.full});
+  const list=(images||[]).map(im=>({k:newKey(),thumb:im.thumb,full:im.full}));
+  const ref=await addDoc(collection(db,COLLECTION),{v:1,status:'Pending',createdAt:serverTimestamp(),...(list.length?{images:list.map(({k,thumb})=>({k,thumb}))}:{}),...sealed});
+  for(const im of list) await setDoc(doc(db,IMAGES,imgDocId(ref.id,im.k)),{full:im.full});
 }
 
 // Perkecil gambar: full maks ~900 KB (Firestore), thumbnail 180 px.
@@ -70,7 +76,7 @@ export async function unlock(password){
       for(const d of snap.docs){
         const r=d.data();let data={};
         try{data=await open(r,priv)}catch{data={customer_name:'(data tidak bisa dibuka)'}}
-        out.push({...data,id:d.id,status:r.status||'Pending',thumb:r.thumb||null,created_at:r.createdAt?.toDate?.()||new Date()});
+        out.push({...data,id:d.id,status:r.status||'Pending',images:Array.isArray(r.images)?r.images:(r.thumb?[{k:'',thumb:r.thumb}]:[]),created_at:r.createdAt?.toDate?.()||new Date()});
       }
       out.sort((a,b)=>b.created_at-a.created_at);
       out.forEach((o,i)=>o.order_number=out.length-i);
@@ -91,9 +97,10 @@ export async function unlock(password){
       }
     },
     // Gambar desain: thumbnail kecil di dokumen pesanan, gambar penuh di koleksi terpisah.
-    async setImage(id,thumb,full){await ready();await setDoc(doc(db,IMAGES,id),{full});await updateDoc(doc(db,COLLECTION,id),{thumb})},
-    async getImage(id){await ready();const s=await getDoc(doc(db,IMAGES,id));return s.exists()?s.data().full:null},
-    async removeImage(id){await ready();await updateDoc(doc(db,COLLECTION,id),{thumb:deleteField()});await deleteDoc(doc(db,IMAGES,id))},
-    async remove(id){await ready();await deleteDoc(doc(db,COLLECTION,id));try{await deleteDoc(doc(db,IMAGES,id))}catch{}}
+    // current = daftar gambar pesanan saat ini (dari list()); mengembalikan daftar baru.
+    async addImage(id,current,thumb,full){await ready();const k=newKey();await setDoc(doc(db,IMAGES,imgDocId(id,k)),{full});const next=[...current,{k,thumb}];await updateDoc(doc(db,COLLECTION,id),{images:next,thumb:deleteField()});return next},
+    async getImage(id,k){await ready();const s=await getDoc(doc(db,IMAGES,imgDocId(id,k)));return s.exists()?s.data().full:null},
+    async removeImage(id,current,k){await ready();const next=current.filter(x=>x.k!==k);await updateDoc(doc(db,COLLECTION,id),{images:next,thumb:deleteField()});try{await deleteDoc(doc(db,IMAGES,imgDocId(id,k)))}catch{}return next},
+    async remove(id,current=[]){await ready();await deleteDoc(doc(db,COLLECTION,id));for(const im of current){try{await deleteDoc(doc(db,IMAGES,imgDocId(id,im.k)))}catch{}}}
   };
 }
