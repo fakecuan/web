@@ -159,7 +159,7 @@ textarea#ptx[hidden]{display:none}
 .swl{font-size:11px;font-weight:600;color:#777;margin:2px 2px 4px}.sw.swm{margin-bottom:8px}
 .tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
 #ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
-#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}</style></head>
+#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}#libg .ldup{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#fffe;color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px #0003}</style></head>
 <body>
 <div id="view"></div>
 
@@ -247,7 +247,7 @@ textarea#ptx[hidden]{display:none}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r25</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-18 r26</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -519,7 +519,7 @@ function canBakeGraphics(pac){if(hasGfxTpl(pac))return true;const pe=pac.get('ma
 function setGraphicTex(node,pn){walk(node,m=>{if(!m.has('listTexture'))return;m.get('listTexture').all().forEach(t=>{if(t.get('enType')!==0)return;setTexFile(t,pn.file);
   if(t.has('v2Size'))t.set('v2Size',[pn.w,pn.h]);if(t.has('v2PhysicalSize'))t.set('v2PhysicalSize',[pn.w,pn.h]);if(t.has('v2Translation'))t.set('v2Translation',[0,0]);if(t.has('fSignedAngle'))t.set('fSignedAngle',0)})})}
 function reId(node,idFor,uuFor){walk(node,m=>{for(const e of m.e){if(e.k==='uiID'&&e.t===T_U32)m.set('uiID',idFor(m.get('uiID')));else if((e.k==='qsUuid'||e.k==='qsUuidUTF8')&&e.t===T_STR){const v=m.get(e.k);if(v)m.set(e.k,uuFor(v))}}})}
-let BAKEPOS={};
+let BAKEPOS={},BAKESTYLE={};
 function clipMesh(pm,M,Mo,hw,hh){const f=r=>new Float32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength)),u=r=>new Uint32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength));
   const rest=f(pm.raw('baRest')),tri=u(pm.raw('baTri')),ap=(m,x,y)=>[x*m[0]+y*m[3]+m[6],x*m[1]+y*m[4]+m[7]];
   let C=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([x,y])=>{const q=ap(Mo,x,y);return ap(M,q[0],q[1])});
@@ -540,7 +540,9 @@ function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.
   const idm={},uum={},idFor=o=>idm[o]||(idm[o]=nid()),uuFor=o=>uum[o]||(uum[o]=uuid());
   let gid=(pe.get('uiMaxGID')|0)+1;pe.set('uiMaxGID',gid);
   // style
-  const sty=clone(tstyle);reId(sty,idFor,uuFor);setStr(sty.get('mapElement'),'qsName',pn.label);setGraphicTex(sty,pn);gs.push(sty);const si=gs.length-1,styleId=sty.get('mapElement').get('uiID');
+  /* gambar yang sama (kunci sama) memakai satu gaya grafik → satu file gambar saja di CLO */
+  const prev=pn.styleKey!=null?BAKESTYLE[pn.styleKey]:null;let si,styleId;
+  if(prev){si=prev.si;styleId=prev.styleId}else{const sty=clone(tstyle);reId(sty,idFor,uuFor);setStr(sty.get('mapElement'),'qsName',pn.styleName||pn.label);setGraphicTex(sty,pn);gs.push(sty);si=gs.length-1;styleId=sty.get('mapElement').get('uiID');if(pn.styleKey!=null)BAKESTYLE[pn.styleKey]={si,styleId}}
   // overlay
   const ov=clone(tg.get('listOverlayFabricShape2D').at(0));reId(ov,idFor,uuFor);
   setStr(ov.get('mapElement'),'qsName',pn.label);ov.set('uiPatternGID',gid);if(ov.has('uiLineGID'))ov.set('uiLineGID',0);ov.set('uiParentPatternSelfIndex',pn.pattern);
@@ -570,10 +572,10 @@ function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.
   const cws=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapNewColorway')&&pac.get('mapColorWay').get('mapNewColorway').get('listColorway');let chip=nid();
   if(cws)cws.all().forEach(cw=>{const as=cw.get('mapAssign'),l=as&&as.get('listGraphicToStyle');
     const k0=l&&(l.length?l.at(0):(own?null:kitMap('g2s')));if(l&&k0){fixL(l);const x=clone(k0);x.set('uiItemID',gId);x.set('uiStyleID',styleId);x.set('bVisible',1);x.set('fAngle',Math.atan2(pn.Mo[1],pn.Mo[0])*180/Math.PI);x.set('v2Position',[pn.Mo[6],pn.Mo[7]]);l.push(x)}
-    const ca=cw.get('mapAssignStyleChip'),c2=ca&&ca.get('listGraphicItemStyleToStyleChip'),k1=c2&&(c2.length?c2.at(0):(own?null:kitMap('chip')));if(c2&&k1){fixL(c2);const y=clone(k1);y.set('uiStyleID',styleId);y.set('uiStyleChipID',chip);c2.push(y)}});
+    const ca=cw.get('mapAssignStyleChip'),c2=ca&&ca.get('listGraphicItemStyleToStyleChip'),k1=c2&&(c2.length?c2.at(0):(own?null:kitMap('chip')));if(!prev&&c2&&k1){fixL(c2);const y=clone(k1);y.set('uiStyleID',styleId);y.set('uiStyleChipID',chip);c2.push(y)}});
   const sca=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapStyleChipAssign'),vv=sca&&sca.get('listGraphicItemStyleToStyleChipVector');
   const kv=vv&&!vv.length&&!own?kitMap('vec'):null;
-  if(vv&&(vv.length||kv)){fixL(vv);const ex=kv||vv.all().find(x=>x.get('uiStyleID')===tStyleId)||vv.at(0);const c=clone(ex);reId(c,idFor,uuFor);c.set('uiStyleID',styleId);const ls=c.get('listStyleChip');if(ls&&ls.length&&ls.at(0).get('mapElement'))ls.at(0).get('mapElement').set('uiID',chip);setGraphicTex(c,pn);vv.push(c)}}
+  if(!prev&&vv&&(vv.length||kv)){fixL(vv);const ex=kv||vv.all().find(x=>x.get('uiStyleID')===tStyleId)||vv.at(0);const c=clone(ex);reId(c,idFor,uuFor);c.set('uiStyleID',styleId);const ls=c.get('listStyleChip');if(ls&&ls.length&&ls.at(0).get('mapElement'))ls.at(0).get('mapElement').set('uiID',chip);setGraphicTex(c,pn);vv.push(c)}}
 /* one fabric: put every pattern back on the original fabric and drop fabrics an earlier save added (SKN ...) */
 function useSingleFabric(pac){const fabs=pac.get('listFabric');if(!fabs||fabs.length<2)return;const all=fabs.all(),isSkn=f=>/^SKN /.test(f.get('qsName')||'');
   const keepIdx=all.findIndex(f=>!isSkn(f));if(keepIdx<0)return;const base=all[keepIdx],baseId=base.get('uiID'),dropIds=new Set(all.filter(isSkn).map(f=>f.get('uiID')));if(!dropIds.size)return;
@@ -601,7 +603,7 @@ function purgeSKN(pac,uids){const pe=pac.get('mapPatternEditor'),pl=pe.get('mapP
       const ca=cw.get('mapAssignStyleChip');if(ca)dropFrom(ca.get('listGraphicItemStyleToStyleChip'),x=>sids[x.get('uiStyleID')])});
     const sa=cr.get('mapStyleChipAssign');if(sa)dropFrom(sa.get('listGraphicItemStyleToStyleChipVector'),x=>sids[x.get('uiStyleID')])}}
 function referencedFiles(pac){const r={};walk(pac,m=>{['qsUniqueFileName','qsFileName'].forEach(k=>{if(m.has(k)){const v=m.get(k);if(typeof v==='string')r[v.replace(/^.*[\\/]/,'')]=1}})});return r}
-function writeZprj(st,panels,design,gfxOps){BAKEPOS={};
+function writeZprj(st,panels,design,gfxOps){BAKEPOS={};BAKESTYLE={};
   const pac=clone(st.pac);let nextId=maxId(pac)+1;const nid=()=>nextId++;
   const pl=pac.get('mapPatternEditor').get('mapPatternList').get('listPattern');
   const fabs=pac.get('listFabric');
@@ -613,7 +615,7 @@ function writeZprj(st,panels,design,gfxOps){BAKEPOS={};
   if(gMode||(panels.length===0&&canBakeGraphics(pac)))useSingleFabric(pac);
   const baseTpl=anyBaseTex(fabs);
   panels.forEach(pn=>{
-    if(gMode){addBakedGraphic(pac,pn,nid);newFiles[pn.file]=pn.data;return}
+    if(gMode){addBakedGraphic(pac,pn,nid);if(pn.data)newFiles[pn.file]=pn.data;return}
     pn.baseTpl=baseTpl;
     const p=pl.at(pn.pattern),fs=p.get('mapFabricShape2D'),itemId=fs.get('mapElement').get('uiID');
     const srcIdx=Math.max(0,fs.get('iFabricIndex')|0),src=fabs.at(Math.min(srcIdx,fabs.length-1)),srcId=src.get('uiID');
@@ -1106,7 +1108,7 @@ async function openZprj(f){busy('Membuka file CLO…');await tick();
   try{const buf=new Uint8Array(await f.arrayBuffer());const st=CLO.readZprj(buf);if(!st.patterns.length)throw new Error('Tidak ada pola');
     ZP=st;buildZprjModel(st);fnLabels();$('#ozprj').hidden=false;$('#ojson').hidden=false;
     const fresh=st.design&&st.design.parts&&(!st.design.pacSig||st.design.pacSig===st.pacSig);
-    if(fresh){applyProject(st.design);toast('File CLO dibuka beserta desainnya')}
+    if(fresh){applyProject(expandZ(st.design,st.zf));toast('File CLO dibuka beserta desainnya')}
     else{window.__gfxMiss=[];const n=await importCloGraphics(st);const miss=[...new Set(window.__gfxMiss)];
       toast((st.design?'File sudah diubah di CLO, dimuat dari data CLO terbaru. ':'File CLO dibuka. ')+(n?n+' motif CLO jadi lapisan terpisah.':'')+(miss.length?' '+miss.length+' motif tidak bisa dimuat: '+miss.slice(0,4).join(', '):''))}
     loadAvatar(st);setTimeout(()=>setDirty(false),700)}
@@ -1132,11 +1134,21 @@ async function panelArtwork(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[t
 /* mode grafik per lapisan: tiap gambar/teks jadi grafik CLO sendiri (bisa digeser/diubah di CLO PC) */
 const pngOf=cv=>new Promise(r=>cv.toBlob(b=>b.arrayBuffer().then(x=>r(new Uint8Array(x))),'image/png'));
 function cropMo(pt,W,H,ppm,x0,y0,cw,ch){const iw=W*ppm,ih=H*ppm,G0=patG0(pt,iw,ih),pcx=x0+cw/2,pcy=y0+ch/2,K=[W/iw,0,0,-H/ih,-pcx*W/iw,pcy*H/ih],M=mm(minv(G0),minv(K));return[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1]}
-async function panelPieces(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,out=[];
+/* satu file + satu gaya grafik untuk setiap gambar yang sama (kunci Library), dipakai ulang di semua pola */
+async function sharedPiece(SH,key,make,sname){let e=SH.map.get(key);if(e)return{file:e.file,data:null,key,sname};SH.n++;const data=await make();e={file:'SKN_g'+SH.n+'_'+SH.tag+'.png'};SH.map.set(key,e);return{file:e.file,data,key,sname}}
+function imgKey(L){let k=L.lk;if(!k){for(const p of Object.values(P)){const o=p.layers.find(l=>l.lk&&l.src===L.src);if(o){k=o.lk;break}}}return'img:'+(k||libKey(L.src||''))}
+async function panelPieces(p,SH){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,out=[];
   const baked=p.layers.map((L,i)=>[L,i]).filter(([L,i])=>!live[i]);
-  if(pt.fabColor==null||String(p.base).toLowerCase()!==String(pt.fabColor).toLowerCase()){const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.fillStyle=p.base;x.fillRect(0,0,16,16);
-    out.push({data:await pngOf(c),w:W,h:H,Mo:cropMo(pt,W,H,16/W,0,0,16,16*H/W>0?16*H/W:16),name:'Warna dasar'});out[0].Mo=cropMo(pt,W,H,1,0,0,W,H)}
+  if(pt.fabColor==null||String(p.base).toLowerCase()!==String(pt.fabColor).toLowerCase()){const col=String(p.base).toLowerCase();
+    const sp=await sharedPiece(SH,'col:'+col,()=>{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.fillStyle=p.base;x.fillRect(0,0,16,16);return pngOf(c)},'SKN Warna '+col);
+    out.push({...sp,w:W,h:H,Mo:cropMo(pt,W,H,1,0,0,W,H),name:'Warna dasar'})}
   for(const[L,i]of baked){if(!ready(L))continue;
+    /* gambar biasa (tidak diulang): pakai gambar aslinya + posisi/putar/balik lewat matriks grafik */
+    if(L.t!='txt'&&!L.rep&&L.img){const im=L.img,IW=im.naturalWidth||im.width,IH=im.naturalHeight||im.height;if(!IW||!IH)continue;
+      const Lf=fullLayerMat(L,W,H,IW,IH),w=IW*Math.hypot(Lf[0],Lf[1]),h=IH*Math.hypot(Lf[2],Lf[3]),Q=[IW/w,0,0,-IH/h,IW/2,IH/2],M=mm(minv(patG0(pt,W,H)),mm(Lf,Q));
+      const key=imgKey(L),en=(typeof LIB!='undefined'&&L.lk)?LIB.findIndex(x=>x.k==L.lk):-1;
+      const sp=await sharedPiece(SH,key,()=>{const s=Math.min(1,2048/Math.max(IW,IH)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(IW*s));c.height=Math.max(1,Math.round(IH*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return pngOf(c)},'SKN '+(en>=0?'Library '+(en+1):(L.name||'Gambar')));
+      out.push({...sp,w,h,Mo:[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1],name:L.name||('Gambar '+(i+1))});continue}
     /* cari batas isi lapisan (resolusi rendah) */
     const s0=Math.min(1.5,600/Math.max(W,H)),a=document.createElement('canvas');a.width=Math.ceil(W*s0);a.height=Math.ceil(H*s0);const ax=a.getContext('2d',{willReadFrequently:true});drawLayer(ax,L,a.width,a.height);
     const d=ax.getImageData(0,0,a.width,a.height).data;let x0=a.width,y0=a.height,x1=-1,y1=-1;for(let y=0;y<a.height;y++)for(let x=0;x<a.width;x++)if(d[(y*a.width+x)*4+3]>2){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
@@ -1146,7 +1158,7 @@ async function panelPieces(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[tx
     const ppm=Math.min(10,2048/Math.max(mw,mh)),cw=Math.max(2,Math.round(mw*ppm)),ch=Math.max(2,Math.round(mh*ppm));const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');
     x.translate(-mx0*ppm,-my0*ppm);drawLayer(x,L,W*ppm,H*ppm);
     const nm=L.t=='txt'?'Teks '+String(L.txt||'').slice(0,20):(L.name||('Gambar '+(i+1)));
-    out.push({data:await pngOf(c),w:cw/ppm,h:ch/ppm,Mo:cropMo(pt,W,H,ppm,mx0*ppm,my0*ppm,cw,ch),name:nm});await tick()}
+    out.push({data:await pngOf(c),w:cw/ppm,h:ch/ppm,Mo:cropMo(pt,W,H,ppm,mx0*ppm,my0*ppm,cw,ch),name:nm,key:null});await tick()}
   const n=out.length;out.forEach((o,k)=>o.z=+(0.01+0.08*(n>1?k/(n-1):0)).toFixed(4));return out}
 async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,ppm=Math.min(4,2048/Math.max(W,H)),iw=Math.max(8,Math.round(W*ppm)),ih=Math.max(8,Math.round(H*ppm));
   const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);p.layers.forEach((L,i)=>{if(!live[i])drawLayer(c,L,iw,ih)});
@@ -1157,14 +1169,14 @@ async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.
   const blob=await new Promise(r=>o.toBlob(r,'image/png'));return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H}}
 async function zprjBlob(){try{return await zprjBlob_()}finally{busy(null)}}
 async function zprjBlob_(){const T0=performance.now();const panels=[],ps=Object.values(P),tag=Math.random().toString(36).slice(2,7);
-  const gm=CLO.canBakeGraphics(ZP.pac);
+  const gm=CLO.canBakeGraphics(ZP.pac),SHARE={tag,n:0,map:new Map()};SHARE_LAST=gm?SHARE:null;
   for(let i=0;i<ps.length;i++){const p=ps[i];busy('Menyimpan: motif '+(NAME[p.d.id]||p.d.id)+' ('+(i+1)+'/'+ps.length+')…',5+80*i/ps.length);await tick();
     const nm=String(NAME[p.d.id]||p.d.id).replace(/[^A-Za-z0-9]+/g,'_');
-    if(gm){const arr=await panelPieces(p);arr.forEach((a,k)=>panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+(k+1)+'_'+tag+'.png',data:a.data,w:a.w,h:a.h,Mo:a.Mo,z:a.z,label:'SKN '+(NAME[p.d.id]||nm)+' · '+a.name}));continue}
+    if(gm){const arr=await panelPieces(p,SHARE);arr.forEach((a,k)=>panels.push({pattern:p.d.zp,file:a.file||('SKN_'+nm+'_'+(k+1)+'_'+tag+'.png'),data:a.data,w:a.w,h:a.h,Mo:a.Mo,z:a.z,styleKey:a.key,styleName:a.sname,label:'SKN '+(NAME[p.d.id]||nm)+' · '+a.name}));continue}
     const t=await panelTexture(p);
     panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:t.data,w:t.w,h:t.h,label:'SKN '+nm})}
   busy('Menyimpan: menyusun file .zprj…',88);await tick();const T1=performance.now();
-  const out=CLO.writeZprj(ZP,panels,projObj(),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
+  const out=CLO.writeZprj(ZP,panels,designZ(SHARE_LAST),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
 async function saveZprj(forceAs,preTg){if(!ZP){if(typeof newSaveOpen=='function'){newSaveOpen()}else toast('Buka file .zprj dulu');return}
   svStart();let tg;try{tg=preTg||await getTarget('zprj',forceAs)}catch(e){svFail('Tidak bisa memilih lokasi simpan: '+((e&&e.message)||e));return}
   if(!tg){svCancel();return}
@@ -1237,6 +1249,12 @@ async function importCloGraphics(st){let n=0;const ps=Object.values(P);
 function readyDl(name,blob){const mb=(blob.size/1048576).toFixed(1);const wrap=typeof DL!=='undefined'&&DL&&/\.zprj$/i.test(name);
   $('#dlinfo').textContent=name+' ('+mb+' MB)'+(wrap?'. Di Claude, file disimpan sebagai .zip: ekstrak untuk mendapat .zprj.':'');
   $('#dlgo').onclick=async()=>{$('#mdl').hidden=true;const ok=await saveFile(name,blob);if(ok===true)svOk(name,blob.size,true);else if(ok!=='declined')svFail(ok||'Unduhan gagal')};$('#mdl').hidden=false}
+
+/* data desain di .zprj: gambar yang sudah ada sebagai file grafik tidak disimpan dua kali */
+let SHARE_LAST=null;
+function designZ(SH){const o=projObj();if(!SH||!o.imgs)return o;const bySrc=new Map();Object.values(P).forEach(p=>p.layers.forEach(L=>{if(L.t!='txt'&&!L.rep&&L.src){const e=SH.map.get(imgKey(L));if(e)bySrc.set(L.src,e.file)}}));
+  o.imgs=o.imgs.map(s=>bySrc.has(s)?'zpac:'+bySrc.get(s):s);return o}
+function expandZ(d,zf){if(!d||!d.imgs)return d;d.imgs=d.imgs.map(s=>{const m=/^zpac:(.+)$/.exec(s||'');if(!m)return s;const b=zf[m[1]];if(!b)return '';let r='';for(let i=0;i<b.length;i+=0x8000)r+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return'data:image/png;base64,'+btoa(r)});return d}
 
 /* ---------- edit pola layar penuh ---------- */
 window.FSON=false;const fsHome=[];
@@ -1691,6 +1709,20 @@ $('#libg').addEventListener('click',e=>{if(e.target.closest('[data-del]'))return
 /* ---------- duplikat motif / gambar / teks ---------- */
 $('#dupc').onclick=()=>{const p=sel&&P[sel],L=cur();if(!p||!L)return;const m={...L};delete m.uid;delete m.tw;delete m.clo;delete m.bg;
   m.x=Math.min(.97,(L.x||.5)+.05);m.y=Math.min(.97,(L.y||.5)+.05);if(L.t!='txt')m.img=L.img;addLayer(p,m);view=null;render(sel);uiTools();toast('Diduplikat (digeser sedikit, seret untuk memindah)')};
+/* ---------- gambar Library = satu gambar: ukuran & hasil edit ikut semua tempelan ---------- */
+let linkT=0;
+function linkSize(src){if(!src||!src.lk||src.t=='txt')return;const sp=Object.values(P).find(q=>q.layers.includes(src));if(!sp)return;const pw=src.s*pUnit(sp)*(src.sx||1),sy=src.sy||1;
+  Object.values(P).forEach(q=>{let ch=false;q.layers.forEach(l=>{if(l===src||l.lk!==src.lk||l.t=='txt')return;const s=pw/pUnit(q)/(l.sx||1);if(Math.abs(s-l.s)>1e-4||l.sy!==sy){l.s=s;l.sy=sy;ch=true}});if(ch)_rendRaw(q.d.id)})}
+const _rendRaw=render;
+{const _r=render;render=function(id){const r=_r.apply(this,arguments);try{if(id&&id===sel){const L=P[id].layers[P[id].ai];if(L&&L.lk){clearTimeout(linkT);linkT=setTimeout(()=>linkSize(L),250)}}}catch(e){}return r}}
+/* hasil edit gambar → semua tempelan dengan gambar Library yang sama ikut berubah */
+{const _lr=libReplace;libReplace=function(L,p){const old=L.lk,oldSrc=IE&&IE.__src;_lr.apply(this,arguments);
+  Object.values(P).forEach(q=>{let ch=false;q.layers.forEach(l=>{if(l===L||l.t=='txt')return;if((old&&l.lk===old)||(oldSrc&&l.src===oldSrc)){l.img=L.img;l.src=L.src;l.lk=L.lk;delete l.clo;ch=true}});if(ch)render(q.d.id)});linkSize(L)}}
+{const _io=ieOpen;ieOpen=function(){const r=_io.apply(this,arguments);try{IE.__src=IE.L&&IE.L.src}catch(e){}return r}}
+/* duplikat gambar di Library: gambar sama tapi berdiri sendiri (ukuran & edit tidak ikut) */
+{const _lr2=libRender;libRender=function(){_lr2.apply(this,arguments);try{$('#libg').querySelectorAll('[data-i]').forEach(b=>{if(b.querySelector('.ldup'))return;b.insertAdjacentHTML('beforeend','<span class="ldup" data-dup="'+b.dataset.i+'" title="Duplikat gambar di Library">⧉</span>')})}catch(e){}}}
+$('#libg').addEventListener('click',e=>{const d=e.target.closest('[data-dup]');if(!d)return;e.stopPropagation();e.preventDefault();const i=+d.dataset.dup,en=LIB[i];if(!en)return;
+  LIB.splice(i+1,0,{...en,k:en.k+'~'+Date.now().toString(36)});libStore();libRender();toast('Gambar diduplikat di Library. Salinan ini berdiri sendiri.')},true);
 
 /* ---------- salin cermin ke pola sebelah (kaki, lengan, manset) ---------- */
 function twinOf(id){const t=PAIR[id];return t&&P[t]&&(!P[t].m||P[t].m.visible)?t:null}
@@ -1822,6 +1854,9 @@ $('#slv').onchange=async e=>{const k=e.target.value,prev=curKind();if(k===prev)r
 setTimeout(syncSlv,0);
 /* versi aplikasi ikut tersimpan di data desain (untuk melacak masalah) */
 {const _po=projObj;projObj=function(){const o=_po.apply(this,arguments);try{o.rv=($('#appver').textContent.match(/r\d+/)||[''])[0]}catch(e){}return o}}
+/* data desain: gambar yang sama hanya disimpan sekali (file lebih kecil) */
+{const _po2=projObj;projObj=function(){const o=_po2.apply(this,arguments);try{const tab=[],ix=new Map();Object.values(o.parts).forEach(p=>(p.layers||[]).forEach(l=>{if(typeof l.src=='string'&&l.src.length>200){let i=ix.get(l.src);if(i===undefined){i=tab.length;tab.push(l.src);ix.set(l.src,i)}l.src='#img:'+i}}));if(tab.length)o.imgs=tab}catch(e){}return o}}
+{const _ap2=applyProject;applyProject=function(o){try{if(o&&o.imgs){o=JSON.parse(JSON.stringify(o));Object.values(o.parts||{}).forEach(p=>(p.layers||[]).forEach(l=>{const m=/^#img:(\d+)$/.exec(l.src||'');if(m)l.src=o.imgs[+m[1]]}));delete o.imgs}}catch(e){}return _ap2.call(this,o)}}
 
 /* awal */
 setAll('#16161a');gBuild();
