@@ -26,7 +26,7 @@
 <body>
 <div class="top"><div><div class="brand">D.VA <span>SKATE</span></div><small>ORDER MANAGEMENT <span id="appVer"></span></small></div><div id="topActions" class="hidden"><button id="logoutBtn" class="btn light" type="button">Keluar</button></div></div>
 <main class="wrap">
-<section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masukkan password untuk melihat pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Password admin</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form><div id="bioRow" class="hidden" style="margin-top:12px"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="bioSave" checked style="width:auto"> Ingat di perangkat ini (masuk pakai sidik jari)</label><button type="button" id="bioBtn" class="btn hidden" style="width:100%;margin-top:8px">Masuk dengan sidik jari</button></div></section>
+<section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masukkan password untuk melihat pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Password admin</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form><div id="bioRow" class="hidden" style="margin-top:12px"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="bioSave" checked style="width:auto"> Ingat di perangkat ini (masuk pakai sidik jari)</label><button type="button" id="bioBtn" class="btn hidden" style="width:100%;margin-top:8px">Masuk dengan sidik jari</button><p id="bioStatus" class="sub" style="margin-top:8px;word-break:break-word"></p></div></section>
 <section id="dashboard" class="hidden">
 <div class="heading"><div><h1>Pesanan Masuk</h1><div class="muted">Kelola status dan detail order pelanggan.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="addBtn" class="btn pink" type="button">＋ Tambah pesanan</button><button id="refreshBtn" class="btn light" type="button">↻ Refresh</button></div></div>
 <div class="tabs"><button class="tab on" data-tab="ordersView" type="button">📋 Pesanan</button><button class="tab" data-tab="reportView" type="button">📊 Laporan</button></div>
@@ -316,7 +316,11 @@ const NATIVE=!!(window.Capacitor?.isNativePlatform?.());
 const bioPlugin=()=>window.Capacitor?.Plugins?.BiometricAuth;
 const SSTO=()=>window.Capacitor?.Plugins?.SecureStorage;
 const BIO_KEY='dvaAdminPw';
-async function bioSupported(){try{return !!NATIVE&&!!bioPlugin()&&!!(await bioPlugin().checkBiometry()).isAvailable}catch{return false}}
+async function bioSupported(){ // true, atau teks penyebab bila tidak tersedia
+  if(!NATIVE)return 'Bukan aplikasi Android';
+  if(!bioPlugin())return 'Plugin sidik jari tidak terbaca. Plugin yang ada: '+Object.keys(window.Capacitor?.Plugins||{}).join(', ');
+  try{const r=await bioPlugin().checkBiometry();return r.isAvailable?true:'Sidik jari belum tersedia di HP ini'+(r.reason?' ('+r.reason+')':'')}
+  catch(e){return 'Pengecekan sidik jari gagal: '+(e?.message||e)}}
 async function bioSavedPw(){try{return (await SSTO().get({key:BIO_KEY}))?.value||null}catch{return null}}
 async function bioLogin(){const pw=await bioSavedPw();if(!pw)return false;
   await bioPlugin().authenticate({reason:'Masuk ke D.VA Admin',cancelTitle:'Batal',allowDeviceCredential:false});
@@ -340,7 +344,10 @@ if(NATIVE){try{window.Capacitor.Plugins.App.addListener('resume',()=>{updateShow
 
 (async()=>{let pw=null;try{pw=sessionStorage.getItem('dvaAdminPw')}catch{}if(pw){try{await doLogin(pw);checkAppUpdate();return}catch{}}
   showLogin();checkAppUpdate();
-  if(await bioSupported()){$('bioRow').classList.remove('hidden');
+  if(NATIVE){$('bioRow').classList.remove('hidden');
+    const st=await bioSupported();
+    if(st!==true){$('bioStatus').textContent='Sidik jari belum aktif: '+st;$('bioSave').checked=false;$('bioSave').disabled=true;return}
+    $('bioStatus').textContent='';
     if(await bioSavedPw()){$('bioBtn').classList.remove('hidden');try{if(await bioLogin())return}catch{}}}})();
 </script>
 <div id="updateBar" class="hidden" style="position:fixed;left:12px;right:12px;bottom:14px;z-index:20;background:#111116;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 30px #0006;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:180px;font-size:13px" id="updateText"></div><button type="button" id="updateLater" class="btn light" style="padding:8px 12px">Nanti</button><button type="button" id="updateGo" class="btn pink" style="padding:8px 12px">Unduh</button></div>
