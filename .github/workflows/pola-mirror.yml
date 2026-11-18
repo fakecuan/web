@@ -1,0 +1,35 @@
+name: Salin pola dari Google Drive
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tools/pola-drive.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unduh file dari Google Drive (folder dibagikan lewat link)
+        run: |
+          mkdir -p dl
+          while IFS='|' read -r id name; do
+            [ -z "$id" ] && continue
+            echo "== $name"
+            curl -sSL --retry 3 -o "dl/$name" "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t"
+            ls -la "dl/$name"
+            head -c 4 "dl/$name" | od -c | head -1
+          done < tools/pola-drive.txt
+      - name: Simpan ke Releases (bukan ke repo)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=pola-ponorogo-src
+          gh release delete "$TAG" -y --cleanup-tag || true
+          git push origin ":refs/tags/$TAG" || true
+          gh release create "$TAG" dl/* --target "${{ github.sha }}" --title "Pola sumber Ponorogo (salinan dari Drive)" --notes "Salinan file .zprj dari folder Drive Ponorogo untuk diproses jadi pola dasar per ukuran." --latest=false
