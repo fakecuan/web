@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.view.View;
@@ -25,6 +26,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -48,6 +50,8 @@ public class MainActivity extends Activity {
     static final String FILE_PREFIX = "/__diva/f/";
     static final int RC_CHOOSER = 11;
     static final int RC_PICK = 12;
+    static final int RC_TREE = 13;
+    String authPending;
 
     WebView web;
     ValueCallback<Uri[]> chooserCb;
@@ -131,6 +135,12 @@ public class MainActivity extends Activity {
     boolean handleIntent(Intent i) {
         if (i == null) return false;
         Uri u = null;
+        if (Intent.ACTION_VIEW.equals(i.getAction()) && i.getData() != null && "divaskinsuit".equals(i.getData().getScheme())) {
+            String q = i.getData().getEncodedQuery();
+            authPending = q == null ? "" : q;
+            if (web != null) js("window.__gdAuth&&__gdAuth()");
+            return false;
+        }
         if (Intent.ACTION_VIEW.equals(i.getAction())) u = i.getData();
         else if (Intent.ACTION_SEND.equals(i.getAction())) u = i.getParcelableExtra(Intent.EXTRA_STREAM);
         if (u == null) return false;
@@ -361,6 +371,110 @@ public class MainActivity extends Activity {
             });
         }
 
+        /* ---------- login Google Drive (lewat browser, kembali ke aplikasi) ---------- */
+        @JavascriptInterface
+        public String authResult() {
+            String a = authPending;
+            authPending = null;
+            return a == null ? "" : a;
+        }
+
+        @JavascriptInterface
+        public void openUrl(String url) {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                } catch (Exception ignored) {
+                }
+            });
+        }
+
+        /* ---------- folder di HP (izin folder sekali, lalu bisa dijelajah) ---------- */
+        @JavascriptInterface
+        public void treeAdd(String req) {
+            runOnUiThread(() -> {
+                pickReq = req;
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+                try {
+                    startActivityForResult(i, RC_TREE);
+                } catch (Exception e) {
+                    js("window.__divaTree&&__divaTree(" + JSONObject.quote(req) + ",null)");
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public String treeList(String tree, String docId) {
+            try {
+                Uri t = Uri.parse(tree);
+                String id = docId == null || docId.isEmpty() ? DocumentsContract.getTreeDocumentId(t) : docId;
+                Uri ch = DocumentsContract.buildChildDocumentsUriUsingTree(t, id);
+                String[] cols = {DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                        DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.COLUMN_SIZE,
+                        DocumentsContract.Document.COLUMN_LAST_MODIFIED};
+                JSONArray a = new JSONArray();
+                try (Cursor c = getContentResolver().query(ch, cols, null, null, null)) {
+                    while (c != null && c.moveToNext()) {
+                        JSONObject o = new JSONObject();
+                        String mime = c.getString(2);
+                        o.put("id", c.getString(0));
+                        o.put("name", c.getString(1));
+                        o.put("dir", DocumentsContract.Document.MIME_TYPE_DIR.equals(mime));
+                        o.put("mime", mime == null ? "" : mime);
+                        o.put("size", c.isNull(3) ? -1 : c.getLong(3));
+                        o.put("mod", c.isNull(4) ? 0 : c.getLong(4));
+                        a.put(o);
+                    }
+                }
+                return a.toString();
+            } catch (Exception e) {
+                return "{\"error\":" + JSONObject.quote(String.valueOf(e.getMessage())) + "}";
+            }
+        }
+
+        @JavascriptInterface
+        public String treeOpen(String tree, String docId, String name) {
+            try {
+                Target t = new Target();
+                t.uri = DocumentsContract.buildDocumentUriUsingTree(Uri.parse(tree), docId);
+                t.name = name == null || name.isEmpty() ? displayName(t.uri) : name;
+                return info(register(t), t);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public String treeCreate(String tree, String parentDocId, String name, String mime) {
+            try {
+                Uri t = Uri.parse(tree);
+                String pid = parentDocId == null || parentDocId.isEmpty() ? DocumentsContract.getTreeDocumentId(t) : parentDocId;
+                Uri p = DocumentsContract.buildDocumentUriUsingTree(t, pid);
+                Uri n = DocumentsContract.createDocument(getContentResolver(), p,
+                        mime == null || mime.isEmpty() ? "application/octet-stream" : mime, name);
+                if (n == null) return "";
+                Target tg = new Target();
+                tg.uri = n;
+                tg.name = displayName(n);
+                JSONObject o = new JSONObject(info(register(tg), tg));
+                o.put("id", DocumentsContract.getDocumentId(n));
+                return o.toString();
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public void treeDrop(String tree) {
+            try {
+                getContentResolver().releasePersistableUriPermission(Uri.parse(tree),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } catch (Exception ignored) {
+            }
+        }
+
         @JavascriptInterface
         public void exitApp() {
             runOnUiThread(MainActivity.this::finish);
@@ -387,6 +501,32 @@ public class MainActivity extends Activity {
             }
             chooserCb.onReceiveValue(r);
             chooserCb = null;
+            return;
+        }
+        if (rc == RC_TREE) {
+            String req = pickReq;
+            pickReq = null;
+            if (res != RESULT_OK || data == null || data.getData() == null) {
+                js("window.__divaTree&&__divaTree(" + JSONObject.quote(req) + ",null)");
+                return;
+            }
+            Uri u = data.getData();
+            try {
+                getContentResolver().takePersistableUriPermission(u,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } catch (Exception ignored) {
+            }
+            String id = DocumentsContract.getTreeDocumentId(u);
+            String name = displayName(DocumentsContract.buildDocumentUriUsingTree(u, id));
+            try {
+                JSONObject o = new JSONObject();
+                o.put("uri", u.toString());
+                o.put("id", id);
+                o.put("name", name);
+                js("window.__divaTree&&__divaTree(" + JSONObject.quote(req) + "," + o + ")");
+            } catch (Exception e) {
+                js("window.__divaTree&&__divaTree(" + JSONObject.quote(req) + ",null)");
+            }
             return;
         }
         if (rc == RC_PICK) {
