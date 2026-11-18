@@ -59,7 +59,7 @@
 <input id="imgFile" type="file" accept="image/*" multiple class="hidden"></div></div>
 <div id="toast" class="toast hidden"></div>
 <script type="module">
-import { unlock } from "../form/orders-db.js?v=9";
+import { unlock } from "../form/orders-db.js?v=10";
 import { renderReport } from "./report.js?v=2";
 let store=null;
 const statuses=['Pending','Produksi','Selesai'];
@@ -138,10 +138,11 @@ function openNew(){$('editForm').reset();$('editId').value='';$('editTitle').tex
 const d=new Date();$('editDate').type='date';$('editDate').disabled=false;$('editDate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('editStatus').value='Pending';$('editTotal').value='';updateEditCalc();$('editModal').classList.remove('hidden');$('editName').focus()}
 $('addBtn').addEventListener('click',openNew);
 function closeEdit(){$('editModal').classList.add('hidden')}
-async function doLogin(pw){store=await unlock(pw);try{sessionStorage.setItem('dvaAdminPw',pw)}catch{}showDashboard();await loadOrders()}
+async function syncInbox(){try{const r=await fetch('inbox.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const n=await store.syncInbox(await r.json());if(n){toast(n+' pesanan baru dari kotak masuk ditambahkan');await loadOrders()}}catch(err){console.warn('Kotak masuk:',err)}}
+async function doLogin(pw){store=await unlock(pw);try{sessionStorage.setItem('dvaAdminPw',pw)}catch{}showDashboard();await loadOrders();syncInbox()}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;try{await doLogin($('password').value);$('loginError').classList.add('hidden');$('password').value=''}catch(err){$('loginError').textContent=err.message;$('loginError').classList.remove('hidden')}$('loginBtn').disabled=false});
 $('logoutBtn').addEventListener('click',()=>{store=null;orders=[];try{sessionStorage.removeItem('dvaAdminPw')}catch{}showLogin()});
-$('refreshBtn').addEventListener('click',loadOrders);['search','statusFilter','sortFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
+$('refreshBtn').addEventListener('click',async()=>{await loadOrders();syncInbox()});['search','statusFilter','sortFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
 function payload(o){const {id,status,created_at,order_number,...d}=o;return d}
 $('ordersBody').addEventListener('change',async e=>{const po=e.target.closest('[data-po]');if(po){const o=orders.find(x=>x.id===po.dataset.po);if(!o)return;const val=po.value.trim();if(val===(o.po_number||''))return;po.disabled=true;try{await store.save(o.id,o.status,{...payload(o),po_number:val})}catch(err){po.disabled=false;toast('Gagal menyimpan No. PO: '+err.message);return}o.po_number=val;po.disabled=false;po.classList.add('saved');setTimeout(()=>po.classList.remove('saved'),1500);toast('No. PO disimpan');return}const sel=e.target.closest('[data-status]');if(!sel)return;sel.disabled=true;try{await store.setStatus(sel.dataset.status,sel.value)}catch(err){sel.disabled=false;toast('Gagal mengubah status: '+err.message);return}sel.disabled=false;const o=orders.find(x=>x.id===sel.dataset.status);if(o)o.status=sel.value;render();toast('Status diperbarui')});
 $('ordersBody').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[data-po]'))e.target.blur()});

@@ -97,6 +97,10 @@ export async function unlock(password){
       }
     },
     // Gambar desain: thumbnail kecil di dokumen pesanan, gambar penuh di koleksi terpisah.
+    // Kotak masuk: pesanan terenkripsi di admin/inbox.json dimasukkan sekali saja (dicatat di dvaMeta/inbox).
+    async syncInbox(items){await ready();if(!items?.length)return 0;const metaRef=doc(db,'dvaMeta','inbox');const ms=await getDoc(metaRef);const done=new Set(ms.exists()?ms.data().done||[]:[]);const todo=items.filter(it=>it.id&&!done.has(it.id));
+      for(const it of todo){await setDoc(doc(db,COLLECTION,it.id),{v:1,status:it.status||'Pending',source:'inbox',createdAt:Timestamp.fromDate(new Date(it.createdAt)),ek:it.ek,iv:it.iv,ct:it.ct});done.add(it.id)}
+      if(todo.length)await setDoc(metaRef,{done:[...done]});return todo.length},
     // Tambah pesanan manual dari admin (tanggal bisa diatur).
     async create(status,createdAt,data){await ready();const ref=await addDoc(collection(db,COLLECTION),{v:1,status,source:'admin',createdAt:Timestamp.fromDate(createdAt),...await seal(data)});return ref.id},
     // current = daftar gambar pesanan saat ini (dari list()); mengembalikan daftar baru.
