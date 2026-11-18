@@ -1,9 +1,16 @@
 [
  {
+  "id": "12S",
+  "label": "12S",
+  "l": "12S-LS.zprj",
+  "fh": 304
+ },
+ {
   "id": "11S",
   "label": "11S",
   "s": "11S.zprj",
-  "fh": 343
+  "fh": 343,
+  "l": "11S-LS.zprj"
  },
  {
   "id": "10S",
@@ -50,13 +57,32 @@
   "id": "4S",
   "label": "4S",
   "s": "4S.zprj",
-  "fh": 446
+  "fh": 446,
+  "l": "4S-LS.zprj"
+ },
+ {
+  "id": "3S",
+  "label": "3S",
+  "l": "3S-LS.zprj",
+  "fh": 461
  },
  {
   "id": "2S",
   "label": "2S",
   "s": "2S.zprj",
   "fh": 473
+ },
+ {
+  "id": "XS",
+  "label": "XS",
+  "s": "XS.zprj",
+  "fh": 486
+ },
+ {
+  "id": "S",
+  "label": "S",
+  "s": "S.zprj",
+  "fh": 498
  },
  {
   "id": "L",
