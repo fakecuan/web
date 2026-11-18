@@ -37,7 +37,7 @@ async function open(sealed,priv){
 export async function submitOrder(data){
   await ready();
   const sealed=await seal(data);
-  await addDoc(collection(db,COLLECTION),{v:1,status:'Baru',createdAt:serverTimestamp(),...sealed});
+  await addDoc(collection(db,COLLECTION),{v:1,status:'Pending',createdAt:serverTimestamp(),...sealed});
 }
 
 // Membuka kunci admin. Melempar error bila password salah.
@@ -56,7 +56,7 @@ export async function unlock(password){
       for(const d of snap.docs){
         const r=d.data();let data={};
         try{data=await open(r,priv)}catch{data={customer_name:'(data tidak bisa dibuka)'}}
-        out.push({...data,id:d.id,status:r.status||'Baru',created_at:r.createdAt?.toDate?.()||new Date()});
+        out.push({...data,id:d.id,status:r.status||'Pending',created_at:r.createdAt?.toDate?.()||new Date()});
       }
       out.sort((a,b)=>b.created_at-a.created_at);
       out.forEach((o,i)=>o.order_number=out.length-i);
