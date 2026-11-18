@@ -13,6 +13,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-famil
 #app{display:flex;flex-direction:column;height:100dvh}
 header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
 header .title{font-weight:700;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header .title .vtag{font-size:10.5px;font-weight:600;color:var(--acc);border:1px solid var(--acc);border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:2px}
+#updbar{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:60;background:var(--acc);color:#fff;padding:8px 10px 8px 14px;border-radius:12px;font:600 13px Inter;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px #0008}#updbar button{border:0;border-radius:8px;padding:6px 10px;font:700 12.5px Inter;background:#fff;color:#0a6b2e;cursor:pointer}
 @media(max-width:440px){header{gap:5px;padding:8px}header .title .tl{display:none}header .title small{font-size:13px!important;font-weight:600!important;color:var(--text)!important;white-space:nowrap}}
 header .title small{display:block;font-weight:500;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
 .ib.lib{color:var(--acc,#00ae42)}
@@ -162,7 +164,7 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
   <header>
     <button class="ib" id="bOpen" title="Buka"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
     <button class="ib lib" id="bLib" title="Library online (MakerWorld)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg></button>
-    <div class="title"><span class="tl">3MF Editor</span><small id="fname">Belum ada file</small></div>
+    <div class="title"><span class="tl">3MF Editor <span class="vtag" id="vtag"></span></span><small id="fname">Belum ada file</small></div>
     <button class="ib" id="bUndo" title="Undo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="ib" id="bRedo" title="Redo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
     <div class="savegrp"><button class="ib save" id="bSave" disabled title="Simpan (timpa file yang dibuka)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>Simpan</button><button class="ib save as" id="bSaveAs" disabled title="Simpan sebagai nama baru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M14 3v5h5"/><path d="M19 8v3"/><path d="M18 14v6"/><path d="M15 17h6"/></svg></button></div>
@@ -208,10 +210,24 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.2';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
+document.getElementById('vtag').textContent = 'v' + APP_VERSION;
+// cek versi baru (hindari cache lama di browser)
+if (/^https?:/.test(location.protocol) && !(window.claude && window.claude.use)) setTimeout(async () => {
+  try {
+    const r = await fetch(new URL('version.json', location.href).href + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return;
+    const v = (await r.json()).version, n = x => String(x).split('.').map(Number), a = n(v), b = n(APP_VERSION);
+    let newer = false; for (let i = 0; i < Math.max(a.length, b.length); i++) { if ((a[i] || 0) !== (b[i] || 0)) { newer = (a[i] || 0) > (b[i] || 0); break; } }
+    if (!newer) return;
+    const bar = document.createElement('div'); bar.id = 'updbar';
+    bar.innerHTML = `Versi baru <b>v${v}</b> tersedia <button>Muat ulang</button>`;
+    bar.querySelector('button').onclick = () => { location.replace(location.pathname + '?v=' + v + location.hash); };
+    document.body.appendChild(bar);
+  } catch (e) {}
+}, 1500);
 const ICON = {
   move:'<path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>',
   rotate:'<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/>',
@@ -699,7 +715,11 @@ async function openFiles(files, add, handle) {
     showFname();
     sel = []; buildPlate(); refresh(true); camView('fit');
     if (add) toast('Model ditambahkan');
-  } catch (e) { console.error(e); toast('Gagal membuka: ' + e.message); if (!add && undoS.length) { restore(undoS.pop()); refresh(true); } }
+  } catch (e) { console.error(e); busy(false);
+    if (!add && undoS.length) { restore(undoS.pop()); refresh(true); }
+    const nm = files.map(f => f.name).join(', ');
+    modal(`<h3>File tidak bisa dibuka</h3><p><b>${esc(nm)}</b><br><br>Alasan: <code style="color:#ff8a8a">${esc(e && e.message || String(e))}</code><br><br>Pastikan file berakhiran <b>.3mf</b> atau <b>.stl</b> dan tidak rusak. Kalau masih gagal, kirim screenshot pesan ini.</p><div class="acts"><button class="btn" data-close>Tutup</button></div>`);
+  }
   busy(false);
 }
 
