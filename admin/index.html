@@ -37,7 +37,7 @@
 <div class="table-wrap"><table><thead><tr><th>No. Order</th><th>No. PO</th><th>Desain</th><th>Tanggal</th><th>Pelanggan</th><th>No. HP</th><th>Ukuran</th><th>Alamat</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="ordersBody"><tr><td colspan="11" class="empty">Memuat pesanan…</td></tr></tbody></table></div>
 </section></div><div id="reportView" class="hidden"></div></section>
 </main>
-<div id="editModal" class="modal hidden"><div class="dialog"><div class="dialog-head"><h2 id="editTitle">Edit Pesanan</h2><button id="closeModal" class="btn light" type="button">✕</button></div><form id="editForm"><input id="editId" type="hidden"><div class="grid">
+<div id="editModal" class="modal hidden"><div class="dialog"><div class="dialog-head"><h2 id="editTitle">Edit Pesanan</h2><div style="display:flex;gap:8px"><button id="pasteBtn" class="btn light hidden" type="button">📋 Tempel dari WA</button><button id="closeModal" class="btn light" type="button">✕</button></div></div><form id="editForm"><input id="editId" type="hidden"><div class="grid">
 <div class="field"><label>No. PO</label><input id="editPO" placeholder="Isi No. PO"></div><div class="field"><label>Tanggal masuk</label><input id="editDate" type="date" disabled></div>
 <div class="field" style="position:relative"><label>Nama pelanggan</label><input id="editName" required autocomplete="off" placeholder="Ketik nama, pilih dari daftar"><div id="nameSuggest" class="suggest hidden" role="listbox"></div></div><div class="field" style="position:relative"><label>No. HP / WhatsApp</label><input id="editPhone" autocomplete="off" placeholder="08xxxxxxxxxx"><div id="phoneSuggest" class="suggest hidden" role="listbox"></div></div>
 <div class="field"><label>Status pesanan</label><select id="editStatus"><option>Pending</option><option>Produksi</option><option>Selesai</option></select></div>
@@ -46,6 +46,7 @@
 <div class="field" style="grid-column:1/-1"><label>Alamat pengiriman</label><textarea id="editAddress"></textarea></div>
 <div class="field" style="grid-column:1/-1"><label>Catatan admin</label><textarea id="editNote" placeholder="Catatan produksi, pembayaran, dll."></textarea></div>
 </div><div class="dialog-actions"><button id="deleteOrder" class="btn danger" type="button" style="margin-right:auto">Hapus</button><button id="cancelEdit" class="btn light" type="button">Batal</button><button id="saveEdit" class="btn pink" type="submit">Simpan perubahan</button></div></form></div></div>
+<div id="pasteModal" class="modal hidden"><div class="dialog" style="width:min(640px,100%)"><div class="dialog-head"><h2>Tempel pesan WA</h2><button id="closePaste" class="btn light" type="button">✕</button></div><p class="muted">Salin pesan order dari WhatsApp, lalu tempel di sini. Nama, No. HP, alamat, dan ukuran akan terisi otomatis.</p><textarea id="pasteText" style="min-height:220px" placeholder="Tempel pesan WA di sini"></textarea><div id="pastePreview" class="sub" style="margin-top:8px;min-height:18px"></div><div class="dialog-actions"><button id="pasteFromClip" class="btn light" type="button" style="margin-right:auto">Tempel dari clipboard</button><button id="cancelPaste" class="btn light" type="button">Batal</button><button id="applyPaste" class="btn pink" type="button">Isi otomatis</button></div></div></div>
 <div id="importModal" class="modal hidden"><div class="dialog" style="width:min(760px,100%)"><div class="dialog-head"><h2>Import pesanan dari Google Sheet</h2><button id="closeImport" class="btn light" type="button">✕</button></div>
 <p class="muted">Sheet harus bisa dibuka oleh siapa saja yang memiliki link. Data dimasukkan dengan status <b>Selesai</b>. Impor ulang sheet yang sama akan memperbarui baris yang sama, tidak membuat duplikat.</p>
 <div class="grid"><div class="field" style="grid-column:1/-1"><label>Link Google Sheet</label><input id="importUrl" value="https://docs.google.com/spreadsheets/d/1bTIvf8heQyZNEyfKs1pjj6n9ImKgJzOTEQpyMxDxzb4/edit"></div>
@@ -134,10 +135,46 @@ return '<tr>'+
 '<td data-label="Aksi"><div class="row-actions"><button class="btn light" data-edit="'+o.id+'">Edit</button></div></td>'+
 '</tr>'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function openEdit(id){const o=orders.find(x=>x.id===id);if(!o)return;$('editId').value=o.id;setTimeout(updateEditCalc);$('editPO').value=o.po_number||'';$('editDate').type='text';$('editDate').disabled=true;$('editDate').value=date(o.created_at);$('editTitle').textContent='Edit Pesanan';$('deleteOrder').classList.remove('hidden');$('saveEdit').textContent='Simpan perubahan';$('editName').value=o.customer_name||'';$('editPhone').value=o.customer_phone||'';$('editStatus').value=o.status;$('editTotal').value=o.total_amount??'';$('editSizes').value=o.size_details||'';$('editAddress').value=o.shipping_address||'';$('editNote').value=o.admin_note||'';$('editModal').classList.remove('hidden')}
-function openNew(){$('editForm').reset();$('editId').value='';$('editTitle').textContent='Tambah Pesanan';$('deleteOrder').classList.add('hidden');$('saveEdit').textContent='Simpan pesanan';
+function openEdit(id){const o=orders.find(x=>x.id===id);if(!o)return;$('pasteBtn').classList.add('hidden');$('editId').value=o.id;setTimeout(updateEditCalc);$('editPO').value=o.po_number||'';$('editDate').type='text';$('editDate').disabled=true;$('editDate').value=date(o.created_at);$('editTitle').textContent='Edit Pesanan';$('deleteOrder').classList.remove('hidden');$('saveEdit').textContent='Simpan perubahan';$('editName').value=o.customer_name||'';$('editPhone').value=o.customer_phone||'';$('editStatus').value=o.status;$('editTotal').value=o.total_amount??'';$('editSizes').value=o.size_details||'';$('editAddress').value=o.shipping_address||'';$('editNote').value=o.admin_note||'';$('editModal').classList.remove('hidden')}
+function openNew(){$('pasteBtn').classList.remove('hidden');$('editForm').reset();$('editId').value='';$('editTitle').textContent='Tambah Pesanan';$('deleteOrder').classList.add('hidden');$('saveEdit').textContent='Simpan pesanan';
 const d=new Date();$('editDate').type='date';$('editDate').disabled=false;$('editDate').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('editStatus').value='Pending';$('editTotal').value='';updateEditCalc();$('editModal').classList.remove('hidden');$('editName').focus()}
 $('addBtn').addEventListener('click',openNew);
+// ---------- Tempel pesan WA: isi nama, No. HP, alamat, dan ukuran otomatis ----------
+const WA_KEYS={nama:'name',namapemesan:'name',namalengkap:'name',namapenerima:'recv',
+  nohp:'phone',nohppenerima:'phone',notelp:'phone',notelepon:'phone',nowa:'phone',hp:'phone',telp:'phone',telepon:'phone',whatsapp:'phone',wa:'phone',
+  alamat:'addr',alamatlengkap:'addr',alamatpengiriman:'addr'};
+function parseWaOrder(text){
+  const out={name:'',phone:'',address:'',sizes:''};const addr=[],sizes=[];let sec=null;const rec={};
+  for(const raw of String(text||'').replace(/\r/g,'').split('\n')){
+    const l=raw.replace(/[*_~]/g,'').trim();
+    if(!l){sec=null;continue}
+    if(/^(format order|alamat pengiriman|gambar desain)/i.test(l)){sec=null;continue}
+    const m=l.match(/^([a-z .\/]+?)\s*:\s*(.*)$/i);const key=m&&WA_KEYS[m[1].toLowerCase().replace(/[^a-z]/g,'')];
+    if(key){const v=m[2].trim();sec=null;
+      if(key==='name'||key==='recv'||key==='phone'){if(!rec[key])rec[key]=v}
+      else if(key==='addr'){sec='addr';if(v)addr.push(v)}}
+    else if(/^ukuran/i.test(l)){sec='sizes';const v=l.replace(/^ukuran[^:]*:\s*/i,'');if(v)sizes.push(v)}
+    else if(sec==='addr')addr.push(l);
+    else if(sec==='sizes')sizes.push(l);
+  }
+  out.name=rec.name||rec.recv||'';
+  const digits=String(rec.phone||'').replace(/[\s.\-()]/g,'');const pm=(digits.match(/(?:\+?62|0)8\d{7,12}/)||String(text||'').replace(/[\s.\-()]/g,'').match(/(?:\+?62|0)8\d{7,12}/));
+  out.phone=pm?pm[0].replace(/^\+?62/,'0'):String(rec.phone||'').trim();
+  out.address=addr.join('\n');out.sizes=sizes.join('\n');
+  return out}
+function waSummary(d){const parts=[];if(d.name)parts.push('nama '+d.name);if(d.phone)parts.push('HP '+d.phone);if(d.address)parts.push('alamat');if(d.sizes)parts.push(d.sizes.split('\n').length+' baris ukuran');return parts.length?'Terdeteksi: '+parts.join(' · '):'Belum ada data yang dikenali'}
+function openPaste(){$('pasteText').value='';$('pastePreview').textContent='';$('pasteModal').classList.remove('hidden');setTimeout(()=>$('pasteText').focus(),50)}
+function closePaste(){$('pasteModal').classList.add('hidden')}
+function applyPaste(){const d=parseWaOrder($('pasteText').value);if(!d.name&&!d.phone&&!d.address&&!d.sizes){toast('Tidak ada data yang bisa dibaca');return}
+  if(d.name)$('editName').value=d.name;if(d.phone)$('editPhone').value=d.phone;if(d.address)$('editAddress').value=d.address;if(d.sizes)$('editSizes').value=d.sizes;
+  updateEditCalc();closePaste();toast('Data dari WA sudah terisi')}
+$('pasteBtn').addEventListener('click',openPaste);
+$('closePaste').addEventListener('click',closePaste);$('cancelPaste').addEventListener('click',closePaste);
+$('applyPaste').addEventListener('click',applyPaste);
+$('pasteText').addEventListener('input',()=>{$('pastePreview').textContent=waSummary(parseWaOrder($('pasteText').value))});
+$('pasteText').addEventListener('paste',()=>setTimeout(()=>{$('pastePreview').textContent=waSummary(parseWaOrder($('pasteText').value))},0));
+$('pasteFromClip').addEventListener('click',async()=>{try{const t=await navigator.clipboard.readText();if(!t)throw 0;$('pasteText').value=t;$('pastePreview').textContent=waSummary(parseWaOrder(t))}catch{$('pasteText').focus();toast('Tekan lama kotak lalu pilih Tempel')}});
+
 // ---------- Saran nama pelanggan (isi otomatis No. HP & alamat) ----------
 function customerList(){const map=new Map();const flat=x=>String(x||'').replace(/[\s.\-()]/g,'');
   [...orders].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).forEach(o=>{const name=String(o.customer_name||'').trim();if(!name||/^tanpa nama$/i.test(name))return;
