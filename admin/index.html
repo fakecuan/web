@@ -144,21 +144,37 @@ const WA_KEYS={nama:'name',namapemesan:'name',namalengkap:'name',namapenerima:'r
   nohp:'phone',nohppenerima:'phone',notelp:'phone',notelepon:'phone',nowa:'phone',hp:'phone',telp:'phone',telepon:'phone',whatsapp:'phone',wa:'phone',
   alamat:'addr',alamatlengkap:'addr',alamatpengiriman:'addr'};
 function parseWaOrder(text){
-  const out={name:'',phone:'',address:'',sizes:''};const addr=[],sizes=[];let sec=null;const rec={};
+  const out={name:'',phone:'',address:'',sizes:''};const addr=[],sizes=[];let sec=null,anyLabel=false;const rec={};const free=[];
+  const ADDR_RE=/\b(jl|jln|jalan|gang|gg|rt|rw|kel|kec|desa|kab|kabupaten|kota|kodepos|perum|perumahan|blok|dusun|komplek|kompleks)\b|\b\d{5}\b|\bno\.?\s*\d/i;
+  const PHONE_RE=/(?:\+?62|0)8\d{7,12}/;
   for(const raw of String(text||'').replace(/\r/g,'').split('\n')){
     const l=raw.replace(/[*_~]/g,'').trim();
     if(!l){sec=null;continue}
     if(/^(format order|alamat pengiriman|gambar desain)/i.test(l)){sec=null;continue}
     const m=l.match(/^([a-z .\/]+?)\s*:\s*(.*)$/i);const key=m&&WA_KEYS[m[1].toLowerCase().replace(/[^a-z]/g,'')];
-    if(key){const v=m[2].trim();sec=null;
+    if(key){anyLabel=true;const v=m[2].trim();sec=null;
       if(key==='name'||key==='recv'||key==='phone'){if(!rec[key])rec[key]=v}
       else if(key==='addr'){sec='addr';if(v)addr.push(v)}}
-    else if(/^ukuran/i.test(l)){sec='sizes';const v=l.replace(/^ukuran[^:]*:\s*/i,'');if(v)sizes.push(v)}
-    else if(sec==='addr')addr.push(l);
-    else if(sec==='sizes')sizes.push(l);
+    else if(/^ukuran/i.test(l)){anyLabel=true;sec='sizes';const v=l.replace(/^ukuran[^:]*:\s*/i,'');if(v)sizes.push(v)}
+    else if(sec==='addr'){addr.push(l)}
+    else if(sec==='sizes'){sizes.push(l)}
+    else free.push(l);
+  }
+  if(!anyLabel){
+    // Pesan tanpa label: tebak per baris. Admin tetap memeriksa hasilnya sebelum menyimpan.
+    let nameTaken=false;
+    for(const raw of free){
+      const l=raw.replace(/^\s*(\d{1,2}\s*[.)\-:]|[-•*])\s+/,'').trim();
+      const digits=l.replace(/[\s.\-()+]/g,'');
+      if(!rec.phone&&PHONE_RE.test(digits)&&!/[a-z]{4,}/i.test(l.replace(/hp|wa|telp|no/gi,''))){rec.phone=l;continue}
+      if(parseLine(l).hasSize){sizes.push(l);continue}
+      if(ADDR_RE.test(l)||(l.length>=30&&!nameTaken)){addr.push(l);continue}
+      if(!nameTaken&&l.length<=40&&!/\d/.test(l)){rec.name=l;nameTaken=true;continue}
+      addr.push(l);
+    }
   }
   out.name=rec.name||rec.recv||'';
-  const digits=String(rec.phone||'').replace(/[\s.\-()]/g,'');const pm=(digits.match(/(?:\+?62|0)8\d{7,12}/)||String(text||'').replace(/[\s.\-()]/g,'').match(/(?:\+?62|0)8\d{7,12}/));
+  const digits=String(rec.phone||'').replace(/[\s.\-()]/g,'');const pm=(digits.match(PHONE_RE)||String(text||'').replace(/[\s.\-()]/g,'').match(PHONE_RE));
   out.phone=pm?pm[0].replace(/^\+?62/,'0'):String(rec.phone||'').trim();
   out.address=addr.join('\n');out.sizes=sizes.join('\n');
   return out}
