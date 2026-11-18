@@ -3,7 +3,7 @@
 // sehingga hanya halaman admin yang tahu password yang bisa membacanya.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const FIREBASE={apiKey:'AIzaSyDiVYwwj73-pnQUii6EUc7WeZnJ-3D7CD8',authDomain:'winnerpadel.firebaseapp.com',projectId:'winnerpadel',storageBucket:'winnerpadel.firebasestorage.app',messagingSenderId:'539208934533',appId:'1:539208934533:web:919f119da78f9825a5b5ec'};
 const COLLECTION='dvaOrders';
@@ -64,6 +64,18 @@ export async function unlock(password){
     },
     async setStatus(id,status){await ready();await updateDoc(doc(db,COLLECTION,id),{status})},
     async save(id,status,data){await ready();await updateDoc(doc(db,COLLECTION,id),{status,...await seal(data)})},
+    // Impor banyak pesanan sekaligus. id tetap (mis. sheet-12) supaya impor ulang tidak membuat duplikat.
+    async importMany(list,onProgress){
+      await ready();
+      let done=0;
+      for(let i=0;i<list.length;i+=200){
+        const batch=writeBatch(db);
+        for(const it of list.slice(i,i+200)){
+          batch.set(doc(db,COLLECTION,it.id),{v:1,status:it.status,source:it.source||'import',createdAt:Timestamp.fromDate(it.created_at),...await seal(it.data)});
+        }
+        await batch.commit();done=Math.min(list.length,i+200);onProgress&&onProgress(done,list.length);
+      }
+    },
     async remove(id){await ready();await deleteDoc(doc(db,COLLECTION,id))}
   };
 }
