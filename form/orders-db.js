@@ -35,10 +35,23 @@ async function open(sealed,priv){
   return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(sealed.iv)},aes,unb64(sealed.ct))));
 }
 
-export async function submitOrder(data){
+// image (opsional): {thumb, full} dari prepareImage().
+export async function submitOrder(data,image){
   await ready();
   const sealed=await seal(data);
-  await addDoc(collection(db,COLLECTION),{v:1,status:'Pending',createdAt:serverTimestamp(),...sealed});
+  const ref=await addDoc(collection(db,COLLECTION),{v:1,status:'Pending',createdAt:serverTimestamp(),...(image?{thumb:image.thumb}:{}),...sealed});
+  if(image) await setDoc(doc(db,IMAGES,ref.id),{full:image.full});
+}
+
+// Perkecil gambar: full maks ~900 KB (Firestore), thumbnail 180 px.
+export async function prepareImage(blob){
+  const url=URL.createObjectURL(blob);
+  try{
+    const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error('File bukan gambar yang bisa dibaca'));i.src=url});
+    const shrink=(max,q)=>{const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)};
+    let full,q=.85,max=1600;do{full=shrink(max,q);q-=.1;if(q<.5){max=Math.round(max*.75);q=.8}}while(full.length>900000);
+    return {thumb:shrink(180,.75),full};
+  }finally{URL.revokeObjectURL(url)}
 }
 
 // Membuka kunci admin. Melempar error bila password salah.
