@@ -78,10 +78,11 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
   if(!this.reportValidity()) return;
   const v = id => document.getElementById(id).value.trim();
   const lines = ["*FORMAT ORDER PEMESANAN D.VA SKATE*","",`Nama: ${v("nama")}`,`No. HP: ${v("hp")}`,`Ukuran Skinsuit:\n${v("ukuran")}`,"","*ALAMAT PENGIRIMAN*",`Nama Penerima: ${v("nama")}`,`No. HP Penerima: ${v("hp")}`,`Alamat: ${v("alamat")}`,"","*KETENTUAN PEMESANAN*","1. Konsultasi desain.","2. Setelah desain fix, pembayaran DP 50% ke rekening BCA 5260526296 a.n. Rifki Debi.","3. Proses produksi setiap Senin dan Kamis atau Selasa dan Jumat setiap minggu. Pengerjaan estimasi 4 hari jika tidak ada kendala printing dan jahit.","4. Skinsuit selesai proses produksi akan dikirim ke customer.","5. Pelunasan 100% + biaya ongkir saat barang akan dikirim.","","*REKENING PEMBAYARAN*","Bank: BCA","No. Rekening: 5260526296","Atas Nama: Rifki Debi"].filter(x => x !== "");
-  const waUrl = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\\n"))}`;
+  const waUrl = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(lines.join("\n"))}`;
   const cfg=window.DVA_SUPABASE_CONFIG||{};
   if(!cfg.url||!cfg.anonKey||cfg.url.includes("PROJECT-REF")||cfg.anonKey.includes("SUPABASE_ANON")){
-    alert("Penyimpanan pesanan belum diaktifkan. Admin perlu mengisi konfigurasi Supabase terlebih dahulu.");
+    // Database belum dikonfigurasi: tetap kirim pesanan lewat WhatsApp agar pelanggan tidak terhambat.
+    window.location.href=waUrl;
     return;
   }
   const waWindow=window.open("about:blank","_blank");
