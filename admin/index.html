@@ -24,7 +24,7 @@
 </style>
 </head>
 <body>
-<div class="top"><div><div class="brand">D.VA <span>SKATE</span></div><small>ORDER MANAGEMENT</small></div><div id="topActions" class="hidden"><button id="logoutBtn" class="btn light" type="button">Keluar</button></div></div>
+<div class="top"><div><div class="brand">D.VA <span>SKATE</span></div><small>ORDER MANAGEMENT <span id="appVer"></span></small></div><div id="topActions" class="hidden"><button id="logoutBtn" class="btn light" type="button">Keluar</button></div></div>
 <main class="wrap">
 <section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masukkan password untuk melihat pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Password admin</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form><div id="bioRow" class="hidden" style="margin-top:12px"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="bioSave" checked style="width:auto"> Ingat di perangkat ini (masuk pakai sidik jari)</label><button type="button" id="bioBtn" class="btn hidden" style="width:100%;margin-top:8px">Masuk dengan sidik jari</button></div></section>
 <section id="dashboard" class="hidden">
@@ -269,9 +269,26 @@ async function bioLogin(){const pw=await bioSavedPw();if(!pw)return false;
   await bioPlugin().authenticate({reason:'Masuk ke D.VA Admin',cancelTitle:'Batal',allowDeviceCredential:false});
   try{await doLogin(pw);return true}catch{await SSTO().remove({key:BIO_KEY}).catch(()=>{});toast('Password admin sudah berubah, masuk dengan password baru');return false}}
 $('bioBtn').addEventListener('click',async()=>{try{if(!await bioLogin())return}catch{toast('Verifikasi sidik jari dibatalkan')}});
-(async()=>{let pw=null;try{pw=sessionStorage.getItem('dvaAdminPw')}catch{}if(pw){try{await doLogin(pw);return}catch{}}
-  showLogin();
+// ---------- Cek versi APK baru (hanya APK Android) ----------
+const APK_URL='https://github.com/fakecuan/web/releases/download/dva-admin-apk-latest/DVA-Admin.apk';
+const APK_API='https://api.github.com/repos/fakecuan/web/releases/tags/dva-admin-apk-latest';
+let appBuild=null,updateShown=false;
+const numOf=t=>{const m=String(t||'').match(/1\.(\d+)/);return m?Number(m[1]):null};
+async function checkAppUpdate(){if(!NATIVE)return;
+  try{if(appBuild===null){const info=await window.Capacitor.Plugins.App.getInfo();appBuild=numOf(info.version);if(appBuild!==null)$('appVer').textContent='· v1.'+appBuild}
+    if(appBuild===null||updateShown)return;
+    const r=await fetch(APK_API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});if(!r.ok)return;
+    const latest=numOf((await r.json()).name);if(latest===null||latest<=appBuild)return;
+    updateShown=true;$('updateText').innerHTML='<b>Ada versi baru D.VA Admin (1.'+latest+')</b><br><span style="color:#c9c9d6">Versi kamu saat ini 1.'+appBuild+'. Unduh dan pasang ulang APK-nya.</span>';
+    $('updateBar').classList.remove('hidden')}catch(err){console.warn('Cek versi:',err)}}
+$('updateLater').addEventListener('click',()=>$('updateBar').classList.add('hidden'));
+$('updateGo').addEventListener('click',async()=>{try{await window.Capacitor.Plugins.Browser.open({url:APK_URL})}catch{window.open(APK_URL,'_blank')}});
+if(NATIVE){try{window.Capacitor.Plugins.App.addListener('resume',()=>{updateShown=false;checkAppUpdate()})}catch{}}
+
+(async()=>{let pw=null;try{pw=sessionStorage.getItem('dvaAdminPw')}catch{}if(pw){try{await doLogin(pw);checkAppUpdate();return}catch{}}
+  showLogin();checkAppUpdate();
   if(await bioSupported()){$('bioRow').classList.remove('hidden');
     if(await bioSavedPw()){$('bioBtn').classList.remove('hidden');try{if(await bioLogin())return}catch{}}}})();
 </script>
+<div id="updateBar" class="hidden" style="position:fixed;left:12px;right:12px;bottom:14px;z-index:20;background:#111116;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 12px 30px #0006;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:180px;font-size:13px" id="updateText"></div><button type="button" id="updateLater" class="btn light" style="padding:8px 12px">Nanti</button><button type="button" id="updateGo" class="btn pink" style="padding:8px 12px">Unduh</button></div>
 </body></html>
