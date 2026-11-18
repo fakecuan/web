@@ -60,7 +60,7 @@
 <div id="toast" class="toast hidden"></div>
 <script type="module">
 import { unlock } from "../form/orders-db.js?v=5";
-import { renderReport } from "./report.js?v=1";
+import { renderReport } from "./report.js?v=2";
 let store=null;
 const statuses=['Pending','Produksi','Selesai'];
 // Status lama dari versi sebelumnya disesuaikan ke 3 status baru.
@@ -79,7 +79,7 @@ function parseLine(line){
   const model=/\brok\b/.test(t)?'rok':/(panjang|pjg|pnjg|long)/.test(t)?'panjang':/(pendek|pdk|pndk|short)/.test(t)?'pendek':null;
   let qty=null,m;
   if((m=t.match(/(\d{1,2})\s*(pcs|pc|psc|pcs\.|buah|bh|potong|pasang|set|stel)\b/))||(m=t.match(/\bx\s*(\d{1,2})\b/))||(m=t.match(/\b(\d{1,2})\s*x\b/)))qty=+m[1];
-  else{const rest=t.replace(SIZE_RE,' ').replace(/\d+\s*(cm|kg|th|thn|tahun|bulan|bln)\b/g,' ');const n=rest.match(/(^|\s)(\d{1,2})(?=\s|$|[,;])/);if(n)qty=+n[2]}
+  else{const n=t.match(new RegExp(SIZE_RE.source+'\\s*[:x-]?\\s*(\\d{1,2})(?![\\d.,]|\\s*(cm|kg|th|thn|tahun|bulan|bln)\\b)','i'));if(n)qty=+n[3]}
   if(qty!=null&&(qty<1||qty>50))qty=null;
   const sm=t.match(SIZE_RE);const size=sm?sm[2].replace(/\s/g,'').toUpperCase():(/custom/.test(t)?'Custom':null);
   return {hasSize,model,qty,size};

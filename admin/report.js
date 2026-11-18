@@ -167,7 +167,8 @@ export function renderReport(el, allOrders, h) {
   const sizes = new Map();
   rows.forEach(r => r.c.items.forEach(it => { model[it.model] += it.qty; sizes.set(it.size, (sizes.get(it.size) || 0) + it.qty); }));
   const sizeRows = [...sizes.entries()].sort((a, b) => b[1] - a[1]);
-  const topSizes = sizeRows.slice(0, 10);
+  const topSizes = sizeRows.filter(s => s[0] !== 'Lainnya').slice(0, 10);
+  const unknownPcs = sizes.get('Lainnya') || 0;
 
   // Klub & desain (dari catatan admin)
   const tally = key => {
@@ -244,7 +245,7 @@ export function renderReport(el, allOrders, h) {
       <div class="rp-mix">${mixBar}</div>
       <div class="rp-legend">${Object.keys(model).map(k => `<span style="--c:${modelColors[k]}">${MODEL_LABEL[k]} · <b>${model[k]}</b> (${pct(model[k], totalPcs)}%)</span>`).join('')}</div>
     </div>
-    <div class="rp-card"><h3>Ukuran terlaris</h3><div class="muted">10 teratas, dalam pcs</div>
+    <div class="rp-card"><h3>Ukuran terlaris</h3><div class="muted">10 teratas, dalam pcs${unknownPcs ? ` · ${unknownPcs} pcs ukurannya tidak tertulis jelas` : ''}</div>
       ${hbars(topSizes.map(([s, v]) => ({ label: s, v, text: v + ' pcs', }), ), r => `${r.v} pcs · ${pct(r.v, totalPcs)}%`, 'var(--s1)')}
     </div>
     <div class="rp-card"><h3>Klub teratas</h3><div class="muted">dari catatan "Klub"</div>
