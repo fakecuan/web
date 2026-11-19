@@ -1771,8 +1771,8 @@ function libNote(p,L){if(!L||L.t=='txt'||!L.lk||!ready(L))return;const e=libFind
 /* hasil edit gambar menggantikan entri lama di Library */
 function libReplace(L,p){try{const d=libEnc(L.img),k=libKey(d),old=L.lk&&LIB.findIndex(x=>x.k==L.lk);
   const ent={k,d,pw:L.s*pUnit(p)*(L.sx||1),sy:L.sy||1};
-  if(old!=null&&old>=0){LIB.splice(old,1)}const dup=LIB.findIndex(x=>x.k==k);if(dup>=0)LIB.splice(dup,1);LIB.unshift(ent);if(LIB.length>40)LIB.length=40;
-  const oldK=L.lk;Object.values(P).forEach(q=>q.layers.forEach(l=>{if(l===L||(oldK&&l.lk===oldK&&l.src===L.src))l.lk=k}));L.lk=k;libStore();if(!$('#libp').hidden)libRender()}catch(e){console.warn('lib replace',e)}}
+  const dup=LIB.findIndex(x=>x.k==k);if(dup>=0)LIB.splice(dup,1);LIB.unshift(ent);if(LIB.length>40)LIB.length=40;
+  const oldK=L.lk;Object.values(P).forEach(q=>q.layers.forEach(l=>{if(l===L||(oldK&&l.lk===oldK&&l.src===L.src))l.lk=k}));L.lk=k;libStore();if(!$('#libp').hidden)libRender();if(oldK&&oldK!==k)setTimeout(()=>askDelOld(oldK),150)}catch(e){console.warn('lib replace',e)}}
 {const _ic=ieClose;ieClose=function(apply){const L=IE.L,ch=apply&&IE.changed,s0=L&&L.src,id=sel;_ic.apply(this,arguments);
   if(ch&&L){const t0=Date.now();const w=()=>{if(L.src!==s0&&L.img&&L.img.complete&&L.img.naturalWidth){libReplace(L,P[id]);return}if(Date.now()-t0<5000)setTimeout(w,100)};w()}}}
 /* gambar baru / ganti gambar → catat key Library-nya di lapisan */
@@ -2359,6 +2359,25 @@ async function importMotif(f){
   finally{busy(null)}}
 $('#fjson').addEventListener('change',e=>{if(!window.__motifPick||Date.now()-window.__motifPick>600000)return;e.stopImmediatePropagation();window.__motifPick=0;const f=e.target.files[0];e.target.value='';if(f)importMotif(f)},true);
 $('#bmotif').onclick=()=>{window.__motifPick=Date.now();const el=$('#fjson');el.accept='.zprj,.zip,.json,application/json,application/zip,application/octet-stream';el.click()};
+/* ---------- ganti motif: tanya apakah desain lama di Library mau dihapus ---------- */
+function askDelOld(oldK){
+  const e=oldK&&libFind(oldK);if(!e)return;
+  if(document.querySelector('#dgbox'))return;
+  const used=Object.values(P).reduce((a,p)=>a+p.layers.filter(l=>l.lk==oldK).length,0);
+  const m=document.createElement('div');m.className='modal';m.id='dgbox';
+  m.innerHTML=`<div class="mbox"><b>Hapus desain lama dari Library?</b>
+    <small>${used?'Desain lama ini masih dipakai di '+used+' bagian, jadi tidak bisa dihapus dari Library.':'Desain lama ini tidak dipakai lagi di desain Anda.'}</small>
+    <img alt="" src="${e.d}" style="display:block;max-width:100%;max-height:160px;object-fit:contain;margin:8px auto">
+    ${used?'':'<button class="opt" id="dgd"><b>Hapus dari Library</b><small>Desain tetap utuh, hanya salinan lama di Library yang dihapus.</small></button>'}
+    <button class="opt" id="dgk"><b>${used?'Tutup':'Simpan di Library'}</b><small>Desain lama tetap ada di Library.</small></button></div>`;
+  document.body.appendChild(m);
+  const close=()=>m.remove();
+  m.querySelector('#dgk').onclick=close;
+  const d=m.querySelector('#dgd');if(d)d.onclick=()=>{const i=LIB.findIndex(x=>x.k==oldK);if(i>=0){LIB.splice(i,1);libStore();if(!$('#libp').hidden)libRender();toast('Desain lama dihapus dari Library')}close()};
+}
+/* ganti motif lewat dialog Ganti gambar: setelah gambar baru terpasang, tanya soal desain lama */
+{const _ri3=replaceImg;replaceImg=function(L,src,noLib){const oldK=L.lk||null;_ri3.apply(this,arguments);
+  if(!oldK)return;const t0=Date.now();const w=()=>{if(L.lk&&L.lk!==oldK){setTimeout(()=>askDelOld(oldK),150);return}if(Date.now()-t0<6000)setTimeout(w,100)};w()}}
 
 /* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
 let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
