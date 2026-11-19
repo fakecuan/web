@@ -1,0 +1,93 @@
+[
+ {
+  "id": "12S",
+  "label": "12S",
+  "l": "12S-LS.zprj",
+  "fh": 304
+ },
+ {
+  "id": "11S",
+  "label": "11S",
+  "s": "11S.zprj",
+  "fh": 343,
+  "l": "11S-LS.zprj"
+ },
+ {
+  "id": "10S",
+  "label": "10S",
+  "s": "10S.zprj",
+  "l": "10S-LS.zprj",
+  "fh": 358
+ },
+ {
+  "id": "9S",
+  "label": "9S",
+  "s": "9S.zprj",
+  "l": "9S-LS.zprj",
+  "fh": 372
+ },
+ {
+  "id": "8S",
+  "label": "8S",
+  "s": "8S.zprj",
+  "l": "8S-LS.zprj",
+  "fh": 387
+ },
+ {
+  "id": "7S",
+  "label": "7S",
+  "bic": true,
+  "fh": 401
+ },
+ {
+  "id": "6S",
+  "label": "6S",
+  "s": "6S.zprj",
+  "l": "6S-LS.zprj",
+  "fh": 416
+ },
+ {
+  "id": "5S",
+  "label": "5S",
+  "s": "5S.zprj",
+  "l": "5S-LS.zprj",
+  "fh": 431
+ },
+ {
+  "id": "4S",
+  "label": "4S",
+  "s": "4S.zprj",
+  "fh": 446,
+  "l": "4S-LS.zprj"
+ },
+ {
+  "id": "3S",
+  "label": "3S",
+  "l": "3S-LS.zprj",
+  "fh": 461
+ },
+ {
+  "id": "2S",
+  "label": "2S",
+  "s": "2S.zprj",
+  "fh": 473
+ },
+ {
+  "id": "XS",
+  "label": "XS",
+  "s": "XS.zprj",
+  "fh": 486
+ },
+ {
+  "id": "S",
+  "label": "S",
+  "s": "S.zprj",
+  "fh": 498
+ },
+ {
+  "id": "L",
+  "label": "L",
+  "s": "L.zprj",
+  "fh": 531
+ }
+]
