@@ -211,7 +211,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.3.1';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
@@ -1283,7 +1283,7 @@ if (GD_OK && !IS_APK) gdInit().catch(() => {});
 // tombol buka: pilih sumber file
 async function pickOpenFile() {
   if (APK2 && APK.pickOpen) { APK.pickOpen(); return; }
-  if (IS_APK) { $('#fileIn').click(); return; }
+  if (IS_APK || !GD_OK) { localOpen(); return; } // HP/tanpa Drive: pemilih file Android sudah memuat Google Drive
   modal(`<h3>Buka file dari</h3><p>Pilih tempat file 3MF / STL berada.</p><div class="acts"><button class="btn" id="ofDev">Perangkat ini</button><button class="btn pri" id="ofGd">Google Drive</button></div>`);
   $('#ofDev').onclick = () => { closeModal(); localOpen(); };
   $('#ofGd').onclick = () => { closeModal(); gdPick(); };
