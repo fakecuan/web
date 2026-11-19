@@ -2484,6 +2484,9 @@ let SNAPY=(()=>{try{return localStorage.getItem('snapY')!=='0'}catch(e){return t
   sk.insertAdjacentElement('afterend',span);
   $('#snapx').onchange=e=>{SNAPX=e.target.checked;try{localStorage.setItem('snapX',SNAPX?'1':'0')}catch(_){}};
   $('#snapy').onchange=e=>{SNAPY=e.target.checked;try{localStorage.setItem('snapY',SNAPY?'1':'0')}catch(_){}}}}
+/* buka file CLO: kalau gagal, tampilkan alasannya (sebelumnya diam saja) */
+{const _oz5=openZprj;openZprj=function(f){let r;try{r=_oz5.apply(this,arguments)}catch(e){toast('File CLO tidak bisa dibuka: '+((e&&e.message)||e));return Promise.resolve()}
+  return Promise.resolve(r).catch(e=>{console.error('buka CLO',e);toast('File CLO tidak bisa dibuka: '+((e&&e.message)||e))})}}
 
 /* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
 let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
