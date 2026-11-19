@@ -176,7 +176,7 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
   <div id="view">
     <div id="selbar">
       <div class="seg" id="selmode"><button data-sm="object" class="on">Objek</button><button data-sm="part">Part</button></div>
-      <div id="multiRow"><button class="pill" id="joinBtn" style="display:none"></button><button class="pill" id="allBtn" style="display:none">Semua</button><button class="pill" id="noneBtn" style="display:none">Kosongkan</button></div>
+      <div id="multiRow"><button class="pill" id="allBtn" style="display:none">Semua</button><button class="pill" id="noneBtn" style="display:none">Kosongkan</button></div>
     </div>
     <div id="platebar" style="display:none"><button class="pill" id="plPrev" title="Plate sebelumnya">‹</button><span class="pill" id="plLbl" style="cursor:default"></span><button class="pill" id="plNext" title="Plate berikutnya">›</button><button class="pill" id="plAdd" title="Tambah plate kosong">+ Plate</button><button class="pill" id="plLock" title="Kunci plate: seret area kosong untuk memilih kotak, seret objek untuk memindah">Kunci</button></div>
     <div id="selbox"></div>
@@ -217,7 +217,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.4.1';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
@@ -268,7 +268,7 @@ const ICON = {
 const svg = (k, sw=2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
 
 // ================= STATE =================
-const state = { objects: [], filaments: ['#FFFFFF', '#222222'], plate: 256, seq: 'layer' };
+const state = { objects: [], filaments: ['#FFFFFF', '#222222'], plate: 256 };
 let src = null;
 let curFile = null; // file yang sedang dibuka & bisa ditimpa: {kind:'apk',token,name} | {kind:'fs',handle,name}
 let nid = 1;
@@ -586,7 +586,6 @@ function updateSelBox() {
 }
 function syncTopUI() {
   document.querySelectorAll('#selmode button').forEach(b => b.classList.toggle('on', b.dataset.sm === selMode));
-  const jb = $('#joinBtn'); jb.style.display = sel.length > 1 && selMode === 'object' ? 'flex' : 'none'; jb.textContent = `Gabung ${sel.length} objek`;
   $('#allBtn').style.display = sel.length > 1 ? 'flex' : 'none'; $('#noneBtn').style.display = sel.length ? 'flex' : 'none';
   const pb = $('#platebar'); if (pb) { pb.style.display = state.objects.length ? 'flex' : 'none'; $('#plLbl').textContent = `Plate ${curPlate + 1} / ${plateCount()}`;
     $('#plLock').classList.toggle('on', plateLocked); $('#plPrev').disabled = curPlate <= 0; $('#plNext').disabled = curPlate >= plateCount() - 1; }
@@ -1165,8 +1164,7 @@ const xe = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>'
 const PER_FIL = new Set(['nozzle_temperature','nozzle_temperature_initial_layer','nozzle_temperature_range_low','nozzle_temperature_range_high','hot_plate_temp','hot_plate_temp_initial_layer','cool_plate_temp','cool_plate_temp_initial_layer','eng_plate_temp','eng_plate_temp_initial_layer','textured_plate_temp','textured_plate_temp_initial_layer','supertack_plate_temp','supertack_plate_temp_initial_layer','textured_cool_plate_temp','textured_cool_plate_temp_initial_layer','fan_max_speed','fan_min_speed','fan_cooling_layer_time','slow_down_layer_time','slow_down_min_speed','overhang_fan_speed','overhang_fan_threshold','close_fan_the_first_x_layers','full_fan_speed_layer','additional_cooling_fan_speed','reduce_fan_stop_start_freq','temperature_vitrification','required_nozzle_HRC','activate_air_filtration','during_print_exhaust_fan_speed','complete_print_exhaust_fan_speed','default_filament_colour','chamber_temperatures','enable_pressure_advance','pressure_advance','slow_down_for_layer_cooling','dont_slow_down_outer_wall','cool_special_cds_fan_speed','first_x_layer_fan_speed','idle_temperature','ironing_fan_speed','support_material_interface_fan_speed']);
 function buildProject() {
   if (!src || !src.proj) {
-    if (state.seq !== 'object') return null;
-    return JSON.stringify({ print_sequence: 'by object', filament_colour: state.filaments.map(c => c.toUpperCase()) }, null, 4);
+    return null;
   }
   const P = JSON.parse(JSON.stringify(src.proj)); const n0 = (P.filament_colour || []).length, n = state.filaments.length;
   if (n0 && n !== n0) for (const [k, v] of Object.entries(P)) {
@@ -1176,7 +1174,6 @@ function buildProject() {
     else if (v.length === n0 && (k.startsWith('filament_') || PER_FIL.has(k))) P[k] = n > n0 ? v.concat(Array(n - n0).fill(v[n0 - 1])) : v.slice(0, n);
   }
   P.filament_colour = state.filaments.map(c => c.toUpperCase());
-  P.print_sequence = state.seq === 'object' ? 'by object' : 'by layer';
   return JSON.stringify(P, null, 4);
 }
 async function thumb() {
@@ -1709,7 +1706,6 @@ $('#selmode').addEventListener('click', e => { const b = e.target.closest('butto
   else sel = sel.filter(s => s.pid);
   refresh(true); });
 $('#allBtn').onclick = () => { multi = true; sel = selMode === 'part' ? visObjs().flatMap(o => o.parts.map(p => ({ oid: o.id, pid: p.id }))) : visObjs().map(o => ({ oid: o.id, pid: null })); refresh(true); };
-$('#joinBtn').onclick = () => { const objs = sel.filter(s => !s.pid).map(s => getObj(s.oid)).filter(Boolean); if (objs.length < 2) return toast('Pilih minimal 2 objek'); const [t, ...rest] = objs; mergeInto(t, rest); };
 $('#noneBtn').onclick = () => { sel = []; refresh(true); };
 function setPick(m) {
   pickMode = m; const bn = $('#modeBanner');
@@ -2314,45 +2310,9 @@ function pcfgSet(k, v) {
   os.forEach(o => { const c = { ...(o.cfg || {}) }; if (v == null || v === '') delete c[k]; else c[k] = k === 'sparse_infill_density' ? `${v}%` : String(v); o.cfg = c; });
   renderPanel();
 }
-function seqBlock() {
-  const obj = state.seq === 'object';
-  return `<div class="sub"><span>Urutan cetak</span></div>
-  <div class="row" style="margin-bottom:8px"><select id="seqPrinter" style="flex:1">${[[220, 'Anycubic Kobra X · 220 mm'], [256, 'A1 / P1 / X1 · 256 mm'], [180, 'A1 mini · 180 mm'], [350, 'H2D · 350 mm']].map(([v, l]) => `<option value="${v}" ${state.plate === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-  <div class="seg" id="seqSeg" style="margin-bottom:8px"><button data-seq="layer" class="${obj ? '' : 'on'}">Per layer</button><button data-seq="object" class="${obj ? 'on' : ''}">Per objek</button></div>
-  ${obj ? `<p class="hint" style="margin-top:0">Tiap objek dicetak satu per satu (<b>by object</b>). <b>Siapkan</b> menggabungkan objek sewarna yang menyentuh plate jadi satu objek, lalu mengatur semua objek ke plate. Kalau tidak muat, dibuat plate baru.</p>
-  <button class="btn pri" id="seqPrep" style="width:100%;margin-bottom:6px">Siapkan per objek</button>
-  <p class="hint" style="margin-top:0">Sekarang: ${plateCount()} plate · ${state.objects.length} objek. Tiap plate disimpan sebagai file .3mf sendiri.</p>`
-    : '<p class="hint" style="margin-top:0">Semua objek dicetak bersamaan, layer demi layer (bawaan).</p>'}`;
-}
-function colorKey(o) { const p = o.parts.find(q => q.subtype === 'normal_part') || o.parts[0]; return String(p ? p.extruder : 1); }
-function prepareObjectMode() {
-  if (!state.objects.length) return toast('Belum ada objek');
-  push(); state.seq = 'object';
-  // 1) objek yang menyentuh plate dan sewarna digabung jadi satu
-  const groups = new Map();
-  for (const o of state.objects) { if (worldBox(o).min.z > 0.05) continue; const k = colorKey(o); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
-  let merged = 0;
-  for (const list of groups.values()) { if (list.length < 2) continue;
-    const [t, ...rest] = list; const inv = tM(t).invert();
-    for (const o of rest) { const OM = tM(o); for (const p of o.parts) { const M = inv.clone().multiply(OM).multiply(tM(p)); t.parts.push({ ...p, id: nid++, ...fromM(M) }); } }
-    state.objects = state.objects.filter(o => !rest.includes(o)); merged += rest.length; }
-  // 2) atur ke plate; kalau tidak muat, buat plate baru
-  const gap = 6, S = state.plate;
-  const items = state.objects.map(o => ({ o, b: worldBox(o) })).sort((a, b) => (b.b.max.y - b.b.min.y) - (a.b.max.y - a.b.min.y));
-  let plate = 0, x = gap, y = gap, rh = 0, big = 0;
-  for (const it of items) { const w = it.b.max.x - it.b.min.x, d = it.b.max.y - it.b.min.y;
-    if (w > S - 2 * gap || d > S - 2 * gap) big++;
-    if (x + w > S - gap && x > gap) { x = gap; y += rh + gap; rh = 0; }
-    if (y + d > S - gap && y > gap) { plate++; x = gap; y = gap; rh = 0; }
-    it.o.plate = plate; it.o.pos.x += x - it.b.min.x; it.o.pos.y += y - it.b.min.y; it.o.pos.z -= it.b.min.z;
-    x += w + gap; rh = Math.max(rh, d); }
-  curPlate = 0; sel = []; refresh(true); camView('fit');
-  toast(`${plate + 1} plate · ${state.objects.length} objek${merged ? ` · ${merged} objek digabung` : ''}${big ? ` · ${big} objek lebih besar dari plate` : ''}`);
-}
 function printPanel(ts) {
   const os = pcfgObjs(); const o = os[0];
   let h = `<div class="ph"><h3>Pengaturan cetak</h3><span>${os.length ? (os.length > 1 ? os.length + ' objek' : 'Objek: ' + esc(o.name)) : ''}</span></div>`;
-  h += seqBlock();
   if (!o) return h + `<p class="hint">Pilih objek dulu. Setelan di sini disimpan sebagai setelan khusus objek di Bambu Studio (yang tidak diisi ikut setelan proses Bambu).</p>`;
   const num = (k, l, unit) => { const v = pcfgGet(o, k); return `<div class="fld" style="margin-bottom:8px"><label style="width:118px">${l}</label><input inputmode="numeric" type="number" step="1" min="0" data-pc="${k}" value="${v ?? ''}" placeholder="Bawaan (${PDEF[k]})"><em>${unit}</em><button class="pm" data-a="pcpm" data-k="${k}" data-v="-1">−</button><button class="pm" data-a="pcpm" data-k="${k}" data-v="1">+</button></div>`; };
   const inf = pcfgGet(o, 'sparse_infill_density'); const pat = pcfgGet(o, 'sparse_infill_pattern') || ''; const ir = pcfgGet(o, 'ironing_type') || '';
@@ -2372,9 +2332,6 @@ function printPanel(ts) {
 }
 function bindPrintPanel() {
   const P = $('#panel');
-  const sq = $('#seqSeg'); if (sq) sq.onclick = e => { const b = e.target.closest('button'); if (!b) return; state.seq = b.dataset.seq; renderPanel(); };
-  const sp = $('#seqPrep'); if (sp) sp.onclick = prepareObjectMode;
-  const sPr = $('#seqPrinter'); if (sPr) sPr.onchange = () => { state.plate = +sPr.value; buildPlate(); camView('fit'); renderPanel(); toast('Ukuran plate ' + state.plate + ' mm'); };
   P.querySelectorAll('[data-pc]').forEach(inp => inp.onchange = () => { const k = inp.dataset.pc; const raw = inp.value.trim(); if (raw === '') return pcfgSet(k, null);
     let v = parseFloat(raw); if (isNaN(v) || v < 0) return; if (k === 'sparse_infill_density') v = Math.min(100, v); else v = Math.round(v); pcfgSet(k, v); });
   const r = $('#pcinf'); if (r) { r.oninput = () => { const i = P.querySelector('[data-pc=sparse_infill_density]'); if (i) i.value = r.value; }; r.onchange = () => pcfgSet('sparse_infill_density', +r.value); }
