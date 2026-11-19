@@ -28,7 +28,7 @@ select.chip{appearance:none;-webkit-appearance:none;padding-right:26px;backgroun
 .allrow{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--mu)}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:10;max-height:68vh;overflow:auto;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px #0002;padding:10px 14px calc(14px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s}
 #sheet.open{transform:none}
-@media(min-width:760px){#sheet{left:auto;right:84px;bottom:16px;width:420px;border-radius:20px;max-height:calc(100vh - 140px)}}
+@media(min-width:760px){#sheet{left:auto;right:16px;bottom:16px;width:420px;border-radius:20px;max-height:calc(100vh - 140px)}}
 .hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .hd b{flex:1;font-size:16px}
 .x{width:36px;height:36px;border-radius:50%;border:0;background:#f1f0f3;font-size:18px;cursor:pointer}
@@ -95,26 +95,6 @@ textarea#ptx[hidden]{display:none}
 .hu{display:flex;align-items:center;justify-content:center}.hu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.hu:disabled{opacity:.35}
 .split{display:flex;align-items:center}.split #bsaveas{padding:0 7px;font-size:15px;letter-spacing:1px;border-left:1px solid #0000001a;border-radius:0 14px 14px 0}
 .lnk{border:0;background:none;color:var(--ac);font:500 13px system-ui,sans-serif;text-align:left;padding:2px 4px;cursor:pointer}.fnm{color:var(--ac)!important}
-#mfb{z-index:44;padding:8px}.fbbox{width:min(96vw,560px);max-width:none!important;height:min(88vh,760px);padding:12px!important;gap:8px!important}
-.fbhd{display:flex;align-items:center;gap:8px}.fbhd b{flex:1;font-size:17px}.fbhd button{border:0;background:#f1f1f3;border-radius:50%;width:34px;height:34px;font-size:16px}
-#fbtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:none;padding-bottom:2px}#fbtabs::-webkit-scrollbar{display:none}
-#fbtabs .chip{flex:none;border:1px solid #ddd;background:#fff;border-radius:18px;padding:7px 12px;font:13px system-ui,sans-serif;white-space:nowrap}#fbtabs .chip.on{background:#e8661c;border-color:#e8661c;color:#fff}
-.fbbar{display:flex;gap:6px;align-items:center;flex:none}.fbbar input[type=search]{flex:1;min-width:0;height:36px;border:1px solid #ddd;border-radius:10px;padding:0 10px;font:15px system-ui,sans-serif}
-.fbbar select{height:36px;border:1px solid #ddd;border-radius:10px;background:#fff;font:13px system-ui,sans-serif;padding:0 6px}.fbbar label{font-size:12px;display:flex;align-items:center;gap:3px;white-space:nowrap;color:#555}
-#fbcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:2px;font-size:13px;flex:none}#fbcrumb .fbc{border:0;background:none;color:#e8661c;padding:3px 4px;font:600 13px system-ui,sans-serif;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fbcrumb span{color:#aaa}
-#fblist{flex:1;overflow-y:auto;border-top:1px solid #eee;margin:0 -12px;padding:0 6px}
-.fbr{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid #f2f2f2;cursor:pointer}.fbr:active{background:#fff3ea}.fbr.fbdim{opacity:.45}
-.fbi{font-size:22px;width:28px;text-align:center;flex:none}.fbn{flex:1;min-width:0;display:flex;flex-direction:column}.fbn b{font-weight:500;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fbn small{color:#888;font-size:12px}
-.fbb{border:0;background:none;font-size:17px;width:34px;height:34px;border-radius:50%;flex:none;filter:grayscale(1);opacity:.45}.fbb.on{filter:none;opacity:1}.fbstar.on{color:#f2a900}
-.fbe{padding:26px 12px;text-align:center;color:#777;font-size:14px;line-height:1.5}.fbe input{display:block;width:100%;box-sizing:border-box;height:40px;margin:10px 0;border:1px solid #ddd;border-radius:10px;padding:0 10px;font:14px system-ui,sans-serif}
-.fbadd{display:block;margin:12px auto;border:0;background:#e8661c;color:#fff;border-radius:20px;padding:10px 18px;font:600 14px system-ui,sans-serif}.fbsub{padding:12px 6px 4px;font:600 12px system-ui,sans-serif;color:#e8661c;text-transform:uppercase;letter-spacing:.04em}.fbnote{display:block;text-align:center;color:#888;font-size:12px;padding:0 16px}
-.fbft{display:flex;gap:8px;flex:none}.fbft button{flex:1;height:40px;border-radius:12px;border:1px solid #ddd;background:#fff;font:14px system-ui,sans-serif}.fbft .pri{background:#e8661c;border-color:#e8661c;color:#fff;font-weight:600}
-#mprop .mbox{width:min(94vw,440px)}.prophd{display:flex;align-items:center;gap:8px}.prophd b{flex:1;font-size:17px}.prophd button{border:1px solid #ddd;background:#fff;border-radius:18px;padding:6px 12px;font:13px system-ui,sans-serif}.prophd #propx{border:0;background:#f1f1f3;border-radius:50%;width:34px;height:34px;padding:0}
-#propbody{overflow-y:auto;margin:0 -6px}.ptab{width:100%;border-collapse:collapse;font-size:14px}.ptab td{padding:7px 6px;border-bottom:1px solid #f1f1f1;vertical-align:top}.ptab td:first-child{color:#666;width:52%}.ptab td:last-child{font-weight:500;word-break:break-word}
-.ptab th{text-align:left;padding:14px 6px 4px;font:600 12px system-ui,sans-serif;color:#e8661c;text-transform:uppercase;letter-spacing:.04em}.pnote{display:block;color:#888;font-size:12px;padding:10px 6px 2px;text-align:center}
-.optl{display:flex;flex-direction:column;gap:10px;padding:12px 6px 4px;font-size:14px}.optl label{display:flex;gap:8px;align-items:flex-start;line-height:1.35}.optl input{margin-top:2px;width:18px;height:18px;flex:none}.optl small{color:#888;font-size:12px}
-.optdpi{align-items:center!important}.optdpi select{margin-left:auto;height:34px;border:1px solid #ddd;border-radius:10px;background:#fff;font:13px system-ui,sans-serif}.ptab td small{display:block;color:#999;font-size:11px}
-#optgo{margin:10px 0 0;width:100%;height:44px;border:0;border-radius:14px;background:#e8661c;color:#fff;font:600 15px system-ui,sans-serif}
 #mname{z-index:45}#mname input{height:40px;border:1px solid #ddd;border-radius:10px;padding:0 10px;font:16px system-ui,sans-serif;flex:1;min-width:0}.nrow{display:flex;align-items:center;gap:6px}
 #busy{position:fixed;inset:0;z-index:60;background:#fffc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font:500 14px system-ui,sans-serif}#busy[hidden]{display:none}.spin{width:34px;height:34px;border-radius:50%;border:3px solid #0001;border-top-color:var(--ac);animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 #avb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
@@ -179,14 +159,14 @@ textarea#ptx[hidden]{display:none}
 .swl{font-size:11px;font-weight:600;color:#777;margin:2px 2px 4px}.sw.swm{margin-bottom:8px}
 .tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
 #ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
-#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}#libg .ldup{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#fffe;color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px #0003}.pdfbox{width:min(560px,94vw)}#pdfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:56vh;overflow:auto;margin:10px 0;padding:2px}#pdfg button{position:relative;border:2px solid #e3e3e8;border-radius:10px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/12px 12px;padding:4px;min-height:120px;cursor:pointer;display:flex;align-items:center;justify-content:center}#pdfg button img{max-width:100%;max-height:150px;display:block}#pdfg button span{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font:600 11px system-ui;padding:1px 6px;border-radius:8px}#pdfg button.on{border-color:#e8661c;box-shadow:0 0 0 2px #e8661c55}#pdfg button.on::after{content:"✓";position:absolute;right:4px;top:4px;background:#e8661c;color:#fff;width:20px;height:20px;border-radius:50%;font:700 12px/20px system-ui;text-align:center}#libup{margin-top:6px}#pdfok:disabled{opacity:.45}.snapk{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:#555;margin:2px 0 0;cursor:pointer;user-select:none}.snapk input{width:16px;height:16px;accent-color:#e8661c}</style></head>
+#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}</style></head>
 <body>
 <div id="view"></div>
 
 <div id="tl"><span id="verb" title="Versi aplikasi"></span>
   <button class="chip" id="cbtn"><span class="dot" id="cdot"></span><span>Warna skinsuit</span></button>
   <div class="pop" id="cpop" hidden></div>
-  <select class="chip" id="szsel" aria-label="Ukuran pola" title="Ukuran pola"></select><select class="chip" id="slv" aria-label="Model lengan"><option value="0">Lengan pendek</option><option value="1">Lengan panjang</option></select>
+  <select class="chip" id="slv" aria-label="Model lengan"><option value="0">Lengan pendek</option><option value="1">Lengan panjang</option></select>
 </div>
 
 <div id="tr">
@@ -200,8 +180,6 @@ textarea#ptx[hidden]{display:none}
   <button class="chip rb" id="libb" title="Library gambar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><circle cx="8" cy="10" r="1.5"/><path d="M17 15l-4-4-7 7"/></svg><span id="libn" hidden></span></button>
   <button class="chip rb" id="recb" title="Rekam video putar 360° untuk Instagram" aria-label="Rekam video"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M15.5 10.5l6-3.5v10l-6-3.5"/><circle class="rd" cx="9" cy="12" r="2.6"/></svg></button>
   <button class="chip rb" id="avb" title="Tampilkan / sembunyikan avatar" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg></button>
-  <button class="chip rb" id="propb" title="Properti: ukuran skinsuit & info file" aria-label="Properti"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.6v.1" stroke-width="2.6"/></svg></button>
-  <button class="chip rb" id="optb" title="Optimalkan ukuran file" aria-label="Optimalkan"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path d="M9 9l-4-4M15 9l4-4M9 15l-4 4M15 15l4 4"/></svg></button>
   <button class="chip rb" id="undo" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
   <button class="chip rb" id="redo" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
 
@@ -211,7 +189,7 @@ textarea#ptx[hidden]{display:none}
 <div id="busy" hidden><div class="spin"></div><span id="busyt">Membuka…</span><div id="busyp" hidden><i></i></div><small id="busypc"></small></div>
 
 <div id="libp" hidden><div class="lh"><b>Library</b><button class="x" id="libx" aria-label="Tutup">✕</button></div>
-    <button id="libpaste" class="lpaste">Tempel dari papan klip</button><button id="libup" class="lpaste">Tambah gambar / PDF dari file</button>
+    <button id="libpaste" class="lpaste">Tempel dari papan klip</button>
     <small>Salin gambar di Pinterest, lalu kembali ke sini. Gambar yang disalin otomatis masuk Library. Ketuk gambar untuk memasangnya ke bagian yang dipilih.</small>
     <div id="libg"></div></div>
 
@@ -223,7 +201,7 @@ textarea#ptx[hidden]{display:none}
   </div>
   <label id="mirw" hidden><input type="checkbox" id="mirck"> <span>Mirror copy ke <b id="mirn"></b></span></label>
   <div id="pvw"><canvas id="pv"></canvas><button id="fsb" title="Edit layar penuh" aria-label="Edit layar penuh"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
-  <label id="snapk" class="snapk"><input type="checkbox" id="snapck" checked> Snap (tengah &amp; sudut 45°)</label><small id="hint" style="text-align:center"></small>
+  <small id="hint" style="text-align:center"></small>
   <div id="lyr" hidden></div>
   <div id="txp" hidden>
     <input id="tin" type="text" maxlength="40" placeholder="Tulis teks / nama" autocomplete="off">
@@ -263,22 +241,13 @@ textarea#ptx[hidden]{display:none}
 </div>
 <input type="file" id="fjson" hidden>
 <div class="modal" id="mnew" hidden><div class="mbox"><b>Mulai desain baru?</b><small>Warna dan semua gambar pada desain sekarang akan dihapus. Simpan dulu jika masih diperlukan.</small><div class="nsopt mnewm" id="mnewm"></div><div class="mact"><button data-x>Batal</button><button class="pri" id="mnewok">Mulai baru</button></div></div></div>
-<div class="modal" id="mfb" hidden><div class="mbox fbbox">
-<div class="fbhd"><b id="fbt">Buka file</b><button id="fbx" data-x aria-label="Tutup">✕</button></div>
-<div id="fbtabs"><button class="chip" data-t="pin">📌 Pin</button><button class="chip" data-t="hist">🕘 Riwayat</button><button class="chip" data-t="recent">☁ Terbaru</button><button class="chip" data-t="gd">☁ Drive Saya</button><button class="chip" data-t="star">⭐ Berbintang</button><button class="chip" data-t="shared">👥 Dibagikan</button><button class="chip" data-t="dev">📱 HP</button></div>
-<div class="fbbar"><input type="search" id="fbq" placeholder="Cari di Google Drive…" autocomplete="off" spellcheck="false"><select id="fbsort" aria-label="Urutkan"><option value="mod">Terbaru</option><option value="name">Nama A–Z</option><option value="size">Terbesar</option></select><label><input type="checkbox" id="fbdes">Desain</label></div>
-<div id="fbcrumb" hidden></div><div id="fblist"></div>
-<div class="fbft"><button id="fbsys">Pemilih file sistem…</button><button class="pri" id="fbhere" hidden>Simpan di folder ini</button></div>
-</div></div>
-<div class="modal" id="mprop" hidden><div class="mbox"><div class="prophd"><b>Properti</b><button id="propcopy">Salin</button><button id="propx" data-x aria-label="Tutup">✕</button></div><div id="propbody"></div></div></div>
-<div class="modal" id="mopt" hidden><div class="mbox"><div class="prophd"><b>Optimalkan file</b><button id="optx" data-x aria-label="Tutup">✕</button></div><div id="propbody2" style="overflow-y:auto;margin:0 -6px"><div id="optbody"></div></div><button id="optgo">Optimalkan &amp; Simpan</button></div></div>
 <div class="modal" id="mname" hidden><div class="mbox"><b id="mnt">Simpan sebagai</b><div class="nrow"><input id="nin" type="text" autocomplete="off" spellcheck="false"><span id="next">.json</span></div><small id="nhint"></small><div class="mact"><button id="ncan">Batal</button><button class="pri" id="nok">Simpan</button></div></div></div>
 <div class="modal" id="mch" hidden><div class="mbox"><b>Export</b>
   <button class="opt" id="opng"><b>Preview gambar (PNG)</b><small>Depan, belakang, kiri, kanan dalam satu gambar</small></button>
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-19 r40</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-17 r24</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -318,9 +287,7 @@ textarea#ptx[hidden]{display:none}
   <div class="mact"><button data-x>Batal</button></div></div></div>
 <input type="file" id="ftpl" hidden><div class="modal" id="mtwin" hidden><div class="mbox"><b id="mtwt">Salin ke sebelah</b><small>Posisi dicerminkan supaya sama di kedua sisi badan.</small>
   <div class="nsopt"><button class="pri" id="twnf">Gambar tidak dibalik<br><small style="font-weight:400;color:#fff;opacity:.95;display:block">Untuk logo &amp; tulisan, tetap terbaca</small></button><button id="twfl">Gambar ikut dicerminkan<br><small style="font-weight:400;color:#666;display:block">Untuk motif simetris kiri-kanan</small></button></div>
-  <div class="mact"><button data-x>Batal</button></div></div></div><div class="modal" id="mpdf" hidden><div class="mbox pdfbox"><b id="pdft">PDF</b><small id="pdfh"></small><div id="pdfg"></div>
-  <div class="mact"><button data-x>Batal</button><button id="pdfall">Pilih semua</button><button class="pri" id="pdfok" disabled>Masukkan</button></div></div></div>
-<input type="file" id="libfile" accept="image/*,application/pdf,.pdf" multiple hidden><div id="toast"></div>
+  <div class="mact"><button data-x>Batal</button></div></div></div><div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -435,13 +402,8 @@ function readPatterns(pac){
       if(s.cp.length===2)path.push(['C',mul(s.cp[0],M),mul(s.cp[1],M),B]);
       else if(s.cp.length===1){const Q=mul(s.cp[0],M);path.push(['C',[A[0]+2/3*(Q[0]-A[0]),A[1]+2/3*(Q[1]-A[1])],[B[0]+2/3*(Q[0]-B[0]),B[1]+2/3*(Q[1]-B[1])],B])}
       else path.push(['L',B])});
-    const nv=tex.length/2;let aff=fitAffine(tex,rest,nv); // tex -> sheet
-    const bb=()=>{let a=1e9,b=1e9,c=-1e9,d=-1e9;for(let k=0;k<nv;k++){const x=tex[2*k],y=tex[2*k+1];if(x<a)a=x;if(x>c)c=x;if(y<b)b=y;if(y>d)d=y}return[a,b,c,d]};
-    const tb0=bb();let rot=0;
-    /* bingkai tekstur miring (mis. lengan raglan, kerah terbalik): putar supaya tegak seperti jendela 2D CLO */
-    {const det=aff[0]*aff[3]-aff[1]*aff[2],phi=Math.atan2(aff[1],aff[0])*(det<0?-1:1);if(Math.abs(phi)>0.09){rot=phi;const c=Math.cos(phi),s=Math.sin(phi);
-      for(let k=0;k<nv;k++){const x=tex[2*k],y=tex[2*k+1];tex[2*k]=c*x-s*y;tex[2*k+1]=s*x+c*y}const A=aff;aff=[A[0]*c+A[2]*-s,A[1]*c+A[3]*-s,A[0]*s+A[2]*c,A[1]*s+A[3]*c,A[4],A[5]]}}
-    const[tx0,ty0,tx1,ty1]=bb();
+    const nv=tex.length/2,aff=fitAffine(tex,rest,nv); // tex -> sheet
+    let tx0=1e9,ty0=1e9,tx1=-1e9,ty1=-1e9;for(let k=0;k<nv;k++){const x=tex[2*k],y=tex[2*k+1];if(x<tx0)tx0=x;if(x>tx1)tx1=x;if(y<ty0)ty0=y;if(y>ty1)ty1=y}
     const gfx=[];const pt=p.get('listPrintTexture');
     if(pt&&pt.length&&GSTY){pt.all().forEach((ov,k)=>{try{const el=ov.get('mapElement'),uid=el.get('uiID'),sty=GSTY.byOv[uid];if(!sty)return;
       const vi=ov.get('mapFabricShape2D').get('mapVisibilityInfoList'),vl=vi&&vi.get('listVisibilityInfo');const vis=el.get('bVisible')!==0&&!(vl&&vl.length&&vl.at(0).get('bVisible')===0)&&GSTY.vis[uid]!==false;
@@ -452,7 +414,7 @@ function readPatterns(pac){
     let fabColor=null,baseTex=null;try{const fb=FABS&&FABS.at(Math.max(0,fs.get('iFabricIndex')|0));const fm=fb.get('mapMaterial2D').get('listFaceMaterial').all().find(x=>x.get('enMaterialFaceType')===0);
       const c=(fm.get('mapBaseColor')&&fm.get('mapBaseColor').get('v4Color'))||fm.get('v4Diffuse');
       const bt=fm.get('listTexture').all().find(x=>x.get('enType')===0);if(bt)baseTex={file:bt.get('qsFileName'),uniq:bt.get('qsUniqueFileName')||'',w:bt.get('v2Size')[0],h:bt.get('v2Size')[1],tr:bt.get('v2Translation')||[0,0],ang:bt.get('fSignedAngle')||0};fabColor='#'+c.slice(0,3).map(v=>Math.round(Math.max(0,Math.min(1,v))*255).toString(16).padStart(2,'0')).join('')}catch(e){}
-    return{i,name,itemId:fs.get('mapElement').get('uiID'),fab:fs.get('iFabricIndex'),fabColor,baseTex,pos,tri,tex,rest,path,aff,tb:[tx0,ty0,tx1,ty1],tb0,rot,visible:p.get('bVisible3D')!==0,Mp:M,gfx}})}
+    return{i,name,itemId:fs.get('mapElement').get('uiID'),fab:fs.get('iFabricIndex'),fabColor,baseTex,pos,tri,tex,rest,path,aff,tb:[tx0,ty0,tx1,ty1],visible:p.get('bVisible3D')!==0,Mp:M,gfx}})}
 let GSTY=null,FABS=null;
 function readGraphicStyles(pac){const out={byOv:{},vis:{}};const pe=pac.get('mapPatternEditor'),gl=pe&&pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle');if(!gl||!gs)return out;
   const styles=gs.all().map(s=>{let t=null;walk(s,m=>{if(!t&&m.has('listTexture')){const l=m.get('listTexture');if(l.length)t=l.at(0)}});if(!t)return null;
@@ -557,34 +519,17 @@ function canBakeGraphics(pac){if(hasGfxTpl(pac))return true;const pe=pac.get('ma
 function setGraphicTex(node,pn){walk(node,m=>{if(!m.has('listTexture'))return;m.get('listTexture').all().forEach(t=>{if(t.get('enType')!==0)return;setTexFile(t,pn.file);
   if(t.has('v2Size'))t.set('v2Size',[pn.w,pn.h]);if(t.has('v2PhysicalSize'))t.set('v2PhysicalSize',[pn.w,pn.h]);if(t.has('v2Translation'))t.set('v2Translation',[0,0]);if(t.has('fSignedAngle'))t.set('fSignedAngle',0)})})}
 function reId(node,idFor,uuFor){walk(node,m=>{for(const e of m.e){if(e.k==='uiID'&&e.t===T_U32)m.set('uiID',idFor(m.get('uiID')));else if((e.k==='qsUuid'||e.k==='qsUuidUTF8')&&e.t===T_STR){const v=m.get(e.k);if(v)m.set(e.k,uuFor(v))}}})}
-let BAKEPOS={},BAKESTYLE={};
-function clipMesh(pm,M,Mo,hw,hh){const f=r=>new Float32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength)),u=r=>new Uint32Array(r.buffer.slice(r.byteOffset,r.byteOffset+r.byteLength));
-  const rest=f(pm.raw('baRest')),tri=u(pm.raw('baTri')),ap=(m,x,y)=>[x*m[0]+y*m[3]+m[6],x*m[1]+y*m[4]+m[7]];
-  let C=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([x,y])=>{const q=ap(Mo,x,y);return ap(M,q[0],q[1])});
-  let ar=0;for(let i=0;i<4;i++){const a=C[i],b=C[(i+1)%4];ar+=a[0]*b[1]-b[0]*a[1]}if(ar<0)C=C.reverse();
-  const bx0=Math.min(...C.map(c=>c[0])),bx1=Math.max(...C.map(c=>c[0])),by0=Math.min(...C.map(c=>c[1])),by1=Math.max(...C.map(c=>c[1]));
-  const V=[],T=[],idx=new Map(),vid=p=>{const k=Math.round(p[0]*1000)+','+Math.round(p[1]*1000);let i=idx.get(k);if(i===undefined){i=V.length/2;V.push(p[0],p[1]);idx.set(k,i)}return i};
-  const inside=(p,a,b)=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0])>=-1e-9;
-  const inter=(p,q,a,b)=>{const r=[q[0]-p[0],q[1]-p[1]],s=[b[0]-a[0],b[1]-a[1]],d=r[0]*s[1]-r[1]*s[0];if(Math.abs(d)<1e-12)return q;const t=((a[0]-p[0])*s[1]-(a[1]-p[1])*s[0])/d;return[p[0]+t*r[0],p[1]+t*r[1]]};
-  for(let k=0;k<tri.length;k+=3){let P=[0,1,2].map(j=>[rest[2*tri[k+j]],rest[2*tri[k+j]+1]]);
-    if(Math.max(...P.map(p=>p[0]))<bx0||Math.min(...P.map(p=>p[0]))>bx1||Math.max(...P.map(p=>p[1]))<by0||Math.min(...P.map(p=>p[1]))>by1)continue;
-    let ta=(P[1][0]-P[0][0])*(P[2][1]-P[0][1])-(P[1][1]-P[0][1])*(P[2][0]-P[0][0]);const flip=ta<0;if(flip)P=[P[0],P[2],P[1]];
-    for(let e=0;e<4&&P.length;e++){const a=C[e],b=C[(e+1)%4],O=[];for(let i=0;i<P.length;i++){const p=P[i],q=P[(i+1)%P.length],pi=inside(p,a,b),qi=inside(q,a,b);if(pi){O.push(p);if(!qi)O.push(inter(p,q,a,b))}else if(qi)O.push(inter(p,q,a,b))}P=O}
-    if(P.length<3)continue;const ids=P.map(vid);for(let i=1;i+1<ids.length;i++){const a=ids[0],b=ids[i],c=ids[i+1];if(a===b||b===c||a===c)continue;if(flip)T.push(a,c,b);else T.push(a,b,c)}}
-  return{rest:new Float32Array(V),tri:new Uint32Array(T)}}
 function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.get('listMVGraphic'),gs=pac.get('listGraphicStyle'),pl=pe.get('mapPatternList').get('listPattern');
   const own=hasGfxTpl(pac),tg=own?gl.at(0):kitMap('g'),tstyle=own?gs.at(tg.get('uiGraphicStyleIndex')|0):kitMap('s'),tStyleId=tstyle.get('mapElement').get('uiID');
   const fixL=l=>{if(l&&!l.length){l.all();l.et=T_MAP}return l};fixL(gl);fixL(gs);
   const idm={},uum={},idFor=o=>idm[o]||(idm[o]=nid()),uuFor=o=>uum[o]||(uum[o]=uuid());
   let gid=(pe.get('uiMaxGID')|0)+1;pe.set('uiMaxGID',gid);
   // style
-  /* gambar yang sama (kunci sama) memakai satu gaya grafik → satu file gambar saja di CLO */
-  const prev=pn.styleKey!=null?BAKESTYLE[pn.styleKey]:null;let si,styleId;
-  if(prev){si=prev.si;styleId=prev.styleId}else{const sty=clone(tstyle);reId(sty,idFor,uuFor);setStr(sty.get('mapElement'),'qsName',pn.styleName||pn.label);setGraphicTex(sty,pn);gs.push(sty);si=gs.length-1;styleId=sty.get('mapElement').get('uiID');if(pn.styleKey!=null)BAKESTYLE[pn.styleKey]={si,styleId}}
+  const sty=clone(tstyle);reId(sty,idFor,uuFor);setStr(sty.get('mapElement'),'qsName',pn.label);setGraphicTex(sty,pn);gs.push(sty);const si=gs.length-1,styleId=sty.get('mapElement').get('uiID');
   // overlay
   const ov=clone(tg.get('listOverlayFabricShape2D').at(0));reId(ov,idFor,uuFor);
   setStr(ov.get('mapElement'),'qsName',pn.label);ov.set('uiPatternGID',gid);if(ov.has('uiLineGID'))ov.set('uiLineGID',0);ov.set('uiParentPatternSelfIndex',pn.pattern);
-  ov.set('fZOffsetV6',pn.z!=null?pn.z:0.05);ov.set('enRepeatType',0);ov.set('v2TextureSize',[pn.w,pn.h]);if(ov.has('fAspectRatioHeightPerWidth'))ov.set('fAspectRatioHeightPerWidth',pn.h/pn.w);
+  ov.set('fZOffsetV6',0.05);ov.set('enRepeatType',0);ov.set('v2TextureSize',[pn.w,pn.h]);if(ov.has('fAspectRatioHeightPerWidth'))ov.set('fAspectRatioHeightPerWidth',pn.h/pn.w);
   const sh=ov.get('mapShape2D'),hw=pn.w/2,hh=pn.h/2,corner=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]];
   sh.get('listPoint').all().forEach((q,k)=>{const o=q.get('v2Position');const c=corner[k]||[Math.sign(o[0]||1)*hw,Math.sign(o[1]||1)*hh];q.set('v2Position',c)});
   sh.get('mapTransformer2D').set('m3Matrix',pn.Mo);
@@ -592,28 +537,23 @@ function addBakedGraphic(pac,pn,nid){const pe=pac.get('mapPatternEditor'),gl=pe.
   const gli=fsx.get('listGrainLineInfo');if(gli)gli.all().forEach(g=>{g.set('v2Translation',[-hw,-hh]);g.set('fAngle',0)});
   const vi=fsx.get('mapVisibilityInfoList'),vl=vi&&vi.get('listVisibilityInfo');if(vl)vl.all().forEach(x=>x.has('bVisible')&&x.set('bVisible',1));fsx.get('mapElement').set('bVisible',1);ov.get('mapElement').set('bVisible',1);
   if(fsx.has('mapFabric'))setGraphicTex(fsx.get('mapFabric'),pn);
-  const om=fsx.get('mapMesh2D'),pp=pl.at(pn.pattern),pm=pp.get('mapFabricShape2D').get('mapMesh2D');
-  /* jaring grafik = segitiga pola yang dipotong kotak grafik (cara CLO sendiri) */
-  const cm=clipMesh(pm,pp.get('mapShape2D').get('mapTransformer2D').get('m3Matrix'),pn.Mo,hw,hh);
-  const B=a=>new Uint8Array(a.buffer.slice(0));
-  om.set('baRest',B(cm.rest),om.ent('baRest').t);om.set('baTex',B(cm.rest),om.ent('baTex').t);om.set('baTri',B(cm.tri),om.ent('baTri').t);
-  if(om.has('uiVertexCount2D'))om.set('uiVertexCount2D',cm.rest.length/2);if(om.has('uiTriangleCount'))om.set('uiTriangleCount',cm.tri.length/3);
-  if(om.has('uiBaseVertexCount'))om.set('uiBaseVertexCount',0);if(om.has('uiBaseTriangleCount'))om.set('uiBaseTriangleCount',0);
-  const mpl=om.get('listMeshPointList');if(mpl&&mpl.length){mpl.all();mpl.items=[];mpl.dirty=true}
+  const om=fsx.get('mapMesh2D'),pm=pl.at(pn.pattern).get('mapFabricShape2D').get('mapMesh2D');
+  ['baRest','baTri','uiVertexCount2D','uiTriangleCount','uiBaseTriangleCount','uiBaseVertexCount'].forEach(k=>{if(pm.has(k)&&om.has(k)){const e=pm.ent(k);om.set(k,e.raw.slice(),e.t)}});
+  om.set('baTex',pm.raw('baRest').slice(),om.ent('baTex').t);
   // graphic
   const g=clone(tg);reId(g,idFor,uuFor);setStr(g.get('mapElement'),'qsName',pn.label);g.get('mapElement').set('bVisible',1);g.set('uiGraphicStyleIndex',si);
   const ol=new CList(T_MAP,[ov],null);ol.dirty=true;g.set('listOverlayFabricShape2D',ol);gl.push(g);const gId=g.get('mapElement').get('uiID');
   // pattern copy (bottom of the stack)
   let pt=pl.at(pn.pattern).get('listPrintTexture');if(!pt){pt=new CList(T_MAP,[],null);pl.at(pn.pattern).set('listPrintTexture',pt)}
-  pt.all();if(!pt.length)pt.et=T_MAP;const ins=BAKEPOS[pn.pattern]|0;pt.items.splice(ins,0,clone(ov));BAKEPOS[pn.pattern]=ins+1;pt.dirty=true;
+  pt.all();if(!pt.length)pt.et=T_MAP;pt.items.unshift(clone(ov));pt.dirty=true;
   // colorway
   const cws=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapNewColorway')&&pac.get('mapColorWay').get('mapNewColorway').get('listColorway');let chip=nid();
   if(cws)cws.all().forEach(cw=>{const as=cw.get('mapAssign'),l=as&&as.get('listGraphicToStyle');
     const k0=l&&(l.length?l.at(0):(own?null:kitMap('g2s')));if(l&&k0){fixL(l);const x=clone(k0);x.set('uiItemID',gId);x.set('uiStyleID',styleId);x.set('bVisible',1);x.set('fAngle',Math.atan2(pn.Mo[1],pn.Mo[0])*180/Math.PI);x.set('v2Position',[pn.Mo[6],pn.Mo[7]]);l.push(x)}
-    const ca=cw.get('mapAssignStyleChip'),c2=ca&&ca.get('listGraphicItemStyleToStyleChip'),k1=c2&&(c2.length?c2.at(0):(own?null:kitMap('chip')));if(!prev&&c2&&k1){fixL(c2);const y=clone(k1);y.set('uiStyleID',styleId);y.set('uiStyleChipID',chip);c2.push(y)}});
+    const ca=cw.get('mapAssignStyleChip'),c2=ca&&ca.get('listGraphicItemStyleToStyleChip'),k1=c2&&(c2.length?c2.at(0):(own?null:kitMap('chip')));if(c2&&k1){fixL(c2);const y=clone(k1);y.set('uiStyleID',styleId);y.set('uiStyleChipID',chip);c2.push(y)}});
   const sca=pac.get('mapColorWay')&&pac.get('mapColorWay').get('mapStyleChipAssign'),vv=sca&&sca.get('listGraphicItemStyleToStyleChipVector');
   const kv=vv&&!vv.length&&!own?kitMap('vec'):null;
-  if(!prev&&vv&&(vv.length||kv)){fixL(vv);const ex=kv||vv.all().find(x=>x.get('uiStyleID')===tStyleId)||vv.at(0);const c=clone(ex);reId(c,idFor,uuFor);c.set('uiStyleID',styleId);const ls=c.get('listStyleChip');if(ls&&ls.length&&ls.at(0).get('mapElement'))ls.at(0).get('mapElement').set('uiID',chip);setGraphicTex(c,pn);vv.push(c)}}
+  if(vv&&(vv.length||kv)){fixL(vv);const ex=kv||vv.all().find(x=>x.get('uiStyleID')===tStyleId)||vv.at(0);const c=clone(ex);reId(c,idFor,uuFor);c.set('uiStyleID',styleId);const ls=c.get('listStyleChip');if(ls&&ls.length&&ls.at(0).get('mapElement'))ls.at(0).get('mapElement').set('uiID',chip);setGraphicTex(c,pn);vv.push(c)}}
 /* one fabric: put every pattern back on the original fabric and drop fabrics an earlier save added (SKN ...) */
 function useSingleFabric(pac){const fabs=pac.get('listFabric');if(!fabs||fabs.length<2)return;const all=fabs.all(),isSkn=f=>/^SKN /.test(f.get('qsName')||'');
   const keepIdx=all.findIndex(f=>!isSkn(f));if(keepIdx<0)return;const base=all[keepIdx],baseId=base.get('uiID'),dropIds=new Set(all.filter(isSkn).map(f=>f.get('uiID')));if(!dropIds.size)return;
@@ -641,34 +581,7 @@ function purgeSKN(pac,uids){const pe=pac.get('mapPatternEditor'),pl=pe.get('mapP
       const ca=cw.get('mapAssignStyleChip');if(ca)dropFrom(ca.get('listGraphicItemStyleToStyleChip'),x=>sids[x.get('uiStyleID')])});
     const sa=cr.get('mapStyleChipAssign');if(sa)dropFrom(sa.get('listGraphicItemStyleToStyleChipVector'),x=>sids[x.get('uiStyleID')])}}
 function referencedFiles(pac){const r={};walk(pac,m=>{['qsUniqueFileName','qsFileName'].forEach(k=>{if(m.has(k)){const v=m.get(k);if(typeof v==='string')r[v.replace(/^.*[\\/]/,'')]=1}})});return r}
-
-/* tekstur kain (normal/displacement/roughness…) tidak dipakai: kosongkan & buang filenya */
-function stripFabricTex(pac,zf){let n=0;
-  /* hanya material KAIN; material grafik (listPrintTexture / ...Graphic...) tidak disentuh */
-  const go=(m,gfx)=>{if(!m||!m.e)return;for(const e of m.e){const g=gfx||/Graphic|PrintTexture|Trim|Button|Zipper|Topstitch|Puckering/i.test(e.k);
-      if(e.k==='listFaceMaterial'&&!g){const fl=m.get(e.k);if(fl&&fl.all)fl.all().forEach(fm=>{const t=fm&&fm.has&&fm.has('listTexture')&&fm.get('listTexture');if(t&&t.length){t.all();t.items=[];t.dirty=true;n++}});continue}
-      if(e.t===T_MAP){go(m.get(e.k),g)}else if(e.t===T_LIST){const l=m.get(e.k);if(l&&l.et===T_MAP)l.all().forEach(x=>go(x,g))}}};
-  go(pac,false);
-  const ref=referencedFiles(pac);let rm=0;Object.keys(zf).forEach(k=>{if(/\.(png|jpe?g|tif+|bmp|webp)$/i.test(k)&&!ref[k]){delete zf[k];rm++}});return rm}
-/* buang avatar dari file (untuk pola ukuran selain 7S) */
-function stripAvatar(st){let rm=0;Object.keys(st.files).forEach(k=>{if(/\.avt$/i.test(k)){delete st.files[k];rm++}});
-  const on=Object.keys(st.files).find(n=>/\.osw$/i.test(n));if(on){const m=parseMap(st.files[on]);const l=m.get('listAvatarFilePath');if(l&&l.all){l.all();l.items=[];l.dirty=true}if(m.has('uiAvatarCount'))m.set('uiAvatarCount',0);st.files[on]=serMap(m)}
-  const cj='clofiles.json';if(st.files[cj]){try{const o=JSON.parse(TD.decode(st.files[cj]));Object.keys(o).forEach(k=>{if(/\.avt$/i.test(k))delete o[k]});st.files[cj]=TE.encode(JSON.stringify(o,null,1))}catch(e){}}return rm}
-
-/* file grafik yang isinya sama persis (mis. PDF font yang tersalin berkali-kali) → simpan satu saja */
-function dedupeFiles(pac,zf){const h=b=>{let x=2166136261>>>0,y=0x9e3779b9;for(let i=0;i<b.length;i+=7){x=Math.imul(x^b[i],16777619)>>>0;y=Math.imul(y^b[i],2654435761)>>>0}return b.length+':'+x+':'+y};
-  const seen={},alias={};let saved=0;Object.keys(zf).sort().forEach(k=>{if(!/\.(png|jpe?g|pdf|ai|svg|tif+|bmp)$/i.test(k))return;const b=zf[k];if(!b||b.length<4096)return;const key=h(b);
-    if(seen[key]&&zf[seen[key]].length===b.length){let same=true;const a=zf[seen[key]];for(let i=0;i<b.length;i+=97)if(a[i]!==b[i]){same=false;break}if(same){alias[k]=seen[key];saved+=b.length;return}}seen[key]=k});
-  if(!Object.keys(alias).length)return 0;
-  walk(pac,m=>{if(!m.e)return;for(const e of m.e){if(e.t!==undefined&&typeof m.get==='function'){let v;try{v=m.get(e.k)}catch(x){continue}if(typeof v!=='string'||!v)continue;const base=v.replace(/^.*[\\/]/,'');if(alias[base])m.set(e.k,v.slice(0,v.length-base.length)+alias[base])}}});
-  const ref=referencedFiles(pac);Object.keys(alias).forEach(k=>{if(!ref[k])delete zf[k]});return saved}
-
-/* pengaman: daftar file grafik buatan CLO (bukan SKN_) yang dipakai grafik */
-function cloGfxRefs(pac){const out=[];const go=(m,gfx)=>{if(!m||!m.e)return;for(const e of m.e){const g=gfx||/Graphic|PrintTexture/i.test(e.k);
-    if(g&&(e.k==='qsUniqueFileName')){const v=m.get(e.k);if(typeof v==='string'&&v){const b=v.replace(/^.*[\\/]/,'');if(!/^SKN_/.test(b))out.push(b)}}
-    if(e.t===T_MAP){go(m.get(e.k),g)}else if(e.t===T_LIST){const l=m.get(e.k);if(l&&l.et===T_MAP)l.all().forEach(x=>go(x,g))}}};go(pac,false);return out}
-function writeZprj(st,panels,design,gfxOps){BAKEPOS={};BAKESTYLE={};
-  const GREF0=cloGfxRefs(st.pac),GHAVE0=new Set(GREF0.filter(n=>st.zf[n]));
+function writeZprj(st,panels,design,gfxOps){
   const pac=clone(st.pac);let nextId=maxId(pac)+1;const nid=()=>nextId++;
   const pl=pac.get('mapPatternEditor').get('mapPatternList').get('listPattern');
   const fabs=pac.get('listFabric');
@@ -680,7 +593,7 @@ function writeZprj(st,panels,design,gfxOps){BAKEPOS={};BAKESTYLE={};
   if(gMode||(panels.length===0&&canBakeGraphics(pac)))useSingleFabric(pac);
   const baseTpl=anyBaseTex(fabs);
   panels.forEach(pn=>{
-    if(gMode){addBakedGraphic(pac,pn,nid);if(pn.data)newFiles[pn.file]=pn.data;return}
+    if(gMode){addBakedGraphic(pac,pn,nid);newFiles[pn.file]=pn.data;return}
     pn.baseTpl=baseTpl;
     const p=pl.at(pn.pattern),fs=p.get('mapFabricShape2D'),itemId=fs.get('mapElement').get('uiID');
     const srcIdx=Math.max(0,fs.get('iFabricIndex')|0),src=fabs.at(Math.min(srcIdx,fabs.length-1)),srcId=src.get('uiID');
@@ -705,17 +618,10 @@ function writeZprj(st,panels,design,gfxOps){BAKEPOS={};BAKESTYLE={};
   if(gMode&&gfxOps)purgeSKN(pac,gfxOps.filter(o=>!o.visible).map(o=>o.uid));
   // rebuild zpac
   const zf={...st.zf};
-  if(gMode||canBakeGraphics(pac)){const ref=referencedFiles(pac);Object.keys(zf).forEach(n=>{if(/^SKN_.*\.(png|jpe?g)$/i.test(n)&&!ref[n]&&!newFiles[n])delete zf[n]})}try{stripFabricTex(pac,zf)}catch(e){console.warn('strip tekstur',e)}try{dedupeFiles(pac,zf)}catch(e){console.warn('dedupe',e)}zf[st.pn]=serMap(pac);Object.assign(zf,newFiles);if(design)design.pacSig=sig(zf[st.pn]);
-  { /* pengaman: grafik buatan CLO tidak boleh hilang */
-    const R1=cloGfxRefs(pac),lost=[];if(R1.length<GREF0.length)lost.push((GREF0.length-R1.length)+' grafik');
-    R1.forEach(n=>{if(!zf[n]&&!newFiles[n]&&GHAVE0.size&&![...GHAVE0].every(x=>x!==n))lost.push(n)});
-    [...GHAVE0].forEach(n=>{if(!zf[n]&&!R1.some(x=>zf[x]&&x!==n&&zf[x].length===st.zf[n].length))lost.push(n)});
-    if(lost.length)throw new Error('Pengaman: grafik buatan CLO akan hilang ('+[...new Set(lost)].slice(0,3).join(', ')+'). Penyimpanan dibatalkan, file tidak diubah.')}
+  if(gMode||canBakeGraphics(pac)){const ref=referencedFiles(pac);Object.keys(zf).forEach(n=>{if(/^SKN_.*\.png$/i.test(n)&&!ref[n]&&!newFiles[n])delete zf[n]})}zf[st.pn]=serMap(pac);Object.assign(zf,newFiles);if(design)design.pacSig=sig(zf[st.pn]);
   const cj=Object.keys(zf).find(n=>n==='clofiles.json');
   if(cj){try{const o=JSON.parse(TD.decode(zf[cj]));const any=Object.values(o)[0]||'';const dir=any.replace(/[^/\\]*$/,'');Object.keys(newFiles).forEach(n=>o[n]=dir+n);zf[cj]=TE.encode(JSON.stringify(o,null,1))}catch(e){}}
-  /* avatar dari paket ukuran menyimpan .dan tanpa kompresi: kompres saat disimpan agar file tetap kecil */
-  const avtRaw=b=>{try{for(let i=b.length-22;i>=Math.max(0,b.length-70000);i--){if(b[i]===0x50&&b[i+1]===0x4b&&b[i+2]===5&&b[i+3]===6){const dv=new DataView(b.buffer,b.byteOffset);const cn=dv.getUint16(i+10,true),cs=dv.getUint32(i+12,true);let p=i-cs;for(let k=0;k<cn&&p>0;k++){if(dv.getUint32(p,true)!==0x02014b50)break;const m=dv.getUint16(p+10,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true);let nm='';for(let j=0;j<nl;j++)nm+=String.fromCharCode(b[p+46+j]);if(/\.dan$/i.test(nm)&&m===0)return true;p+=46+nl+el+cl}return false}}}catch(e){}return false};
-  const lv=(o)=>{const r={};for(const n in o){const b=o[n];r[n]=[b,{level:(/\.avt$/i.test(n)&&avtRaw(b))?3:(/\.(avt|png|jpe?g|zpac)$/i.test(n)||b.length>8e6)?0:(/\.pac$/i.test(n)?1:6)}]}return r};
+  const lv=(o)=>{const r={};for(const n in o){const b=o[n];r[n]=[b,{level:(/\.(avt|png|jpe?g|zpac)$/i.test(n)||b.length>8e6)?0:(/\.pac$/i.test(n)?1:6)}]}return r};
   const files={...st.files};files[st.zn]=joinCLO(st.zhdr,fflate.zipSync(lv(zf)));
   if(design)files[DESIGN]=TE.encode(JSON.stringify(design));
   return joinCLO(st.hdr,fflate.zipSync(lv(files)))}
@@ -725,7 +631,7 @@ function resolveFile(zf,names){const keys=Object.keys(zf);for(const n of names){
   for(const n of names){if(!n)continue;const base=n.replace(/^.*[\\/]/,''),i=base.lastIndexOf('.'),stem=i>0?base.slice(0,i):base,ext=i>0?base.slice(i).toLowerCase():'';
     if(zf[base])return base;const re=new RegExp('^'+stem.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'_\\d+'+ext.replace('.','\\.')+'$','i');const hit=keys.find(k=>re.test(k));if(hit)return hit}
   return null}
-G.CLO={cloGfxRefs,dedupeFiles,stripAvatar,stripFabricTex,resolveFile,canBakeGraphics,parseMap,parseList,serMap,serList,CMap,CList,readZprj,writeZprj,readPatterns,walk,clone,DESIGN};
+G.CLO={resolveFile,canBakeGraphics,parseMap,parseList,serMap,serList,CMap,CList,readZprj,writeZprj,readPatterns,walk,clone,DESIGN};
 })(typeof window!=='undefined'?window:globalThis);
 </script>
 <script>
@@ -880,8 +786,8 @@ const SNAP_ANG=6;function snapAng(r){r=((r%360)+540)%360-180;const n=Math.round(
 function snapCenter(L,W,H,tolPx){guide={x:false,y:false};if(Math.abs(L.x-.5)*W<tolPx){L.x=.5;guide.x=true}if(Math.abs(L.y-.5)*H<tolPx){L.y=.5;guide.y=true}if(!guide.x&&!guide.y)guide=null}
 const ptrs2=new Map();let pinch=null;
 function pinchInfo(){const a=[...ptrs2.values()];return{d:Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]),m:[(a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2]}}
-pv.addEventListener('pointerdown',e=>{ptrs2.set(e.pointerId,pvXY(e));if(ptrs2.size==2){if(pd){Object.assign(cur()||{},pd.L0||{});pd=null;guide=null;render(sel)}if(!view)computeView();if(vz<=1||!vbase||!vbase.w){const z0=vz;vz=1;view=null;computeView();vbase={...view};vz=z0;view=null;computeView()}const pi=pinchInfo();pinch={d0:pi.d,vz0:vz,M:[view.x0+pi.m[0]/q,view.y0+pi.m[1]/q]};e.stopImmediatePropagation()}},true);
-pv.addEventListener('pointermove',e=>{if(!ptrs2.has(e.pointerId))return;ptrs2.set(e.pointerId,pvXY(e));if(pinch&&ptrs2.size>=2){if(!vbase||!vbase.w){if(!view)computeView();vbase={...view}}const pi=pinchInfo();vz=cl(pinch.vz0*pi.d/(pinch.d0||1),1,8);if(vz<1.03){vz=1;view=null;drawPv();e.stopImmediatePropagation();return}const w=vbase.w/vz,qn=pv.width/w,x0=pinch.M[0]-pi.m[0]/qn,y0=pinch.M[1]-pi.m[1]/qn;vcx=x0+w/2;vcy=y0+(vbase.h/vz)/2;view=null;drawPv();e.stopImmediatePropagation()}},true);
+pv.addEventListener('pointerdown',e=>{ptrs2.set(e.pointerId,pvXY(e));if(ptrs2.size==2){if(pd){Object.assign(cur()||{},pd.L0||{});pd=null;guide=null;render(sel)}if(!view)computeView();if(vz<=1)vbase={...view};const pi=pinchInfo();pinch={d0:pi.d,vz0:vz,M:[view.x0+pi.m[0]/q,view.y0+pi.m[1]/q]};e.stopImmediatePropagation()}},true);
+pv.addEventListener('pointermove',e=>{if(!ptrs2.has(e.pointerId))return;ptrs2.set(e.pointerId,pvXY(e));if(pinch&&ptrs2.size>=2){const pi=pinchInfo();vz=cl(pinch.vz0*pi.d/(pinch.d0||1),1,8);if(vz<1.03){vz=1;view=null;drawPv();e.stopImmediatePropagation();return}const w=vbase.w/vz,qn=pv.width/w,x0=pinch.M[0]-pi.m[0]/qn,y0=pinch.M[1]-pi.m[1]/qn;vcx=x0+w/2;vcy=y0+(vbase.h/vz)/2;view=null;drawPv();e.stopImmediatePropagation()}},true);
 const pEnd=e=>{ptrs2.delete(e.pointerId);if(ptrs2.size<2)pinch=null};pv.addEventListener('pointerup',pEnd,true);pv.addEventListener('pointercancel',pEnd,true);
 pv.addEventListener('dblclick',()=>{vz=1;view=null;drawPv()});
 pv.addEventListener('pointerdown',e=>{if(pinch)return;const p=P[sel];if(!view)computeView();let L=A(p);const[x,y]=pvXY(e),k=pv.width/pv.clientWidth,W=p.cv.width,H=p.cv.height;
@@ -1012,7 +918,7 @@ async function getTarget(kind,forceAs){const f=FS[kind];
  return{name:f.n+'.'+kind}}
 async function writeTarget(kind,tg,blob){if(tg.h){try{const w=await tg.h.createWritable();await w.write(blob);await w.close();toast('Tersimpan: '+tg.h.name);return true}catch(e){FS[kind].h=null;console.error(e);return 'Gagal menulis file ('+((e&&(e.name+': '+e.message))||String(e))+'). Kalau file ini sedang terbuka di CLO, tutup dulu di CLO atau simpan dengan nama lain.'}}
  return await saveFile(tg.name,blob)}
-async function doSave(forceAs,kind){if(ZP&&kind!='json'){await saveZprj(forceAs);return}svStart();let tg;try{tg=await getTarget('json',forceAs)}catch(e){svFail((e&&e.message)||String(e));return}if(!tg){svCancel();return}svGo();busy('Menyimpan proyek…',60);const b=projBlob();const ok=await writeTarget('json',tg,b);busy(null);if(ok===true)svOk(tg.h?tg.h.name:tg.name,b.size,!tg.h&&!tg.drive);else if(ok!=='declined')svFail(ok||'Gagal menyimpan');else svCancel()}
+async function doSave(forceAs,kind){if(ZP&&kind!='json'){await saveZprj(forceAs);return}svStart();let tg;try{tg=await getTarget('json',forceAs)}catch(e){svFail((e&&e.message)||String(e));return}if(!tg){svCancel();return}svGo();busy('Menyimpan proyek…',60);const b=projBlob();const ok=await writeTarget('json',tg,b);busy(null);if(ok===true)svOk(tg.h?tg.h.name:tg.name,b.size,!tg.h);else if(ok!=='declined')svFail(ok||'Gagal menyimpan');else svCancel()}
 function fnLabels(){const sk=ZP?'zprj':'json';$('#bsave').title=FS[sk].named?'Simpan ke '+FS[sk].n+'.'+sk:'Simpan';$('#pdfnm').textContent=FS.pdf.named?'Disimpan sebagai '+FS.pdf.n+'.pdf':''}
 $('#bsave').onclick=()=>doSave(false);$('#bsaveas').onclick=()=>doSave(true);
 $('#opdfas').onclick=()=>exportPDF(true);fnLabels();
@@ -1180,7 +1086,7 @@ async function openZprj(f){busy('Membuka file CLO…');await tick();
   try{const buf=new Uint8Array(await f.arrayBuffer());const st=CLO.readZprj(buf);if(!st.patterns.length)throw new Error('Tidak ada pola');
     ZP=st;buildZprjModel(st);fnLabels();$('#ozprj').hidden=false;$('#ojson').hidden=false;
     const fresh=st.design&&st.design.parts&&(!st.design.pacSig||st.design.pacSig===st.pacSig);
-    if(fresh){applyProject(expandZ(st.design,st.zf));toast('File CLO dibuka beserta desainnya')}
+    if(fresh){applyProject(st.design);toast('File CLO dibuka beserta desainnya')}
     else{window.__gfxMiss=[];const n=await importCloGraphics(st);const miss=[...new Set(window.__gfxMiss)];
       toast((st.design?'File sudah diubah di CLO, dimuat dari data CLO terbaru. ':'File CLO dibuka. ')+(n?n+' motif CLO jadi lapisan terpisah.':'')+(miss.length?' '+miss.length+' motif tidak bisa dimuat: '+miss.slice(0,4).join(', '):''))}
     loadAvatar(st);setTimeout(()=>setDirty(false),700)}
@@ -1203,37 +1109,6 @@ async function panelArtwork(p){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[t
   const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);baked.forEach(L=>drawLayer(c,L,iw,ih));
   const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const G0=patG0(pt,iw,ih),K=[W/iw,0,0,-H/ih,-W/2,H/2],M=mm(minv(G0),minv(K));
   return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H,Mo:[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1]}}
-/* mode grafik per lapisan: tiap gambar/teks jadi grafik CLO sendiri (bisa digeser/diubah di CLO PC) */
-const pngOf=cv=>new Promise(r=>cv.toBlob(b=>b.arrayBuffer().then(x=>r(new Uint8Array(x))),'image/png'));
-function cropMo(pt,W,H,ppm,x0,y0,cw,ch){const iw=W*ppm,ih=H*ppm,G0=patG0(pt,iw,ih),pcx=x0+cw/2,pcy=y0+ch/2,K=[W/iw,0,0,-H/ih,-pcx*W/iw,pcy*H/ih],M=mm(minv(G0),minv(K));return[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1]}
-/* satu file + satu gaya grafik untuk setiap gambar yang sama (kunci Library), dipakai ulang di semua pola */
-async function sharedPiece(SH,key,make,sname){let e=SH.map.get(key);if(e)return{file:e.file,data:null,key,sname};SH.n++;let data=await make(),ext='png';if(data&&data.ext){ext=data.ext;data=data.data}e={file:'SKN_g'+SH.n+'_'+SH.tag+'.'+ext};SH.map.set(key,e);return{file:e.file,data,key,sname}}
-function imgKey(L){let k=L.lk;if(!k){for(const p of Object.values(P)){const o=p.layers.find(l=>l.lk&&l.src===L.src);if(o){k=o.lk;break}}}return'img:'+(k||libKey(L.src||''))}
-async function panelPieces(p,SH){const live=liveSplit(p),pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,out=[];
-  const baked=p.layers.map((L,i)=>[L,i]).filter(([L,i])=>!live[i]);
-  if(pt.fabColor==null||String(p.base).toLowerCase()!==String(pt.fabColor).toLowerCase()){const col=String(p.base).toLowerCase();
-    const sp=await sharedPiece(SH,'col:'+col,()=>{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.fillStyle=p.base;x.fillRect(0,0,16,16);return pngOf(c)},'SKN Warna '+col);
-    out.push({...sp,w:W,h:H,Mo:cropMo(pt,W,H,1,0,0,W,H),name:'Warna dasar'})}
-  for(const[L,i]of baked){if(!ready(L))continue;
-    /* gambar biasa (tidak diulang): pakai gambar aslinya + posisi/putar/balik lewat matriks grafik */
-    if(L.t!='txt'&&!L.rep&&L.img){const im=L.img,IW=im.naturalWidth||im.width,IH=im.naturalHeight||im.height;if(!IW||!IH)continue;
-      const Lf=fullLayerMat(L,W,H,IW,IH),w=IW*Math.hypot(Lf[0],Lf[1]),h=IH*Math.hypot(Lf[2],Lf[3]),Q=[IW/w,0,0,-IH/h,IW/2,IH/2],M=mm(minv(patG0(pt,W,H)),mm(Lf,Q));
-      const key=imgKey(L),en=(typeof LIB!='undefined'&&L.lk)?LIB.findIndex(x=>x.k==L.lk):-1;
-      const sp=await sharedPiece(SH,key,()=>{let s=Math.min(1,2048/Math.max(IW,IH));const mx=typeof optMaxPx=='function'?optMaxPx(key,Math.max(w,h)):0;if(mx)s=Math.min(s,mx/Math.max(IW,IH));
-        if(s>=1&&typeof optSrcJpeg=='function'){const jb=optSrcJpeg(L.src);if(jb)return{data:jb,ext:'jpg'}}
-        const c=document.createElement('canvas');c.width=Math.max(1,Math.round(IW*s));c.height=Math.max(1,Math.round(IH*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return typeof encOpt=='function'?encOpt(c):pngOf(c)},'SKN '+(en>=0?'Library '+(en+1):(L.name||'Gambar')));
-      out.push({...sp,w,h,Mo:[M[0],M[1],0,M[2],M[3],0,M[4],M[5],1],name:L.name||('Gambar '+(i+1))});continue}
-    /* cari batas isi lapisan (resolusi rendah) */
-    const s0=Math.min(1.5,600/Math.max(W,H)),a=document.createElement('canvas');a.width=Math.ceil(W*s0);a.height=Math.ceil(H*s0);const ax=a.getContext('2d',{willReadFrequently:true});drawLayer(ax,L,a.width,a.height);
-    const d=ax.getImageData(0,0,a.width,a.height).data;let x0=a.width,y0=a.height,x1=-1,y1=-1;for(let y=0;y<a.height;y++)for(let x=0;x<a.width;x++)if(d[(y*a.width+x)*4+3]>2){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
-    if(x1<0)continue;x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(a.width,x1+2);y1=Math.min(a.height,y1+2);
-    const mx0=x0/s0,my0=y0/s0,mw=(x1-x0)/s0,mh=(y1-y0)/s0;
-    /* gambar ulang hanya area itu dengan resolusi tinggi */
-    const ppm=Math.min(10,2048/Math.max(mw,mh),(typeof OPT!='undefined'&&OPT.dpi)?OPT.dpi/25.4:99),cw=Math.max(2,Math.round(mw*ppm)),ch=Math.max(2,Math.round(mh*ppm));const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');
-    x.translate(-mx0*ppm,-my0*ppm);drawLayer(x,L,W*ppm,H*ppm);
-    const nm=L.t=='txt'?'Teks '+String(L.txt||'').slice(0,20):(L.name||('Gambar '+(i+1)));
-    const enc=typeof encOpt=='function'?await encOpt(c):{data:await pngOf(c),ext:'png'};out.push({data:enc.data||enc,ext:enc.ext||'png',w:cw/ppm,h:ch/ppm,Mo:cropMo(pt,W,H,ppm,mx0*ppm,my0*ppm,cw,ch),name:nm,key:null});await tick()}
-  const n=out.length;out.forEach((o,k)=>o.z=+(0.01+0.08*(n>1?k/(n-1):0)).toFixed(4));return out}
 async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.zp],[tx0,ty0,tx1,ty1]=pt.tb,W=tx1-tx0,H=ty1-ty0,ppm=Math.min(4,2048/Math.max(W,H)),iw=Math.max(8,Math.round(W*ppm)),ih=Math.max(8,Math.round(H*ppm));
   const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const c=cv.getContext('2d');c.fillStyle=p.base;c.fillRect(0,0,iw,ih);p.layers.forEach((L,i)=>{if(!live[i])drawLayer(c,L,iw,ih)});
   const o=document.createElement('canvas');o.width=iw;o.height=ih;const oc=o.getContext('2d');
@@ -1243,20 +1118,20 @@ async function panelTexture(p){const live=liveSplit(p);const pt=ZP.patterns[p.d.
   const blob=await new Promise(r=>o.toBlob(r,'image/png'));return{data:new Uint8Array(await blob.arrayBuffer()),w:W,h:H}}
 async function zprjBlob(){try{return await zprjBlob_()}finally{busy(null)}}
 async function zprjBlob_(){const T0=performance.now();const panels=[],ps=Object.values(P),tag=Math.random().toString(36).slice(2,7);
-  const gm=CLO.canBakeGraphics(ZP.pac),SHARE={tag,n:0,map:new Map()};SHARE_LAST=gm?SHARE:null;
+  const gm=CLO.canBakeGraphics(ZP.pac);
   for(let i=0;i<ps.length;i++){const p=ps[i];busy('Menyimpan: motif '+(NAME[p.d.id]||p.d.id)+' ('+(i+1)+'/'+ps.length+')…',5+80*i/ps.length);await tick();
     const nm=String(NAME[p.d.id]||p.d.id).replace(/[^A-Za-z0-9]+/g,'_');
-    if(gm){const arr=await panelPieces(p,SHARE);arr.forEach((a,k)=>panels.push({pattern:p.d.zp,file:a.file||('SKN_'+nm+'_'+(k+1)+'_'+tag+'.'+(a.ext||'png')),data:a.data,w:a.w,h:a.h,Mo:a.Mo,z:a.z,styleKey:a.key,styleName:a.sname,label:'SKN '+(NAME[p.d.id]||nm)+' · '+a.name}));continue}
+    if(gm){const a=await panelArtwork(p);if(a)panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:a.data,w:a.w,h:a.h,Mo:a.Mo,label:'SKN '+nm});continue}
     const t=await panelTexture(p);
     panels.push({pattern:p.d.zp,file:'SKN_'+nm+'_'+tag+'.png',data:t.data,w:t.w,h:t.h,label:'SKN '+nm})}
   busy('Menyimpan: menyusun file .zprj…',88);await tick();const T1=performance.now();
-  const out=CLO.writeZprj(ZP,panels,designZ(SHARE_LAST),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
+  const out=CLO.writeZprj(ZP,panels,projObj(),gfxOps());console.log('zprj tex ms',Math.round(T1-T0),'write ms',Math.round(performance.now()-T1));return new Blob([out],{type:'application/octet-stream'})}
 async function saveZprj(forceAs,preTg){if(!ZP){if(typeof newSaveOpen=='function'){newSaveOpen()}else toast('Buka file .zprj dulu');return}
   svStart();let tg;try{tg=preTg||await getTarget('zprj',forceAs)}catch(e){svFail('Tidak bisa memilih lokasi simpan: '+((e&&e.message)||e));return}
   if(!tg){svCancel();return}
   svGo();await tick();
   try{const b=await zprjBlob();
-    if(tg.h||tg.drive){const tn=tg.h?tg.h.name:tg.drive.name;busy('Menyimpan: menulis ke '+tn+'…',95);await tick();const ok=await writeTarget('zprj',tg,b);busy(null);if(ok===true)svOk(tn,b.size);else svFail(ok||'Gagal menulis file');return}
+    if(tg.h){busy('Menyimpan: menulis ke '+tg.h.name+'…',95);await tick();const ok=await writeTarget('zprj',tg,b);busy(null);if(ok===true)svOk(tg.h.name,b.size);else svFail(ok||'Gagal menulis file');return}
     busy(null);svEnd();readyDl(tg.name,b)}
   catch(e){console.error(e);svFail((e&&e.message)||String(e))}finally{busy(null)}}
 $('#ozprj').onclick=()=>{$('#mch').hidden=true;saveZprj(true)};
@@ -1324,17 +1199,11 @@ function readyDl(name,blob){const mb=(blob.size/1048576).toFixed(1);const wrap=t
   $('#dlinfo').textContent=name+' ('+mb+' MB)'+(wrap?'. Di Claude, file disimpan sebagai .zip: ekstrak untuk mendapat .zprj.':'');
   $('#dlgo').onclick=async()=>{$('#mdl').hidden=true;const ok=await saveFile(name,blob);if(ok===true)svOk(name,blob.size,true);else if(ok!=='declined')svFail(ok||'Unduhan gagal')};$('#mdl').hidden=false}
 
-/* data desain di .zprj: gambar yang sudah ada sebagai file grafik tidak disimpan dua kali */
-let SHARE_LAST=null;
-function designZ(SH){const o=projObj();if(!SH||!o.imgs)return o;const bySrc=new Map();Object.values(P).forEach(p=>p.layers.forEach(L=>{if(L.t!='txt'&&!L.rep&&L.src){const e=SH.map.get(imgKey(L));if(e)bySrc.set(L.src,e.file)}}));
-  o.imgs=o.imgs.map(s=>bySrc.has(s)?'zpac:'+bySrc.get(s):s);return o}
-function expandZ(d,zf){if(!d||!d.imgs)return d;d.imgs=d.imgs.map(s=>{const m=/^zpac:(.+)$/.exec(s||'');if(!m)return s;const b=zf[m[1]];if(!b)return '';let r='';for(let i=0;i<b.length;i+=0x8000)r+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return'data:image/'+(b[0]===0xFF&&b[1]===0xD8?'jpeg':'png')+';base64,'+btoa(r)});return d}
-
 /* ---------- edit pola layar penuh ---------- */
 window.FSON=false;const fsHome=[];
 function fsOpen(){if(!sel||FSON)return;FSON=true;document.body.classList.add('fsmode');
-  ['#pvw','#hint','#snapk','#lyr','#txp','#tools','.btns'].forEach(s=>{const e=$(s);if(!e)return;const ph=document.createComment('fs');e.parentNode.insertBefore(ph,e);fsHome.push([e,ph])});
-  $('#fsc').appendChild($('#pvw'));$('#fsli').appendChild($('#lyr'));['#hint','#snapk','#txp','#tools','.btns'].forEach(s=>$('#fst').appendChild($(s)));
+  ['#pvw','#hint','#lyr','#txp','#tools','.btns'].forEach(s=>{const e=$(s);if(!e)return;const ph=document.createComment('fs');e.parentNode.insertBefore(ph,e);fsHome.push([e,ph])});
+  $('#fsc').appendChild($('#pvw'));$('#fsli').appendChild($('#lyr'));['#hint','#txp','#tools','.btns'].forEach(s=>$('#fst').appendChild($(s)));
   $('#fsn').textContent=NAME[sel]||sel;$('#fsw').hidden=false;let mn=innerWidth<640;try{const v=localStorage.getItem('skn_fsl');if(v!=null)mn=v==='1'}catch(e){}$('#fsl').classList.toggle('min',mn);
   uiTools();view=null;requestAnimationFrame(()=>{view=null;drawPv()})}
 function fsClose(){if(!FSON)return;FSON=false;document.body.classList.remove('fsmode');fsHome.splice(0).forEach(([e,ph])=>{ph.parentNode.insertBefore(e,ph);ph.remove()});$('#fsw').hidden=true;vz=1;view=null;if(sel){uiTools();drawPv()}}
@@ -1385,7 +1254,7 @@ const TOOLS=[['hand','Geser','<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1
   ['bucket','Ember isi','<path d="M5 11l7-7 7 7-7 7z"/><path d="M19 13s2 2.5 2 4a2 2 0 0 1-4 0c0-1.5 2-4 2-4z"/>'],
   ['eyedrop','Pipet','<path d="M14 4l6 6-2 2-6-6zM13 7l-8 8v4h4l8-8"/>']];
 const CMDS=[['selall','Pilih semua'],['seldesel','Batal seleksi'],['selinv','Balik seleksi'],['selalpha','Pilih isi gambar'],['delsel','Hapus isi seleksi'],
-  ['fill','Isi warna'],['hsl','Hue / Saturation'],['lev','Levels'],['cov','Color overlay'],['gov','Gradient overlay'],['stk','Stroke'],['caf','Isi sesuai konten'],['canvas','Ukuran kanvas']];
+  ['fill','Isi warna'],['hsl','Hue / Saturation'],['lev','Levels'],['cov','Color overlay'],['gov','Gradient overlay'],['stk','Stroke']];
 $('#ietools').innerHTML=TOOLS.map(([k,n,s])=>`<button data-t="${k}" title="${n}"><svg viewBox="0 0 24 24">${s}</svg><span>${n}</span></button>`).join('')+'<i></i>'+CMDS.map(([k,n])=>`<button data-c="${k}" class="cmd">${n}</button>`).join('');
 const cl01=v=>v<0?0:v>1?1:v;
 function ieCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
@@ -1783,20 +1652,6 @@ $('#libg').addEventListener('click',e=>{if(e.target.closest('[data-del]'))return
 /* ---------- duplikat motif / gambar / teks ---------- */
 $('#dupc').onclick=()=>{const p=sel&&P[sel],L=cur();if(!p||!L)return;const m={...L};delete m.uid;delete m.tw;delete m.clo;delete m.bg;
   m.x=Math.min(.97,(L.x||.5)+.05);m.y=Math.min(.97,(L.y||.5)+.05);if(L.t!='txt')m.img=L.img;addLayer(p,m);view=null;render(sel);uiTools();toast('Diduplikat (digeser sedikit, seret untuk memindah)')};
-/* ---------- gambar Library = satu gambar: ukuran & hasil edit ikut semua tempelan ---------- */
-let linkT=0;
-function linkSize(src){if(!src||!src.lk||src.t=='txt')return;const sp=Object.values(P).find(q=>q.layers.includes(src));if(!sp)return;const pw=src.s*pUnit(sp)*(src.sx||1),sy=src.sy||1;
-  Object.values(P).forEach(q=>{let ch=false;q.layers.forEach(l=>{if(l===src||l.lk!==src.lk||l.t=='txt')return;const s=pw/pUnit(q)/(l.sx||1);if(Math.abs(s-l.s)>1e-4||l.sy!==sy){l.s=s;l.sy=sy;ch=true}});if(ch)_rendRaw(q.d.id)})}
-const _rendRaw=render;
-{const _r=render;render=function(id){const r=_r.apply(this,arguments);try{if(id&&id===sel){const L=P[id].layers[P[id].ai];if(L&&L.lk){clearTimeout(linkT);linkT=setTimeout(()=>linkSize(L),250)}}}catch(e){}return r}}
-/* hasil edit gambar → semua tempelan dengan gambar Library yang sama ikut berubah */
-{const _lr=libReplace;libReplace=function(L,p){const old=L.lk,oldSrc=IE&&IE.__src;_lr.apply(this,arguments);
-  Object.values(P).forEach(q=>{let ch=false;q.layers.forEach(l=>{if(l===L||l.t=='txt')return;if((old&&l.lk===old)||(oldSrc&&l.src===oldSrc)){l.img=L.img;l.src=L.src;l.lk=L.lk;delete l.clo;ch=true}});if(ch)render(q.d.id)});linkSize(L)}}
-{const _io=ieOpen;ieOpen=function(){const r=_io.apply(this,arguments);try{IE.__src=IE.L&&IE.L.src}catch(e){}return r}}
-/* duplikat gambar di Library: gambar sama tapi berdiri sendiri (ukuran & edit tidak ikut) */
-{const _lr2=libRender;libRender=function(){_lr2.apply(this,arguments);try{$('#libg').querySelectorAll('[data-i]').forEach(b=>{if(b.querySelector('.ldup'))return;b.insertAdjacentHTML('beforeend','<span class="ldup" data-dup="'+b.dataset.i+'" title="Duplikat gambar di Library">⧉</span>')})}catch(e){}}}
-$('#libg').addEventListener('click',e=>{const d=e.target.closest('[data-dup]');if(!d)return;e.stopPropagation();e.preventDefault();const i=+d.dataset.dup,en=LIB[i];if(!en)return;
-  LIB.splice(i+1,0,{...en,k:en.k+'~'+Date.now().toString(36)});libStore();libRender();toast('Gambar diduplikat di Library. Salinan ini berdiri sendiri.')},true);
 
 /* ---------- salin cermin ke pola sebelah (kaki, lengan, manset) ---------- */
 function twinOf(id){const t=PAIR[id];return t&&P[t]&&(!P[t].m||P[t].m.visible)?t:null}
@@ -1919,510 +1774,13 @@ $('#slv').innerHTML=Object.keys(KNAME).map(k=>`<option value="${k}">${KNAME[k][0
 {const _as=applySleeve;applySleeve=function(){_as.apply(this,arguments);try{syncSlv()}catch(e){}}}
 {const _oz=openZprj;openZprj=async function(f){const r=await _oz.apply(this,arguments);syncSlv();return r}}
 function remapSleeves(o,toLong){const a=toLong?'sleeve':'long',b=toLong?'long':'sleeve';['L','R'].forEach(s=>{const src=o.parts[a+s];if(src&&(!o.parts[b+s]||!(o.parts[b+s].layers||[]).length))o.parts[b+s]=src});return o}
-async function switchModel(k,force){const prev=curKind();if(k===prev&&!force)return;
-  if(!ZP&&(k=='s'||k=='l')&&(typeof curSizeBic!='function'||curSizeBic())){ls=k=='l'?1:0;['L','R'].forEach(s=>{const a=P[(ls?'sleeve':'long')+s],b=P[(ls?'long':'sleeve')+s];b.base=a.base;if(a.layers.length){b.layers=a.layers.map(cloneL);b.ai=b.layers.length-1}render(b.d.id)});
+$('#slv').onchange=async e=>{const k=e.target.value,prev=curKind();if(k===prev)return;
+  if(!ZP&&(k=='s'||k=='l')){ls=k=='l'?1:0;['L','R'].forEach(s=>{const a=P[(ls?'sleeve':'long')+s],b=P[(ls?'long':'sleeve')+s];b.base=a.base;if(a.layers.length){b.layers=a.layers.map(cloneL);b.ai=b.layers.length-1}render(b.d.id)});
     if(sel&&!vis(P[sel].d))select(null);applySleeve();toast(ls?'Model lengan panjang':'Model lengan pendek');return}
   const o=remapSleeves(projObj(),k=='l'||k=='rl'),had=Object.values(o.parts).some(p=>(p.layers||[]).length),nm=ZP?FS.zprj.n:(FS.json.named?FS.json.n:'desain-skinsuit-baru');
   const t=await getTpl(k);if(!t){syncSlv();return}const f=t.file instanceof File?t.file:new File([t.file],t.name);f.__tpl=1;
-  await openZprj(f);if(!ZP){syncSlv();return}o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setTimeout(()=>setDirty(had),900);syncSlv();toast('Model: '+(typeof CURSIZE!='undefined'?CURSIZE+' · ':'')+KNAME[k])}
-$('#slv').onchange=e=>switchModel(e.target.value);
+  await openZprj(f);if(!ZP){syncSlv();return}o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setTimeout(()=>setDirty(had),900);syncSlv();toast('Model: '+KNAME[k]+' (pola CLO)')};
 setTimeout(syncSlv,0);
-/* versi aplikasi ikut tersimpan di data desain (untuk melacak masalah) */
-{const _po=projObj;projObj=function(){const o=_po.apply(this,arguments);try{o.rv=($('#appver').textContent.match(/r\d+/)||[''])[0]}catch(e){}return o}}
-/* data desain: gambar yang sama hanya disimpan sekali (file lebih kecil) */
-{const _po2=projObj;projObj=function(){const o=_po2.apply(this,arguments);try{const tab=[],ix=new Map();Object.values(o.parts).forEach(p=>(p.layers||[]).forEach(l=>{if(typeof l.src=='string'&&l.src.length>200){let i=ix.get(l.src);if(i===undefined){i=tab.length;tab.push(l.src);ix.set(l.src,i)}l.src='#img:'+i}}));if(tab.length)o.imgs=tab}catch(e){}return o}}
-{const _ap2=applyProject;applyProject=function(o){try{if(o&&o.imgs){o=JSON.parse(JSON.stringify(o));Object.values(o.parts||{}).forEach(p=>(p.layers||[]).forEach(l=>{const m=/^#img:(\d+)$/.exec(l.src||'');if(m)l.src=o.imgs[+m[1]]}));delete o.imgs}}catch(e){}return _ap2.call(this,o)}}
-/* bingkai pola tegak (r27): desain lama yang disimpan dengan bingkai miring dikonversi */
-{const _po3=projObj;projObj=function(){const o=_po3.apply(this,arguments);o.fr=2;return o}}
-{const _ap3=applyProject;applyProject=function(o){try{if(o&&ZP&&!o.fr&&o.parts){const parts={};
-  Object.entries(o.parts).forEach(([id,pp])=>{const p=P[id],pt=p&&p.d.zp!=null&&ZP.patterns[p.d.zp];if(!pt||!pt.rot||!pp.layers){parts[id]=pp;return}
-    const c=Math.cos(pt.rot),s=Math.sin(pt.rot),[a0,b0,a1,b1]=pt.tb0,W0=a1-a0,H0=b1-b0,[n0,m0,n1,m1]=pt.tb,W1=n1-n0,H1=m1-m0,deg=pt.rot*180/Math.PI;
-    parts[id]={...pp,layers:pp.layers.map(L=>{const tx=a0+(L.x??.5)*W0,ty=b1-(L.y??.5)*H0,X=c*tx-s*ty,Y=s*tx+c*ty;
-      let r=(L.r||0)-deg;r=((r+180)%360+360)%360-180;return{...L,x:(X-n0)/W1,y:(m1-Y)/H1,r:+r.toFixed(3),s:(L.s||1)*W0/W1}})}});
-  o={...o,parts,fr:2}}}catch(e){console.warn('konversi bingkai',e)}return _ap3.call(this,o)}}
-
-/* ---------- PDF ke Library / Perangkat: pilih halaman dulu ---------- */
-async function pdfOpen(file){busy('Membuka PDF…');try{const L=await loadPdfJs();const doc=await L.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;return doc}finally{busy(null)}}
-function trimAlpha(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=-1,y1=-1;
-  for(let y=0;y<c.height;y++)for(let i=0;i<c.width;i++)if(d[(y*c.width+i)*4+3]>4){if(i<x0)x0=i;if(i>x1)x1=i;if(y<y0)y0=y;if(y>y1)y1=y}
-  if(x1<0)return c;const o=document.createElement('canvas');o.width=x1-x0+1;o.height=y1-y0+1;o.getContext('2d').drawImage(c,-x0,-y0);return o}
-async function pdfPage(doc,n,maxPx){const pg=await doc.getPage(n),v0=pg.getViewport({scale:1}),s=maxPx/Math.max(v0.width,v0.height),v=pg.getViewport({scale:s});
-  const c=document.createElement('canvas');c.width=Math.max(1,Math.floor(v.width));c.height=Math.max(1,Math.floor(v.height));await pg.render({canvasContext:c.getContext('2d'),viewport:v,background:'rgba(0,0,0,0)'}).promise;return c}
-/* jendela pilih halaman; multi=true untuk Library */
-function pdfChoose(doc,name,multi){return new Promise(async res=>{const m=$('#mpdf'),g=$('#pdfg'),chosen=new Set();$('#pdft').textContent=name+' · '+doc.numPages+' halaman';
-  $('#pdfh').textContent=multi?'Ketuk halaman yang ingin dimasukkan ke Library (bisa lebih dari satu).':'Ketuk halaman yang ingin dipasang.';g.innerHTML='';m.hidden=false;
-  const upd=()=>{$('#pdfok').textContent=multi?'Masukkan '+chosen.size+' halaman':'Pasang';$('#pdfok').disabled=!chosen.size;$('#pdfall').hidden=!multi||doc.numPages<2};upd();
-  const done=v=>{m.hidden=true;$('#pdfok').onclick=$('#pdfall').onclick=m.querySelector('[data-x]').onclick=null;res(v)};
-  m.querySelector('[data-x]').onclick=()=>done([]);$('#pdfok').onclick=()=>done([...chosen].sort((a,b)=>a-b));
-  $('#pdfall').onclick=()=>{const all=chosen.size<doc.numPages;g.querySelectorAll('[data-pg]').forEach(b=>{const n=+b.dataset.pg;if(all)chosen.add(n);else chosen.delete(n);b.classList.toggle('on',all)});upd()};
-  for(let n=1;n<=doc.numPages;n++){const b=document.createElement('button');b.type='button';b.dataset.pg=n;b.innerHTML='<span>'+n+'</span>';g.appendChild(b);
-    b.onclick=()=>{if(!multi){chosen.clear();g.querySelectorAll('.on').forEach(x=>x.classList.remove('on'))}if(chosen.has(n)){chosen.delete(n);b.classList.remove('on')}else{chosen.add(n);b.classList.add('on')}upd();if(!multi&&chosen.size)setTimeout(()=>done([n]),120)}}
-  for(let n=1;n<=doc.numPages&&!m.hidden;n++){try{const c=await pdfPage(doc,n,220),im=new Image();im.src=c.toDataURL('image/png');g.querySelector('[data-pg="'+n+'"]').prepend(im)}catch(e){}}})}
-async function pdfToImages(file,multi){let doc;try{doc=await pdfOpen(file)}catch(e){toast('PDF tidak bisa dibuka');return[]}
-  const pages=doc.numPages===1?[1]:await pdfChoose(doc,file.name,multi);const out=[];
-  for(let i=0;i<pages.length;i++){busy('Mengambil halaman '+pages[i]+' ('+(i+1)+'/'+pages.length+')…',(i/pages.length)*100);await tick();
-    try{out.push(trimAlpha(await pdfPage(doc,pages[i],2048)).toDataURL('image/png'))}catch(e){console.warn(e)}}busy(null);return out}
-const isPdf=f=>f&&(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name));
-/* Library: tombol tambah file (gambar atau PDF) */
-$('#libfile').onchange=async e=>{const fs=[...e.target.files];e.target.value='';let n=0;
-  for(const f of fs){if(isPdf(f)){const srcs=await pdfToImages(f,true);for(const s of srcs){await new Promise(r=>{const im=new Image();im.onload=()=>{if(libAdd(im))n++;r()};im.onerror=r;im.src=s})}}
-    else if(/^image\//.test(f.type)){await new Promise(r=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{if(libAdd(im))n++;r()};im.onerror=r;im.src=fr.result};fr.readAsDataURL(f)})}}
-  libRender();$('#libp').hidden=false;toast(n?n+' gambar masuk Library':'Tidak ada gambar baru')};
-$('#libup').onclick=e=>{e.stopPropagation();$('#libfile').click()};
-/* Gambar → Perangkat: PDF juga bisa, pilih satu halaman */
-{const fi=$('#file');try{fi.setAttribute('accept',(fi.getAttribute('accept')||'image/*')+',application/pdf,.pdf')}catch(e){}const _oc=fi.onchange;
-  fi.onchange=async function(e){const f=e.target.files&&e.target.files[0];if(isPdf(f)){e.target.value='';const srcs=await pdfToImages(f,false);if(srcs[0])setImage(srcs[0]);return}return _oc&&_oc.call(this,e)}}
-
-/* ---------- Isi sesuai konten (content-aware fill, PatchMatch multi-skala) ---------- */
-function cafDown(src,w,h,hole){/* setengah ukuran: rata-rata piksel yang bukan lubang */
-  const W=Math.max(1,w>>1),H=Math.max(1,h>>1),o=new Float32Array(W*H*4),oh=new Uint8Array(W*H);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){let n=0,r=0,g=0,b=0,a=0,hn=0;
-    for(let j=0;j<2;j++)for(let i=0;i<2;i++){const sx=Math.min(w-1,2*x+i),sy=Math.min(h-1,2*y+j),k=sy*w+sx;if(hole[k]){hn++;continue}const q=k*4;r+=src[q];g+=src[q+1];b+=src[q+2];a+=src[q+3];n++}
-    const p=(y*W+x)*4;if(n){o[p]=r/n;o[p+1]=g/n;o[p+2]=b/n;o[p+3]=a/n}if(hn)oh[y*W+x]=1}
-  return{img:o,hole:oh,w:W,h:H}}
-function cafInit(img,hole,w,h){/* isi awal lubang dari tepi ke dalam (onion peel) */
-  const todo=hole.slice();let left=0;for(let i=0;i<todo.length;i++)left+=todo[i];let guard=0;
-  while(left>0&&guard++<4*(w+h)){const fill=[];
-    for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=y*w+x;if(!todo[k])continue;let n=0,r=0,g=0,b=0,a=0;
-      for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const xx=x+i,yy=y+j;if(xx<0||yy<0||xx>=w||yy>=h)continue;const kk=yy*w+xx;if(todo[kk])continue;const q=kk*4;r+=img[q];g+=img[q+1];b+=img[q+2];a+=img[q+3];n++}
-      if(n)fill.push(k,r/n,g/n,b/n,a/n)}
-    if(!fill.length)break;for(let i=0;i<fill.length;i+=5){const k=fill[i],q=k*4;img[q]=fill[i+1];img[q+1]=fill[i+2];img[q+2]=fill[i+3];img[q+3]=fill[i+4];todo[k]=0;left--}}}
-function cafLevel(img,hole,w,h,nnf,iters,R){
-  /* sumber yang sah: tambalan penuh di dalam gambar dan tidak menyentuh lubang */
-  const valid=new Uint8Array(w*h),vl=[];
-  {const hs=new Int32Array((w+1)*(h+1));for(let y=0;y<h;y++)for(let x=0;x<w;x++)hs[(y+1)*(w+1)+x+1]=hole[y*w+x]+hs[y*(w+1)+x+1]+hs[(y+1)*(w+1)+x]-hs[y*(w+1)+x];
-    for(let y=R;y<h-R;y++)for(let x=R;x<w-R;x++){const x0=x-R,y0=y-R,x1=x+R+1,y1=y+R+1;if(hs[y1*(w+1)+x1]-hs[y0*(w+1)+x1]-hs[y1*(w+1)+x0]+hs[y0*(w+1)+x0]===0){valid[y*w+x]=1;vl.push(y*w+x)}}}
-  if(!vl.length)return null;
-  /* target: piksel yang tambalannya menyentuh lubang */
-  const tg=[];{const near=new Uint8Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(hole[y*w+x])for(let j=-R;j<=R;j++)for(let i=-R;i<=R;i++){const xx=x+i,yy=y+j;if(xx>=0&&yy>=0&&xx<w&&yy<h)near[yy*w+xx]=1}
-    for(let k=0;k<w*h;k++)if(near[k])tg.push(k)}
-  const N=nnf||new Int32Array(w*h).fill(-1),D=new Float32Array(w*h).fill(Infinity);
-  const dist=(t,s,best)=>{const tx=t%w,ty=(t/w)|0,sx=s%w,sy=(s/w)|0;let d=0,n=0;
-    for(let j=-R;j<=R;j++){const ty2=ty+j;if(ty2<0||ty2>=h)continue;for(let i=-R;i<=R;i++){const tx2=tx+i;if(tx2<0||tx2>=w)continue;
-      const a=(ty2*w+tx2)*4,b=((sy+j)*w+sx+i)*4;const e0=img[a]-img[b],e1=img[a+1]-img[b+1],e2=img[a+2]-img[b+2],e3=img[a+3]-img[b+3];d+=e0*e0+e1*e1+e2*e2+e3*e3;n++}if(d>best*n)return Infinity}
-    return n?d/n:Infinity};
-  const rnd=()=>vl[(Math.random()*vl.length)|0];
-  for(const t of tg){let s=N[t];if(s<0||!valid[s])s=rnd();N[t]=s;D[t]=dist(t,s,Infinity)}
-  const maxR=Math.max(w,h);
-  for(let it=0;it<iters;it++){
-    const fwd=!(it&1),order=fwd?tg:tg.slice().reverse(),st=fwd?-1:1;
-    for(const t of order){const tx=t%w,ty=(t/w)|0;
-      /* propagasi dari tetangga */
-      for(const[dx,dy]of[[st,0],[0,st]]){const nx=tx+dx,ny=ty+dy;if(nx<0||ny<0||nx>=w||ny>=h)continue;const ns=N[ny*w+nx];if(ns<0)continue;
-        const sx=ns%w-dx,sy=((ns/w)|0)-dy;if(sx<0||sy<0||sx>=w||sy>=h)continue;const c=sy*w+sx;if(!valid[c]||c===N[t])continue;const d=dist(t,c,D[t]);if(d<D[t]){D[t]=d;N[t]=c}}
-      /* pencarian acak mengecil */
-      const bx=N[t]%w,by=(N[t]/w)|0;for(let r=maxR;r>=1;r=r>>1){const sx=Math.round(bx+(Math.random()*2-1)*r),sy=Math.round(by+(Math.random()*2-1)*r);if(sx<0||sy<0||sx>=w||sy>=h)continue;const c=sy*w+sx;if(!valid[c])continue;const d=dist(t,c,D[t]);if(d<D[t]){D[t]=d;N[t]=c}}}
-    /* voting: warna lubang = rata-rata tambalan yang menutupinya */
-    const acc=new Float32Array(w*h*5);
-    for(const t of tg){const s=N[t];if(s<0)continue;const tx=t%w,ty=(t/w)|0,sx=s%w,sy=(s/w)|0,wt=1/(1+D[t]/400);
-      for(let j=-R;j<=R;j++){const py=ty+j;if(py<0||py>=h)continue;for(let i=-R;i<=R;i++){const px=tx+i;if(px<0||px>=w)continue;const p=py*w+px;if(!hole[p])continue;
-        const q=((sy+j)*w+sx+i)*4,o=p*5;acc[o]+=img[q]*wt;acc[o+1]+=img[q+1]*wt;acc[o+2]+=img[q+2]*wt;acc[o+3]+=img[q+3]*wt;acc[o+4]+=wt}}}
-    for(let p=0;p<w*h;p++){if(!hole[p])continue;const o=p*5;if(acc[o+4]>0){const q=p*4;img[q]=acc[o]/acc[o+4];img[q+1]=acc[o+1]/acc[o+4];img[q+2]=acc[o+2]/acc[o+4];img[q+3]=acc[o+3]/acc[o+4]}}
-    for(const t of tg)D[t]=dist(t,N[t],Infinity)}
-  return N}
-/* jalankan untuk satu area (data RGBA Uint8, lubang 1/0) */
-async function cafSolve(data,w,h,hole,prog){const R=3;
-  const pyr=[{img:Float32Array.from(data),hole:hole,w,h}];while(Math.min(pyr[pyr.length-1].w,pyr[pyr.length-1].h)>40&&pyr.length<7){const L=pyr[pyr.length-1];pyr.push(cafDown(L.img,L.w,L.h,L.hole))}
-  let nnf=null;const top=pyr.length-1;cafInit(pyr[top].img,pyr[top].hole,pyr[top].w,pyr[top].h);
-  for(let l=top;l>=0;l--){const L=pyr[l];
-    if(l<top){const U=pyr[l+1];/* naikkan hasil & NNF dari level kasar */
-      for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){const k=y*L.w+x;if(!L.hole[k])continue;const ux=Math.min(U.w-1,x>>1),uy=Math.min(U.h-1,y>>1),q=(uy*U.w+ux)*4,o=k*4;L.img[o]=U.img[q];L.img[o+1]=U.img[q+1];L.img[o+2]=U.img[q+2];L.img[o+3]=U.img[q+3]}
-      if(nnf){const n2=new Int32Array(L.w*L.h).fill(-1);for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){const ux=Math.min(U.w-1,x>>1),uy=Math.min(U.h-1,y>>1),s=nnf[uy*U.w+ux];if(s<0)continue;
-          const sx=Math.min(L.w-1,(s%U.w)*2+(x&1)),sy=Math.min(L.h-1,((s/U.w)|0)*2+(y&1));n2[y*L.w+x]=sy*L.w+sx}nnf=n2}}
-    const r=cafLevel(L.img,L.hole,L.w,L.h,nnf,l===0?4:6,R);if(r)nnf=r;prog&&prog(1-l/(top+1));await new Promise(r=>setTimeout(r,0))}
-  const out=pyr[0].img,res=new Uint8ClampedArray(data.length);for(let i=0;i<res.length;i++)res[i]=out[i];return{res,nnf}}
-async function contentAwareFill(){const m=typeof maskData=='function'?maskData():null;if(!m){toast('Buat seleksi dulu di area yang ingin dihapus/diisi');return}
-  const W=IE.w,H=IE.h;let x0=W,y0=H,x1=-1,y1=-1;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(m[(y*W+x)*4+3]>127){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
-  if(x1<0){toast('Seleksi kosong');return}
-  const bw=x1-x0+1,bh=y1-y0+1,mg=Math.max(24,Math.round(Math.max(bw,bh)*.9));const rx=Math.max(0,x0-mg),ry=Math.max(0,y0-mg),rw=Math.min(W,x1+mg+1)-rx,rh=Math.min(H,y1+mg+1)-ry;
-  /* kerjakan di resolusi ≤ 360 px agar cepat, lalu salin pergeseran ke resolusi penuh */
-  const sc=Math.min(1,360/Math.max(rw,rh)),sw=Math.max(8,Math.round(rw*sc)),sh=Math.max(8,Math.round(rh*sc));
-  busy('Isi sesuai konten…',2);await new Promise(r=>setTimeout(r,30));
-  try{iePush();const full=IE.x.getImageData(rx,ry,rw,rh),src=document.createElement('canvas');src.width=rw;src.height=rh;src.getContext('2d').putImageData(full,0,0);
-    const small=document.createElement('canvas');small.width=sw;small.height=sh;const sx=small.getContext('2d',{willReadFrequently:true});sx.drawImage(src,0,0,sw,sh);const sd=sx.getImageData(0,0,sw,sh);
-    const hole=new Uint8Array(sw*sh);for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const fx=Math.min(W-1,rx+Math.floor((x+.5)/sc)),fy=Math.min(H-1,ry+Math.floor((y+.5)/sc));
-      /* lubang sedikit dilebarkan supaya tepi seleksi ikut terganti */
-      let h=0;for(let j=-1;j<=1&&!h;j++)for(let i=-1;i<=1&&!h;i++){const xx=Math.min(W-1,Math.max(0,fx+Math.round(i/sc))),yy=Math.min(H-1,Math.max(0,fy+Math.round(j/sc)));if(m[(yy*W+xx)*4+3]>127)h=1}hole[y*sw+x]=h}
-    const{res,nnf}=await cafSolve(sd.data,sw,sh,hole,p=>busy('Isi sesuai konten… '+Math.round(p*100)+'%',p*100));
-    const fill=document.createElement('canvas');fill.width=sw;fill.height=sh;fill.getContext('2d').putImageData(new ImageData(res,sw,sh),0,0);
-    const big=document.createElement('canvas');big.width=rw;big.height=rh;const bx=big.getContext('2d');bx.imageSmoothingQuality='high';bx.drawImage(fill,0,0,rw,rh);
-    const bd=bx.getImageData(0,0,rw,rh).data,od=full.data,orig=new Uint8ClampedArray(od);
-    /* tajamkan: salin piksel asli resolusi penuh memakai pergeseran tambalan dari hasil kasar */
-    if(nnf&&sc<1)for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){if(m[((ry+y)*W+rx+x)*4+3]<=0)continue;const cx=Math.min(sw-1,Math.floor((x+.5)*sc)),cy=Math.min(sh-1,Math.floor((y+.5)*sc)),s=nnf[cy*sw+cx];if(s<0)continue;
-      const sx=Math.round(x+((s%sw)-cx)/sc),sy=Math.round(y+(((s/sw)|0)-cy)/sc);if(sx<0||sy<0||sx>=rw||sy>=rh)continue;if(m[((ry+sy)*W+rx+sx)*4+3]>40)continue;const q=(y*rw+x)*4,o=(sy*rw+sx)*4;bd[q]=orig[o];bd[q+1]=orig[o+1];bd[q+2]=orig[o+2];bd[q+3]=orig[o+3]}
-    /* hanya area seleksi yang diganti, tepi seleksi dihaluskan */
-    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const a=m[((ry+y)*W+rx+x)*4+3]/255;if(a<=0)continue;const q=(y*rw+x)*4;for(let c=0;c<4;c++)od[q+c]=od[q+c]+(bd[q+c]-od[q+c])*a}
-    IE.x.putImageData(full,rx,ry);IE.changed=true;ieDraw();toast('Area seleksi diisi sesuai sekitarnya')}
-  catch(e){console.error(e);toast('Isi sesuai konten gagal: '+(e.message||e))}finally{busy(null)}}
-/* ukuran kanvas: tambah/kurangi kanvas tanpa mengubah ukuran gambar */
-function canvasSize(){const W0=IE.w,H0=IE.h;
-  sheet('Ukuran kanvas',[['r','w','Lebar %',20,400,100],['r','h','Tinggi %',20,400,100],['sel','an','Jangkar',[['tl','Kiri atas'],['t','Atas'],['tr','Kanan atas'],['l','Kiri'],['c','Tengah'],['r','Kanan'],['bl','Kiri bawah'],['b','Bawah'],['br','Kanan bawah']],'c'],['chk','fl','Isi warna di area baru',false],['col','Warna',IE.col]],v=>{
-    const nw=Math.max(1,Math.min(4096,Math.round(W0*v.w/100))),nh=Math.max(1,Math.min(4096,Math.round(H0*v.h/100)));
-    const ax=/l/.test(v.an)?0:/r/.test(v.an)?1:.5,ay=/^t/.test(v.an)?0:/^b/.test(v.an)?1:.5,dx=Math.round((nw-W0)*ax),dy=Math.round((nh-H0)*ay);
-    const tmp=document.createElement('canvas');tmp.width=W0;tmp.height=H0;tmp.getContext('2d').drawImage(IE.c,0,0);
-    IE.c.width=IE.w=nw;IE.c.height=IE.h=nh;IE.M=null;IE.mA=null;IE.ov=null;if(v.fl){IE.x.fillStyle=v.col;IE.x.fillRect(0,0,nw,nh)}IE.x.drawImage(tmp,dx,dy);IE.ox-=dx;IE.oy-=dy;ieFit();
-    $('#iest').textContent='Ukuran kanvas · '+nw+' × '+nh+' px'},true)}
-{const _c=ieCmd;ieCmd=function(c){if(c=='caf'){if(!IE.c)return;contentAwareFill();return}if(c=='canvas'){if(!IE.c)return;canvasSize();return}return _c.apply(this,arguments)}}
-/* ---------- centang Snap (posisi tengah & sudut 45°) ---------- */
-let SNAPON=(()=>{try{return localStorage.getItem('snapOn')!=='0'}catch(e){return true}})();
-{const _sc=snapCenter;snapCenter=function(L){if(!SNAPON){guide=null;return}return _sc.apply(this,arguments)}}
-{const _sa=snapAng;snapAng=function(r){if(!SNAPON){r=((r%360)+540)%360-180;return Math.round(r*10)/10}return _sa.apply(this,arguments)}}
-$('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;try{localStorage.setItem('snapOn',SNAPON?'1':'0')}catch(_){}toast(SNAPON?'Snap aktif':'Snap mati: geser & putar bebas')};
-/* cubit 2 jari juga bisa di area abu-abu sekitar pola (bukan hanya di atas pola) */
-{const W=$('#pvw'),pts=new Map();let st=null;W.style.touchAction='none';
-  W.addEventListener('pointerdown',e=>{if(e.target===pv||e.pointerType==='mouse')return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===2&&sel){if(!view)computeView();if(vz<=1||!vbase||!vbase.w){vz=1;view=null;computeView();vbase={...view};vcx=view.x0+view.w/2;vcy=view.y0+view.h/2}
-    const[a,b]=[...pts.values()];st={d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,z:vz}}});
-  W.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(st&&pts.size>=2){const[a,b]=[...pts.values()];vz=cl(st.z*Math.hypot(a[0]-b[0],a[1]-b[1])/st.d,1,8);if(vz<1.03)vz=1;view=null;drawPv()}});
-  const end=e=>{pts.delete(e.pointerId);if(pts.size<2)st=null};W.addEventListener('pointerup',end);W.addEventListener('pointercancel',end)}
-
-/* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
-let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
-const SZURLS=['pola/ukuran/','https://fakecuan.github.io/web/sseditor/pola/ukuran/'];
-function curSizeBic(){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);return!S||!!S.bic}
-async function szFetch(path,opt){let err;for(const b of(SZBASE?[SZBASE]:SZURLS)){try{const r=await fetch(b+path,opt);if(r.ok){SZBASE=b;return r}err=new Error(r.status)}catch(e){err=e}}throw err}
-let SZFAIL=0;async function loadSizes(again){try{SZBASE=null;SIZES=await(await szFetch('sizes.json',{cache:'no-store'})).json();SZFAIL=0}catch(e){SZFAIL=1;if(!SIZES)SIZES=[{id:'7S',label:'7S',bic:true}];if(again)toast('Daftar ukuran belum bisa dimuat. Periksa internet lalu coba lagi.')}szUI()}
-$('#szsel').addEventListener('pointerdown',()=>{if(SZFAIL)loadSizes(1)});$('#szsel').addEventListener('focus',()=>{if(SZFAIL)loadSizes(1)});
-function szUI(){const s=$('#szsel');if(!s||!SIZES)return;const g=(t,a)=>a.length?`<optgroup label="${t}">${a.map(x=>`<option value="${x.id}">${x.label}</option>`).join('')}</optgroup>`:'';
-  const kid=SIZES.filter(x=>/^\d+S$/.test(x.id)),ad=SIZES.filter(x=>/^(XS|S|M|L|XL|XXL)$/.test(x.id)),oth=SIZES.filter(x=>!kid.includes(x)&&!ad.includes(x));
-  s.innerHTML=(CURSIZE==''?'<option value="">File ini</option>':'')+g('Anak',kid)+g('Dewasa',ad)+g('Lainnya',oth);s.value=CURSIZE;slvAvail()}
-function slvAvail(){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE),bic=!S||S.bic;document.querySelectorAll('#slv option').forEach(o=>{const k=o.value;o.disabled=!bic&&(k=='rs'||k=='rl'||((k=='l')&&!(S&&S.l))||((k=='s')&&!(S&&S.s)))})}
-async function packGet(name,onp){let c=null;try{c=await caches.open('diva-pola-v2');const m=await c.match(name);if(m)return new Uint8Array(await m.arrayBuffer())}catch(e){c=null}
-  const r=await szFetch(name);const tot=+r.headers.get('content-length')||0,rd=r.body.getReader(),parts=[];let got=0;for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;onp&&onp(got,tot)}
-  const u=new Uint8Array(got);let o=0;for(const p of parts){u.set(p,o);o+=p.length}try{if(c)await c.put(name,new Response(u))}catch(e){}return u}
-async function buildSizeTpl(file){const idx=await(await szFetch('index.json',{cache:'no-store'})).json(),e=idx.files[file];if(!e)throw new Error('Pola '+file+' tidak ada');
-  const need=[...new Set(e.parts.map(p=>p[0]))],data={};let done=0;
-  for(const pi of need){const nm=idx.packs[pi];data[pi]=await packGet(nm,(g,t)=>busy('Mengunduh pola '+file.replace('.zprj','')+'… '+Math.round((done+g)/1048576)+' MB',null));done+=data[pi].length}
-  const out=new Uint8Array(e.size);let o=0;for(const[pi,off,len]of e.parts){out.set(data[pi].subarray(off,off+len),o);o+=len}
-  try{const h=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1',out))).map(b=>b.toString(16).padStart(2,'0')).join('');if(h!==e.sha1)throw new Error('File pola rusak, coba lagi')}catch(err){if(/rusak/.test(err.message))throw err}
-  return new File([out],file)}
-{const _gt=getTpl;getTpl=async function(k){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);if(!S||S.bic)return _gt(k);
-  const file=(k=='l'||k=='rl')?S.l:(k=='s'?S.s:null);if(!file){toast('Ukuran '+S.label+' belum punya pola '+KNAME[k]);return null}
-  const key=CURSIZE+'|'+k;if(SZC[key])return SZC[key];try{busy('Menyiapkan pola '+S.label+'…',1);const f=await buildSizeTpl(file);busy(null);SZC[key]={file:f,name:file};return SZC[key]}catch(e){busy(null);toast('Pola '+S.label+' gagal diunduh: '+e.message);return null}}}
-/* ganti ukuran: pola & model ikut, desain menyesuaikan proporsi */
-$('#szsel').onchange=async e=>{const v=e.target.value,old=CURSIZE;if(!v)return;CURSIZE=v;try{localStorage.setItem('szCur',v)}catch(_){}
-  const S=SIZES.find(x=>x.id===v);let k=curKind();if(S&&!S.bic){if(k=='rs')k='s';if(k=='rl')k='l';if(k=='l'&&!S.l){k='s';toast('Ukuran '+S.label+' belum ada lengan panjang, pakai lengan pendek')}if(k=='s'&&!S.s){k='l';toast('Ukuran '+S.label+' baru ada lengan panjang')}}
-  slvAvail();if(S&&S.bic&&!ZP){syncSlv();return}
-  const before=ZP;await switchModel(k,true);if(ZP===before&&old!==v){CURSIZE=old;try{localStorage.setItem('szCur',old)}catch(_){}szUI()}};
-/* file CLO yang dibuka: kenali ukurannya dari tinggi pola badan depan */
-function detectSize(){if(!ZP||!SIZES)return;const p=P.torsoF,pt=p&&p.d.zp!=null&&ZP.patterns[p.d.zp];if(!pt)return;const h=Math.max(pt.tb[2]-pt.tb[0],pt.tb[3]-pt.tb[1]);
-  let best=null,bd=1e9;SIZES.forEach(s=>{if(!s.fh)return;const d=Math.abs(s.fh-h);if(d<bd){bd=d;best=s}});CURSIZE=best&&bd<=Math.max(4,h*.012)?best.id:'';szUI()}
-{const _oz=openZprj;openZprj=async function(f){const r=await _oz.apply(this,arguments);try{detectSize()}catch(e){}return r}}
-{const _rb=restoreBuiltin;restoreBuiltin=function(){const r=_rb.apply(this,arguments);CURSIZE='7S';szUI();return r}}
-try{caches.delete('diva-pola-v1')}catch(e){}
-loadSizes();
-
-/* ---------- nama file otomatis: nama + ukuran (+ LS lengan panjang, Raglan untuk raglan) ---------- */
-const SZTAG_RE=/(^|\s+)(1[0-2]S|[1-9]S|XS|S|M|L|XL|XXL)(\s+Raglan)?(\s+LS)?$/i;
-function szTag(){const sz=typeof CURSIZE=='string'?CURSIZE:'';if(!sz)return'';let k='s';try{k=curKind()}catch(e){}
-  return sz+(k=='rs'||k=='rl'?' Raglan':'')+(k=='l'||k=='rl'?' LS':'')}
-function szBase(n){n=(n||'').trim();return szTag()?n.replace(SZTAG_RE,'').trim():n}
-function szName(n){const b=szBase(n),t=szTag();if(!t)return n;return b?b+' '+t:t}
-{const _an=askName;askName=function(kind){const p=_an.apply(this,arguments),i=$('#nin'),h=$('#nhint'),t=szTag();
-  if(t){i.value=szBase(i.value);const upd=()=>{h.textContent='Ukuran & model ditambahkan otomatis → '+szName(i.value.trim()||'nama')+'.'+kind};upd();i.oninput=upd;setTimeout(()=>{try{i.select()}catch(e){}},60)}
-  return p.then(v=>{i.oninput=null;return v==null?v:szName(v)})}}
-{const _gt=getTarget;getTarget=async function(kind,forceAs){const f=FS[kind];
-  if(szTag()){
-    if(forceAs||!f.named){if(canPick()&&!window.FORCEDL){const n=await askName(kind);if(n==null)return null;f.n=n;f.named=true;lss('skn_'+kind,n);fnLabels();forceAs=true}}
-    else{const want=szName(f.n);if(want!==f.n){/* ukuran/model berubah → file baru, jangan menimpa file ukuran lain */f.h=null;f.n=want;lss('skn_'+kind,want);fnLabels();if(canPick()&&!window.FORCEDL)forceAs=true}}}
-  return _gt(kind,forceAs)}}
-
-/* ---------- APK: penjelajah file (Google Drive + folder HP): pin, bintang, riwayat, urut terbaru ---------- */
-if(window.DivaNative&&typeof DivaNative.treeList=='function'){(function(){
-const N=window.DivaNative,GDF='application/vnd.google-apps.folder',GDS='application/vnd.google-apps.shortcut';
-const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const DES=/\.(zprj|zip|json|pdf|png|jpe?g|webp)$/i,PROJ=/\.(zprj|zip|json)$/i,LIBF=/\.(pdf|png|jpe?g|webp)$/i;
-const mimeOf=n=>/\.zprj$/i.test(n)?'application/octet-stream':/\.json$/i.test(n)?'application/json':/\.pdf$/i.test(n)?'application/pdf':/\.png$/i.test(n)?'image/png':'application/octet-stream';
-const BLN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-function fdate(t){if(!t)return'';const d=new Date(t),n=new Date(),hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-  if(d.toDateString()===n.toDateString())return'Hari ini '+hm;const y=new Date(n-864e5);if(d.toDateString()===y.toDateString())return'Kemarin '+hm;
-  return d.getDate()+' '+BLN[d.getMonth()]+(d.getFullYear()!==n.getFullYear()?' '+d.getFullYear():'')+' '+hm}
-const fsize=b=>b==null||b<0?'':b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(b<1e7?1:0)+' MB';
-const icon=it=>it.dir?'📁':/\.zprj$/i.test(it.name)?'👕':/\.json$/i.test(it.name)?'🧩':/\.pdf$/i.test(it.name)?'📄':/\.(png|jpe?g|webp)$/i.test(it.name)?'🖼️':'📎';
-
-/* ===== Google Drive ===== */
-let GD_CID=LS.get('gdCid',''),GD_TOK=LS.get('gdTok',null),gdWait=null;
-fetch('gdrive.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.clientId&&!GD_CID)GD_CID=j.clientId}).catch(()=>{});
-const gdOk=()=>GD_TOK&&GD_TOK.t&&GD_TOK.exp>Date.now()+60e3;
-function gdLogin(){if(!GD_CID)return Promise.reject(new Error('cid'));
-  const u='https://accounts.google.com/o/oauth2/v2/auth?'+new URLSearchParams({client_id:GD_CID,redirect_uri:'https://fakecuan.github.io/web/sseditor/oauth.html',response_type:'token',scope:'https://www.googleapis.com/auth/drive',include_granted_scopes:'true',state:'apk'}).toString();
-  N.openUrl(u);return new Promise((res,rej)=>{gdWait={res,rej}})}
-window.__gdAuth=()=>{let q='';try{q=N.authResult()}catch(e){}if(!q)return;const p=new URLSearchParams(q),w=gdWait;gdWait=null;
-  if(p.get('access_token')){GD_TOK={t:p.get('access_token'),exp:Date.now()+(+p.get('expires_in')||3600)*1000};LS.set('gdTok',GD_TOK);toast('Google Drive terhubung');if(w)w.res(GD_TOK.t);else if(!$('#mfb').hidden)fbRender()}
-  else{toast('Login Google dibatalkan'+(p.get('error')?' ('+p.get('error')+')':''));if(w)w.rej(new Error('batal'))}};
-setTimeout(window.__gdAuth,800);
-async function gdTok(){if(gdOk())return GD_TOK.t;return await gdLogin()}
-async function gdFetch(url,opt={},again){const t=await gdTok();const r=await fetch(url,{...opt,headers:{...(opt.headers||{}),Authorization:'Bearer '+t}});
-  if(r.status===401&&!again){GD_TOK=null;LS.set('gdTok',null);return gdFetch(url,opt,true)}
-  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(e){}throw new Error('Drive '+r.status+(m?': '+m:''))}return r}
-const GFIELDS='nextPageToken,files(id,name,mimeType,modifiedTime,createdTime,size,starred,parents,shortcutDetails)';
-async function gdQuery(q,orderBy,max){let out=[],pt='';do{const u='https://www.googleapis.com/drive/v3/files?'+new URLSearchParams({q,fields:GFIELDS,pageSize:'1000',orderBy:orderBy||'folder,modifiedTime desc',supportsAllDrives:'true',includeItemsFromAllDrives:'true',...(pt?{pageToken:pt}:{})});
-  const j=await(await gdFetch(u)).json();out=out.concat(j.files||[]);pt=j.nextPageToken}while(pt&&out.length<(max||3000));
-  return out.filter(f=>!/^application\/vnd\.google-apps\.(?!folder|shortcut)/.test(f.mimeType)).map(f=>{const sc=f.mimeType===GDS&&f.shortcutDetails;const m=sc?sc.targetMimeType:f.mimeType;
-    if(sc&&/^application\/vnd\.google-apps\.(?!folder)/.test(m))return null;return{src:'gd',id:sc?sc.targetId:f.id,name:f.name,dir:m===GDF,size:f.size!=null?+f.size:-1,mod:Date.parse(f.modifiedTime)||0,created:Date.parse(f.createdTime)||0,starred:!!f.starred,parent:(f.parents||[])[0]||'root'}}).filter(Boolean)}
-async function gdDownload(it){const r=await gdFetch('https://www.googleapis.com/drive/v3/files/'+it.id+'?alt=media&supportsAllDrives=true');const tot=+r.headers.get('content-length')||it.size||0,rd=r.body.getReader(),parts=[];let got=0;
-  for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;busy('Mengunduh '+it.name+'… '+(got/1048576).toFixed(1)+' MB',tot?Math.min(99,got/tot*100):null)}
-  return new File(parts,it.name,{type:mimeOf(it.name)})}
-async function gdUpload(t,blob){const mime=mimeOf(t.name),meta=t.id?{}:{name:t.name,parents:[t.parent||'root']};
-  const u=t.id?'https://www.googleapis.com/upload/drive/v3/files/'+t.id+'?uploadType=resumable&supportsAllDrives=true&fields=id,name,parents':'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true&fields=id,name,parents';
-  const r=await gdFetch(u,{method:t.id?'PATCH':'POST',headers:{'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':mime,'X-Upload-Content-Length':String(blob.size)},body:JSON.stringify(meta)});
-  const loc=r.headers.get('Location');if(!loc)throw new Error('Drive tidak memberi alamat unggah');
-  return await new Promise((res,rej)=>{const x=new XMLHttpRequest();x.open('PUT',loc);x.setRequestHeader('Content-Type',mime);
-    x.upload.onprogress=e=>{if(e.lengthComputable)busy('Mengunggah ke Drive… '+(e.loaded/1048576).toFixed(1)+' / '+(e.total/1048576).toFixed(1)+' MB',e.loaded/e.total*100)};
-    x.onload=()=>{if(x.status>=200&&x.status<300){try{res(JSON.parse(x.responseText))}catch(e){res({id:t.id,name:t.name})}}else rej(new Error('Unggah gagal ('+x.status+')'))};x.onerror=()=>rej(new Error('Koneksi terputus saat mengunggah'));x.send(blob)})}
-async function gdStar(it){await gdFetch('https://www.googleapis.com/drive/v3/files/'+it.id+'?supportsAllDrives=true&fields=starred',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({starred:!it.starred})});it.starred=!it.starred}
-
-/* ===== folder HP (Storage Access Framework) ===== */
-const treeWaits={};let treeRq=0;
-window.__divaTree=(id,info)=>{const w=treeWaits[id];delete treeWaits[id];if(w)w(info)};
-const treeAdd=()=>new Promise(res=>{const id='t'+(++treeRq);treeWaits[id]=res;N.treeAdd(id)});
-function devList(tree,doc){const s=N.treeList(tree,doc||'');const j=JSON.parse(s||'[]');if(j&&j.error)throw new Error('Folder tidak bisa dibaca. Tambahkan lagi foldernya. ('+j.error+')');
-  return j.map(x=>({src:'dev',tree,id:x.id,name:x.name,dir:x.dir,size:x.size,mod:x.mod}))}
-async function writeAll(token,blob){const b64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=()=>rej(r.error);r.readAsDataURL(b)});
-  let r=N.begin(token);if(r!=='ok')throw new Error(r);const CH=768*1024;for(let o=0;o<blob.size;o+=CH){r=N.chunk(token,await b64(blob.slice(o,o+CH)));if(r!=='ok'){N.end(token);throw new Error(r)}busy('Menyimpan… '+Math.round(o/blob.size*100)+'%',o/blob.size*100)}
-  r=N.end(token);if(r!=='ok')throw new Error(r)}
-function devHandle(info){return{kind:'file',name:info.name,__tok:info.token,
-  getFile:async()=>{const r=await fetch('/__diva/f/'+info.token,{cache:'no-store'});if(!r.ok)throw new Error('File tidak bisa dibaca');return new File([await r.blob()],info.name)},
-  queryPermission:async()=>'granted',requestPermission:async()=>'granted',
-  createWritable:async()=>{const parts=[];return{write:async d=>{parts.push(d&&d.data!==undefined?d.data:d)},close:async()=>{await writeAll(info.token,new Blob(parts))}}}}}
-function devOpenH(tree,doc,name){const s=N.treeOpen(tree,doc,name||'');if(!s)throw new Error('File tidak bisa dibuka');return devHandle(JSON.parse(s))}
-function devCreateH(tree,parent,name){const s=N.treeCreate(tree,parent||'',name,mimeOf(name));if(!s)throw new Error('Tidak bisa membuat file di folder ini');const j=JSON.parse(s);const h=devHandle(j);h.__id=j.id;return h}
-
-/* ===== seluruh memori HP (izin "Akses semua file") ===== */
-const hasFS=typeof N.fsList=='function';
-const fsOk=()=>{try{return hasFS&&N.fsAllowed()}catch(e){return false}};
-function fsList(path){const j=JSON.parse(N.fsList(path)||'[]');if(j&&j.error)throw new Error(j.error);return j.map(x=>({src:'fs',id:x.id,name:x.name,dir:x.dir,size:x.size,mod:x.mod,parent:x.parent}))}
-function fsOpenH(path){const s=N.fsOpen(path);if(!s)throw new Error('File tidak bisa dibuka');return devHandle(JSON.parse(s))}
-function fsCreateH(dir,name){const s=N.fsCreate(dir,name);if(!s)throw new Error('Tidak bisa menyimpan di folder ini');const j=JSON.parse(s);const h=devHandle(j);h.__id=j.id;return h}
-const recW={};let recRq=0,REC=null,RECT=0;
-window.__divaRecent=(id,arr)=>{const w=recW[id];delete recW[id];if(w)w(arr||[])};
-const fsRecent=()=>new Promise(res=>{const id='r'+(++recRq);recW[id]=res;N.fsRecent(id,'zprj|json',40)});
-window.__divaResume=()=>{if(!$('#mfb').hidden&&V.tab==='dev'&&!V.stack.length){REC=null;fbRender()}};
-
-/* ===== data lokal: pin, riwayat, folder HP ===== */
-const pins=()=>LS.get('fbPins',[]),trees=()=>LS.get('fbTrees',[]),hist=()=>LS.get('fbHist',[]);
-const pkey=it=>it.src+':'+(it.tree||'')+':'+it.id;
-function togglePin(it){let p=pins();const k=pkey(it);if(p.some(x=>pkey(x)===k))p=p.filter(x=>pkey(x)!==k);else p.unshift({src:it.src,id:it.id,name:it.name,tree:it.tree||'',dir:true});LS.set('fbPins',p)}
-function addHist(it){let h=hist().filter(x=>pkey(x)!==pkey(it));h.unshift({src:it.src,id:it.id,name:it.name,tree:it.tree||'',parent:it.parent||'',size:it.size,mod:Date.now()});LS.set('fbHist',h.slice(0,40))}
-
-/* ===== tampilan ===== */
-const V={tab:'pin',stack:[],q:'',sort:LS.get('fbSort','mod'),des:LS.get('fbDes',true),mode:'open',kind:'zprj',done:null,items:[]};
-function crumbs(){const st=V.stack;if(!st.length)return'';return st.map((c,i)=>`<button class="fbc" data-c="${i}">${esc(c.name)}</button>`).join('<span>›</span>')}
-function sorted(a){const k=V.sort;return a.slice().sort((x,y)=>(y.dir-x.dir)||(k==='name'?x.name.localeCompare(y.name,'id',{numeric:true}):k==='size'?(y.size||0)-(x.size||0):(y.mod||0)-(x.mod||0)))}
-function rows(items,o={}){const pk=new Set(pins().map(pkey));
-  if(!items.length)return`<div class="fbe">${o.empty||'Kosong'}</div>`;
-  const off=o.off||0;return items.map((it,j)=>{const i=j+off;const can=it.dir||V.mode==='open'&&(PROJ.test(it.name)||LIBF.test(it.name))||V.mode==='save'&&new RegExp('\\.'+V.kind+'$','i').test(it.name);
-    return`<div class="fbr${can?'':' fbdim'}" data-i="${i}"><span class="fbi">${icon(it)}</span><div class="fbn"><b>${esc(it.name)}</b><small>${[o.src?(it.src==='gd'?'Drive':'HP'):o.path&&!it.dir&&it.parent?it.parent.replace(/^\/storage\/emulated\/0\/?/,'')||'Memori':'',fdate(it.mod),it.dir?'':fsize(it.size)].filter(Boolean).join(' · ')}</small></div>`+
-      (it.dir&&!o.noPin?`<button class="fbb fbpin${pk.has(pkey(it))?' on':''}" data-p="${i}" title="Pin folder">📌</button>`:'')+
-      (it.src==='gd'&&!o.noStar?`<button class="fbb fbstar${it.starred?' on':''}" data-s="${i}" title="Bintang">${it.starred?'★':'☆'}</button>`:'')+
-      (o.del?`<button class="fbb" data-d="${i}" title="Hapus dari daftar">✕</button>`:'')+`</div>`}).join('')}
-function setList(html){$('#fblist').innerHTML=html}
-function cur(){return V.stack[V.stack.length-1]}
-async function fbRender(){const L=$('#fblist');document.querySelectorAll('#fbtabs .chip').forEach(b=>b.classList.toggle('on',b.dataset.t===V.tab));
-  $('#fbcrumb').innerHTML=crumbs();$('#fbcrumb').hidden=!V.stack.length;$('#fbsort').value=V.sort;$('#fbdes').checked=V.des;
-  const c=cur();$('#fbhere').hidden=!(V.mode==='save'&&c&&c.folder);$('#fbq').placeholder=V.tab==='dev'?'Saring nama di folder ini…':'Cari di Google Drive…';
-  L.innerHTML='<div class="fbe">Memuat…</div>';
-  try{let items=[],o={};
-    if(c&&c.folder){items=c.src==='gd'?await gdQuery(`'${c.id}' in parents and trashed=false`):c.src==='fs'?fsList(c.id):devList(c.tree,c.id);items.forEach(x=>{if(x.src==='gd')x.parent=c.id;else x.parent=c.id})}
-    else if(V.tab==='pin'){const p=pins();items=p.map(x=>({...x,dir:true}));o={empty:'Belum ada folder yang di-pin.<br>Buka folder di <b>Drive</b> atau <b>HP</b>, lalu ketuk 📌.',noStar:1,src:1}}
-    else if(V.tab==='hist'){items=hist();o={empty:'Belum ada file yang dibuka dari sini.',noStar:1,src:1,del:1};V.items=items;setList(rows(items,o));return}
-    else if(V.tab==='dev'&&hasFS){
-      if(!fsOk()){setList(`<div class="fbe">Agar bisa membuka & menyimpan file di memori HP (Download, Documents, dll.), izinkan <b>Akses semua file</b> untuk aplikasi ini (sekali saja).<button class="fbadd" id="fbperm">Izinkan akses file</button><small class="fbnote">Di layar pengaturan, aktifkan sakelar untuk <b>Diva Skate Skinsuit</b> lalu tekan kembali.</small></div>`);$('#fbperm').onclick=()=>N.fsRequest();return}
-      const R=N.fsRoot();const q=[['Memori internal',R],['Download',R+'/Download'],['Documents',R+'/Documents'],['Pictures',R+'/Pictures'],['DCIM',R+'/DCIM']].map(([n,p])=>({src:'fs',id:p,name:n,dir:true,root:1}));
-      let html=rows(q,{noStar:1})+'<div class="fbsub">File desain terbaru di HP</div>';V.items=q.slice();setList(html+'<div class="fbe">Mencari…</div>');
-      if(!REC||Date.now()-RECT>60000){REC=await fsRecent();RECT=Date.now()}
-      if(V.tab!=='dev'||V.stack.length)return;
-      let rec=REC.map(x=>({src:'fs',id:x.id,name:x.name,dir:false,size:x.size,mod:x.mod,parent:x.parent}));if(V.q){const qq=V.q.toLowerCase();rec=rec.filter(x=>x.name.toLowerCase().includes(qq))}
-      if(V.sort!=='mod')rec=sorted(rec);
-      V.items=q.concat(rec);setList(html+rows(rec,{off:q.length,noStar:1,noPin:1,path:1,empty:'Belum ada file .zprj / .json di HP.'}));return}
-    else if(V.tab==='dev'){const t=trees();items=t.map(x=>({src:'dev',tree:x.uri,id:x.id,name:x.name,dir:true,root:1}));o={empty:'',noStar:1,del:1};
-      V.items=items;setList(rows(items,{...o,empty:'Belum ada folder HP.'})+`<button class="fbadd" id="fbaddt">＋ Tambah folder HP (mis. Download)</button><small class="fbnote">Pilih folder sekali, aplikasi akan ingat. File di dalamnya bisa diurutkan, di-pin, dan disimpan langsung.</small>`);$('#fbaddt').onclick=addTree;return}
-    else{if(!GD_CID){setList(cidForm());return}
-      if(!gdOk()){setList(`<div class="fbe">Masuk ke Google Drive untuk melihat file.<br><button class="fbadd" id="fbin">Masuk Google</button></div>`);$('#fbin').onclick=()=>gdLogin().then(fbRender).catch(()=>{});return}
-      const dq=V.des?" and (mimeType='"+GDF+"' or name contains '.zprj' or name contains '.json' or name contains '.pdf' or mimeType contains 'image/')":'';
-      if(V.q){items=await gdQuery(`name contains '${V.q.replace(/['\\]/g,'\\$&')}' and trashed=false`,'modifiedTime desc',300)}
-      else if(V.tab==='gd')items=await gdQuery("'root' in parents and trashed=false");
-      else if(V.tab==='recent')items=await gdQuery("mimeType!='"+GDF+"' and trashed=false"+dq,'modifiedTime desc',150);
-      else if(V.tab==='star')items=await gdQuery('starred=true and trashed=false');
-      else if(V.tab==='shared')items=await gdQuery('sharedWithMe=true and trashed=false'+dq,'modifiedTime desc',300)}
-    if(V.des)items=items.filter(x=>x.dir||DES.test(x.name));
-    if(V.q&&(V.tab==='dev'||c&&(c.src==='dev'||c.src==='fs'))){const q=V.q.toLowerCase();items=items.filter(x=>x.name.toLowerCase().includes(q))}
-    items=sorted(items);
-    V.items=items;setList(rows(items,o))}
-  catch(e){console.warn(e);setList(`<div class="fbe">${esc(e.message==='cid'?'Google Drive belum diatur.':e.message)}</div>`)}}
-function cidForm(){setTimeout(()=>{$('#fbcids').onclick=()=>{const v=$('#fbcid').value.trim();if(!/\.apps\.googleusercontent\.com$/.test(v)){toast('Client ID biasanya berakhiran .apps.googleusercontent.com');return}GD_CID=v;LS.set('gdCid',v);fbRender()}},0);
-  return`<div class="fbe" style="text-align:left">Google Drive belum diatur. Tempel <b>Client ID</b> dari Google Cloud (sekali saja):<input id="fbcid" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false"><button class="fbadd" id="fbcids">Simpan</button></div>`}
-async function addTree(){const t=await treeAdd();if(!t)return;let a=trees().filter(x=>x.uri!==t.uri);a.unshift(t);LS.set('fbTrees',a);V.stack=[{src:'dev',tree:t.uri,id:t.id,name:t.name,folder:1}];fbRender()}
-async function openItem(it){
-  if(it.dir){if(V.tab==='pin'||V.tab==='dev'&&it.root||!V.stack.length)V.stack=[];V.stack.push({src:it.src,tree:it.tree,id:it.id,name:it.name,folder:1});V.q='';$('#fbq').value='';fbRender();return}
-  if(V.mode==='save'){if(!new RegExp('\\.'+V.kind+'$','i').test(it.name))return;const c=cur();fbDone({src:it.src,tree:it.tree,parent:it.parent||(c&&c.id)||'',id:it.id,name:it.name,exist:1});return}
-  if(!PROJ.test(it.name)&&!LIBF.test(it.name)){toast('Jenis file ini tidak bisa dibuka di sini');return}
-  let f,h=null;try{busy('Membuka '+it.name+'…',1);if(it.src==='gd'){f=await gdDownload(it)}else{h=it.src==='fs'?fsOpenH(it.id):devOpenH(it.tree,it.id,it.name);f=await h.getFile()}}
-  catch(e){busy(null);toast('Gagal membuka: '+e.message);return}finally{busy(null)}
-  addHist(it);fbClose();window.FBMETA={name:it.name,created:it.created||0,mod:it.mod||0,size:it.size||f.size};
-  if(LIBF.test(it.name)){const inp=$('#libfile');if(inp&&inp.onchange){inp.onchange({target:{files:[f],value:''}});toast('Ditambahkan ke library: '+it.name)}return}
-  const k=/\.(zprj|zip)$/i.test(it.name)?'zprj':'json',own=/\.(zprj|json)$/i.test(it.name);
-  FS[k].h=null;FS[k].drive=null;FS[k].dev=null;
-  if(own){if(it.src==='gd')FS[k].drive={id:it.id,name:it.name,parent:it.parent||'root'};else{FS[k].h=h;FS[k].dev={fs:it.src==='fs'?1:0,tree:it.tree,parent:it.parent||''}}}
-  if(k==='json'){FS.zprj.h=null;FS.zprj.drive=null;FS.zprj.dev=null}
-  FS[k].n=it.name.replace(/(\.zprj)?\.(zip|zprj|json)$/i,'');FS[k].named=true;lss('skn_'+k,FS[k].n);fnLabels();f.__fb=1;loadProject(f)}
-function fbDone(v){const d=V.done;V.done=null;$('#mfb').hidden=true;if(d)d(v)}
-function fbClose(){fbDone(null)}
-function fbOpen(mode,kind){V.mode=mode;V.kind=kind||'zprj';$('#fbt').textContent=mode==='save'?'Simpan ke…':'Buka file';$('#fbsys').textContent=mode==='save'?'Lokasi lain (pemilih sistem)…':'Pemilih file sistem…';
-  if(mode==='save'){const f=FS[V.kind];const st=f.drive?[{src:'gd',id:f.drive.parent||'root',name:'Folder file ini',folder:1}]:f.dev?[{src:f.dev.fs?'fs':'dev',tree:f.dev.tree,id:f.dev.parent,name:'Folder file ini',folder:1}]:null;if(st){V.stack=st}}
-  $('#mfb').hidden=false;fbRender();return new Promise(res=>{V.done=res})}
-window.fbOpen=fbOpen;
-
-/* ===== peristiwa ===== */
-$('#fbtabs').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;V.tab=b.dataset.t;V.stack=[];V.q='';$('#fbq').value='';fbRender()};
-$('#fbcrumb').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;V.stack=V.stack.slice(0,+b.dataset.c+1);fbRender()};
-$('#fbsort').onchange=e=>{V.sort=e.target.value;LS.set('fbSort',V.sort);V.items=sorted(V.items);fbRender()};
-$('#fbdes').onchange=e=>{V.des=e.target.checked;LS.set('fbDes',V.des);fbRender()};
-let qT=0;$('#fbq').oninput=e=>{clearTimeout(qT);qT=setTimeout(()=>{V.q=e.target.value.trim();if(V.q&&V.tab!=='dev'&&!(cur()&&(cur().src==='dev'||cur().src==='fs'))){V.stack=[];if(!['gd','recent','star','shared'].includes(V.tab))V.tab='gd'}fbRender()},450)};
-$('#fblist').onclick=async e=>{const P=e.target.closest('[data-p]'),S=e.target.closest('[data-s]'),D=e.target.closest('[data-d]'),R=e.target.closest('[data-i]');
-  if(P){togglePin(V.items[+P.dataset.p]);fbRender();return}
-  if(S){const it=V.items[+S.dataset.s];try{await gdStar(it);S.classList.toggle('on',it.starred);S.textContent=it.starred?'★':'☆'}catch(x){toast(x.message)}return}
-  if(D){const it=V.items[+D.dataset.d];if(V.tab==='hist')LS.set('fbHist',hist().filter(x=>pkey(x)!==pkey(it)));else if(V.tab==='dev'){LS.set('fbTrees',trees().filter(x=>x.uri!==it.tree));try{N.treeDrop(it.tree)}catch(_){}}fbRender();return}
-  if(R)openItem(V.items[+R.dataset.i])};
-$('#fbx').onclick=fbClose;
-$('#fbhere').onclick=()=>{const c=cur();if(c)fbDone({src:c.src,tree:c.tree,parent:c.id})};
-const _bopen=$('#bopen').onclick;
-$('#fbsys').onclick=()=>{const m=V.mode;fbDone('sys');if(m==='open'&&_bopen)_bopen()};
-$('#bopen').onclick=async()=>{const r=await fbOpen('open')};
-{const _back=window.__divaBack;window.__divaBack=()=>{if(!$('#mfb').hidden&&V.stack.length>1){V.stack.pop();fbRender();return'handled'}if(!$('#mfb').hidden&&V.stack.length===1&&(V.tab==='dev'||V.tab==='gd'||V.tab==='pin')){V.stack=[];fbRender();return'handled'}return _back?_back():'exit'}}
-
-/* ===== simpan: Drive / folder HP ===== */
-{const _lp=loadProject;loadProject=function(f){if(!f||!f.__fb){['zprj','json'].forEach(k=>{FS[k].drive=null;FS[k].dev=null})}return _lp.apply(this,arguments)}}
-const baseOf=(n,kind)=>n.replace(new RegExp('\\.'+kind+'$','i'),'');
-const want=(f,kind)=>((typeof szTag=='function'&&szTag())?szName(f.n):f.n)+'.'+kind;
-async function folderTarget(kind,r,f){let name;
-  if(r.exist||r._auto){name=r.name}else{const n=await askName(kind);if(n==null)return null;name=n+'.'+kind}
-  f.n=baseOf(name,kind);f.named=true;lss('skn_'+kind,f.n);fnLabels();
-  if(r.src==='gd'){let id=r.exist?r.id:null;if(!id){try{const ex=await gdQuery(`'${r.parent||'root'}' in parents and name='${name.replace(/['\\]/g,'\\$&')}' and trashed=false`);if(ex[0])id=ex[0].id}catch(e){}}
-    f.h=null;f.dev=null;return{drive:{id,parent:r.parent||'root',name},name}}
-  if(r.src==='fs'){const h=fsCreateH(r.parent,name);f.h=h;f.drive=null;f.dev={fs:1,parent:r.parent};addHist({src:'fs',id:h.__id,name,parent:r.parent});return{h}}
-  let h,did=r.exist?r.id:'';if(r.exist)h=devOpenH(r.tree,r.id,name);else{const ex=devList(r.tree,r.parent).find(x=>!x.dir&&x.name===name);if(ex){did=ex.id;h=devOpenH(r.tree,ex.id,name)}else{h=devCreateH(r.tree,r.parent,name);did=h.__id||''}}
-  f.h=h;f.drive=null;f.dev={tree:r.tree,parent:r.parent};addHist({src:'dev',tree:r.tree,id:did,name,parent:r.parent});return{h}}
-{const _gt=getTarget;getTarget=async function(kind,forceAs){const f=FS[kind];
-  if(!forceAs&&f.named&&f.drive){const w=want(f,kind);f.n=baseOf(w,kind);if(w===f.drive.name)return{drive:{id:f.drive.id,parent:f.drive.parent,name:w},name:w};return{drive:{parent:f.drive.parent,name:w},name:w}}
-  if(!forceAs&&f.named&&f.dev){const w=want(f,kind);if(f.h&&w===f.h.name)return{h:f.h};try{return await folderTarget(kind,{src:f.dev.fs?'fs':'dev',tree:f.dev.tree,parent:f.dev.parent,name:w,_auto:1},f)}catch(e){console.warn(e)}}
-  if(forceAs||(!f.named&&!f.h)){const r=await fbOpen('save',kind);if(r===null)return null;if(r==='sys')return _gt(kind,true);
-    try{return await folderTarget(kind,r,f)}catch(e){toast('Gagal: '+e.message);return null}}
-  return _gt(kind,forceAs)}}
-{const _wt=writeTarget;writeTarget=async function(kind,tg,blob){if(!tg||!tg.drive)return _wt.apply(this,arguments);
-  try{const r=await gdUpload(tg.drive,blob);busy(null);FS[kind].drive={id:r.id||tg.drive.id,name:r.name||tg.drive.name,parent:tg.drive.parent};FS[kind].h=null;FS[kind].dev=null;
-    addHist({src:'gd',id:FS[kind].drive.id,name:FS[kind].drive.name,parent:tg.drive.parent,size:blob.size});toast('Tersimpan di Google Drive: '+FS[kind].drive.name);window.FBMETA={name:FS[kind].drive.name,created:(window.FBMETA&&window.FBMETA.name===FS[kind].drive.name&&window.FBMETA.created)||Date.now(),mod:Date.now(),size:blob.size};return true}
-  catch(e){busy(null);console.error(e);return'Gagal menyimpan ke Drive: '+e.message}}}
-{const _fl=fnLabels;fnLabels=function(){_fl.apply(this,arguments);try{const sk=ZP?'zprj':'json',f=FS[sk];if(f.drive)$('#bsave').title='Simpan ke Google Drive ('+f.drive.name+')'}catch(e){}}}
-})()}
-
-/* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
-let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
-{const _oz=openZprj;openZprj=async function(f){if(f&&!f.__tpl)ZFILE={name:f.name,size:f.size,mod:f.lastModified||0,opened:Date.now()};else if(f&&f.__tpl)ZFILE={name:f.name,size:f.size,tpl:1,opened:Date.now()};return _oz.apply(this,arguments)}}
-{const _ok=svOk;svOk=function(name,size,dl){LASTSAVE={name,size,t:Date.now(),dl:!!dl};return _ok.apply(this,arguments)}}
-/* profil lebar pola: lebar (mm) pada ketinggian y, dalam arah tampilan editor (atas = atas) */
-function patProf(pt){const W=pt.tb[2]-pt.tb[0],H=pt.tb[3]-pt.tb[1],G=patG0(pt,W,H),t=pt.tex,n=t.length/2,X=new Float32Array(n),Y=new Float32Array(n);
-  for(let i=0;i<n;i++){const x=t[2*i],y=t[2*i+1];X[i]=G[0]*x+G[2]*y+G[4];Y[i]=G[1]*x+G[3]*y+G[5]}
-  const tri=pt.tri,E=[];for(let k=0;k<tri.length;k+=3){E.push(tri[k],tri[k+1],tri[k+1],tri[k+2],tri[k+2],tri[k])}
-  let y0=1e9,y1=-1e9;for(let i=0;i<n;i++){if(Y[i]<y0)y0=Y[i];if(Y[i]>y1)y1=Y[i]}
-  const at=y=>{let lo=1e9,hi=-1e9;for(let k=0;k<E.length;k+=2){const a=E[k],b=E[k+1],ya=Y[a],yb=Y[b];if(ya===yb||(ya-y)*(yb-y)>0)continue;const x=X[a]+(y-ya)/(yb-ya)*(X[b]-X[a]);if(x<lo)lo=x;if(x>hi)hi=x}return hi>lo?hi-lo:0};
-  let x0=1e9,x1=-1e9;for(let i=0;i<n;i++){if(X[i]<x0)x0=X[i];if(X[i]>x1)x1=X[i]}
-  const atX=x=>{let lo=1e9,hi=-1e9;for(let k=0;k<E.length;k+=2){const a=E[k],b=E[k+1],xa=X[a],xb=X[b];if(xa===xb||(xa-x)*(xb-x)>0)continue;const y=Y[a]+(x-xa)/(xb-xa)*(Y[b]-Y[a]);if(y<lo)lo=y;if(y>hi)hi=y}return hi>lo?hi-lo:0};
-  return{W,H,y0,y1,x0,x1,at,atX}}
-/* garis dada / lengan atas: titik di mana lengkung kerung lengan berubah jadi jahitan samping */
-function underarm(pr){const S=2,top=pr.y0,L=pr.y1-pr.y0,w=[];for(let y=top+S;y<=top+L*.55;y+=S)w.push(pr.at(y));
-  const a=Math.max(1,Math.round(w.length*.05));let im=a;for(let i=a;i<w.length*.8;i++)if(w[i]<w[im])im=i;
-  for(let i=im;i<w.length-5;i++){if((w[i+5]-w[i])/(5*S)<.25&&w[i]>w[im]+4)return{y:top+S*(i+1),w:w[i]}}
-  const i=Math.min(w.length-1,Math.round(w.length*.45));return{y:top+S*(i+1),w:w[i],guess:1}}
-function maxW(pr,f0,f1){let m=0;for(let y=pr.y0+(pr.y1-pr.y0)*f0;y<=pr.y0+(pr.y1-pr.y0)*f1;y+=2)m=Math.max(m,pr.at(y));return m}
-const pCm=v=>v==null||!isFinite(v)||v<=0?'–':(v/10).toFixed(1).replace('.',',')+' cm';
-function argMax(pr,f0,f1){let m=0,y=0;for(let v=pr.y0+(pr.y1-pr.y0)*f0;v<=pr.y0+(pr.y1-pr.y0)*f1;v+=2){const w=pr.at(v);if(w>m){m=w;y=v}}return{w:m,y}}
-const atF=(pr,f)=>pr.at(pr.y0+(pr.y1-pr.y0)*f);
-function sizeRows(){if(!ZP)return null;const g=id=>P[id]&&P[id].d.zp!=null?ZP.patterns[P[id].d.zp]:null;const R=[];
-  const F=g('torsoF'),B=g('torsoB'),Sl=g('sleeveR')||g('longR')||g('sleeveL')||g('longL'),Lg=g('legR')||g('legL'),Cf=g('cuffR')||g('cuffL'),Co=g('collar');
-  try{if(F||B){R.push(['h','Badan']);const pf=F&&patProf(F),pb=B&&patProf(B),cf=pf&&argMax(pf,.2,.6),cb=pb&&argMax(pb,.2,.6);
-    if(pf)R.push(['Panjang badan depan (leher–selangkangan)',pCm(pf.H)]);if(pb)R.push(['Panjang badan belakang',pCm(pb.H)]);
-    if(cf)R.push(['Lebar dada depan',pCm(cf.w)]);if(cb)R.push(['Lebar dada belakang',pCm(cb.w)]);
-    if(cf&&cb)R.push(['Lingkar dada (depan + belakang)',pCm(cf.w+cb.w)]);
-    if(pf&&pb)R.push(['Lingkar pinggul (depan + belakang)',pCm(atF(pf,.85)+atF(pb,.85))]);
-    if(pf)R.push(['Lebar bahu depan',pCm(maxW(pf,.02,.12))])}}catch(e){console.warn('ukur badan',e)}
-  try{if(Sl){const p=patProf(Sl),u=argMax(p,.2,.75);R.push(['h','Lengan'+(P.longR&&P.longR.d.zp!=null?' (panjang)':'')]);R.push(['Panjang lengan (puncak–ujung)',pCm(p.H)],['Lingkar lengan atas',pCm(u.w)],['Lingkar ujung lengan',pCm(atF(p,.985))])}}catch(e){console.warn('ukur lengan',e)}
-  try{if(Lg){const p=patProf(Lg),t=argMax(p,.3,.85);R.push(['h','Kaki']);R.push(['Panjang kaki (sisi luar)',pCm(p.H)],['Panjang kaki dalam (selangkangan–ujung)',pCm(p.y1-t.y)+' (perkiraan)'],['Lingkar paha',pCm(t.w)]);
-    if(Cf){const c=patProf(Cf);R.push(['Lingkar ujung kaki (manset)',pCm(Math.max(c.W,c.H))],['Tinggi manset kaki',pCm(Math.min(c.W,c.H))])}else R.push(['Lingkar ujung kaki',pCm(atF(p,.93))])}}catch(e){console.warn('ukur kaki',e)}
-  try{if(Co){const c=patProf(Co);R.push(['h','Leher']);R.push(['Lingkar kerah',pCm(Math.max(c.W,c.H))],['Tinggi kerah',pCm(Math.min(c.W,c.H))])}}catch(e){console.warn('ukur kerah',e)}
-  return R}
-const pFdt=t=>t?new Date(t).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'–';
-const pFsz=b=>b>0?(b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1).replace('.',',')+' MB'):'–';
-function fileRows(){const R=[['h','File']],k=ZP?'zprj':'json',f=FS[k],M=window.FBMETA;
-  const name=f&&f.named?f.n+'.'+k:(ZFILE&&!ZFILE.tpl?ZFILE.name:'(belum disimpan)');R.push(['Nama file',name]);
-  const S=(typeof SIZES!='undefined'&&SIZES&&SIZES.find(x=>x.id===CURSIZE));R.push(['Ukuran pola',S?S.label:(CURSIZE||'tidak dikenal')]);
-  let kd='';try{kd=KNAME[ZP?tplKind():curKind()]}catch(e){}if(kd)R.push(['Model',kd[0].toUpperCase()+kd.slice(1)]);
-  const loc=f&&f.drive?'Google Drive':f&&f.dev?(f.dev.fs?'HP: '+String(f.dev.parent||'').replace(/^\/storage\/emulated\/0\/?/,'Memori/'):'HP'):f&&f.h?'File di perangkat':ZFILE&&ZFILE.tpl?'Pola dasar aplikasi':'Unduhan';R.push(['Lokasi',loc]);
-  if(M&&M.name===name){if(M.created)R.push(['Tanggal dibuat',pFdt(M.created)]);if(M.mod)R.push(['Terakhir diubah',pFdt(M.mod)]);if(M.size>0)R.push(['Ukuran file',pFsz(M.size)])}
-  else if(ZFILE&&!ZFILE.tpl){if(ZFILE.mod)R.push(['Terakhir diubah',pFdt(ZFILE.mod)]);if(ZFILE.size)R.push(['Ukuran file',pFsz(ZFILE.size)])}
-  if(ZFILE)R.push(['Dibuka',pFdt(ZFILE.opened)]);
-  if(LASTSAVE)R.push(['Terakhir disimpan',pFdt(LASTSAVE.t)+(LASTSAVE.size?' · '+pFsz(LASTSAVE.size):'')]);
-  let nl=0;Object.values(P).forEach(p=>nl+=(p.layers||[]).filter(l=>!l.bg).length);R.push(['Jumlah gambar/teks',String(nl)]);
-  if(ZP)R.push(['Jumlah pola',String(ZP.patterns.length)],['Avatar',(typeof avg!='undefined'&&avg)?'Ada':'Tidak ada']);
-  return R}
-function propOpen(){const m=$('#mprop'),b=$('#propbody');let R=fileRows();const S=sizeRows();
-  const html=rows=>rows.map(r=>r[0]==='h'?`<tr><th colspan="2">${r[1]}</th></tr>`:`<tr><td>${r[0]}</td><td>${String(r[1]).replace(/</g,'&lt;')}</td></tr>`).join('');
-  b.innerHTML=`<table class="ptab">${html(R)}${S?html(S):''}</table>`+(S?'<small class="pnote">Ukuran diukur dari bentangan pola (garis pola, sebelum dijahit). Lingkar = lebar pola yang melingkar.</small>':`<div class="pnote">Ukuran pola tampil setelah pola CLO dimuat.<button class="fbadd" id="propload">Muat pola ${CURSIZE||'7S'}</button></div>`);
-  if(!S&&$('#propload'))$('#propload').onclick=async()=>{m.hidden=true;try{await switchModel(curKind(),true)}catch(e){}if(ZP)propOpen()};
-  m.hidden=false;
-  $('#propcopy').onclick=()=>{const t=[...R,...(S||[])].map(r=>r[0]==='h'?'\n'+r[1].toUpperCase():r[0]+': '+r[1]).join('\n').trim();
-    (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Disalin')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Disalin')}catch(e){}ta.remove()})}}
-$('#propb').onclick=propOpen;$('#propx').onclick=()=>{$('#mprop').hidden=true};
-
-/* ---------- Optimalkan ukuran file ---------- */
-const OPT=Object.assign({jpg:false,dpi:0},(()=>{try{return JSON.parse(localStorage.getItem('optSet')||'{}')}catch(e){return{}}})());
-let OPTMAX=null,OPTRUN=null;
-const optStore=()=>{try{localStorage.setItem('optSet',JSON.stringify(OPT))}catch(e){}};
-function canvasOpaque(c){try{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4)if(d[i]<250)return false;return true}catch(e){return false}}
-const jpgOf=cv=>new Promise(r=>cv.toBlob(b=>b.arrayBuffer().then(x=>r(new Uint8Array(x))),'image/jpeg',.92));
-async function encOpt(c){if(OPT.jpg&&canvasOpaque(c))return{data:await jpgOf(c),ext:'jpg'};return{data:await pngOf(c),ext:'png'}}
-function optMaxPx(key,mm){if(!OPT.dpi)return 0;const m=Math.max(mm||0,(OPTMAX&&OPTMAX.get(key))||0);return Math.max(64,Math.round(m*OPT.dpi/25.4))}
-function optSrcJpeg(src){if(!OPT.jpg||typeof src!='string'||!src.startsWith('data:image/jpeg;base64,'))return null;try{const s=atob(src.slice(23)),b=new Uint8Array(s.length);for(let i=0;i<s.length;i++)b[i]=s.charCodeAt(i);return b}catch(e){return null}}
-/* ukuran tampil terbesar (mm) tiap gambar, supaya resolusi cukup untuk pemakaian terbesar */
-function optScan(){const M=new Map();if(!ZP)return M;for(const p of Object.values(P)){if(p.d.zp==null)continue;let live=[];try{live=liveSplit(p)}catch(e){}const pt=ZP.patterns[p.d.zp],W=pt.tb[2]-pt.tb[0],H=pt.tb[3]-pt.tb[1];
-  p.layers.forEach((L,i)=>{try{if(live[i]||L.t=='txt'||L.rep||!L.img||!ready(L))return;const im=L.img,IW=im.naturalWidth||im.width,IH=im.naturalHeight||im.height;if(!IW||!IH)return;
-    const Lf=fullLayerMat(L,W,H,IW,IH),w=IW*Math.hypot(Lf[0],Lf[1]),h=IH*Math.hypot(Lf[2],Lf[3]),k=imgKey(L);M.set(k,Math.max(M.get(k)||0,w,h))}catch(e){}})}return M}
-{const _sz=saveZprj;saveZprj=async function(){OPTMAX=optScan();return _sz.apply(this,arguments)}}
-{const _ok=svOk;svOk=function(name,size){const r=_ok.apply(this,arguments);if(OPTRUN){const a=OPTRUN.before;OPTRUN=null;if(a&&size)setTimeout(()=>toast('Dioptimalkan: '+mb(a)+' → '+mb(size)+' ('+Math.round((1-size/a)*100)+'% lebih kecil)'),600)}return r}}
-const mb=b=>(b/1048576).toFixed(b<1e7?1:0).replace('.',',')+' MB';
-/* perkiraan isi file saat ini */
-function optStats(){const S={avatar:0,tex:0,gfx:0,dup:0,design:0,other:0,n:0};if(!ZP)return S;
-  Object.entries(ZP.files||{}).forEach(([k,v])=>{if(!v||!v.length||/\.zpac$/i.test(k))return;if(/\.avt$/i.test(k))S.avatar+=v.length;else if(/design\.json$/i.test(k))S.design+=v.length;else S.other+=v.length});
-  const seen={};Object.entries(ZP.zf||{}).forEach(([k,v])=>{if(!v||!v.length)return;
-    if(/_(NRM|DISP|ROUGH|BASE|MTL|ALPHA|AO|SPEC|NORMAL|OPACITY)[_.]/i.test(k)){S.tex+=v.length;return}
-    if(/\.(png|jpe?g|pdf|ai|svg|tif+|bmp)$/i.test(k)){if(/^SKN_/.test(k))return;const h=v.length+':'+v[0]+':'+v[v.length>>1]+':'+v[v.length-1];if(seen[h])S.dup+=v.length;else{seen[h]=1;S.gfx+=v.length;S.n++}return}
-    if(/design\.json$/i.test(k))S.design+=v.length;else S.other+=v.length});
-  let app=0;try{const seenS=new Set();Object.values(P).forEach(p=>p.layers.forEach(L=>{if(L.src&&!seenS.has(L.src)){seenS.add(L.src);app+=L.src.length*.75}}))}catch(e){}S.app=app;return S}
-/* gambar besar di data desain: PNG tanpa transparansi → JPG */
-async function optCompressSrcs(){const map=new Map();Object.values(P).forEach(p=>p.layers.forEach(L=>{if(typeof L.src=='string'&&L.src.startsWith('data:image/png')&&L.src.length>300000)map.set(L.src,null)}));
-  let i=0;for(const src of map.keys()){i++;busy('Mengompres gambar '+i+'/'+map.size+'…',i/map.size*100);
-    try{const im=await new Promise((res,rej)=>{const x=new Image();x.onload=()=>res(x);x.onerror=rej;x.src=src});const s=Math.min(1,4096/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
-      if(!canvasOpaque(c))continue;const nu=c.toDataURL('image/jpeg',.92);if(nu.length<src.length*.8){const ni=await new Promise(res=>{const x=new Image();x.onload=()=>res(x);x.onerror=()=>res(null);x.src=nu});if(ni)map.set(src,{nu,ni})}}catch(e){}await tick()}
-  let n=0;Object.values(P).forEach(p=>p.layers.forEach(L=>{const r=map.get(L.src);if(r){L.src=r.nu;L.img=r.ni;n++}}));
-  try{if(typeof LIB!='undefined')LIB.forEach(e=>{const r=map.get(e.src);if(r)e.src=r.nu})}catch(e){}busy(null);return n}
-function optOpen(){const m=$('#mopt'),S=optStats(),hasAv=S.avatar>0;
-  if(!ZP){$('#optbody').innerHTML='<div class="pnote">Optimalkan berlaku untuk file CLO (.zprj). Buka file .zprj atau pilih ukuran/model dulu.</div>';$('#optgo').hidden=true;m.hidden=false;return}
-  $('#optgo').hidden=false;const tot=S.avatar+S.tex+S.gfx+S.dup+S.design+S.other+S.app;
-  const row=(lbl,v,note)=>v>0?`<tr><td>${lbl}${note?'<small>'+note+'</small>':''}</td><td>${mb(v)}</td></tr>`:'';
-  $('#optbody').innerHTML=`<table class="ptab"><tr><th colspan="2">Isi file sekarang (perkiraan ${mb(tot)})</th></tr>
-    ${row('Avatar',S.avatar)}${row('Tekstur kain',S.tex,'dihapus otomatis saat simpan')}${row('Grafik buatan CLO',S.gfx,S.n+' file')}${row('Grafik kembar',S.dup,'digabung otomatis saat simpan')}${row('Gambar desain (aplikasi)',S.app)}${row('Pola, simulasi & lainnya',S.other)}</table>
-    <div class="optl"><label><input type="checkbox" id="optav" ${hasAv?(CURSIZE==='7S'?'':'checked'):'disabled'}> Hapus avatar ${hasAv?'(−'+mb(S.avatar)+')':'(tidak ada)'}</label>
-    <label><input type="checkbox" id="optjpg" ${OPT.jpg||!localStorage.getItem('optSet')?'checked':''}> Gambar tanpa transparansi disimpan sebagai <b>JPG</b> (jauh lebih kecil)</label>
-    <label class="optdpi">Resolusi gambar maks <select id="optdpi"><option value="0">Asli (maks 2048 px)</option><option value="300">300 DPI (cetak tajam)</option><option value="200">200 DPI</option><option value="150">150 DPI (paling kecil)</option></select></label>
-    <small>Pengaturan JPG & resolusi tetap dipakai untuk penyimpanan berikutnya. Gambar grafik di CLO tetap bisa diedit.</small></div>`;
-  $('#optdpi').value=String(OPT.dpi||(!localStorage.getItem('optSet')?300:0));m.hidden=false}
-async function optRun(){$('#mopt').hidden=true;OPT.jpg=$('#optjpg').checked;OPT.dpi=+$('#optdpi').value||0;optStore();
-  const before=(ZFILE&&!ZFILE.tpl&&ZFILE.size)||(LASTSAVE&&LASTSAVE.size)||0;
-  if(OPT.jpg){try{await optCompressSrcs()}catch(e){console.warn(e)}}
-  if($('#optav')&&$('#optav').checked){try{CLO.stripAvatar(ZP);if(typeof avg!='undefined'&&avg){avg.parent&&avg.parent.remove(avg);avg=null;if($('#avb'))$('#avb').hidden=true}}catch(e){console.warn('avatar',e)}}
-  OPTRUN={before};try{if(typeof MARK=='function')MARK()}catch(e){}
-  await saveZprj(false)}
-$('#optb').onclick=optOpen;$('#optx').onclick=()=>{$('#mopt').hidden=true};$('#optgo').onclick=()=>optRun();
 
 /* awal */
 setAll('#16161a');gBuild();

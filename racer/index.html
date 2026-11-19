@@ -3287,7 +3287,7 @@ function useItem(r,isBot){const k=r.item;if(!k||(r.rollT||0)>0||r.hold)return fa
  if(k==='rudal'){const bt=spec().battle,t=bt?btNearest(r,320):nearestAhead(r,300);if(!t)return false;const gp=bt?circGap(t.s-r.s):8,dir=gp<0?-1:1,off=bt?dir*Math.min(8,Math.abs(gp)*.5):8;missiles.push({owner:r,tgt:t,s:r.s+off,d:r.d,dir,v:MAX_SPEED*(sup?2:1.6),life:5,dead:false,mesh:null,sup});sndLaunch(fxDist(r.s));olEmit('rudal',r,{s:r.s+off,t:rKey(t),x:sup?1:0})}
  else if(k==='bom'){const bt=spec().battle,t=bt?btNearest(r,330):nearestAhead(r,330);if(isBot&&!t)return false;const lead=t?(bt?circGap(t.s-r.s)+t.v*.6:Math.min(330,Math.max(110,(t.s-r.s)+t.v*1.1))):170;bombs.push({owner:r,tgt:t,s0:r.s+4,d0:r.d,s1:r.s+lead,d1:t?t.d:r.d,t:0,T:.85,fuse:.25,st:'fly',dead:false,mesh:null,big:sup});sndThrow(fxDist(r.s));olEmit('bom',r,{s:r.s+4,t:t?rKey(t):null,x:[+(r.s+lead).toFixed(1),+(t?t.d:r.d).toFixed(1),sup?1:0]})}
  else if(k==='tornado'){if(isBot&&!nearestAhead(r,520))return false;tornados.push({owner:r,s:r.s+18,d:r.d,v:MAX_SPEED*1.3,life:sup?9:6.5,L0:sup?9:6.5,hit:new Set(),dead:false,mesh:null,sndT:1.2});sndTornado(fxDist(r.s),true);FX.shake=Math.max(FX.shake,.5*fxDist(r.s));olEmit('tornado',r,{s:r.s+18,x:sup?1:0})}
- else if(k==='listrik'){const c=racers.filter(o=>o!==r&&o.alive&&!o.finished&&Math.abs(o.s-r.s)<420).sort((a,b)=>Math.abs(a.s-r.s)-Math.abs(b.s-r.s)).slice(0,3);if(!c.length)return false;
+ else if(k==='listrik'){const _dl=o=>spec().battle?btDist(r,o):Math.abs(circGap(o.s-r.s));const c=racers.filter(o=>o!==r&&o.alive&&!o.finished&&_dl(o)<420).sort((a,b)=>_dl(a)-_dl(b)).slice(0,3);if(!c.length)return false;
   const kk=(r===player||c.includes(player))?1:Math.max(...c.map(o=>fxDist(o.s)));sndThunder(kk);
   for(const t of c){if(GL.ok){tpos(t.s,t.d,_t);fxBolt(_t.x,elevU(t.s,t.d),_t.y)}hitRacer(t,'listrik',r)}olEmit('listrik',r,{t:c.map(rKey)});
   if(kk>.5){FX.flash=Math.max(FX.flash,.7*kk);FX.flashCol='rgba(200,230,255,.9)'}FX.shake=Math.max(FX.shake,.9*kk)}
@@ -3301,7 +3301,7 @@ function useItem(r,isBot){const k=r.item;if(!k||(r.rollT||0)>0||r.hold)return fa
  else if(k==='sayap'){r.wingT=5;r.wingHit=new Map();r.slowT=0;r.timeT=0;r._wob=0;r.spinT=0;sndWings(fxDist(r.s));olEmit('sayap',r,{});if(r===player)setToast('SAYAP MALAIKAT!','KEBAL 5 DETIK • LARI OTOMATIS 70 KM/J')}
  r.item=null;r.itemUseAt=0;return true}
 function useAttack(){if(!ITEMS_ON||state!=='race'||!player||!player.alive||player.fall>0||!player.item)return;if((player.rollT||0)>0)return;
- if(!useItem(player,false))setToast('TIDAK ADA TARGET','ITEM TETAP DISIMPAN');else setToast('ITEM DIPAKAI!','');updateAtk()}
+ if((player.rollT||0)>0){setToast('ITEM MASIH DIACAK','TUNGGU SEBENTAR');return}if(player.hold){setToast('ITEM SEDANG DIPEGANG','LEPAS DULU');return}if(!useItem(player,false))setToast(player.item==='juara'?'KAMU SUDAH JUARA':'TIDAK ADA TARGET','ITEM TETAP DISIMPAN');else setToast('ITEM DIPAKAI!','');updateAtk()}
 function itemsStep(dt){
  const P=TRACK.perimeter,cd=TRACK.route?(a,b)=>Math.abs(a-b):(a,b)=>{const x=Math.abs(a-b)%P;return Math.min(x,P-x)},HW=TRACK.width/2;
  for(const b of itemBoxes)if(b.cool>0)b.cool-=dt;
@@ -3330,7 +3330,7 @@ attackWarn(dt);
   if(t.hold&&m.s>t.s-18&&Math.abs(m.d-t.d)<14){m.dead=true;p2HoldBlock(t,m.s);continue}
   if(cd(m.s,t.s)<12&&Math.abs(m.d-t.d)<10){m.dead=true;tpos(t.s,t.d,_t);fxExplode(_t.x,elevU(t.s,t.d)+2,_t.y,m.sup?1.4:1,t.s);hitRacer(t,'rudal',m.owner)}}
  // bom: dilempar melengkung ke depan, mendarat, lalu meledak
- for(const b of bombs){b.t+=dt;if(b.st==='fly'){const g=b.tgt;if(g&&g.alive&&!g.finished){b.s1+=Math.max(-160*dt,Math.min(160*dt,g.s+g.v*(b.T-b.t+b.fuse)-b.s1));b.d1+=Math.max(-60*dt,Math.min(60*dt,g.d-b.d1))}if(b.t>=b.T){b.st='fuse';b.t=0}}
+ for(const b of bombs){b.t+=dt;if(b.st==='fly'){const g=b.tgt;if(g&&g.alive&&!g.finished){b.s1+=Math.max(-160*dt,Math.min(160*dt,circGap(g.s+g.v*(b.T-b.t+b.fuse)-b.s1)));b.d1+=Math.max(-60*dt,Math.min(60*dt,g.d-b.d1))}if(b.t>=b.T){b.st='fuse';b.t=0}}
   else if(b.t>=b.fuse){b.dead=true;tpos(b.s1,b.d1,_t);fxExplode(_t.x,elevU(b.s1,b.d1),_t.y,b.big?1.8:1.35,b.s1);const R1=b.big?34:24,R2=b.big?29:21;
    for(const r of racers){if(!r.alive||r.finished||r.fall>0)continue;if(cd(r.s,b.s1)<R1&&Math.abs(r.d-b.d1)<R2){if(r.hold&&r!==b.owner){p2HoldBlock(r,b.s1);continue}hitRacer(r,'bom',b.owner)}}}}
  // tornado: melaju ke depan, mengejar pembalap terdekat di depannya
@@ -3845,7 +3845,10 @@ function btHud(){let el=$('btHud');const on=spec().battle&&state==='race'&&!!pla
 /* nearestAhead/behindNear dengan jarak memutar untuk lintasan oval */
 function circGap(a){if(TRACK.route)return a;const P=TRACK.perimeter;a=((a%P)+P)%P;return a>P/2?a-P:a}
 /* Battle Arena: tidak ada urutan posisi — target terdekat ke depan ATAU ke belakang (termasuk yang menempel/overlap) */
-function btNearest(r,range){let best=null,bg=1e9;for(const o of racers){if(o===r||!o.alive||o.finished)continue;const g=Math.abs(circGap(o.s-r.s));if(g<range&&g<bg){best=o;bg=g}}return best}
+/* jarak dua pembalap: jarak sepanjang lintasan (memutar) dan jarak nyata di dunia 3D (untuk yang menempel/bersebelahan) */
+const _bA={x:0,y:0},_bB={x:0,y:0};
+function btDist(a,b){let g=Math.abs(circGap(b.s-a.s));try{tpos(a.s,a.d,_bA);const ax=_bA.x,ay=_bA.y;tpos(b.s,b.d,_bB);const w=Math.hypot(_bB.x-ax,_bB.y-ay);if(isFinite(w))g=Math.min(g,w)}catch(e){}return g}
+function btNearest(r,range){let best=null,bg=1e9;for(const o of racers){if(o===r||!o.alive||o.finished||o.eliminatedAt!=null&&!o.alive)continue;const g=btDist(r,o);if(g<range&&g<bg){best=o;bg=g}}return best}
 function nearestAhead(r,range){const P=TRACK.perimeter,W=!TRACK.route;let best=null,bg=1e9;for(const o of racers){if(o===r||!o.alive||o.finished)continue;let g=o.s-r.s;if(W)g=((g%P)+P)%P;if(g>0&&g<range&&g<bg){best=o;bg=g}}return best}
 function behindNear(r,range){const P=TRACK.perimeter,W=!TRACK.route;return racers.some(o=>{if(o===r||!o.alive||o.finished)return false;let g=r.s-o.s;if(W)g=((g%P)+P)%P;return g>0&&g<range})}
 
@@ -5030,9 +5033,10 @@ setInterval(()=>{if(!online||!olRoom||state!=='done')return;const ag=$('again'),
  if(ch.textContent.indexOf('KELUAR')<0)ch.textContent='KELUAR'},250);
 
 /* ===== VERSI GAME + FRAME PEMBERITAHUAN DI HALAMAN UTAMA ===== */
-const GAME_VER='1.42';
+const GAME_VER='1.43';
 /* catatan versi / mode baru (terbaru di atas) */
 const NEWS_BUILTIN=[
+ {d:'2026-11-19',i:'⚔️',t:'Battle Arena: serang lawan di sebelahmu',b:'Rudal, bom, dan listrik kini mengenai lawan yang menempel/bersebelahan, juga yang beda putaran lap.'},
  {d:'2026-11-17',i:'📣',t:'Frame pemberitahuan & nomor versi',b:'Info mode baru, rekor 200 m, dan pengumuman dari admin tampil di halaman utama.'},
  {d:'2026-11-17',i:'📲',t:'Aplikasi Android Diva Skate',b:'Pasang APK resmi. Isi game ter-update otomatis; aplikasi memberi tahu bila ada versi APK baru.',u:'https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk',ul:'UNDUH APK'},
  {d:'2026-11-16',i:'👆',t:'Geser layar untuk kembali',b:'Di semua menu, geser cepat ke kiri/kanan untuk kembali. Nama di Waktu Terbaik 200 m bisa ditap: profil, chat, tambah teman.'},
