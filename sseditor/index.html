@@ -2355,7 +2355,10 @@ async function importMotif(f){
   if(!ZP&&!Object.keys(P).length){toast('Buat atau buka desain dulu');return}
   busy('Mengambil motif dari '+f.name+'…');await tick();
   try{const src=await motifRead(f),ukur=(f.name.match(SZTAG_RE)||[])[2]||'';
-    const sp=remapSleeves({parts:{...src.parts}},!!(P.longL||P.longR)).parts;
+    /* motif lengan masuk ke lengan yang sedang terlihat (pendek/panjang), bukan yang tersembunyi */
+    const vis=k=>!!(P[k]&&P[k].m&&P[k].m.visible);
+    const tgt=k=>{const m=/^(sleeve|long)(L|R)$/.exec(k);if(!m)return k;const lk='long'+m[2],sk='sleeve'+m[2];return vis(lk)?lk:(vis(sk)?sk:k)};
+    const sp={};Object.keys(src.parts).forEach(k=>{const t=tgt(k);sp[t]={layers:[...((sp[t]&&sp[t].layers)||[]),...((src.parts[k].layers)||[])]}});
     const cur=JSON.parse(JSON.stringify(projObj()));let n=0;
     Object.keys(cur.parts).forEach(k=>{const add=((sp[k]&&sp[k].layers)||[]).filter(L=>L&&!L.bg).map(L=>{const s=motifImgs(L.src,src.imgs);if(typeof s!='string'||!/^data:/.test(s))return null;
       return{...L,src:s,clo:undefined,rep:0,bg:0}}).filter(Boolean);
