@@ -2348,9 +2348,47 @@ async function motifFromClo(st){const ids=mapPatternIds(st.patterns),parts={},sa
 async function motifRead(f){
   if(/\.(zprj|zip)$/i.test(f.name)){const st=CLO.readZprj(new Uint8Array(await f.arrayBuffer()));
     const fresh=st.design&&st.design.parts&&(!st.design.pacSig||st.design.pacSig===st.pacSig);
-    if(fresh)return expandZ(JSON.parse(JSON.stringify(st.design)),st.zf);
-    return motifFromClo(st)}
+    const geo=motifGeo(st);
+    if(fresh){const d=expandZ(JSON.parse(JSON.stringify(st.design)),st.zf);d.geo=geo;return d}
+    const r=await motifFromClo(st);r.geo=geo;return r}
   const o=JSON.parse(await f.text());if(!o.parts)throw new Error('file desain tidak valid');return o}
+/* geometri bagian pola (posisi 3D & koordinat tekstur) dari file CLO: dipakai mencari posisi tubuh motif */
+function motifGeo(st){const ids=mapPatternIds(st.patterns),geo={};
+  st.patterns.forEach((p,i)=>{const id=ids[i];if(!p.pos||!p.tri)return;const[tx0,ty0,tx1,ty1]=p.tb,W=tx1-tx0,H=ty1-ty0,n=p.pos.length/3;
+    const pos=new Float64Array(n*3),uv=new Float64Array(n*2);
+    for(let k=0;k<n;k++){pos[3*k]=p.pos[3*k]/1000;pos[3*k+1]=p.pos[3*k+1]/1000;pos[3*k+2]=p.pos[3*k+2]/1000;uv[2*k]=(p.tex[2*k]-tx0)/W;uv[2*k+1]=(p.tex[2*k+1]-ty0)/H}
+    geo[id]={pos,uv,idx:p.tri,W,T:Math.max(W,H)}});
+  return geo}
+/* titik tengah motif di bagian sumber → posisi 3D → bagian & titik terdekat yang terlihat di desain Anda */
+function motifBary(px,py,ax,ay,bx,by,cx,cy){const d=(by-cy)*(ax-cx)+(cx-bx)*(ay-cy);if(Math.abs(d)<1e-12)return null;
+  const l1=((by-cy)*(px-cx)+(cx-bx)*(py-cy))/d,l2=((cy-ay)*(px-cx)+(ax-cx)*(py-cy))/d,l3=1-l1-l2;
+  return(l1>=-1e-6&&l2>=-1e-6&&l3>=-1e-6)?[l1,l2,l3]:null}
+function mapMotifBody(src){
+  const tg=[];Object.keys(P).forEach(k=>{const p=P[k];if(!p||!p.m||!p.m.visible||!p.g)return;const pos=p.g.attributes.position.array,uv=p.g.attributes.uv.array,W=pUnit(p);
+    for(let i=0;i<pos.length/3;i++)tg.push({k,x:pos[3*i],y:pos[3*i+1],z:pos[3*i+2],u:uv[2*i],v:uv[2*i+1],W})});
+  /* kotak batas kedua garmen: file sumber & model bawaan bisa beda posisi/ukuran, jadi diratakan dulu */
+  const bb=arr=>{const mn=[1e18,1e18,1e18],mx=[-1e18,-1e18,-1e18];for(let i=0;i<arr.length;i+=3)for(let j=0;j<3;j++){mn[j]=Math.min(mn[j],arr[i+j]);mx[j]=Math.max(mx[j],arr[i+j])}return{mn,mx}};
+  const tAll=[];tg.forEach(q=>tAll.push(q.x,q.y,q.z));const T=bb(tAll);
+  const sAll=[];Object.values(src.geo).forEach(G=>{for(let i=0;i<G.pos.length;i++)sAll.push(G.pos[i])});const S=bb(sAll);
+  const map3=q=>[0,1,2].map(j=>{const sz=S.mx[j]-S.mn[j];return sz>1e-9?T.mn[j]+(q[j]-S.mn[j])/sz*(T.mx[j]-T.mn[j]):T.mn[j]});
+  const kG=[0,1,2].map(j=>{const a=S.mx[j]-S.mn[j],b=T.mx[j]-T.mn[j];return a>1e-9?b/a:1}).reduce((x,y)=>x+y,0)/3;
+  const ext=G=>{if(!G._e){const b=bb(G.pos);G._e=Math.max(...[0,1,2].map(j=>b.mx[j]-b.mn[j]))}return G._e};
+  const tExt=k=>{const q=P[k];if(!q._e){const b=bb(q.g.attributes.position.array);q._e=Math.max(...[0,1,2].map(j=>b.mx[j]-b.mn[j]))}return q._e};
+  const tT=k=>P[k].d.m*100;
+  const out={};
+  Object.keys(src.parts).forEach(sk=>{const G=src.geo[sk];if(!G)return;const idx=G.idx,uv=G.uv,pos=G.pos;
+    ((src.parts[sk].layers)||[]).forEach(L=>{if(!L||L.bg)return;const cu=L.x==null?.5:L.x,cv=1-(L.y==null?.5:L.y);
+      let P3=null;
+      for(let t=0;t+2<idx.length&&!P3;t+=3){const a=idx[t],b=idx[t+1],c=idx[t+2];
+        const w=motifBary(cu,cv,uv[2*a],uv[2*a+1],uv[2*b],uv[2*b+1],uv[2*c],uv[2*c+1]);
+        if(w)P3=[0,1,2].map(j=>w[0]*pos[3*a+j]+w[1]*pos[3*b+j]+w[2]*pos[3*c+j])}
+      if(!P3){let bd=1e18;for(let i=0;i<uv.length/2;i++){const d=(uv[2*i]-cu)**2+(uv[2*i+1]-cv)**2;if(d<bd){bd=d;P3=[pos[3*i],pos[3*i+1],pos[3*i+2]]}}}
+      P3=map3(P3);
+      let best=null,bd=1e18;tg.forEach(q=>{const d=(q.x-P3[0])**2+(q.y-P3[1])**2+(q.z-P3[2])**2;if(d<bd){bd=d;best=q}});
+      if(!best)return;
+      const L2={...L,x:best.u,y:1-best.v,s:(L.s||1)*(G.W*ext(G)/G.T)*kG/(best.W*tExt(best.k)/tT(best.k)),clo:undefined,rep:0,bg:0};
+      (out[best.k]=out[best.k]||[]).push(L2)})});
+  return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,{layers:v}]))}
 async function importMotif(f){
   if(!ZP&&!Object.keys(P).length){toast('Buat atau buka desain dulu');return}
   busy('Mengambil motif dari '+f.name+'…');await tick();
@@ -2358,7 +2396,9 @@ async function importMotif(f){
     /* motif lengan masuk ke lengan yang sedang terlihat (pendek/panjang), bukan yang tersembunyi */
     const vis=k=>!!(P[k]&&P[k].m&&P[k].m.visible);
     const tgt=k=>{const m=/^(sleeve|long)(L|R)$/.exec(k);if(!m)return k;const lk='long'+m[2],sk='sleeve'+m[2];return vis(lk)?lk:(vis(sk)?sk:k)};
-    const sp={};Object.keys(src.parts).forEach(k=>{const t=tgt(k);sp[t]={layers:[...((sp[t]&&sp[t].layers)||[]),...((src.parts[k].layers)||[])]}});
+    let sp={};
+    if(src.geo&&Object.keys(src.geo).length)sp=mapMotifBody(src);
+    else Object.keys(src.parts).forEach(k=>{const t=tgt(k);sp[t]={layers:[...((sp[t]&&sp[t].layers)||[]),...((src.parts[k].layers)||[])]}});
     const cur=JSON.parse(JSON.stringify(projObj()));let n=0;
     Object.keys(cur.parts).forEach(k=>{const add=((sp[k]&&sp[k].layers)||[]).filter(L=>L&&!L.bg).map(L=>{const s=motifImgs(L.src,src.imgs);if(typeof s!='string'||!/^data:/.test(s))return null;
       return{...L,src:s,clo:undefined,rep:0,bg:0}}).filter(Boolean);
