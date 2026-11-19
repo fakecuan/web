@@ -2339,10 +2339,17 @@ async function folderTarget(kind,r,f){let name;
 
 /* ---------- ambil motif dari file lain (zprj/json): motif ikut menyesuaikan pola (posisi & lebar relatif terhadap bagian) ---------- */
 function motifImgs(s,imgs){const m=/^#img:(\d+)$/.exec(s||'');return m&&imgs?imgs[+m[1]]:s}
+/* grafik CLO tanpa data desain aplikasi: baca grafik CLO per bagian, seperti saat file dibuka */
+async function motifFromClo(st){const ids=mapPatternIds(st.patterns),parts={},saved={...gimg},z=ZP;
+  for(const k of Object.keys(gimg))delete gimg[k];ZP=st;
+  try{for(let i=0;i<st.patterns.length;i++){const id=ids[i],p=P[id];if(!p)continue;const Ls=await cloLayers(st.patterns[i],p.cv.width,p.cv.height);if(Ls.length)parts[id]={layers:Ls}}}
+  finally{ZP=z;for(const k of Object.keys(gimg))delete gimg[k];Object.assign(gimg,saved)}
+  return{parts}}
 async function motifRead(f){
   if(/\.(zprj|zip)$/i.test(f.name)){const st=CLO.readZprj(new Uint8Array(await f.arrayBuffer()));
-    if(!st.design||!st.design.parts)throw new Error('file CLO ini belum punya desain dari aplikasi');
-    return expandZ(JSON.parse(JSON.stringify(st.design)),st.zf)}
+    const fresh=st.design&&st.design.parts&&(!st.design.pacSig||st.design.pacSig===st.pacSig);
+    if(fresh)return expandZ(JSON.parse(JSON.stringify(st.design)),st.zf);
+    return motifFromClo(st)}
   const o=JSON.parse(await f.text());if(!o.parts)throw new Error('file desain tidak valid');return o}
 async function importMotif(f){
   if(!ZP&&!Object.keys(P).length){toast('Buat atau buka desain dulu');return}
@@ -2380,8 +2387,10 @@ function askDelOld(oldK){
   const d=m.querySelector('#dgd');if(d)d.onclick=()=>{const i=LIB.findIndex(x=>x.k==oldK);if(i>=0){LIB.splice(i,1);libStore();if(!$('#libp').hidden)libRender();toast('Desain lama dihapus dari Library')}close()};
 }
 /* ganti motif lewat dialog Ganti gambar: setelah gambar baru terpasang, tanya soal desain lama */
-{const _ri3=replaceImg;replaceImg=function(L,src,noLib){const oldK=L.lk||null;_ri3.apply(this,arguments);
-  if(!oldK)return;const t0=Date.now();const w=()=>{if(L.lk&&L.lk!==oldK){setTimeout(()=>askDelOld(oldK),150);return}if(Date.now()-t0<6000)setTimeout(w,100)};w()}}
+{const _ri3=replaceImg;replaceImg=function(L,src,noLib){const oldSrc=L.src;let oldK=L.lk||null;
+  if(!oldK){try{if(L.img&&L.img.complete&&L.img.naturalWidth)oldK=libKey(libEnc(L.img))}catch(e){}}
+  _ri3.apply(this,arguments);if(!oldK)return;const t0=Date.now();
+  const w=()=>{if(L.src!==oldSrc&&L.lk){if(L.lk!==oldK)setTimeout(()=>askDelOld(oldK),150);return}if(Date.now()-t0<6000)setTimeout(w,100)};w()}}
 
 /* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
 let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
