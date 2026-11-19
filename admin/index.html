@@ -21,6 +21,7 @@
 .dialog{background:#fff;width:min(600px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:20px}.dialog-head{display:flex;justify-content:space-between;align-items:center}.dialog-head h2{margin:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.dialog-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}.notice{padding:10px 12px;border-radius:10px;background:#fff5db;color:#775500;font-size:12px;margin:12px 0}.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17171c;color:#fff;padding:11px 16px;border-radius:10px;z-index:20;font-size:13px;box-shadow:0 8px 25px #0003}
 @media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.heading{align-items:flex-start}.heading h1{font-size:20px}}
 @media(max-width:480px){.top{padding:14px}.wrap{padding:15px 10px 35px}.stats{grid-template-columns:repeat(2,1fr)}.stat strong{font-size:21px}.panel{padding:13px}.grid{grid-template-columns:1fr}.dialog{padding:15px}.heading{flex-direction:column}.heading .btn{width:100%}}
+.merge-opt{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}.merge-opt small{display:block;color:#77778a;margin-top:2px}.cust-head{padding:4px 0 12px}.cust-name{font-size:22px;font-weight:800}.po-group{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}.po-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.cust-order{border-top:1px solid #f0f0f4;padding:8px 0}.po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 </style>
 </head>
 <body>
@@ -29,13 +30,20 @@
 <section id="loginPanel" class="panel login"><h1>Login Admin</h1><p class="muted">Masukkan password untuk melihat pesanan D.VA SKATE.</p><form id="loginForm"><div class="field"><label>Password admin</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div><button id="loginBtn" class="btn pink" style="width:100%;margin-top:8px">MASUK</button><div id="loginError" class="notice hidden"></div></form><div id="bioRow" class="hidden" style="margin-top:12px"><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="bioSave" checked style="width:auto"> Ingat di perangkat ini (masuk pakai sidik jari)</label><button type="button" id="bioBtn" class="btn hidden" style="width:100%;margin-top:8px">Masuk dengan sidik jari</button><p id="bioStatus" class="sub" style="margin-top:8px;word-break:break-word"></p></div></section>
 <section id="dashboard" class="hidden">
 <div class="heading"><div><h1>Pesanan Masuk</h1><div class="muted">Kelola status dan detail order pelanggan.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="addBtn" class="btn pink" type="button">＋ Tambah pesanan</button><button id="refreshBtn" class="btn light" type="button">↻ Refresh</button></div></div>
-<div class="tabs"><button class="tab on" data-tab="ordersView" type="button">📋 Pesanan</button><button class="tab" data-tab="reportView" type="button">📊 Laporan</button></div>
+<div class="tabs"><button class="tab on" data-tab="ordersView" type="button">📋 Pesanan</button><button class="tab" data-tab="reportView" type="button">📊 Laporan</button><button class="tab" data-tab="customersView" type="button">👥 Pelanggan</button></div>
 <div id="ordersView">
 <div class="stats" id="stats"></div>
 <section class="panel">
 <div class="toolbar"><input id="search" placeholder="Cari No. PO, nama, no. HP, ukuran, alamat…"><select id="statusFilter"><option value="">Semua status</option><option>Pending</option><option>Produksi</option><option>Selesai</option></select><select id="sortFilter"><option value="po-new">No. PO terbaru</option><option value="po-old">No. PO terlama</option><option value="new">Masuk terbaru</option><option value="old">Masuk terlama</option></select><div style="display:flex;gap:8px"><button id="importBtn" class="btn light" type="button">Import</button><button id="exportBtn" class="btn light" type="button">Export CSV</button></div></div>
 <div class="table-wrap"><table><thead><tr><th>No. Order</th><th>No. PO</th><th>Desain</th><th>Tanggal</th><th>Pelanggan</th><th>No. HP</th><th>Ukuran</th><th>Alamat</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="ordersBody"><tr><td colspan="11" class="empty">Memuat pesanan…</td></tr></tbody></table></div>
-</section></div><div id="reportView" class="hidden"></div></section>
+</section></div><div id="reportView" class="hidden"></div>
+<div id="customersView" class="hidden">
+<section class="panel" id="custListPanel">
+<div class="toolbar" style="grid-template-columns:minmax(180px,1fr) auto"><input id="custSearch" placeholder="Cari nama, No. HP, atau alamat…"><button id="custMergeBtn" class="btn pink" type="button" disabled>Gabung yang dipilih</button></div>
+<div class="table-wrap"><table style="min-width:900px"><thead><tr><th style="width:40px"><input type="checkbox" id="custAll" title="Pilih semua"></th><th>Nama</th><th>No. HP</th><th>Alamat</th><th>Jumlah PO</th><th>Pesanan</th><th>Total tagihan</th><th>Terakhir</th><th>Aksi</th></tr></thead><tbody id="custBody"></tbody></table></div>
+</section>
+<section class="panel hidden" id="custDetail"></section>
+</div></section>
 </main>
 <div id="editModal" class="modal hidden"><div class="dialog"><div class="dialog-head"><h2 id="editTitle">Edit Pesanan</h2><div style="display:flex;gap:8px"><button id="pasteBtn" class="btn light hidden" type="button">📋 Tempel dari WA</button><button id="closeModal" class="btn light" type="button">✕</button></div></div><form id="editForm"><input id="editId" type="hidden"><div class="grid">
 <div class="field"><label>No. PO</label><input id="editPO" placeholder="Isi No. PO"></div><div class="field"><label>Tanggal masuk</label><input id="editDate" type="date" disabled></div>
@@ -46,6 +54,10 @@
 <div class="field" style="grid-column:1/-1"><label>Alamat pengiriman</label><textarea id="editAddress"></textarea></div>
 <div class="field" style="grid-column:1/-1"><label>Catatan admin</label><textarea id="editNote" placeholder="Catatan produksi, pembayaran, dll."></textarea></div>
 </div><div class="dialog-actions"><button id="deleteOrder" class="btn danger" type="button" style="margin-right:auto">Hapus</button><button id="cancelEdit" class="btn light" type="button">Batal</button><button id="saveEdit" class="btn pink" type="submit">Simpan perubahan</button></div></form></div></div>
+<div id="mergeModal" class="modal hidden"><div class="dialog" style="width:min(640px,100%)"><div class="dialog-head"><h2 id="mergeTitle">Gabung pelanggan</h2><button id="closeMerge" class="btn light" type="button">✕</button></div>
+<div id="mergeList"></div>
+<div class="grid" style="margin-top:12px"><div class="field full"><label>Nama pelanggan</label><input id="mergeName" required autocomplete="off"></div><div class="field"><label>No. HP / WhatsApp</label><input id="mergePhone" autocomplete="off"></div><div class="field full"><label>Alamat pengiriman</label><textarea id="mergeAddr"></textarea></div></div>
+<div class="dialog-actions"><button id="cancelMerge" class="btn light" type="button">Batal</button><button id="applyMerge" class="btn pink" type="button">Simpan</button></div></div></div>
 <div id="pasteModal" class="modal hidden"><div class="dialog" style="width:min(640px,100%)"><div class="dialog-head"><h2>Tempel pesan WA</h2><button id="closePaste" class="btn light" type="button">✕</button></div><p class="muted">Salin pesan order dari WhatsApp, lalu tempel di sini. Nama, No. HP, alamat, dan ukuran akan terisi otomatis.</p><textarea id="pasteText" style="min-height:220px" placeholder="Tempel pesan WA di sini"></textarea><div id="pastePreview" class="sub" style="margin-top:8px;min-height:18px"></div><div class="dialog-actions"><button id="pasteFromClip" class="btn light" type="button" style="margin-right:auto">Tempel dari clipboard</button><button id="cancelPaste" class="btn light" type="button">Batal</button><button id="applyPaste" class="btn pink" type="button">Isi otomatis</button></div></div></div>
 <div id="importModal" class="modal hidden"><div class="dialog" style="width:min(760px,100%)"><div class="dialog-head"><h2>Import pesanan dari Google Sheet</h2><button id="closeImport" class="btn light" type="button">✕</button></div>
 <p class="muted">Sheet harus bisa dibuka oleh siapa saja yang memiliki link. Data dimasukkan dengan status <b>Selesai</b>. Impor ulang sheet yang sama akan memperbarui baris yang sama, tidak membuat duplikat.</p>
@@ -114,9 +126,14 @@ function sortList(list,mode){const t=o=>+new Date(o.created_at);const cmpPO=(a,b
 if(mode==='new')return list.sort((a,b)=>t(b)-t(a));if(mode==='old')return list.sort((a,b)=>t(a)-t(b));
 const dir=mode==='po-old'?1:-1;return list.sort((a,b)=>{const ka=poKey(a),kb=poKey(b);if(ka==null&&kb!=null)return -1;if(kb==null&&ka!=null)return 1;return (ka!=null?dir*(ka-kb):0)||(t(a)-t(b))||(a.order_number-b.order_number)})}
 let reportDirty=true;
-function showTab(id){document.querySelector('.heading h1').textContent=id==='reportView'?'Laporan & Analisa':'Pesanan Masuk';document.querySelector('.heading .muted').textContent=id==='reportView'?'Ringkasan penjualan, model, ukuran, klub, dan pelanggan.':'Kelola status dan detail order pelanggan.';document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===id));$('ordersView').classList.toggle('hidden',id!=='ordersView');$('reportView').classList.toggle('hidden',id!=='reportView');if(id==='reportView'&&reportDirty){renderReport($('reportView'),orders,{calcOrder,totalOf,money,esc,billed,MODEL_LABEL});reportDirty=false}}
+function showTab(id){const titles={ordersView:['Pesanan Masuk','Kelola status dan detail order pelanggan.'],reportView:['Laporan & Analisa','Ringkasan penjualan, model, ukuran, klub, dan pelanggan.'],customersView:['Pelanggan','Data pelanggan, rincian PO, dan gabung data pelanggan.']};
+  document.querySelector('.heading h1').textContent=titles[id][0];document.querySelector('.heading .muted').textContent=titles[id][1];
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===id));
+  for(const v of Object.keys(titles))$(v).classList.toggle('hidden',v!==id);
+  if(id==='reportView'&&reportDirty){renderReport($('reportView'),orders,{calcOrder,totalOf,money,esc,billed,MODEL_LABEL});reportDirty=false}
+  if(id==='customersView')renderCustomers()}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
-function render(){reportDirty=true;if(!$('reportView').classList.contains('hidden')){renderReport($('reportView'),orders,{calcOrder,totalOf,money,esc,billed,MODEL_LABEL});reportDirty=false}renderStats();let list=[...orders];const q=$('search').value.trim().toLowerCase(),st=$('statusFilter').value;if(q)list=list.filter(o=>[o.order_number,o.po_number,o.customer_name,o.customer_phone,o.size_details,o.shipping_address].join(' ').toLowerCase().includes(q));if(st)list=list.filter(o=>o.status===st);list=sortList(list,$('sortFilter').value);$('ordersBody').innerHTML=list.length?list.map(row).join(''):'<tr><td colspan="11" class="empty">Belum ada pesanan yang cocok.</td></tr>'}
+function render(){reportDirty=true;if(!$('customersView').classList.contains('hidden'))renderCustomers();if(!$('reportView').classList.contains('hidden')){renderReport($('reportView'),orders,{calcOrder,totalOf,money,esc,billed,MODEL_LABEL});reportDirty=false}renderStats();let list=[...orders];const q=$('search').value.trim().toLowerCase(),st=$('statusFilter').value;if(q)list=list.filter(o=>[o.order_number,o.po_number,o.customer_name,o.customer_phone,o.size_details,o.shipping_address].join(' ').toLowerCase().includes(q));if(st)list=list.filter(o=>o.status===st);list=sortList(list,$('sortFilter').value);$('ordersBody').innerHTML=list.length?list.map(row).join(''):'<tr><td colspan="11" class="empty">Belum ada pesanan yang cocok.</td></tr>'}
 function waLink(p){let n=String(p||'').replace(/\D/g,'');if(n.startsWith('0'))n='62'+n.slice(1);else if(n.startsWith('8'))n='62'+n;return n.length>=9?'https://wa.me/'+n:null}
 function contactCell(p,name,addr){let t=String(p||'').trim();if(/^dm/i.test(t)&&/^@[A-Za-z0-9_.]+$/.test(String(name||'').trim()))t='IG '+String(name).trim();const findNum=x=>String(x||'').replace(/[\s.\-()]/g,'').match(/(?:\+?62|0)8\d{7,12}/);const m=findNum(t)||findNum(addr);if(!t&&!m)return '<span class="sub">—</span>';if(m){const n=m[0].replace(/^\+?62/,'0');return '<a class="phone" href="https://wa.me/62'+n.slice(1)+'" target="_blank" rel="noopener" title="Chat WhatsApp">'+n+'</a>'}
 const ig=t.match(/@([A-Za-z0-9_.]+)/);if(ig)return '<a class="phone ig" href="https://instagram.com/'+ig[1]+'" target="_blank" rel="noopener">@'+esc(ig[1])+'</a>';return '<div class="sub" style="max-width:150px">'+esc(t)+'</div>'}
@@ -324,6 +341,86 @@ async function bioLogin(){const pw=await bioSavedPw();if(!pw)return false;
   await bioPlugin().authenticate({reason:'Masuk ke D.VA Admin',cancelTitle:'Batal',allowDeviceCredential:false});
   try{await doLogin(pw);return true}catch{await SSTO().remove({key:BIO_KEY}).catch(()=>{});toast('Password admin sudah berubah, masuk dengan password baru');return false}}
 $('bioBtn').addEventListener('click',async()=>{try{if(!await bioLogin())return}catch{toast('Verifikasi sidik jari dibatalkan')}});
+// ---------- Tab Pelanggan: daftar, rincian per PO, tambah pesanan, gabung pelanggan ----------
+let custSel=new Set(),custOpen=null,mergeGroups=[];
+const phoneOf=o=>{const flat=x=>String(x||'').replace(/[\s.\-()]/g,'');const m=flat(o.customer_phone).match(/(?:\+?62|0)8\d{7,12}/)||flat(o.shipping_address).match(/(?:\+?62|0)8\d{7,12}/);return m?m[0].replace(/^\+?62/,'0'):String(o.customer_phone||'').trim()};
+const poOf=o=>String(o.po_number||'').trim();
+const custKeyOf=(name,phone,addr)=>(String(name||'').trim()||'Tanpa nama').toLowerCase()+'|'+phoneOf({customer_phone:phone,shipping_address:addr||''});
+function custGroups(){const map=new Map();
+  for(const o of orders){const name=String(o.customer_name||'').trim()||'Tanpa nama';const key=custKeyOf(name,phoneOf(o));
+    let g=map.get(key);if(!g){g={key,name,phone:phoneOf(o),address:'',orders:[],last:0};map.set(key,g)}
+    g.orders.push(o)}
+  for(const g of map.values()){g.orders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));g.last=new Date(g.orders[0].created_at).getTime()||0;g.address=(g.orders.find(o=>String(o.shipping_address||'').trim())||{shipping_address:''}).shipping_address.trim()}
+  return [...map.values()].sort((a,b)=>b.last-a.last)}
+const groupTotal=g=>g.orders.filter(billed).reduce((a,o)=>a+totalOf(o),0);
+function custFiltered(){const q=$('custSearch').value.trim().toLowerCase();const qd=q.replace(/\D/g,'');
+  return custGroups().filter(g=>!q||g.name.toLowerCase().includes(q)||(g.address||'').toLowerCase().includes(q)||(qd.length>=3&&g.phone.replace(/\D/g,'').includes(qd)))}
+function renderCustomers(){
+  if(custOpen){const g=custGroups().find(x=>x.key===custOpen);if(g){renderCustDetail(g);$('custListPanel').classList.add('hidden');$('custDetail').classList.remove('hidden');return}custOpen=null}
+  $('custDetail').classList.add('hidden');$('custListPanel').classList.remove('hidden');
+  const list=custFiltered();
+  $('custBody').innerHTML=list.length?list.map(g=>{const pos=new Set(g.orders.map(poOf).filter(Boolean));const tot=groupTotal(g);return '<tr>'+
+    '<td data-label="Pilih"><input type="checkbox" class="cs" data-cs="'+esc(g.key)+'"'+(custSel.has(g.key)?' checked':'')+'></td>'+
+    '<td data-label="Nama"><b>'+esc(g.name)+'</b></td>'+
+    '<td data-label="No. HP">'+esc(g.phone||'-')+'</td>'+
+    '<td data-label="Alamat">'+esc((g.address||'-').replace(/\s*\n\s*/g,', '))+'</td>'+
+    '<td data-label="Jumlah PO">'+pos.size+'</td>'+
+    '<td data-label="Pesanan">'+g.orders.length+'</td>'+
+    '<td data-label="Total tagihan">'+(tot?money(tot):'-')+'</td>'+
+    '<td data-label="Terakhir">'+date(g.orders[0].created_at)+'</td>'+
+    '<td data-label="Aksi"><button class="btn light" type="button" data-open="'+esc(g.key)+'">Buka</button></td></tr>'}).join('')
+    :'<tr><td colspan="9" class="empty">Tidak ada pelanggan</td></tr>';
+  $('custMergeBtn').disabled=custSel.size<2;
+  $('custAll').checked=list.length>0&&list.every(g=>custSel.has(g.key));
+}
+function renderCustDetail(g){
+  const pos=new Map();for(const o of g.orders){const k=poOf(o);if(!pos.has(k))pos.set(k,[]);pos.get(k).push(o)}
+  const poList=[...pos.entries()];
+  const tot=groupTotal(g);
+  $('custDetail').innerHTML='<div class="heading" style="margin-bottom:12px"><div><button class="btn light" type="button" data-back="1">← Semua pelanggan</button></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn light" type="button" data-editcust="1">✏ Ubah data</button><button class="btn pink" type="button" data-newfor="">＋ Pesanan baru</button></div></div>'+
+    '<div class="cust-head"><div class="cust-name">'+esc(g.name)+'</div>'+
+    '<div class="muted">No. HP: '+(g.phone?'<a href="https://wa.me/62'+esc(g.phone.replace(/^0/,''))+'" target="_blank" rel="noopener">'+esc(g.phone)+'</a>':'-')+'</div>'+
+    '<div class="muted" style="white-space:pre-line">Alamat: '+esc(g.address||'-')+'</div>'+
+    '<div class="muted">'+poList.filter(([p])=>p).length+' PO · '+g.orders.length+' pesanan'+(tot?' · total tagihan '+money(tot):'')+'</div></div>'+
+    (poList.map(([po,list])=>'<div class="po-group"><div class="po-head"><b>'+esc(po||'Tanpa No. PO')+'</b><span class="muted">'+list.length+' pesanan</span><button class="btn light" type="button" data-newfor="'+esc(po)+'" style="margin-left:auto">＋ Pesanan di PO ini</button></div>'+
+      list.map(o=>{const c=calcOrder(o.size_details);return '<div class="cust-order"><div><b>'+esc(o.order_number||'')+'</b> · '+date(o.created_at)+' · '+esc(o.status)+'</div>'+
+        '<div>'+esc(c.pcs?c.summary:(o.size_details||'-'))+'</div>'+
+        '<div class="muted">'+(billed(o)?'Tagihan '+money(totalOf(o)):'Belum ditagih')+(o.admin_note?' · '+esc(o.admin_note):'')+'</div>'+
+        '<div class="po-actions"><button class="btn light" type="button" data-img="'+esc(o.id)+'">🖼 Desain ('+((o.images||[]).length)+')</button><button class="btn light" type="button" data-editorder="'+esc(o.id)+'">Edit</button></div></div>'}).join('')+'</div>').join('')||'<p class="empty">Belum ada pesanan</p>');
+}
+function newOrderFor(g,po){openNew();$('editName').value=g.name==='Tanpa nama'?'':g.name;$('editPhone').value=g.phone||'';$('editAddress').value=g.address||'';$('editPO').value=po||'';hideSuggest();setTimeout(()=>$('editSizes').focus(),60)}
+function openMerge(groups,title){mergeGroups=groups;$('mergeTitle').textContent=title;
+  $('mergeList').innerHTML=(groups.length>1?'<p class="muted" style="margin:0 0 8px">Pilih pelanggan yang datanya dipakai. Semua pesanan dari pelanggan yang dipilih akan memakai nama, No. HP, dan alamat di bawah.</p>':'')+
+    groups.map((g,i)=>'<label class="merge-opt"><input type="radio" name="mergeSrc" value="'+i+'"'+(i===0?' checked':'')+'><span><b>'+esc(g.name)+'</b> · '+esc(g.phone||'tanpa No. HP')+' · '+g.orders.length+' pesanan<small>'+esc((g.address||'tanpa alamat').replace(/\s*\n\s*/g,', '))+'</small></span></label>').join('');
+  fillMergeFrom(0);$('mergeModal').classList.remove('hidden')}
+function fillMergeFrom(i){const g=mergeGroups[i];if(!g)return;$('mergeName').value=g.name==='Tanpa nama'?'':g.name;$('mergePhone').value=g.phone||'';$('mergeAddr').value=g.address||''}
+function closeMerge(){$('mergeModal').classList.add('hidden')}
+async function applyMerge(){const name=$('mergeName').value.trim(),phone=$('mergePhone').value.trim(),addr=$('mergeAddr').value.trim();
+  if(!name){toast('Nama pelanggan wajib diisi');return}
+  const targets=mergeGroups.flatMap(g=>g.orders);let n=0;$('applyMerge').disabled=true;
+  try{for(const o of targets){await store.save(o.id,o.status,{...payload(o),customer_name:name,customer_phone:phone,shipping_address:addr});n++}}
+  catch(err){toast('Gagal menyimpan (baru '+n+' pesanan): '+err.message)}
+  $('applyMerge').disabled=false;
+  if(n===targets.length){closeMerge();custSel.clear();custOpen=mergeGroups.length===1?custKeyOf(name,phone,addr):null;toast(n+' pesanan diperbarui')}
+  await loadOrders();
+}
+$('custSearch').addEventListener('input',renderCustomers);
+$('custAll').addEventListener('change',e=>{custFiltered().forEach(g=>e.target.checked?custSel.add(g.key):custSel.delete(g.key));renderCustomers()});
+$('custBody').addEventListener('change',e=>{const c=e.target.closest('[data-cs]');if(!c)return;c.checked?custSel.add(c.dataset.cs):custSel.delete(c.dataset.cs);renderCustomers()});
+$('custBody').addEventListener('click',e=>{const b=e.target.closest('[data-open]');if(!b)return;custOpen=b.dataset.open;renderCustomers();window.scrollTo(0,0)});
+$('custMergeBtn').addEventListener('click',()=>{const gs=custGroups().filter(g=>custSel.has(g.key)).sort((a,b)=>b.orders.length-a.orders.length);if(gs.length<2)return;openMerge(gs,'Gabung '+gs.length+' pelanggan')});
+$('custDetail').addEventListener('click',e=>{const t=e.target.closest('[data-back],[data-editcust],[data-newfor],[data-img],[data-editorder]');if(!t)return;
+  const g=custGroups().find(x=>x.key===custOpen);
+  if(t.hasAttribute('data-back')){custOpen=null;renderCustomers();return}
+  if(!g)return;
+  if(t.hasAttribute('data-editcust')){openMerge([g],'Ubah data pelanggan');return}
+  if(t.hasAttribute('data-newfor')){newOrderFor(g,t.getAttribute('data-newfor'));return}
+  if(t.hasAttribute('data-img')){openImg(t.getAttribute('data-img'));return}
+  if(t.hasAttribute('data-editorder'))openEdit(t.getAttribute('data-editorder'))});
+$('mergeList').addEventListener('change',e=>{if(e.target.name==='mergeSrc')fillMergeFrom(+e.target.value)});
+$('closeMerge').addEventListener('click',closeMerge);$('cancelMerge').addEventListener('click',closeMerge);
+$('applyMerge').addEventListener('click',applyMerge);
+
 // ---------- Cek versi APK baru (hanya APK Android) ----------
 const APK_URL='https://github.com/fakecuan/web/releases/download/dva-admin-apk-latest/DVA-Admin.apk';
 const APK_API='https://api.github.com/repos/fakecuan/web/releases/tags/dva-admin-apk-latest';
