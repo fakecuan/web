@@ -2349,6 +2349,9 @@ async function motifRead(f){
   if(/\.(zprj|zip)$/i.test(f.name)){const st=CLO.readZprj(new Uint8Array(await f.arrayBuffer()));
     const fresh=st.design&&st.design.parts&&(!st.design.pacSig||st.design.pacSig===st.pacSig);
     const geo=motifGeo(st);
+    /* tekstur dasar kain (pola batik seluruh bagian) juga ikut diambil */
+    for(const p of st.patterns){const b=p.baseTex;if(!b||!(b.w>0)||!(b.h>0))continue;const id=mapPatternIds(st.patterns)[st.patterns.indexOf(p)];
+      try{const fn=CLO.resolveFile(st.zf,[b.file,b.uniq]);if(!fn||!geo[id])continue;const img=await bytesImg(st.zf[fn]);if(img)geo[id].bg={img,w:b.w,h:b.h}}catch(e){}}
     if(fresh){const d=expandZ(JSON.parse(JSON.stringify(st.design)),st.zf);d.geo=geo;return d}
     const r=await motifFromClo(st);r.geo=geo;return r}
   const o=JSON.parse(await f.text());if(!o.parts)throw new Error('file desain tidak valid');return o}
@@ -2375,6 +2378,21 @@ function mapMotifBody(src){
   const ext=G=>{if(!G._e){const b=bb(G.pos);G._e=Math.max(...[0,1,2].map(j=>b.mx[j]-b.mn[j]))}return G._e};
   const tExt=k=>{const q=P[k];if(!q._e){const b=bb(q.g.attributes.position.array);q._e=Math.max(...[0,1,2].map(j=>b.mx[j]-b.mn[j]))}return q._e};
   const tT=k=>P[k].d.m*100;
+  /* tekstur dasar: satu lapisan latar per bagian tujuan (bagian sumber dipetakan lewat titik tengahnya) */
+  const bgOut={};
+  Object.keys(src.geo).forEach(sk=>{const G=src.geo[sk];if(!G||!G.bg)return;
+    let cx=0,cy=0,cz=0;const n=G.pos.length/3;for(let i=0;i<n;i++){cx+=G.pos[3*i];cy+=G.pos[3*i+1];cz+=G.pos[3*i+2]}
+    const c=[cx/n,cy/n,cz/n].map((v,j)=>v);const m3=map3(c);
+    let best=null,bd=1e18;tg.forEach(q=>{const d=(q.x-m3[0])**2+(q.y-m3[1])**2+(q.z-m3[2])**2;if(d<bd){bd=d;best=q}});
+    if(!best||bgOut[best.k])return;
+    const ksrc=ext(G)/G.T,kt=tExt(best.k)/tT(best.k),Wc=P[best.k].cv.width,Hc=P[best.k].cv.height;
+    const tw=G.bg.w*ksrc*kG/kt*(Wc/best.W),th=G.bg.h*ksrc*kG/kt*(Hc/best.W);
+    const cv=document.createElement('canvas');cv.width=Wc;cv.height=Hc;const x=cv.getContext('2d');
+    const tile=document.createElement('canvas');tile.width=Math.max(2,Math.round(tw));tile.height=Math.max(2,Math.round(th));
+    tile.getContext('2d').drawImage(G.bg.img,0,0,tile.width,tile.height);
+    x.fillStyle=x.createPattern(tile,'repeat');x.fillRect(0,0,Wc,Hc);
+    bgOut[best.k]={layers:[{img:null,src:cv.toDataURL('image/png'),x:.5,y:.5,s:1,sx:1,sy:1,r:0,fx:0,fy:0,rep:0,bg:0}]};
+  });
   const out={};
   Object.keys(src.parts).forEach(sk=>{const G=src.geo[sk];if(!G)return;const idx=G.idx,uv=G.uv,pos=G.pos;
     ((src.parts[sk].layers)||[]).forEach(L=>{if(!L||L.bg)return;const cu=L.x==null?.5:L.x,cv=1-(L.y==null?.5:L.y);
@@ -2388,7 +2406,9 @@ function mapMotifBody(src){
       if(!best)return;
       const L2={...L,x:best.u,y:1-best.v,s:(L.s||1)*(G.W*ext(G)/G.T)*kG/(best.W*tExt(best.k)/tT(best.k)),clo:undefined,rep:0,bg:0};
       (out[best.k]=out[best.k]||[]).push(L2)})});
-  return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,{layers:v}]))}
+  const fin={};Object.keys(out).forEach(k=>{fin[k]={layers:out[k]}});
+  Object.keys(bgOut).forEach(k=>{fin[k]={layers:[...bgOut[k].layers,...((fin[k]&&fin[k].layers)||[])]}});
+  return fin}
 async function importMotif(f){
   if(!ZP&&!Object.keys(P).length){toast('Buat atau buka desain dulu');return}
   busy('Mengambil motif dari '+f.name+'…');await tick();
