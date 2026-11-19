@@ -2454,6 +2454,36 @@ function askDelOld(oldK){
   if(!oldK){try{if(L.img&&L.img.complete&&L.img.naturalWidth)oldK=libKey(libEnc(L.img))}catch(e){}}
   _ri3.apply(this,arguments);if(!oldK)return;const t0=Date.now();
   const w=()=>{if(L.src!==oldSrc&&L.lk){if(L.lk!==oldK)setTimeout(()=>askDelOld(oldK),150);return}if(Date.now()-t0<6000)setTimeout(w,100)};w()}}
+/* ---------- duplikat: pilihan salin biasa atau cermin sumbu X / Y / keduanya ---------- */
+function dupMake(fx,fy){const p=sel&&P[sel],L=cur();if(!p||!L)return;const m={...L};delete m.uid;delete m.tw;delete m.clo;delete m.bg;
+  m.x=Math.min(.97,(L.x||.5)+.05);m.y=Math.min(.97,(L.y||.5)+.05);if(L.t!='txt')m.img=L.img;
+  if(fx&&L.t!='txt')m.fx=L.fx?0:1;if(fy&&L.t!='txt')m.fy=L.fy?0:1;
+  addLayer(p,m);view=null;render(sel);uiTools();
+  toast((fx||fy)&&L.t=='txt'?'Teks diduplikat (cermin hanya untuk gambar)':fx&&fy?'Diduplikat & dicermin X+Y':fx?'Diduplikat & dicermin sumbu X':fy?'Diduplikat & dicermin sumbu Y':'Diduplikat (digeser sedikit, seret untuk memindah)')}
+function askDup(){const L=cur();if(!sel||!L)return;if(document.querySelector('#dupbox'))return;
+  const m=document.createElement('div');m.className='modal';m.id='dupbox';
+  m.innerHTML=`<div class="mbox"><b>Duplikat</b><small>Pilih salinan yang dibuat.</small>
+    <button class="opt" data-d="0"><b>Salin biasa</b><small>Salinan digeser sedikit.</small></button>
+    <button class="opt" data-d="x"><b>Cermin sumbu X</b><small>Kiri ↔ kanan.</small></button>
+    <button class="opt" data-d="y"><b>Cermin sumbu Y</b><small>Atas ↔ bawah.</small></button>
+    <button class="opt" data-d="xy"><b>Cermin X dan Y</b><small>Dibalik kedua arah.</small></button>
+    <button class="opt" data-d="close"><b>Batal</b></button></div>`;
+  document.body.appendChild(m);
+  m.onclick=e=>{const b=e.target.closest('[data-d]');if(!b&&e.target===m){m.remove();return}if(!b)return;const d=b.dataset.d;m.remove();if(d==='close')return;
+    dupMake(d.includes('x'),d.includes('y'))}}
+$('#dupc').onclick=askDup;
+
+/* ---------- snap per sumbu: pusat X dan pusat Y bisa dinyalakan sendiri ---------- */
+let SNAPX=(()=>{try{return localStorage.getItem('snapX')!=='0'}catch(e){return true}})();
+let SNAPY=(()=>{try{return localStorage.getItem('snapY')!=='0'}catch(e){return true}})();
+{const _sc4=snapCenter;snapCenter=function(L,W,H,tol){const ox=L.x,oy=L.y;_sc4.apply(this,arguments);
+  if(!SNAPX&&L.x!==ox)L.x=ox;if(!SNAPY&&L.y!==oy)L.y=oy;
+  if(guide){guide.x=SNAPX&&guide.x;guide.y=SNAPY&&guide.y;if(!guide.x&&!guide.y)guide=null}}}
+{const sk=$('#snapk');if(sk&&!$('#snapxy')){const span=document.createElement('span');span.id='snapxy';span.style.cssText='display:inline-flex;gap:10px;margin:4px 0 0 6px;font-size:13px';
+  span.innerHTML='<label><input type="checkbox" id="snapx"'+(SNAPX?' checked':'')+'> Tengah X</label><label><input type="checkbox" id="snapy"'+(SNAPY?' checked':'')+'> Tengah Y</label>';
+  sk.insertAdjacentElement('afterend',span);
+  $('#snapx').onchange=e=>{SNAPX=e.target.checked;try{localStorage.setItem('snapX',SNAPX?'1':'0')}catch(_){}};
+  $('#snapy').onchange=e=>{SNAPY=e.target.checked;try{localStorage.setItem('snapY',SNAPY?'1':'0')}catch(_){}}}}
 
 /* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
 let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
