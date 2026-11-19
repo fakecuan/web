@@ -861,7 +861,7 @@ function openCart(){
   document.getElementById("cartModal").classList.remove("hidden");
 }
 
-function sendOrder(){
+async function sendOrder(){
   if(!cart.length)return alert("Belum ada pesanan.");
   const name=document.getElementById("customerName").value.trim();
   const phone=document.getElementById("customerPhone").value.trim();
@@ -905,6 +905,23 @@ function sendOrder(){
 
   const message = lines.join("\n");
   const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+
+  // Simpan juga ke database admin (sama seperti form order utama).
+  // Kalau penyimpanan gagal, WhatsApp tetap dibuka.
+  try{
+    const { submitOrder } = await import("../form/orders-db.js?v=10");
+    const sizeLines = cart.map(item=>{
+      const extra=[item.height&&`T ${item.height} cm`,item.weight&&`BB ${item.weight} kg`,item.chest&&`LD ${item.chest} cm`].filter(Boolean);
+      return `${item.size} ${item.model} — ${item.name}`+(item.customName?` (logo: ${item.customName})`:'')+(extra.length?` (${extra.join(', ')})`:'');
+    });
+    const note=`Dari katalog skinsuit · Kode: ${cart.map(i=>i.code||i.productId).join(', ')} · Total pembelian Rp${grandTotal.toLocaleString("id-ID")}`;
+    await Promise.race([
+      submitOrder({customer_name:name,customer_phone:phone,shipping_address:address,size_details:sizeLines.join("\n"),admin_note:note},[]),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),15000))
+    ]);
+  }catch(err){
+    console.warn("Simpan ke admin gagal:",err);
+  }
 
   // Gunakan navigasi langsung agar bekerja saat HTML dibuka secara lokal.
   // wa.me akan meneruskan ke aplikasi WhatsApp atau WhatsApp Web.
