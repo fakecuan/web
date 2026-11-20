@@ -5105,6 +5105,7 @@ function nwsOpen(id){const old=$('newsModal');if(old)old.remove();
  const m=document.createElement('div');m.id='newsModal';const adm=isAdminAcct();
  m.innerHTML=`<div class="box"><div class="hd"><span>📣 PEMBERITAHUAN</span><button type="button" data-x aria-label="Tutup">×</button></div><div class="ls">${NWS.rows.map(n=>`<div class="it${n.pin?' pin':''}" id="nwm_${escapeHTML(n.id)}"><b><span>${escapeHTML(n.i)}</span><span>${escapeHTML(n.t)}</span></b>${n.b?`<p>${escapeHTML(n.b)}</p>`:''}<div class="mt"><span>${nwsFmtDate(n.ts)}${n.adm?' • admin':''}${n.pin?' • 📌':''}</span>${n.u?`<a href="${escapeHTML(n.u)}" target="_blank" rel="noopener">${escapeHTML(n.ul||'BUKA')}</a>`:''}${n.act==='best'?'<button type="button" class="lk" data-best>LIHAT DAFTAR</button>':''}${adm&&n.adm?`<button type="button" class="lk del" data-del="${n.aid}">🗑 HAPUS</button>`:''}</div></div>`).join('')}</div></div>`;
  document.body.appendChild(m);
+ if(window.DivaNewsComments&&typeof window.DivaNewsComments.attach==='function')window.DivaNewsComments.attach(m);
  m.addEventListener('click',async e=>{if(e.target===m||e.target.closest('[data-x]')){m.remove();return}
   if(e.target.closest('[data-best]')){m.remove();menuBest200();return}
   const d=e.target.closest('[data-del]');if(d){d.disabled=true;d.textContent='Menghapus…';const r=await rpc('skate_news_delete',{p_name:acct.name,p_token:acct.token,p_id:+d.dataset.del});if(r&&r.ok){await nwsLoad(true);nwsOpen()}else{d.disabled=false;d.textContent='Gagal'}}});
