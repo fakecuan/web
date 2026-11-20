@@ -49,6 +49,27 @@ export async function submitOrder(data,images=[]){
   for(const im of list) await setDoc(doc(db,IMAGES,imgDocId(ref.id,im.k)),{full:im.full});
 }
 
+
+// ---------- Divalicious Studio: pesanan + file 3MF ----------
+// Disimpan di koleksi yang sama dengan D.VA (aturan Firestore sudah terbukti jalan), dibedakan lewat
+// field terenkripsi app:'ds'. File 3MF dipecah jadi potongan base64 di dvaOrderImages/<id>_f<n>.
+const CHUNK=600000;
+const bytesToB64=u8=>{let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)};
+export async function submitDsOrder(data,fileBytes,fileName){
+  await ready();
+  const ref=doc(collection(db,COLLECTION));
+  const d={...data,app:'ds'};
+  if(fileBytes&&fileBytes.length){
+    const n=Math.ceil(fileBytes.length/CHUNK);
+    try{
+      for(let i=0;i<n;i++)await setDoc(doc(db,IMAGES,ref.id+'_f'+i),{full:bytesToB64(fileBytes.subarray(i*CHUNK,(i+1)*CHUNK))});
+      d.file={name:fileName||'pesanan.3mf',size:fileBytes.length,chunks:n};
+    }catch(e){d.file={name:fileName||'pesanan.3mf',size:fileBytes.length,error:String(e&&e.message||e)}}
+  }
+  await setDoc(ref,{v:1,status:'Pending',createdAt:serverTimestamp(),...await seal(d)});
+  return ref.id;
+}
+
 // Perkecil gambar: full maks ~900 KB (Firestore), thumbnail 180 px.
 export async function prepareImage(blob){
   const url=URL.createObjectURL(blob);
@@ -68,20 +89,29 @@ export async function unlock(password){
   try{pkcs8=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(LOCKED_KEY.iv)},k,unb64(LOCKED_KEY.ct))}
   catch{throw new Error('Password salah')}
   const priv=await crypto.subtle.importKey('pkcs8',pkcs8,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+  async function loadAll(){
+    await ready();
+    const snap=await getDocs(collection(db,COLLECTION));
+    const out=[];
+    for(const d of snap.docs){
+      const r=d.data();let data={};
+      try{data=await open(r,priv)}catch{data={customer_name:'(data tidak bisa dibuka)'}}
+      out.push({...data,id:d.id,status:r.status||'Pending',images:Array.isArray(r.images)?r.images:(r.thumb?[{k:'',thumb:r.thumb}]:[]),created_at:r.createdAt?.toDate?.()||new Date()});
+    }
+    out.sort((a,b)=>b.created_at-a.created_at);
+    return out;
+  }
+  const numbered=l=>{l.forEach((o,i)=>o.order_number=l.length-i);return l};
   return {
-    async list(){
-      await ready();
-      const snap=await getDocs(collection(db,COLLECTION));
-      const out=[];
-      for(const d of snap.docs){
-        const r=d.data();let data={};
-        try{data=await open(r,priv)}catch{data={customer_name:'(data tidak bisa dibuka)'}}
-        out.push({...data,id:d.id,status:r.status||'Pending',images:Array.isArray(r.images)?r.images:(r.thumb?[{k:'',thumb:r.thumb}]:[]),created_at:r.createdAt?.toDate?.()||new Date()});
-      }
-      out.sort((a,b)=>b.created_at-a.created_at);
-      out.forEach((o,i)=>o.order_number=out.length-i);
-      return out;
+    async list(){return numbered((await loadAll()).filter(o=>o.app!=='ds'))},
+    async dsList(){return numbered((await loadAll()).filter(o=>o.app==='ds'))},
+    // Menyusun ulang file 3MF dari potongan-potongannya.
+    async dsFile(id,file){
+      await ready();const parts=[];
+      for(let i=0;i<file.chunks;i++){const s=await getDoc(doc(db,IMAGES,id+'_f'+i));if(!s.exists())throw new Error('Potongan file '+(i+1)+' hilang');parts.push(unb64(s.data().full))}
+      return new Blob(parts,{type:'application/vnd.ms-package.3dmanufacturing-3dmodel+zip'});
     },
+    async dsRemove(id,file){await ready();await deleteDoc(doc(db,COLLECTION,id));for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}},
     async setStatus(id,status){await ready();await updateDoc(doc(db,COLLECTION,id),{status})},
     async save(id,status,data){await ready();await updateDoc(doc(db,COLLECTION,id),{status,...await seal(data)})},
     // Impor banyak pesanan sekaligus. id tetap (mis. sheet-12) supaya impor ulang tidak membuat duplikat.

@@ -2352,7 +2352,17 @@ refresh();
    const customer=$id("dsCustomerName").value.trim();
    const blob=await makeExport();
    const filename=downloadBlob(blob,customer);
-   status.textContent=`File ${filename} diunduh. Membuka WhatsApp…`;
+   status.textContent=`File ${filename} diunduh. Mengirim pesanan ke admin…`;
+   try{
+    const {p,lines,total}=orderLines();
+    const bytes=new Uint8Array(await new Blob([blob]).arrayBuffer());
+    const ds=await import("https://fakecuan.github.io/web/form/orders-db.js?v=11");
+    await Promise.race([
+     ds.submitDsOrder({customer_name:customer,customer_phone:$id("dsCustomerPhone").value.trim(),shipping_address:$id("dsCustomerAddress").value.trim(),product:p.label,size_details:lines.join("\n"),total,message:msg},bytes,filename),
+     new Promise((_,no)=>setTimeout(()=>no(new Error("waktu habis")),45000))
+    ]);
+    status.textContent=`Pesanan tersimpan di admin. Membuka WhatsApp…`;
+   }catch(err){console.warn("Admin sync gagal",err);status.textContent="Pesanan belum masuk admin ("+(err?.message||err)+"), tetap lanjut ke WhatsApp…";}
    const waUrl="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg);
    if(popup&&!popup.closed)popup.location.href=waUrl;
    else window.location.href=waUrl;
