@@ -85,7 +85,7 @@
       if (!modal || modal.dataset.commentsReady === '1') return;
       modal.dataset.commentsReady = '1';
       modal.querySelectorAll('.it[id^="nwm_adm"]').forEach((card) => {
-        const id = Number(card.id.slice('nwm_adm'.length));
+        const id = Number(card.id.slice('nwm_'.length));
         if (!Number.isSafeInteger(id) || id <= 0) return;
         const panel = document.createElement('section');
         panel.className = 'nwcWrap';
