@@ -141,8 +141,8 @@ textarea#ptx[hidden]{display:none}
 #libg .it img{object-fit:contain}#libg .lsec{grid-column:1/-1;font:600 12px system-ui,sans-serif;color:var(--mu);margin-top:4px}#libg .pn{position:absolute;left:0;right:0;bottom:0;padding:2px 4px;background:#000a;color:#fff;font:500 9.5px/1.2 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fsmode #libp{z-index:45;top:calc(max(8px,env(safe-area-inset-top)) + 52px);right:12px;max-height:calc(100vh - 140px)}
 #ied{position:fixed;inset:0;z-index:50;background:#2a2a2f;display:flex;flex-direction:column;color:#eee;font:13px system-ui,sans-serif;touch-action:none}#ied[hidden]{display:none}
-.ieh{display:flex;align-items:center;gap:5px;padding:max(6px,env(safe-area-inset-top)) 8px 6px;background:#1d1d21;min-height:48px}.ieh b{flex:0 0 auto;text-align:center;font-size:11px;white-space:nowrap;margin:0 2px}
-.ieh .x{background:#ffffff14;color:#eee;border:0;flex:0 0 34px;width:34px;height:34px;padding:7px}.ieh .x:disabled{opacity:.35}.ietx{height:32px;min-width:0;padding:0 8px;border-radius:8px;border:0;background:#ffffff14;color:#eee;font:500 11px/1.15 system-ui,sans-serif;white-space:nowrap;cursor:pointer}.ietx.pri,#ied .pri{background:var(--ac);color:#fff}#iesave{font-weight:650}.ieh #ieexternal,#ieimport{font-size:10px;padding:0 7px}
+.ieh{display:flex;align-items:center;gap:5px;padding:max(6px,env(safe-area-inset-top)) 8px 6px;background:#1d1d21;min-height:48px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}.ieh::-webkit-scrollbar{display:none}.ieh b{display:none}
+.ieh .x{background:#ffffff14;color:#eee;border:0;flex:0 0 34px;width:34px;height:34px;padding:7px}.ieh .x:disabled{opacity:.35}.ietx{height:34px;flex:0 0 auto;min-width:34px;padding:0 9px;border-radius:8px;border:0;background:#ffffff14;color:#eee;font:500 11px/1.15 system-ui,sans-serif;white-space:nowrap;cursor:pointer}.ietx.pri,#ied .pri{background:var(--ac);color:#fff}#iesave{font-weight:650}.ieh #ieexternal{font-size:11px;padding:0 9px}.ieicon{width:36px;padding:6px!important;display:flex;align-items:center;justify-content:center}.ieicon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}@media(max-width:640px){.ieh{gap:4px;padding-left:6px;padding-right:6px}.ieh .x{flex-basis:32px;width:32px;height:32px}.ietx{height:32px;padding:0 7px;font-size:10.5px}#iesave{padding:0 11px}}
 .iem{flex:1;min-height:0;position:relative}#iev{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 #ieopt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 10px;background:#1d1d21;border-top:1px solid #ffffff12;min-height:40px}
 #ietools{display:flex;gap:4px;overflow-x:auto;padding:6px 8px max(8px,env(safe-area-inset-bottom));background:#151518;scrollbar-width:thin}
@@ -332,7 +332,7 @@ textarea#ptx[hidden]{display:none}
 <div class="modal" id="mdl" hidden><div class="mbox"><b>File siap disimpan</b><small id="dlinfo"></small>
   <button class="opt" id="dlgo" style="background:var(--ac);color:#fff;border-color:var(--ac)"><b style="color:#fff">Unduh sekarang</b></button>
   <div class="mact"><button data-x>Batal</button></div></div></div>
-<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieexternal" class="ietx" type="button">Buka dengan…</button><button id="ieimport" class="ietx" type="button">Impor hasil edit</button><button id="iesave" class="ietx pri" type="button">Simpan</button><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
+<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieexternal" class="ietx" type="button">Buka dengan…</button><button id="ieimage" class="ietx ieicon" type="button" title="Tambah gambar" aria-label="Tambah gambar"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="M4 17l5-5 3 3 3-4 5 6"/></svg></button><button id="iesave" class="ietx pri" type="button">Simpan</button><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
 <div class="iem"><canvas id="iev"></canvas><div id="iesheet" hidden><b id="iest"></b><div id="iesf"></div><div class="iesb"><button id="iescancel">Batal</button><button id="iesapply" class="pri">Terapkan</button></div></div></div>
 <div id="ieopt"></div><div id="ietools"></div></div>
 <div class="modal" id="mimg" hidden><div class="mbox"><b>Tambah gambar</b><small>Pilih sumber gambar untuk bagian ini.</small>
@@ -1442,7 +1442,8 @@ const IE={L:null,c:null,x:null,w:0,h:0,M:null,mx:null,mA:null,ov:null,tool:'brus
 const iev=$('#iev'),ivx=iev.getContext('2d');
 const TOOLS=[['hand','Geser','<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V5a1.5 1.5 0 0 1 3 0v8M17 9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.4L4 15a1.6 1.6 0 0 1 2.7-1.6L8 15"/>'],
   ['rect','Kotak','<rect x="4" y="5" width="16" height="14" stroke-dasharray="3 2"/>'],
-  ['lasso','Laso','<path d="M12 4c5 0 8 2.5 8 5.5S16.5 15 12 15s-8-2.5-8-5.5S7 4 12 4z" stroke-dasharray="3 2"/><path d="M6 13c-1 2 0 4 2 4 1 0 1 2 0 3"/>'],
+  ['lasso','Lasso','<path d="M12 4c5 0 8 2.5 8 5.5S16.5 15 12 15s-8-2.5-8-5.5S7 4 12 4z" stroke-dasharray="3 2"/><path d="M6 13c-1 2 0 4 2 4 1 0 2 1 0 3"/>'],
+  ['poly','Polygon Lasso','<path d="M4 5l7-2 9 5-2 10-9 3-5-7z" stroke-dasharray="3 2"/>'],
   ['wand','Rentang warna','<path d="M4 20L14 10M15 3v3M19 5l-2 2M21 9h-3M12 5l2 2"/>'],
   ['crop','Potong','<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/>'],
   ['brush','Kuas','<path d="M14 4l6 6-8 8-6-6z"/><path d="M6 12c-2 0-3 2-3 4 0 1-1 2-1 3 3 0 7-1 7-4"/>'],
@@ -1498,7 +1499,11 @@ function ieImportExternal(){
   };pick.click();
 }
 $('#ieexternal').onclick=ieOpenExternal;
-$('#ieimport').onclick=ieImportExternal;
+$('#ieimage').onclick=()=>{$('#mimg').hidden=false};
+$('#iclip').onclick=()=>{$('#mimg').hidden=true;const pick=document.createElement('input');pick.type='file';pick.accept='image/*';pick.onchange=async()=>{const f=pick.files?.[0];if(!f)return;try{const u=URL.createObjectURL(f),im=await new Promise((res,rej)=>{const a=new Image();a.onload=()=>{URL.revokeObjectURL(u);res(a)};a.onerror=()=>rej(new Error('Gambar tidak dapat dibuka'));a.src=u});iePush();IE.x.clearRect(0,0,IE.w,IE.h);IE.x.drawImage(im,0,0,IE.w,IE.h);IE.M=null;IE.ov=null;IE.changed=true;ieUndoUI();ieDraw();toast('Gambar dimuat ke editor')}catch(e){toast('Gagal memuat gambar: '+e.message)}};pick.click()};
+$('#ilib').onclick=()=>{$('#mimg').hidden=true;$('#libp').hidden=false;libRender()};
+$('#idev').onclick=()=>{$('#mimg').hidden=true;const pick=document.createElement('input');pick.type='file';pick.accept='image/*';pick.onchange=async()=>{const f=pick.files?.[0];if(!f)return;try{const u=URL.createObjectURL(f),im=await new Promise((res,rej)=>{const a=new Image();a.onload=()=>{URL.revokeObjectURL(u);res(a)};a.onerror=()=>rej(new Error('Gambar tidak dapat dibuka'));a.src=u});iePush();IE.x.clearRect(0,0,IE.w,IE.h);IE.x.drawImage(im,0,0,IE.w,IE.h);IE.M=null;IE.ov=null;IE.changed=true;ieUndoUI();ieDraw();toast('Gambar dimuat ke editor')}catch(e){toast('Gagal memuat gambar: '+e.message)}};pick.click()};
+document.querySelector('#mimg [data-x]').onclick=()=>$('#mimg').hidden=true;
 /* undo */
 function ieSnap(){return{d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h,ox:IE.ox,oy:IE.oy}}
 function iePush(){IE.undo.push(ieSnap());if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;ieUndoUI()}
@@ -1515,7 +1520,7 @@ function ieDraw(){if(!IE.c)return;const x=ivx;x.setTransform(1,0,0,1,0,0);x.clea
   x.imageSmoothingEnabled=IE.vs<2;x.drawImage(IE.c,0,0);if(IE.ov)x.drawImage(IE.ov,0,0);
   x.setTransform(1,0,0,1,0,0);x.strokeStyle='#0003';x.lineWidth=1;x.strokeRect(IE.vx-.5,IE.vy-.5,IE.w*IE.vs+1,IE.h*IE.vs+1);
   const P2=(px,py)=>[IE.vx+px*IE.vs,IE.vy+py*IE.vs];
-  if(IE.path&&IE.path.length>1){x.setLineDash([6,4]);x.strokeStyle='#e11d48';x.lineWidth=2;x.beginPath();IE.path.forEach((p,i)=>{const[a,b]=P2(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(IE.tool=='rect')x.closePath();x.stroke();x.setLineDash([])}
+  if(IE.path&&IE.path.length>1){x.setLineDash([6,4]);x.strokeStyle='#e11d48';x.lineWidth=2;x.beginPath();IE.path.forEach((p,i)=>{const[a,b]=P2(p[0],p[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(IE.tool=='rect'||IE.tool=='poly'&&!IE.drag?.drawingPoly)x.closePath();x.stroke();x.setLineDash([]);if(IE.tool=='poly')IE.path.forEach(p=>{const[a,b]=P2(p[0],p[1]);x.beginPath();x.arc(a,b,3.5,0,Math.PI*2);x.fillStyle='#fff';x.fill();x.strokeStyle='#e11d48';x.stroke()})}
   if(IE.tool=='crop'&&IE.crop){const[c0,c1,c2,c3]=IE.crop,[a,b]=P2(c0,c1),[e,f]=P2(c2,c3),[ix,iy]=P2(0,0),[jx,jy]=P2(IE.w,IE.h);
     x.fillStyle='rgba(0,0,0,.55)';x.beginPath();x.rect(ix,iy,jx-ix,jy-iy);x.rect(a,b,e-a,f-b);x.fill('evenodd');
     x.strokeStyle='#fff';x.lineWidth=2;x.strokeRect(a,b,e-a,f-b);x.strokeStyle='#fff8';x.lineWidth=1;x.beginPath();for(let q=1;q<3;q++){x.moveTo(a+(e-a)*q/3,b);x.lineTo(a+(e-a)*q/3,f);x.moveTo(a,b+(f-b)*q/3);x.lineTo(e,b+(f-b)*q/3)}x.stroke();
@@ -1552,7 +1557,7 @@ function ieOpts(){const t=IE.tool,o=[];const colorI=`<label class="iec" title="W
   if(t=='brush'||t=='eraser')o.push((t=='brush'?colorI:''),rng('iesz','Ukuran',1,300,IE.size),rng('iehd','Keras %',0,100,Math.round(IE.hard*100)),rng('ieop','Opasitas %',1,100,Math.round(IE.op*100)));
   else if(t=='bucket')o.push(colorI,rng('ietol','Toleransi',0,255,IE.tol));
   else if(t=='wand')o.push(smode,rng('ietol','Toleransi',0,255,IE.tol),`<label class="iek"><input type="checkbox" id="iecg" ${IE.contig?'checked':''}> Bersebelahan saja</label>`);
-  else if(t=='rect'||t=='lasso')o.push(smode);
+  else if(t=='rect'||t=='lasso'||t=='poly')o.push(smode,t=='poly'?'<span class="ieh2">Ketuk titik sudut; ketuk dua kali untuk menutup</span>':'');
   else if(t=='crop')o.push('<span class="ieh2" id="iecz">Seret kotak di gambar</span>','<button id="iecapply" class="iesm pri">✂ Potong</button>','<button id="iectrim" class="iesm">Pas ke isi gambar</button>','<button id="iecsel" class="iesm">Ke seleksi</button>','<button id="ieccan" class="iesm">Reset</button>');
   else if(t=='eyedrop')o.push(colorI,'<span class="ieh2">Ketuk gambar untuk mengambil warna</span>');
   else o.push('<span class="ieh2">Seret untuk menggeser, cubit / roda mouse untuk zoom</span>');
@@ -1595,6 +1600,7 @@ iev.addEventListener('pointerdown',e=>{if(!IE.c)return;iev.setPointerCapture(e.p
     if(c){const near=(u,v)=>Math.abs(p[0]-u)<hs&&Math.abs(p[1]-v)<hs;const hd=near(c[0],c[1])?[0,1]:near(c[2],c[1])?[2,1]:near(c[0],c[3])?[0,3]:near(c[2],c[3])?[2,3]:null;
       if(hd){IE.drag={k:'cropH',h:hd};return}if(p[0]>c[0]&&p[0]<c[2]&&p[1]>c[1]&&p[1]<c[3]){IE.drag={k:'cropM',p,c:c.slice()};return}}
     IE.drag={k:'cropN',a:p};return}
+  if(t=='poly'){if(!IE.path){IE.path=[p];IE.drag={k:'poly',drawingPoly:true};ieDraw();return}const last=IE.path[IE.path.length-1];if(Math.hypot(last[0]-p[0],last[1]-p[1])<2)return;IE.path.push(p);IE.drag={k:'poly',drawingPoly:true};ieDraw();return}
   if(t=='rect'||t=='lasso'){IE.drag={k:t,a:p};IE.path=[p];return}
   if(t=='wand'){colorRange(p[0],p[1]);return}
   if(t=='bucket'){bucket(p[0],p[1]);return}
@@ -1618,6 +1624,8 @@ function ieUp(e){IE.pts.delete(e.pointerId);const D=IE.drag;if(!D)return;if(D.k=
     if(bb[2]-bb[0]<2&&bb[3]-bb[1]<2){if(IE.smode=='new'){IE.M=null;selChanged()}else ieDraw();return}
     selCombine(g=>{g.fillStyle='#fff';g.beginPath();pts.forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.closePath();g.fill()})}
   ieDraw()}
+iev.addEventListener('dblclick',e=>{if(IE.tool!='poly'||!IE.path||IE.path.length<3)return;e.preventDefault();finishPolySelection()});
+function finishPolySelection(){if(!IE.path||IE.path.length<3){IE.path=null;IE.drag=null;ieDraw();return}const pts=IE.path.slice();IE.path=null;IE.drag=null;selCombine(g=>{g.fillStyle='#fff';g.beginPath();pts.forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.closePath();g.fill()});ieDraw()}
 iev.addEventListener('pointerup',ieUp);iev.addEventListener('pointercancel',ieUp);iev.addEventListener('pointerleave',()=>{IE.cur=null;if(!IE.drag)ieDraw()});
 /* perintah */
 function pxOp(fn){/* fn(d,i,w) with mask weight w 0..1 */const id=IE.x.getImageData(0,0,IE.w,IE.h),d=id.data,m=maskData();for(let i=0;i<d.length;i+=4){const w=m?m[i+3]/255:1;if(w>0)fn(d,i,w)}IE.x.putImageData(id,0,0)}
