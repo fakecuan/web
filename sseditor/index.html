@@ -362,8 +362,26 @@ textarea#ptx[hidden]{display:none}
   <div class="mact"><button data-x>Batal</button><button id="pdfall">Pilih semua</button><button class="pri" id="pdfok" disabled>Masukkan</button></div></div></div>
 <input type="file" id="libfile" accept="image/*,application/pdf,.pdf" multiple hidden><div id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* Three.js bundle loader: fallback CDN agar satu host gagal tidak mematikan editor. */
+(function(){
+  const urls=[
+    'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+    'https://unpkg.com/three@0.128.0/build/three.min.js'
+  ];
+  function loadScript(src){return new Promise((resolve,reject)=>{
+    const el=document.createElement('script');el.src=src;el.async=false;
+    el.onload=()=>resolve();el.onerror=()=>{el.remove();reject(new Error('Gagal memuat '+src))};
+    document.head.appendChild(el);
+  })}
+  function loadControls(){return loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js')
+    .catch(()=>loadScript('https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'))}
+  loadScript(urls[0]).catch(()=>loadScript(urls[1])).then(loadControls).catch(err=>{
+    window.__SS_THREE_LOAD_ERROR__=err;
+    console.error('[SSEditor] Three.js gagal dimuat dari CDN',err);
+  });
+})();
+</script>
 <script>
 (function(){
   const errors=[];
