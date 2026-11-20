@@ -690,7 +690,7 @@ function spec(){return raceSpecs[cfg.race]}
 function startGrid(count,baseS){if(count===18){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:18},(_,i)=>{const row=Math.floor(i/6),lane=i%6;return{s:baseS-12-row*34,d:lanes[lane],row:row+1}})}if(count===6){const lanes=[-29.7,-17.8,-5.9,5.9,17.8,29.7];return Array.from({length:6},(_,i)=>({s:baseS-12,d:lanes[i],row:1}))}const front=4,back=count-front,ds=[];for(let i=0;i<front;i++)ds.push((i-(front-1)/2)*13.5);for(let i=0;i<back;i++)ds.push((i-(back-1)/2)*13.5);return Array.from({length:count},(_,i)=>({s:baseS-12-(i<front?0:38),d:ds[i<front?i:i-front],row:i<front?1:2}))}
 function setupIndividualHeat(active=true){
  const sp=spec();const blueStart=TRACK.straight+TRACK.arc+TRACK.straight*0.65;const yellowStart=blueStart-TRACK.perimeter/2;
- raceStartS=(cfg.race==='300'||cfg.race==='500')?yellowStart:blueStart;itemsReset();
+ raceStartS=(cfg.race==='300'||cfg.race==='500'||cfg.race==='tt500')?yellowStart:blueStart;itemsReset();
  if(!player)return;
  player.s=raceStartS-(sp.runup?TRACK.perimeter/2:12);player.d=0;player.v=0;player.alive=true;player.finished=false;player.finishTime=null;player.fall=0;player._startS=player.s;player._startD=0;
  racers=[player];foulCards=0;elapsed=0;countdown=3.9;energy=100;energyZone='g';smoothSpeedCap=MAX_SPEED;lastTapAt=0;steer=0;steerValue=0;updateSteerUI();finishOrder=[];individualStarted=false;individualTimer=0;individualPhase=sp.runup?'runup':'count';state=active?(sp.runup?'runup':'count'):'soloWait';
@@ -980,8 +980,8 @@ if(sp.individual){
  const edge=TRACK.width/2-3;if(Math.abs(player.d)>=edge){player.d=Math.sign(player.d)*(edge-5);player.v*=.55;setToast('HATI-HATI!','MENDEKATI BATAS LINTASAN')}
  {const h0=player._h??elevM(player.s,player.d);player.s+=player.v*dt*(trackPos(player.s,player.d).arc?TRACK.radius/(TRACK.radius+player.d):1);const h1=elevM(player.s,player.d);slopeApply(player,h0,h1);player._h=h1}
  const dist=(player.s-raceStartS)/TRACK.perimeter*LAP_METERS;
- $('distance').textContent=Math.max(0,Math.floor(dist))+' m';$('lap').textContent='1/1';$('clock').textContent=formatTime(individualTimer);$('speedNum').textContent=kmh(player.v);updateEnergyUI();
- if(dist>=200&&!player.finished){player.finished=true;player.finishTime=individualTimer;elapsed=individualTimer;player.v=0;player.s=raceStartS+TRACK.perimeter-1;if(online)finishIndividualOnline();else endIndividualOffline()}
+ $('distance').textContent=Math.max(0,Math.floor(dist))+' m';$('lap').textContent=Math.min(Math.ceil(sp.meters/200),Math.floor(Math.max(0,dist)/200)+1)+'/'+Math.ceil(sp.meters/200);$('clock').textContent=formatTime(individualTimer);$('speedNum').textContent=kmh(player.v);updateEnergyUI();
+ if(dist>=sp.meters&&!player.finished){player.finished=true;player.finishTime=individualTimer;elapsed=individualTimer;player.v=0;player.s=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter-1;if(online)finishIndividualOnline();else endIndividualOffline()}
  return;
 }
 const endS=raceStartS+sp.meters/LAP_METERS*TRACK.perimeter,aliveN=racers.filter(r=>r.alive).length;
@@ -1067,11 +1067,11 @@ function endIndividualOffline(){
  if(state==='done')return;
  const t=Number(individualTimer)||0;
  state='done';updateOfflineRaceTools();steer=0;steerValue=0;
- if(player){player.finished=true;player.finishTime=t;player.v=0;player.s=raceStartS+TRACK.perimeter-1;}
+ if(player){player.finished=true;player.finishTime=t;player.v=0;player.s=raceStartS+spec().meters/LAP_METERS*TRACK.perimeter-1;}
  const key='diva_record_'+cfg.race;let best=Number(localStorage.getItem(key)||0);const isBest=!best||t<best;if(isBest){best=t;localStorage.setItem(key,String(best))}
  const pname=cfg.playerName||(acct?acct.name:'Pemain');top3Add(cfg.race,pname,t);if(acct)submitBest200(cfg.race,acct.name,t);
  elapsed=t;sfx('finish');
- finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'NEW RECORD':'',time:formatTime(t),lapLbl:'JARAK',lap:'200 M',againLbl:'ULANGI',changeLbl:'GANTI MATA LOMBA',leftHtml:top3Html(cfg.race)});
+ finScreen({win:true,title:'FINISH',sub:spec().label,badgeText:isBest?'NEW RECORD':'',time:formatTime(t),lapLbl:'JARAK',lap:spec().meters+' M',againLbl:'ULANGI',changeLbl:'GANTI MATA LOMBA',leftHtml:top3Html(cfg.race)});
 }
 function finishIndividualOnline(){
  if(!olRoom||!player)return;
@@ -5033,9 +5033,10 @@ setInterval(()=>{if(!online||!olRoom||state!=='done')return;const ag=$('again'),
  if(ch.textContent.indexOf('KELUAR')<0)ch.textContent='KELUAR'},250);
 
 /* ===== VERSI GAME + FRAME PEMBERITAHUAN DI HALAMAN UTAMA ===== */
-const GAME_VER='1.43';
+const GAME_VER='1.44';
 /* catatan versi / mode baru (terbaru di atas) */
 const NEWS_BUILTIN=[
+ {d:'2026-11-20',i:'⏱️',t:'Waktu Terbaik: 200 M, 500 M & 1000 M',b:'Menu Waktu Terbaik kini punya tab 200 M, 500 M, dan 1000 M. Semua main sendiri tanpa lawan, waktumu masuk daftar Top 10 online. Rekor 200 M tetap tersimpan.',act:'best'},
  {d:'2026-11-19',i:'⚔️',t:'Battle Arena: serang lawan di sebelahmu',b:'Rudal, bom, dan listrik kini mengenai lawan yang menempel/bersebelahan, juga yang beda putaran lap.'},
  {d:'2026-11-17',i:'📣',t:'Frame pemberitahuan & nomor versi',b:'Info mode baru, rekor 200 m, dan pengumuman dari admin tampil di halaman utama.'},
  {d:'2026-11-17',i:'📲',t:'Aplikasi Android Diva Skate',b:'Pasang APK resmi. Isi game ter-update otomatis; aplikasi memberi tahu bila ada versi APK baru.',u:'https://github.com/fakecuan/web/releases/download/diva-skate-latest/DivaSkate.apk',ul:'UNDUH APK'},
@@ -5053,7 +5054,7 @@ async function nwsLoad(force){if(!force&&Date.now()-NWS.t<60000)return;NWS.t=Dat
  /* pengumuman admin */
  try{const r=await rpc('skate_news_list',{});if(r&&r.ok&&Array.isArray(r.rows))NWS.adm=r.rows}catch(e){}
  /* rekor 200 m */
- const rec=[];for(const [k,lbl] of [['ds200','Dobbin Sprint 200 m'],['dtt200','DTT 200 m']]){try{const r=await rpc('skate_best_top',{p_race:k});const x=r&&r.ok&&r.rows&&r.rows[0];
+ const rec=[];for(const [k,lbl] of [['ds200','Dobbin Sprint 200 m'],['dtt200','DTT 200 m'],['tt500','500 m solo'],['tt1000','1.000 m solo']]){try{const r=typeof bestTop==='function'?await bestTop(k):await rpc('skate_best_top',{p_race:k});const x=r&&r.rows&&r.rows[0];
   if(x){const key='nwsRec_'+k,sig=x.name+'|'+(+x.time).toFixed(3),old=nwsLS(key);let at=+(nwsLS(key+'_at')||0);if(old!==sig){at=Date.now();nwsLS(key,sig);nwsLS(key+'_at',String(at))}
    rec.push({id:'rec'+k,i:'🏆',t:'Rekor '+lbl+': '+x.name+' '+formatTime(Number(x.time)),b:x.name+' memegang waktu terbaik '+lbl+'. Bisa kamu kalahkan?',ts:at||Date.now(),rec:true,act:'best'})}}catch(e){}}
  NWS.rec=rec;
@@ -5064,7 +5065,7 @@ function nwsBuild(){const out=[];
  if(NWS.app)out.push(NWS.app);
  for(const a of NWS.adm)out.push({id:'adm'+a.id,i:a.icon||'📢',t:a.title,b:a.body||'',ts:Date.parse(a.created_at)||0,pin:!!a.pinned,adm:true,aid:a.id});
  for(const r of NWS.rec)out.push(r);
- for(const n of NEWS_BUILTIN)out.push({id:'v'+n.d+n.t,i:n.i,t:n.t,b:n.b,ts:Date.parse(n.d+'T12:00:00+07:00'),u:n.u,ul:n.ul});
+ for(const n of NEWS_BUILTIN)out.push({id:'v'+n.d+n.t,i:n.i,t:n.t,b:n.b,ts:Date.parse(n.d+'T12:00:00+07:00'),u:n.u,ul:n.ul,act:n.act});
  out.sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||b.ts-a.ts);NWS.rows=out}
 const nwsSeen=()=>+(nwsLS('nwsSeen')||0);
 (()=>{const st=document.createElement('style');st.textContent=`
@@ -5162,6 +5163,45 @@ const DAPP=(()=>{try{return window.DivaApp&&typeof window.DivaApp.notify==='func
 /* notifikasi Android ditap -> buka chat / daftar notifikasi */
 window.__divaOpenNotif=async function(kind,sender){for(let i=0;i<30&&!acct;i++)await new Promise(r=>setTimeout(r,250));if(!acct)return;
  try{if(kind==='message'&&sender){openDirectChat(sender);return}if(kind==='invite'){showNotifications();return}if(sender){profileBackTarget=()=>menu();viewPlayerProfile(sender);return}showNotifications()}catch(e){}};
+
+/* ===== WAKTU TERBAIK: tab 200 M / 500 M / 1000 M (semua main sendiri tanpa lawan) ===== */
+raceSpecs.tt500={label:'500 M SOLO',count:1,meters:500,laps:3,elim:false,individual:true,runup:false};
+raceSpecs.tt1000={label:'1.000 M SOLO',count:1,meters:1000,laps:5,elim:false,individual:true,runup:false};
+const BEST_TABS=[{k:'200',lbl:'200 M',races:['ds200','dtt200']},{k:'500',lbl:'500 M',races:['tt500']},{k:'1000',lbl:'1000 M',races:['tt1000']}];
+const BEST_RACES=['ds200','dtt200','tt500','tt1000'];
+const BEST_OLD=['ds200','dtt200'];/* rekor 200 m tetap di tabel lama (tidak dihapus) */
+/* ambil daftar: tabel lama untuk 200 m, tabel baru skate_times untuk 500/1000 (dan cadangan) */
+async function bestTop(k){const lists=[];let err='';
+ if(BEST_OLD.includes(k)){try{const r=await rpc('skate_best_top',{p_race:k});if(r&&r.ok&&Array.isArray(r.rows))lists.push(r.rows);else if(r)err=r.err||err}catch(e){}}
+ try{const r=await rpc('skate_time_top',{p_race:k});if(r&&r.ok&&Array.isArray(r.rows))lists.push(r.rows);else if(!lists.length&&r)err=r.err||'nosetup2'}catch(e){}
+ const m=new Map();for(const L of lists)for(const x of L){const n=String(x.name),t=Number(x.time);if(!n||!isFinite(t))continue;const k2=n.toLowerCase();if(!m.has(k2)||t<m.get(k2).time)m.set(k2,{name:n,time:t})}
+ const rows=[...m.values()].sort((a,b)=>a.time-b.time).slice(0,10);return{ok:rows.length>0||lists.length>0,rows,err}}
+submitBest200=async function(race,name,t){if(!BEST_RACES.includes(race))return;const p={p_race:race,p_name:String(name||'Pemain').slice(0,16),p_time:+(+t).toFixed(3)};
+ let ok=false;if(BEST_OLD.includes(race)){try{const r=await rpc('skate_best_submit',p);ok=!!(r&&r.ok)}catch(e){}}
+ if(!ok){try{await rpc('skate_time_submit',p)}catch(e){}}};
+menuBest200=function(){menuMain=false;$('dialog').style.setProperty('width','min(96vw,760px)','important');
+ let tab='200';try{tab=localStorage.getItem('bestTab')||'200'}catch(e){}if(!BEST_TABS.some(x=>x.k===tab))tab='200';
+ const T=BEST_TABS.find(x=>x.k===tab);
+ const card=k=>`<div class="bestCol"><h3>${escapeHTML(raceSpecs[k].label)}</h3><div class="bestList" id="bl_${k}"><div class="t3m">Memuat…</div></div><button class="primary" id="bs_${k}" type="button">▶ MAIN</button></div>`;
+ $('overlay').style.display='flex';
+ $('dialog').innerHTML=`${menuHeader()}<div class="sub menuSub"><b>⏱ WAKTU TERBAIK</b><small>Main sendiri tanpa lawan • Top 10 online • wajib login</small></div>
+  <div class="bestTabs">${BEST_TABS.map(x=>`<button type="button" class="bestTab${x.k===tab?' on':''}" data-bt="${x.k}">${x.lbl}</button>`).join('')}</div>
+  <div class="bestGrid${T.races.length===1?' one':''}">${T.races.map(card).join('')}</div><button class="secondary" id="bBack" type="button">⬅ KEMBALI</button>`;
+ $('dialog').querySelectorAll('[data-bt]').forEach(b=>b.onclick=()=>{audioReady();try{localStorage.setItem('bestTab',b.dataset.bt)}catch(e){}menuBest200()});
+ T.races.forEach(k=>{
+  $('bs_'+k).onclick=()=>{audioReady();if(!acct){menuToast('Login dulu untuk main waktu terbaik.');onlineMenu();return}cfg.race=k;cfg.mode='kasual';cfg.playerName=acct.name;setTrack('oval');initRace()};
+  bestTop(k).then(r=>{const el=$('bl_'+k);if(!el)return;
+   if(r.rows.length){el.innerHTML=r.rows.map((x,i)=>`<button type="button" class="bRow" data-bp="${escapeHTML(String(x.name))}"><b>${i+1}.</b><span>${escapeHTML(String(x.name))}</span><strong>${formatTime(Number(x.time))}</strong></button>`).join('');el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>bestPlayerTap(b.dataset.bp))}
+   else el.innerHTML=`<div class="t3m">${r.err==='nosb'?'Server belum terhubung.':(!r.ok&&!BEST_OLD.includes(k))?'Daftar online '+escapeHTML(raceSpecs[k].label)+' belum disiapkan di Supabase.':'Belum ada catatan. Jadilah yang pertama!'}</div>`})});
+ $('bBack').onclick=()=>menu();
+ const d=$('dialog');if(d&&!$('bTopBack')){const b=document.createElement('button');b.id='bTopBack';b.type='button';b.className='secondary';b.textContent='⬅ KEMBALI';b.onclick=()=>{audioReady();menu()};const sub=d.querySelector('.menuSub');if(sub)sub.parentNode.insertBefore(b,sub)}};
+(()=>{const st=document.createElement('style');st.textContent=`
+.bestTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 8px}
+.bestTab{border:2px solid rgba(130,200,255,.6)!important;background:rgba(10,36,98,.6)!important;color:#cfe2ff!important;border-radius:14px!important;padding:8px 4px!important;margin:0!important;font:italic 900 clamp(13px,3.6vw,16px) "Exo 2",system-ui!important;cursor:pointer;box-shadow:none!important;width:auto!important}
+.bestTab.on{background:linear-gradient(180deg,#ff5145,#c8141c)!important;color:#fff!important;border-color:#fff!important}
+.bestGrid.one{grid-template-columns:minmax(0,1fr)!important;max-width:420px;margin:0 auto}`;document.head.appendChild(st)})();
+/* tombol di halaman utama */
+(()=>{const fix=()=>{const b=$('bestBtn');if(b&&b.textContent.indexOf('200')>=0)b.textContent='⏱ WAKTU TERBAIK'};fix();const _m=menu;menu=function(){_m();fix()}})();
 
 resize();requestAnimationFrame(frame);window.addEventListener('resize',()=>{resize();updateSteerUI()});
 })();
