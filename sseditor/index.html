@@ -1677,17 +1677,74 @@ function edt1(f,n){const d=new Float64Array(n),v=new Int32Array(n),z=new Float64
 function edt(inside,W,H){/* squared distance to nearest 'inside' pixel */const INF=1e20,g=new Float64Array(W*H);for(let i=0;i<W*H;i++)g[i]=inside[i]?0:INF;
   const col=new Float64Array(H);for(let x=0;x<W;x++){for(let y=0;y<H;y++)col[y]=g[y*W+x];const r=edt1(col,H);for(let y=0;y<H;y++)g[y*W+x]=r[y]}
   const row=new Float64Array(W);for(let y=0;y<H;y++){for(let x=0;x<W;x++)row[x]=g[y*W+x];const r=edt1(row,W);for(let x=0;x<W;x++)g[y*W+x]=r[x]}return g}
-function stroke(v){const sz=v.sz,pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2):sz)+2,c=hex2rgb(v.col),o=v.op/100;
-  if(pad){IE.ox-=pad;IE.oy-=pad;const old=IE.x.getImageData(0,0,IE.w,IE.h);IE.c.width=IE.w=IE.w+2*pad;IE.c.height=IE.h=IE.h+2*pad;IE.x.putImageData(old,pad,pad);IE.M=null;IE.mA=null;IE.ov=null}
-  const W=IE.w,H=IE.h,id=IE.x.getImageData(0,0,W,H),d=id.data,ins=new Uint8Array(W*H),out=new Uint8Array(W*H);for(let i=0;i<W*H;i++){const a=d[i*4+3]>=128;ins[i]=a?1:0;out[i]=a?0:1}
+function stroke(v){
+  const W0=IE.w,H0=IE.h,sel=!!IE.M,mask=sel?maskData():null;
+  const sz=Math.max(1,+v.sz||1),c=hex2rgb(v.col),o=cl01(v.op/100);
+  /* Area kerja: seleksi membatasi sumber alpha, tanpa mengubah objek lain. */
+  const src=IE.x.getImageData(0,0,W0,H0),sd=src.data;
+  let x0=0,y0=0,x1=W0,y1=H0;
+  if(sel){
+    const b=maskBox();
+    if(!b){toast('Area seleksi kosong');return}
+    [x0,y0,x1,y1]=b;
+    /* Batas alpha asli ikut diperhitungkan agar outline mengikuti objek, bukan kotak seleksi. */
+    const clipped=ieCanvas(W0,H0),cx=clipped.getContext('2d'),ci=cx.createImageData(W0,H0);
+    for(let i=0;i<W0*H0;i++){const a=mask[i*4+3]/255,j=i*4;ci.data[j]=sd[j];ci.data[j+1]=sd[j+1];ci.data[j+2]=sd[j+2];ci.data[j+3]=Math.round(sd[j+3]*a)}
+    cx.putImageData(ci,0,0);
+    src.data.set(ci.data);
+  }
+  const pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2):Math.ceil(sz))+2;
+  const left=Math.max(0,x0-pad),top=Math.max(0,y0-pad),right=Math.min(W0,x1+pad),bottom=Math.min(H0,y1+pad);
+  const W=right-left,H=bottom-top;
+  if(W<1||H<1)return;
+  const id=ieCanvas(W,H),ix=id.getContext('2d'),local=ix.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const a=((top+y)*W0+left+x)*4,b=(y*W+x)*4;local.data[b]=src.data[a];local.data[b+1]=src.data[a+1];local.data[b+2]=src.data[a+2];local.data[b+3]=src.data[a+3]}
+  ix.putImageData(local,0,0);
+  const d=local.data,ins=new Uint8Array(W*H),out=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){const a=d[i*4+3]>=128;ins[i]=a?1:0;out[i]=a?0:1}
   const dOut=v.pos!='in'?edt(ins,W,H):null,dIn=v.pos!='out'?edt(out,W,H):null,R=v.pos=='mid'?sz/2:sz;
   const res=new Uint8ClampedArray(d.length);
-  for(let i=0;i<W*H;i++){let a=0;if(dOut&&!ins[i])a=Math.max(a,cl01(R-Math.sqrt(dOut[i])+.5));if(dIn&&ins[i])a=Math.max(a,cl01(R-Math.sqrt(dIn[i])+.5));a*=o;
+  for(let i=0;i<W*H;i++){
+    let a=0;
+    if(dOut&&!ins[i])a=Math.max(a,cl01(R-Math.sqrt(dOut[i])+.5));
+    if(dIn&&ins[i])a=Math.max(a,cl01(R-Math.sqrt(dIn[i])+.5));
+    a*=o;
     const j=i*4,sa=d[j+3]/255;
-    if(v.pos=='out'){/* stroke di bawah gambar */const oa=sa+a*(1-sa);if(oa<=0){res[j+3]=0;continue}res[j]=(d[j]*sa+c[0]*a*(1-sa))/oa;res[j+1]=(d[j+1]*sa+c[1]*a*(1-sa))/oa;res[j+2]=(d[j+2]*sa+c[2]*a*(1-sa))/oa;res[j+3]=oa*255}
-    else{/* stroke di atas gambar */const oa=a+sa*(1-a);if(oa<=0){res[j+3]=0;continue}res[j]=(c[0]*a+d[j]*sa*(1-a))/oa;res[j+1]=(c[1]*a+d[j+1]*sa*(1-a))/oa;res[j+2]=(c[2]*a+d[j+2]*sa*(1-a))/oa;res[j+3]=oa*255}}
-  IE.x.putImageData(new ImageData(res,W,H),0,0)}
-
+    if(v.pos=='out'){
+      const oa=sa+a*(1-sa);if(oa<=0)continue;
+      res[j]=(d[j]*sa+c[0]*a*(1-sa))/oa;res[j+1]=(d[j+1]*sa+c[1]*a*(1-sa))/oa;res[j+2]=(d[j+2]*sa+c[2]*a*(1-sa))/oa;res[j+3]=oa*255;
+    }else{
+      const oa=a+sa*(1-a);if(oa<=0)continue;
+      res[j]=(c[0]*a+d[j]*sa*(1-a))/oa;res[j+1]=(c[1]*a+d[j+1]*sa*(1-a))/oa;res[j+2]=(c[2]*a+d[j+2]*sa*(1-a))/oa;res[j+3]=oa*255;
+    }
+  }
+  /* Jangan biarkan outline keluar kanvas. Bila perlu, skala hasil secara proporsional
+     supaya seluruh stroke muat. Koordinat IE.ox/oy disesuaikan agar posisi layer stabil. */
+  let outW=W+2*pad,outH=H+2*pad,scale=Math.min(1,W0/outW,H0/outH);
+  const finalW=Math.max(1,Math.round(outW*scale)),finalH=Math.max(1,Math.round(outH*scale));
+  const result=ieCanvas(finalW,finalH),rx=result.getContext('2d');
+  const temp=ieCanvas(W,H);temp.getContext('2d').putImageData(new ImageData(res,W,H),0,0);
+  rx.imageSmoothingEnabled=true;rx.imageSmoothingQuality='high';
+  const dx=Math.round((pad-left)*scale),dy=Math.round((pad-top)*scale);
+  rx.drawImage(temp,dx,dy,Math.max(1,Math.round(W*scale)),Math.max(1,Math.round(H*scale)));
+  const whole=ieCanvas(finalW,finalH),wx=whole.getContext('2d');
+  wx.drawImage(result,0,0);
+  if(scale<1){
+    /* Pertahankan gambar asli sebagai isi tengah dengan skala seragam. */
+    const inner=ieCanvas(W0,H0);inner.getContext('2d').putImageData(IE.x.getImageData(0,0,W0,H0),0,0);
+    wx.globalCompositeOperation='destination-over';
+    wx.drawImage(inner,0,0,finalW,finalH);
+  }else{
+    const original=ieCanvas(W0,H0);original.getContext('2d').putImageData(IE.x.getImageData(0,0,W0,H0),0,0);
+    wx.drawImage(original,Math.round((pad-left)),Math.round((pad-top)));
+  }
+  const before=ieSnap();IE.undo.push(before);if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;
+  IE.c.width=IE.w=finalW;IE.c.height=IE.h=finalH;IE.x=IE.c.getContext('2d',{willReadFrequently:true});IE.x.drawImage(whole,0,0);
+  /* Posisi layer: perubahan dimensi dipusatkan secara proporsional. */
+  IE.ox+=left-pad;IE.oy+=top-pad;
+  if(scale<1){IE.ox+=(W0-finalW)/2;IE.oy+=(H0-finalH)/2}
+  IE.M=null;IE.mA=null;IE.ov=null;ieUndoUI();ieDraw();
+}
 /* ---------- potong (crop) ---------- */
 function cropUI(){const z=$('#iecz'),b=$('#iecapply');if(!z)return;const c=IE.crop;
   z.textContent=c?Math.round(c[2]-c[0])+' × '+Math.round(c[3]-c[1])+' px':'Seret kotak di gambar';if(b)b.disabled=!c||(c[0]<=0&&c[1]<=0&&c[2]>=IE.w&&c[3]>=IE.h)}
