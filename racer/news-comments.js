@@ -80,44 +80,44 @@
     });
   }
 
-  function attach() {
-    const modal = $('newsModal');
-    if (!modal || modal.dataset.commentsReady === '1') return;
-    modal.dataset.commentsReady = '1';
-    modal.querySelectorAll('.it[id^="nwm_adm"]').forEach((card) => {
-      const id = Number(card.id.slice('nwm_adm'.length));
-      if (!Number.isSafeInteger(id) || id <= 0) return;
-      const panel = document.createElement('section');
-      panel.className = 'nwcWrap';
-      panel.innerHTML = `<div class="nwcHeading">💬 KOMENTAR <span data-nwc-count></span></div>
-        <div class="nwcList"></div>
-        ${acct ? `<form class="nwcForm"><textarea maxlength="${MAX_BODY}" required placeholder="Tulis komentar…"></textarea><button type="submit">KIRIM</button></form><div class="nwcHint">Berkomentar sebagai ${esc(acct.name)} · maksimal ${MAX_BODY} karakter</div>` : '<div class="nwcLogin">Masuk ke akun Diva Skate untuk ikut berkomentar.</div>'}`;
-      card.appendChild(panel);
-      loadComments(id, panel);
-      const form = panel.querySelector('form');
-      if (form) form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (!acct) return;
-        const input = form.querySelector('textarea');
-        const button = form.querySelector('button');
-        const body = String(input.value || '').trim().slice(0, MAX_BODY);
-        if (!body) return;
-        button.disabled = true; button.textContent = '…';
-        const result = await rpc('skate_news_comment_add', {
-          p_name: acct.name, p_token: acct.token, p_news_id: id, p_body: body
+  window.DivaNewsComments = {
+    attach: function (modal) {
+      if (!modal || modal.dataset.commentsReady === '1') return;
+      modal.dataset.commentsReady = '1';
+      modal.querySelectorAll('.it[id^="nwm_adm"]').forEach((card) => {
+        const id = Number(card.id.slice('nwm_adm'.length));
+        if (!Number.isSafeInteger(id) || id <= 0) return;
+        const panel = document.createElement('section');
+        panel.className = 'nwcWrap';
+        panel.innerHTML = `<div class="nwcHeading">💬 KOMENTAR</div>
+          <div class="nwcList"></div>
+          ${acct ? `<form class="nwcForm"><textarea maxlength="${MAX_BODY}" required placeholder="Tulis komentar…"></textarea><button type="submit">KIRIM</button></form><div class="nwcHint">Berkomentar sebagai ${esc(acct.name)} · maksimal ${MAX_BODY} karakter</div>` : '<div class="nwcLogin">Masuk ke akun Diva Skate untuk ikut berkomentar.</div>'}`;
+        card.appendChild(panel);
+        loadComments(id, panel);
+        const form = panel.querySelector('form');
+        if (form) form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          if (!acct) return;
+          const input = form.querySelector('textarea');
+          const button = form.querySelector('button');
+          const body = String(input.value || '').trim().slice(0, MAX_BODY);
+          if (!body) return;
+          button.disabled = true; button.textContent = '…';
+          const result = await rpc('skate_news_comment_add', {
+            p_name: acct.name, p_token: acct.token, p_news_id: id, p_body: body
+          });
+          button.disabled = false; button.textContent = 'KIRIM';
+          if (result && result.ok) { input.value = ''; await loadComments(id, panel); }
+          else {
+            alert(result && result.err === 'session' ? 'Sesi login berakhir. Masuk kembali.' :
+              result && result.err === 'rate' ? 'Terlalu banyak komentar. Coba lagi sebentar.' : 'Komentar gagal dikirim.');
+          }
         });
-        button.disabled = false; button.textContent = 'KIRIM';
-        if (result && result.ok) { input.value = ''; await loadComments(id, panel); }
-        else {
-          alert(result && result.err === 'session' ? 'Sesi login berakhir. Masuk kembali.' :
-            result && result.err === 'rate' ? 'Terlalu banyak komentar. Coba lagi sebentar.' : 'Komentar gagal dikirim.');
-        }
       });
-    });
+    }
+  };
+  if (document.readyState !== 'loading') {
+    const modal = $('newsModal');
+    if (modal) window.DivaNewsComments.attach(modal);
   }
-
-  const observer = new MutationObserver(attach);
-  observer.observe(document.body, {childList:true, subtree:true});
-  attach();
-  window.addEventListener('diva:news-comments-refresh', attach);
 })();
