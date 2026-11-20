@@ -1594,6 +1594,7 @@ const rgb2hex=(r,g,b)=>'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('
 iev.addEventListener('pointerdown',e=>{if(!IE.c)return;iev.setPointerCapture(e.pointerId);IE.pts.set(e.pointerId,[e.clientX,e.clientY]);
   if(IE.pts.size==2){if(IE.drag&&IE.drag.k=='paint'){const s0=IE.undo.pop();if(s0)ieRestore(s0);ieUndoUI()}IE.drag={k:'pinch',vs:IE.vs,vx:IE.vx,vy:IE.vy,p:[...IE.pts.values()]};IE.path=null;return}
   const p=ieXY(e),t=IE.tool;
+  if(t=='poly'){if(IE.path&&IE.path.length>=3){const first=IE.path[0];if(Math.hypot(first[0]-p[0],first[1]-p[1])<10/IE.vs){finishPolySelection();return}}if(!IE.path){IE.path=[p];IE.drag={k:'poly',drawingPoly:true}}else{IE.path.push(p);IE.drag={k:'poly',drawingPoly:true}}ieDraw();return}
   if(t=='hand'||e.button==1){IE.drag={k:'pan',sx:e.clientX,sy:e.clientY,vx:IE.vx,vy:IE.vy};return}
   if(t=='brush'||t=='eraser'){iePush();IE.drag={k:'paint',last:p};strokeSeg(p,p);ieDraw();return}
   if(t=='crop'){const c=IE.crop,hs=14/IE.vs;
@@ -1616,9 +1617,10 @@ iev.addEventListener('pointermove',e=>{if(!IE.c)return;if(IE.pts.has(e.pointerId
   if(D.k=='cropH'){const c=IE.crop;c[D.h[0]]=Math.max(0,Math.min(IE.w,p[0]));c[D.h[1]]=Math.max(0,Math.min(IE.h,p[1]));IE.crop=[Math.min(c[0],c[2]),Math.min(c[1],c[3]),Math.max(c[0],c[2]),Math.max(c[1],c[3])];if(IE.crop[0]!==c[0]||IE.crop[1]!==c[1])D.h=[IE.crop[0]===c[D.h[0]]?0:2,IE.crop[1]===c[D.h[1]]?1:3];cropUI();ieDraw();return}
   if(D.k=='cropM'){const c=D.c,w=c[2]-c[0],h=c[3]-c[1],dx=Math.max(-c[0],Math.min(IE.w-c[2],p[0]-D.p[0])),dy=Math.max(-c[1],Math.min(IE.h-c[3],p[1]-D.p[1]));IE.crop=[c[0]+dx,c[1]+dy,c[0]+dx+w,c[1]+dy+h];ieDraw();return}
   if(D.k=='rect'){const a=D.a;IE.path=[a,[p[0],a[1]],p,[a[0],p[1]]];ieDraw();return}
-  if(D.k=='lasso'){IE.path.push(p);ieDraw()}});
+  if(D.k=='lasso'){IE.path.push(p);ieDraw()} });
 function ieUp(e){IE.pts.delete(e.pointerId);const D=IE.drag;if(!D)return;if(D.k=='pinch'){if(IE.pts.size<1)IE.drag=null;return}IE.drag=null;
   if(D.k&&D.k.startsWith('crop')){const c=IE.crop;if(c&&(c[2]-c[0]<3||c[3]-c[1]<3))IE.crop=null;cropUI();ieDraw();return}
+  if(D.k=='poly'){IE.drag={k:'poly',drawingPoly:true};return}
   if((D.k=='rect'||D.k=='lasso')&&IE.path){const pts=IE.path;IE.path=null;
     const bb=pts.reduce((b,q)=>[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[0]),Math.max(b[3],q[1])],[1e9,1e9,-1e9,-1e9]);
     if(bb[2]-bb[0]<2&&bb[3]-bb[1]<2){if(IE.smode=='new'){IE.M=null;selChanged()}else ieDraw();return}
