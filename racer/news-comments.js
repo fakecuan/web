@@ -42,6 +42,7 @@
     #newsModal .nwcEmpty{font:11px system-ui;color:#b8cbea}
   `;
   document.head.appendChild(style);
+  window.__DIVA_NEWS_COMMENTS_STYLE_READY__ = true;
 
   async function loadComments(target, panel) {
     const list = panel.querySelector('.nwcList');
