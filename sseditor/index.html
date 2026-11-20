@@ -2127,8 +2127,25 @@ function cafEdgeExtend(data,w,h,hole,prog){
   }
   prog&&prog(1);return out;
 }
+/* ---------- Pengaturan Hybrid Pattern Fill ---------- */
+const CAF_DEFAULTS={mode:'hybrid',continuity:75,variation:45,overlap:'medium'};
+function cafSettings(){try{return{...CAF_DEFAULTS,...JSON.parse(localStorage.getItem('cafSettings')||'{}')}}catch(e){return{...CAF_DEFAULTS}}}
+function openCafSettings(){
+  if(!IE.c)return;
+  const v=cafSettings();
+  let m=document.getElementById('cafSettings');
+  if(!m){m=document.createElement('div');m.id='cafSettings';m.style.cssText='position:fixed;inset:0;z-index:10050;background:#0009;display:flex;align-items:center;justify-content:center;padding:16px;font:14px system-ui';
+    m.innerHTML='<section style="background:var(--bg,#fff);color:var(--tx,#222);width:min(430px,100%);max-height:90vh;overflow:auto;border-radius:16px;padding:18px;box-shadow:0 16px 50px #0005"><header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><b style="font-size:18px">Pattern Fill</b><button type="button" data-caf-close style="border:0;background:none;font-size:24px">×</button></header><label style="display:block;font-weight:600;margin:12px 0 6px">Mode pengisian</label><select id="cafMode" style="width:100%;padding:11px;border:1px solid #bbb;border-radius:9px"><option value="hybrid">Auto Hybrid</option><option value="continue">Continue – teruskan motif</option><option value="repeat">Pattern – sintesis / pengulangan</option></select><label style="display:flex;justify-content:space-between;margin:18px 0 6px;font-weight:600">Kekuatan kesinambungan <b id="cafContVal">75%</b></label><input id="cafContinuity" type="range" min="0" max="100" style="width:100%"><label style="display:flex;justify-content:space-between;margin:18px 0 6px;font-weight:600">Variasi motif <b id="cafVarVal">45%</b></label><input id="cafVariation" type="range" min="0" max="100" style="width:100%"><label style="display:block;font-weight:600;margin:18px 0 6px">Kerapatan sambungan</label><select id="cafOverlap" style="width:100%;padding:11px;border:1px solid #bbb;border-radius:9px"><option value="low">Rendah</option><option value="medium">Sedang</option><option value="high">Tinggi</option></select><p style="font-size:12px;opacity:.7;line-height:1.5">Hasil hanya diterapkan pada area seleksi. Gambar asli di luar seleksi tetap dipertahankan.</p><div style="display:flex;gap:8px;margin-top:18px"><button type="button" data-caf-close style="flex:1;padding:12px;border:1px solid #bbb;border-radius:9px;background:transparent">Batal</button><button type="button" id="cafRun" style="flex:1;padding:12px;border:0;border-radius:9px;background:var(--ac,#e8661c);color:white;font-weight:700">Isi motif</button></div></section>';
+    document.body.appendChild(m);
+    m.querySelectorAll('[data-caf-close]').forEach(b=>b.onclick=()=>m.remove());
+    m.querySelector('#cafRun').onclick=()=>{const cfg={mode:m.querySelector('#cafMode').value,continuity:+m.querySelector('#cafContinuity').value,variation:+m.querySelector('#cafVariation').value,overlap:m.querySelector('#cafOverlap').value};try{localStorage.setItem('cafSettings',JSON.stringify(cfg))}catch(e){}m.remove();contentAwareFill(false,cfg)};
+    ['cafContinuity','cafVariation'].forEach(id=>m.querySelector('#'+id).oninput=e=>m.querySelector('#'+(id==='cafContinuity'?'cafContVal':'cafVarVal')).textContent=e.target.value+'%');
+  }
+  m.querySelector('#cafMode').value=v.mode;m.querySelector('#cafContinuity').value=v.continuity;m.querySelector('#cafVariation').value=v.variation;m.querySelector('#cafOverlap').value=v.overlap;
+  m.querySelector('#cafContVal').textContent=v.continuity+'%';m.querySelector('#cafVarVal').textContent=v.variation+'%';
+}
 /* jalankan untuk satu area (data RGBA Uint8, lubang 1/0) */
-async function cafSolve(data,w,h,hole,prog){const R=3;
+async function cafSolve(data,w,h,hole,prog,settings){const R=3+Math.round((settings?.variation||0)/50);
   const pyr=[{img:Float32Array.from(data),hole:hole,w,h}];while(Math.min(pyr[pyr.length-1].w,pyr[pyr.length-1].h)>40&&pyr.length<7){const L=pyr[pyr.length-1];pyr.push(cafDown(L.img,L.w,L.h,L.hole))}
   let nnf=null;const top=pyr.length-1;cafInit(pyr[top].img,pyr[top].hole,pyr[top].w,pyr[top].h);
   for(let l=top;l>=0;l--){const L=pyr[l];
@@ -2137,10 +2154,10 @@ async function cafSolve(data,w,h,hole,prog){const R=3;
       if(nnf){const n2=new Int32Array(L.w*L.h).fill(-1);for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){const ux=Math.min(U.w-1,x>>1),uy=Math.min(U.h-1,y>>1),s=nnf[uy*U.w+ux];if(s<0)continue;
           const sx=Math.min(L.w-1,(s%U.w)*2+(x&1)),sy=Math.min(L.h-1,((s/U.w)|0)*2+(y&1));n2[y*L.w+x]=sy*L.w+sx}nnf=n2}}
     const rad=Math.max(3,Math.min(5,Math.round(Math.min(L.w,L.h)/80)));
-    const r=cafLevel(L.img,L.hole,L.w,L.h,nnf,6,rad);if(r)nnf=r;prog&&prog(1-l/(top+1));await new Promise(r=>setTimeout(r,0))}
+    const r=cafLevel(L.img,L.hole,L.w,L.h,nnf,6+Math.round((settings?.variation||0)/25),Math.min(5,rad));if(r)nnf=r;prog&&prog(1-l/(top+1));await new Promise(r=>setTimeout(r,0))}
   const out=pyr[0].img,res=new Uint8ClampedArray(data.length);for(let i=0;i<res.length;i++)res[i]=out[i];return{res,nnf}}
 function transMask(){const W=IE.w,H=IE.h,d=IE.x.getImageData(0,0,W,H).data,m=new Uint8ClampedArray(W*H*4);let n=0;for(let i=3;i<d.length;i+=4)if(d[i]<200){m[i]=255;n++}return n?m:null}
-async function contentAwareFill(auto){let m=typeof maskData=='function'&&!auto?maskData():null,tr=false;
+async function contentAwareFill(auto,settings){settings={...CAF_DEFAULTS,...(settings||cafSettings())};let m=typeof maskData=='function'&&!auto?maskData():null,tr=false;
   if(!m){m=transMask();tr=true;if(!m){toast('Tidak ada area transparan. Buat seleksi di bagian yang ingin diganti.');return}}
   const W=IE.w,H=IE.h,original=IE.x.getImageData(0,0,W,H);let op=0;for(let i=3;i<original.data.length;i+=4)if(original.data[i]>=200)op++;
   if(op<64){toast('Gambar hampir kosong — tidak ada motif untuk ditiru');return}
@@ -2157,9 +2174,14 @@ async function contentAwareFill(auto){let m=typeof maskData=='function'&&!auto?m
       const src=document.createElement('canvas');src.width=rw;src.height=rh;src.getContext('2d').putImageData(full,0,0);
       const small=document.createElement('canvas');small.width=sw;small.height=sh;const sx=small.getContext('2d',{willReadFrequently:true});sx.imageSmoothingEnabled=true;sx.imageSmoothingQuality='high';sx.drawImage(src,0,0,sw,sh);const sd=sx.getImageData(0,0,sw,sh);
       const shole=new Uint8Array(sw*sh);for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const fx=Math.min(rw-1,Math.floor((x+.5)/sc)),fy=Math.min(rh-1,Math.floor((y+.5)/sc));let v=0;for(let j=0;j<Math.ceil(1/sc)&&!v;j++)for(let i=0;i<Math.ceil(1/sc)&&!v;i++)if(hole[Math.min(rh-1,fy+j)*rw+Math.min(rw-1,fx+i)])v=1;shole[y*sw+x]=v}
-      const solved=await cafSolve(sd.data,sw,sh,shole,p=>busy('Isi sesuai konten… '+Math.round(p*100)+'%',p*100));
+      const solved=await cafSolve(sd.data,sw,sh,shole,p=>busy('Isi sesuai konten… '+Math.round(p*100)+'%',p*100),settings);
       const fill=document.createElement('canvas');fill.width=sw;fill.height=sh;fill.getContext('2d').putImageData(new ImageData(solved.res,sw,sh),0,0);
       const big=document.createElement('canvas');big.width=rw;big.height=rh;const bx=big.getContext('2d');bx.imageSmoothingEnabled=true;bx.imageSmoothingQuality='high';bx.drawImage(fill,0,0,rw,rh);result=new Uint8ClampedArray(bx.getImageData(0,0,rw,rh).data);
+      if(settings.mode==='continue'||settings.mode==='hybrid'){
+        const directional=await cafEdgeExtend(full.data,rw,rh,hole,p=>busy('Meneruskan batas motif… '+Math.round(p*100)+'%',p*100));
+        const edgeWeight=settings.mode==='continue'?1:settings.continuity/100;
+        for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const k=y*rw+x;if(!hole[k])continue;const q=k*4;for(let c=0;c<4;c++)result[q+c]=Math.round(result[q+c]*(1-edgeWeight)+directional[q+c]*edgeWeight)}
+      }
     }
     const out=full.data;
     for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const gx=rx+x,gy=ry+y;if(m[(gy*W+gx)*4+3]<=0)continue;const q=(y*rw+x)*4,blend=.9;for(let c=0;c<4;c++)out[q+c]=Math.round(full.data[q+c]+(result[q+c]-full.data[q+c])*blend)}
@@ -2173,7 +2195,7 @@ function canvasSize(){const W0=IE.w,H0=IE.h;
     const tmp=document.createElement('canvas');tmp.width=W0;tmp.height=H0;tmp.getContext('2d').drawImage(IE.c,0,0);
     IE.c.width=IE.w=nw;IE.c.height=IE.h=nh;IE.M=null;IE.mA=null;IE.ov=null;if(v.fl){IE.x.fillStyle=v.col;IE.x.fillRect(0,0,nw,nh)}IE.x.drawImage(tmp,dx,dy);IE.ox-=dx;IE.oy-=dy;ieFit();
     $('#iest').textContent='Ukuran kanvas · '+nw+' × '+nh+' px';if(v.caf&&!v.fl&&(nw>W0||nh>H0))setTimeout(()=>contentAwareFill(true),60)},true)}
-{const _c=ieCmd;ieCmd=function(c){if(c=='caf'){if(!IE.c)return;contentAwareFill();return}if(c=='canvas'){if(!IE.c)return;canvasSize();return}return _c.apply(this,arguments)}}
+{const _c=ieCmd;ieCmd=function(c){if(c=='caf'){if(!IE.c)return;if(!IE.M){toast('Buat seleksi dulu (Kotak, Laso, atau Rentang warna).');return}openCafSettings();return}if(c=='canvas'){if(!IE.c)return;canvasSize();return}return _c.apply(this,arguments)}}
 /* ---------- centang Snap (posisi tengah & sudut 45°) ---------- */
 let SNAPON=(()=>{try{return localStorage.getItem('snapOn')!=='0'}catch(e){return true}})();
 {const _sc=snapCenter;snapCenter=function(L){if(!SNAPON){guide=null;return}return _sc.apply(this,arguments)}}
