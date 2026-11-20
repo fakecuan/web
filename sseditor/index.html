@@ -148,7 +148,7 @@ textarea#ptx[hidden]{display:none}
 #ietools{display:flex;gap:4px;overflow-x:auto;padding:6px 8px max(8px,env(safe-area-inset-bottom));background:#151518;scrollbar-width:thin}
 #ietools button{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:58px;height:52px;padding:0 6px;border:0;border-radius:10px;background:transparent;color:#ddd;font:500 10.5px system-ui,sans-serif;cursor:pointer}
 #ietools button.on{background:var(--ac);color:#fff}#ietools svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-#ietools i{flex:none;width:1px;background:#ffffff22;margin:6px 4px}#ietools .cmd{background:#ffffff10;font-size:11.5px;white-space:nowrap;padding:0 10px}
+#ietools i{flex:none;width:1px;background:#ffffff22;margin:6px 4px}#ietools .cmd{background:#ffffff10;font-size:11.5px;white-space:nowrap;padding:0 10px}#ietools .ieoutline{flex-direction:column;min-width:64px;height:52px;padding:2px 8px;gap:2px;background:#ffffff18}#ietools .ieoutline svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}#ietools .ieoutline span{font:500 10.5px system-ui,sans-serif}
 .ier{display:flex;align-items:center;gap:6px}.ier span{color:#bbb;white-space:nowrap}.ier input[type=range]{width:110px;accent-color:var(--ac)}.ier b{min-width:28px;font-weight:600}
 .iek{display:flex;align-items:center;gap:5px;color:#ddd}.ieh2{color:#aaa}.iesm{height:28px;padding:0 10px;border:0;border-radius:8px;background:#ffffff14;color:#eee;cursor:pointer}
 .iec{position:relative;width:30px;height:30px;border-radius:8px;overflow:hidden;border:2px solid #fff3;cursor:pointer}.iec input{position:absolute;inset:0;opacity:0;cursor:pointer}.iec span{position:absolute;inset:0}
@@ -1451,8 +1451,10 @@ const TOOLS=[['hand','Geser','<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1
   ['bucket','Ember isi','<path d="M5 11l7-7 7 7-7 7z"/><path d="M19 13s2 2.5 2 4a2 2 0 0 1-4 0c0-1.5 2-4 2-4z"/>'],
   ['eyedrop','Pipet','<path d="M14 4l6 6-2 2-6-6zM13 7l-8 8v4h4l8-8"/>']];
 const CMDS=[['selall','Pilih semua'],['seldesel','Batal seleksi'],['selinv','Balik seleksi'],['selalpha','Pilih isi gambar'],['delsel','Hapus isi seleksi'],
-  ['fill','Isi warna'],['hsl','Hue / Saturation'],['lev','Levels'],['cov','Color overlay'],['gov','Gradient overlay'],['stk','Stroke'],['caf','Isi sesuai konten'],['canvas','Ukuran kanvas']];
-$('#ietools').innerHTML=TOOLS.map(([k,n,s])=>`<button data-t="${k}" title="${n}"><svg viewBox="0 0 24 24">${s}</svg><span>${n}</span></button>`).join('')+'<i></i>'+CMDS.map(([k,n])=>`<button data-c="${k}" class="cmd">${n}</button>`).join('');
+  ['fill','Isi warna'],['hsl','Hue / Saturation'],['lev','Levels'],['cov','Color overlay'],['gov','Gradient overlay'],['caf','Isi sesuai konten'],['canvas','Ukuran kanvas']];
+$('#ietools').innerHTML=TOOLS.map(([k,n,s])=>`<button data-t="${k}" title="${n}"><svg viewBox="0 0 24 24">${s}</svg><span>${n}</span></button>`).join()+
+  '<button data-c="stk" class="cmd ieoutline" title="Tambahkan outline / stroke pada objek"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="M8 8h8v8H8z"/></svg><span>Outline</span></button><i></i>'+
+  CMDS.map(([k,n])=>`<button data-c="${k}" class="cmd">${n}</button>`).join('');
 const cl01=v=>v<0?0:v>1?1:v;
 function ieCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
 /* buka */
