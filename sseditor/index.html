@@ -141,8 +141,8 @@ textarea#ptx[hidden]{display:none}
 #libg .it img{object-fit:contain}#libg .lsec{grid-column:1/-1;font:600 12px system-ui,sans-serif;color:var(--mu);margin-top:4px}#libg .pn{position:absolute;left:0;right:0;bottom:0;padding:2px 4px;background:#000a;color:#fff;font:500 9.5px/1.2 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fsmode #libp{z-index:45;top:calc(max(8px,env(safe-area-inset-top)) + 52px);right:12px;max-height:calc(100vh - 140px)}
 #ied{position:fixed;inset:0;z-index:50;background:#2a2a2f;display:flex;flex-direction:column;color:#eee;font:13px system-ui,sans-serif;touch-action:none}#ied[hidden]{display:none}
-.ieh{display:flex;align-items:center;gap:6px;padding:max(8px,env(safe-area-inset-top)) 10px 8px;background:#1d1d21}.ieh b{flex:1;text-align:center;font-size:15px}
-.ieh .x{background:#ffffff14;color:#eee;border:0}.ieh .x:disabled{opacity:.35}.ietx{height:36px;padding:0 14px;border-radius:10px;border:0;background:#ffffff14;color:#eee;font:600 14px system-ui,sans-serif;cursor:pointer}.ietx.pri,#ied .pri{background:var(--ac);color:#fff}
+.ieh{display:flex;align-items:center;gap:5px;padding:max(6px,env(safe-area-inset-top)) 8px 6px;background:#1d1d21;min-height:48px}.ieh b{flex:0 0 auto;text-align:center;font-size:11px;white-space:nowrap;margin:0 2px}
+.ieh .x{background:#ffffff14;color:#eee;border:0;flex:0 0 34px;width:34px;height:34px;padding:7px}.ieh .x:disabled{opacity:.35}.ietx{height:32px;min-width:0;padding:0 8px;border-radius:8px;border:0;background:#ffffff14;color:#eee;font:500 11px/1.15 system-ui,sans-serif;white-space:nowrap;cursor:pointer}.ietx.pri,#ied .pri{background:var(--ac);color:#fff}#iesave{font-weight:650}.ieh #ieexternal,#ieimport{font-size:10px;padding:0 7px}
 .iem{flex:1;min-height:0;position:relative}#iev{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 #ieopt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 10px;background:#1d1d21;border-top:1px solid #ffffff12;min-height:40px}
 #ietools{display:flex;gap:4px;overflow-x:auto;padding:6px 8px max(8px,env(safe-area-inset-bottom));background:#151518;scrollbar-width:thin}
@@ -332,7 +332,7 @@ textarea#ptx[hidden]{display:none}
 <div class="modal" id="mdl" hidden><div class="mbox"><b>File siap disimpan</b><small id="dlinfo"></small>
   <button class="opt" id="dlgo" style="background:var(--ac);color:#fff;border-color:var(--ac)"><b style="color:#fff">Unduh sekarang</b></button>
   <div class="mact"><button data-x>Batal</button></div></div></div>
-<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieexternal" class="ietx" type="button">Buka dengan…</button><button id="ieimport" class="ietx" type="button">Impor hasil edit</button><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
+<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieexternal" class="ietx" type="button">Buka dengan…</button><button id="ieimport" class="ietx" type="button">Impor hasil edit</button><button id="iesave" class="ietx pri" type="button">Simpan</button><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
 <div class="iem"><canvas id="iev"></canvas><div id="iesheet" hidden><b id="iest"></b><div id="iesf"></div><div class="iesb"><button id="iescancel">Batal</button><button id="iesapply" class="pri">Terapkan</button></div></div></div>
 <div id="ieopt"></div><div id="ietools"></div></div>
 <div class="modal" id="mimg" hidden><div class="mbox"><b>Tambah gambar</b><small>Pilih sumber gambar untuk bagian ini.</small>
@@ -1463,6 +1463,7 @@ function ieClose(apply){if(apply&&IE.changed){const L=IE.L,k=IE.c.width/IE.w0,sr
   $('#ied').hidden=true;$('#iesheet').hidden=true;document.body.classList.remove('iemode');IE.L=null;IE.c=null;IE.M=null}
 let ieX0=0;$('#iex').onclick=()=>{if(IE.changed&&Date.now()-ieX0>3000){ieX0=Date.now();toast('Ketuk Batal sekali lagi untuk membuang perubahan');return}ieClose(false)};
 $('#ieok').onclick=()=>{if(!$('#iesheet').hidden)$('#iesapply').click();ieClose(true)};
+$('#iesave').onclick=()=>{if(!IE.L||!IE.c)return;if(!$('#iesheet').hidden)$('#iesapply').click();if(IE.changed){ieClose(true)}else toast('Tidak ada perubahan untuk disimpan')};
 /* Buka di editor lain dan impor kembali ke layer/gambar yang sama. */
 async function ieOpenExternal(){
   if(!IE.c||!IE.L)return;
