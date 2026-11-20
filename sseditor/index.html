@@ -1242,7 +1242,16 @@ function loadAvatar(st){if(avg){sc.remove(avg);avg.traverse(o=>{if(o.geometry)o.
     sc.add(avg);avg.visible=lsg('skn_av')!=='0';$('#avb').hidden=false;$('#avb').classList.toggle('on',avg.visible)}catch(e){console.warn('avatar',e)}},60)}
 $('#avb').onclick=()=>{if(!avg)return;avg.visible=!avg.visible;lss('skn_av',avg.visible?'1':'0');$('#avb').classList.toggle('on',avg.visible)};
 async function openZprj(f){busy('Membuka file CLO…');await tick();
-  try{const buf=new Uint8Array(await f.arrayBuffer());const st=CLO.readZprj(buf);if(!st.patterns.length)throw new Error('Tidak ada pola');
+  try{
+    if(!f||typeof f.arrayBuffer!=='function')throw new Error('Referensi file tidak valid. Pilih ulang file .zprj dari perangkat.');
+    let ab;
+    try{ab=await f.arrayBuffer()}catch(readError){
+      if(readError&&['NotReadableError','NotFoundError','SecurityError'].includes(readError.name))
+        throw new Error('Browser kehilangan akses ke file. Pilih ulang .zprj dari perangkat atau tambahkan ulang folder penyimpanan; file belum dibaca.');
+      throw readError;
+    }
+    if(!ab||!ab.byteLength)throw new Error('File .zprj kosong atau tidak dapat dibaca.');
+    const buf=new Uint8Array(ab);const st=CLO.readZprj(buf);if(!st.patterns.length)throw new Error('Tidak ada pola');
     ZP=st;buildZprjModel(st);fnLabels();$('#ozprj').hidden=false;$('#ojson').hidden=false;
     const fresh=st.design&&st.design.parts&&(!st.design.pacSig||st.design.pacSig===st.pacSig);
     if(fresh){applyProject(expandZ(st.design,st.zf));toast('File CLO dibuka beserta desainnya')}
@@ -2464,17 +2473,29 @@ async function writeAll(token,blob){const b64=b=>new Promise((res,rej)=>{const r
   let r=N.begin(token);if(r!=='ok')throw new Error(r);const CH=768*1024;for(let o=0;o<blob.size;o+=CH){r=N.chunk(token,await b64(blob.slice(o,o+CH)));if(r!=='ok'){N.end(token);throw new Error(r)}busy('Menyimpan… '+Math.round(o/blob.size*100)+'%',o/blob.size*100)}
   r=N.end(token);if(r!=='ok')throw new Error(r)}
 function devHandle(info){return{kind:'file',name:info.name,__tok:info.token,
-  getFile:async()=>{const r=await fetch('/__diva/f/'+info.token,{cache:'no-store'});if(!r.ok)throw new Error('File tidak bisa dibaca');return new File([await r.blob()],info.name)},
+  /* Native / Android file-provider references may be one-shot. Fetch bytes immediately
+     when opening, and keep them in the File object instead of deferring to a stale token. */
+  getFile:async()=>{
+    if(info.file instanceof File)return info.file;
+    if(info.blob instanceof Blob)return new File([info.blob],info.name);
+    const r=await fetch('/__diva/f/'+info.token,{cache:'no-store'});
+    if(!r.ok)throw new Error('File tidak bisa dibaca ('+r.status+')');
+    const b=await r.blob();
+    if(!b.size)throw new Error('File kosong atau akses file sudah kedaluwarsa');
+    const f=new File([b],info.name,{type:mimeOf(info.name)});
+    info.file=f;
+    return f;
+  },
   queryPermission:async()=>'granted',requestPermission:async()=>'granted',
   createWritable:async()=>{const parts=[];return{write:async d=>{parts.push(d&&d.data!==undefined?d.data:d)},close:async()=>{await writeAll(info.token,new Blob(parts))}}}}}
-function devOpenH(tree,doc,name){const s=N.treeOpen(tree,doc,name||'');if(!s)throw new Error('File tidak bisa dibuka');return devHandle(JSON.parse(s))}
+function devOpenH(tree,doc,name){const raw=N.treeOpen(tree,doc,name||'');if(!raw)throw new Error('File tidak bisa dibuka. Izin folder mungkin kedaluwarsa. Tambahkan ulang foldernya.');const info=JSON.parse(raw);return devHandle(info)}
 function devCreateH(tree,parent,name){const s=N.treeCreate(tree,parent||'',name,mimeOf(name));if(!s)throw new Error('Tidak bisa membuat file di folder ini');const j=JSON.parse(s);const h=devHandle(j);h.__id=j.id;return h}
 
 /* ===== seluruh memori HP (izin "Akses semua file") ===== */
 const hasFS=typeof N.fsList=='function';
 const fsOk=()=>{try{return hasFS&&N.fsAllowed()}catch(e){return false}};
 function fsList(path){const j=JSON.parse(N.fsList(path)||'[]');if(j&&j.error)throw new Error(j.error);return j.map(x=>({src:'fs',id:x.id,name:x.name,dir:x.dir,size:x.size,mod:x.mod,parent:x.parent}))}
-function fsOpenH(path){const s=N.fsOpen(path);if(!s)throw new Error('File tidak bisa dibuka');return devHandle(JSON.parse(s))}
+function fsOpenH(path){const raw=N.fsOpen(path);if(!raw)throw new Error('File tidak bisa dibuka. Periksa izin akses penyimpanan.');return devHandle(JSON.parse(raw))}
 function fsCreateH(dir,name){const s=N.fsCreate(dir,name);if(!s)throw new Error('Tidak bisa menyimpan di folder ini');const j=JSON.parse(s);const h=devHandle(j);h.__id=j.id;return h}
 const recW={};let recRq=0,REC=null,RECT=0;
 window.__divaRecent=(id,arr)=>{const w=recW[id];delete recW[id];if(w)w(arr||[])};
