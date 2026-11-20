@@ -2047,8 +2047,12 @@ function cafLevel(img,hole,w,h,nnf,iters,R){
     for(let k=0;k<w*h;k++)if(near[k])tg.push(k)}
   const N=nnf||new Int32Array(w*h).fill(-1),D=new Float32Array(w*h).fill(Infinity);
   const dist=(t,s,best)=>{const tx=t%w,ty=(t/w)|0,sx=s%w,sy=(s/w)|0;let d=0,n=0;
+    /* Cocokkan tambalan hanya terhadap piksel sumber yang benar-benar diketahui.
+       Piksel lubang hasil tebakan sementara tidak boleh mengarahkan motif baru. */
     for(let j=-R;j<=R;j++){const ty2=ty+j;if(ty2<0||ty2>=h)continue;for(let i=-R;i<=R;i++){const tx2=tx+i;if(tx2<0||tx2>=w)continue;
-      const a=(ty2*w+tx2)*4,b=((sy+j)*w+sx+i)*4;const e0=img[a]-img[b],e1=img[a+1]-img[b+1],e2=img[a+2]-img[b+2],e3=img[a+3]-img[b+3];d+=e0*e0+e1*e1+e2*e2+e3*e3;n++}if(d>best*n)return Infinity}
+      if(hole[ty2*w+tx2])continue;
+      const a=(ty2*w+tx2)*4,b=((sy+j)*w+sx+i)*4;const e0=img[a]-img[b],e1=img[a+1]-img[b+1],e2=img[a+2]-img[b+2],e3=img[a+3]-img[b+3];d+=e0*e0+e1*e1+e2*e2+e3*e3;n++;
+    }if(n&&d>best*n)return Infinity}
     return n?d/n:Infinity};
   const rnd=()=>vl[(Math.random()*vl.length)|0];
   for(const t of tg){let s=N[t];if(s<0||!valid[s])s=rnd();N[t]=s;D[t]=dist(t,s,Infinity)}
@@ -2078,7 +2082,9 @@ async function cafSolve(data,w,h,hole,prog){const R=3;
       for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){const k=y*L.w+x;if(!L.hole[k])continue;const ux=Math.min(U.w-1,x>>1),uy=Math.min(U.h-1,y>>1),q=(uy*U.w+ux)*4,o=k*4;L.img[o]=U.img[q];L.img[o+1]=U.img[q+1];L.img[o+2]=U.img[q+2];L.img[o+3]=U.img[q+3]}
       if(nnf){const n2=new Int32Array(L.w*L.h).fill(-1);for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){const ux=Math.min(U.w-1,x>>1),uy=Math.min(U.h-1,y>>1),s=nnf[uy*U.w+ux];if(s<0)continue;
           const sx=Math.min(L.w-1,(s%U.w)*2+(x&1)),sy=Math.min(L.h-1,((s/U.w)|0)*2+(y&1));n2[y*L.w+x]=sy*L.w+sx}nnf=n2}}
-    const r=cafLevel(L.img,L.hole,L.w,L.h,nnf,l===0?4:6,R);if(r)nnf=r;prog&&prog(1-l/(top+1));await new Promise(r=>setTimeout(r,0))}
+    /* Patch lebih lebar membantu menjaga arah gelombang/garis motif, tanpa biaya berlebihan di HP. */
+    const rad=Math.max(3,Math.min(5,Math.round(Math.min(L.w,L.h)/80)));
+    const r=cafLevel(L.img,L.hole,L.w,L.h,nnf,l===0?6:6,rad);if(r)nnf=r;prog&&prog(1-l/(top+1));await new Promise(r=>setTimeout(r,0))}
   const out=pyr[0].img,res=new Uint8ClampedArray(data.length);for(let i=0;i<res.length;i++)res[i]=out[i];return{res,nnf}}
 /* tanpa seleksi: isi semua area transparan (mis. ruang kosong setelah kanvas diperbesar) */
 function transMask(){const W=IE.w,H=IE.h,d=IE.x.getImageData(0,0,W,H).data,m=new Uint8ClampedArray(W*H*4);let n=0;for(let i=3;i<d.length;i+=4)if(d[i]<200){m[i]=255;n++}return n?m:null}
