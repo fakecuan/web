@@ -82,11 +82,13 @@
 
   window.DivaNewsComments = {
     attach: function (modal) {
-      if (!modal || modal.dataset.commentsReady === '1') return;
-      modal.dataset.commentsReady = '1';
-      modal.querySelectorAll('.it[id^="nwm_"]').forEach((card) => {
-        const id = Number(card.id.slice('nwm_'.length));
-        if (!Number.isSafeInteger(id) || id <= 0 || card.dataset.commentsAttached === '1') return;
+      if (!modal) return;
+      /* Jangan mengunci modal secara global: baris rekor tidak punya ID skate_news,
+         sedangkan pengumuman admin menggunakan ID asli tabel skate_news. */
+      modal.querySelectorAll('.it[id^="nwm_adm"]').forEach((card) => {
+        if (card.dataset.commentsAttached === '1') return;
+        const id = Number(card.id.slice('nwm_adm'.length));
+        if (!Number.isSafeInteger(id) || id <= 0) return;
         card.dataset.commentsAttached = '1';
         const panel = document.createElement('section');
         panel.className = 'nwcWrap';
@@ -120,7 +122,7 @@
   /* Pemberitahuan dibuat secara dinamis setiap kali pemain membuka frame. */
   const modalObserver = new MutationObserver(() => {
     const modal = $('newsModal');
-    if (modal && modal.dataset.commentsReady !== '1') window.DivaNewsComments.attach(modal);
+    if (modal) window.DivaNewsComments.attach(modal);
   });
   if (document.body) modalObserver.observe(document.body, { childList: true, subtree: true });
   if (document.readyState !== 'loading') {
