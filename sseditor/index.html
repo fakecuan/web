@@ -844,7 +844,7 @@ function tileCanvas(L){const im=L.img,k=(L.fx?1:0)+(L.fy?2:0);let m=TCACHE.get(i
 function seamless(x,L,w,h,R){const tc=tileCanvas(L);let patCanvas=tc;
  if(L.rep>=4){patCanvas=document.createElement('canvas');patCanvas.width=tc.width*(L.rep===5?1:2);patCanvas.height=tc.height*(L.rep===4?1:2);const pc=patCanvas.getContext('2d');pc.drawImage(tc,0,0);if(L.rep===4||L.rep===6){pc.save();pc.translate(patCanvas.width,0);pc.scale(-1,1);pc.drawImage(tc,0,0);pc.restore()}if(L.rep===5||L.rep===6){pc.save();pc.translate(0,patCanvas.height);pc.scale(1,-1);pc.drawImage(tc,0,0);pc.restore()}}
  const pt=x.createPattern(patCanvas,L.rep==2?'repeat-x':L.rep==3?'repeat-y':'repeat');
- pt.setTransform(new DOMMatrix([w/tc.width,0,0,h/tc.height,-w/2,-h/2]));x.fillStyle=pt;
+ pt.setTransform(new DOMMatrix([w/patCanvas.width,0,0,h/patCanvas.height,-w/2,-h/2]));x.fillStyle=pt;
  const ax=L.rep==3?w/2:R,ay=L.rep==2?h/2:R;x.fillRect(L.rep==3?-w/2:-R,L.rep==2?-h/2:-R,2*ax,2*ay)}
 function drawLayer(x,L,W,H,ext=0){if(!ready(L))return;const[w,h]=dims(L,W);x.save();x.translate(L.x*W,L.y*H);x.rotate((L.r||0)*Math.PI/180);
  if(!L.rep)tile(x,L,0,0,w,h,W);
