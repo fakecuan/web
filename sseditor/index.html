@@ -862,7 +862,7 @@ function drawLayer(x,L,W,H,ext=0){if(!ready(L))return;const[w,h]=dims(L,W);x.sav
  else if(L.t!='txt'&&typeof DOMMatrix!='undefined'){seamless(x,L,w,h,Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2))}
  else{const Dg=Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);const NI=L.rep==3?0:ni,NJ=L.rep==2?0:nj;for(let i=-NI;i<=NI;i++)for(let j=-NJ;j<=NJ;j++)tile(x,L,i*w,j*h,w,h,W)}
  x.restore()}
-function paint(id){histTouch();const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);p.layers.forEach(L=>drawLayer(c,L,W,H));p.tx.needsUpdate=true;if(id==sel)drawPv()}
+function paint(id){histTouch();const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);p.layers.forEach(L=>drawLayer(c,L,W,H));if(p.tx){p.tx.needsUpdate=true;if(p.tx.image!==p.cv)p.tx.image=p.cv}if(p.m&&p.m.material){p.m.material.needsUpdate=true;if(p.m.material.map)p.m.material.map.needsUpdate=true}if(id==sel)drawPv()}
 function render(id){if(!P[id])return;paint(id);if(id==sel)syncTwins(id)}
 
 /* ---------- warna ---------- */
@@ -1500,10 +1500,33 @@ $('#iedit').onclick=()=>{const L=cur();if(!L||L.t=='txt'||!ready(L))return;ieOpe
 function ieOpen(L){IE.L=L;const im=L.img;let w=im.naturalWidth,h=im.naturalHeight;const s=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
   IE.c=ieCanvas(w,h);IE.x=IE.c.getContext('2d',{willReadFrequently:true});IE.x.drawImage(im,0,0,w,h);IE.w=w;IE.h=h;IE.layers=[{name:'Layer 1',canvas:ieCanvas(w,h),visible:true,opacity:1}];IE.layers[0].canvas.getContext('2d').drawImage(IE.c,0,0);IE.activeLayer=0;IE.M=null;IE.mA=null;IE.ov=null;IE.undo=[];IE.redo=[];IE.changed=false;IE.w0=w;IE.h0=h;IE.ox=0;IE.oy=0;IE.crop=null;
   $('#ied').hidden=false;document.body.classList.add('iemode');ieLayerRender();ieSetTool(IE.tool);requestAnimationFrame(()=>{ieFit();ieDraw()});ieUndoUI()}
-function ieClose(apply){if(apply&&IE.changed){if(IE.layers&&IE.layers.length)ieLayerComposite();const L=IE.L,k=IE.c.width/IE.w0,src=IE.c.toDataURL('image/png'),im=new Image();
-    const p=P[sel],W=p.cv.width,H=p.cv.height,A=fullLayerMat(L,W,H,IE.w0,IE.h0),c=ap(A,IE.ox+IE.w/2,IE.oy+IE.h/2);
-    im.onload=()=>{L.s=L.s*k;L.x=c[0]/W;L.y=c[1]/H;L.img=im;L.src=src;delete L.clo;view=null;render(sel);uiTools();toast('Gambar diperbarui')};im.src=src}
-  $('#ied').hidden=true;$('#iesheet').hidden=true;document.body.classList.remove('iemode');IE.L=null;IE.c=null;IE.M=null}
+function ieClose(apply){
+  if(apply&&IE.changed){
+    const L=IE.L,pid=sel,p=P[pid];
+    if(p&&L){
+      /* Flatten editor layers to one transparent PNG before returning to the garment. */
+      if(IE.layers&&IE.layers.length)ieLayerComposite();
+      const iw=IE.c.width,ih=IE.c.height,k=iw/IE.w0;
+      const src=IE.c.toDataURL('image/png'),im=new Image();
+      const W=p.cv.width,H=p.cv.height,A=fullLayerMat(L,W,H,IE.w0,IE.h0);
+      const center=ap(A,IE.ox+iw/2,IE.oy+ih/2);
+      im.onload=()=>{
+        L.s*=k;L.x=center[0]/W;L.y=center[1]/H;
+        L.img=im;L.src=src;delete L.clo;
+        /* Force the underlying canvas texture and 2D garment preview to redraw. */
+        view=null;paint(pid);
+        if(p.tx)p.tx.needsUpdate=true;
+        if(p.m&&p.m.material){p.m.material.needsUpdate=true;if(p.m.material.map)p.m.material.map.needsUpdate=true}
+        if(pid===sel)drawPv();
+        syncTwins(pid);uiTools();toast('Gambar diperbarui');
+      };
+      im.onerror=()=>toast('PNG hasil edit gagal dimuat ke pakaian');
+      im.src=src;
+    }
+  }
+  $('#ied').hidden=true;$('#iesheet').hidden=true;document.body.classList.remove('iemode');
+  IE.L=null;IE.c=null;IE.M=null;IE.layers=[];IE.activeLayer=0;
+}
 let ieX0=0;$('#iex').onclick=()=>{if(IE.changed&&Date.now()-ieX0>3000){ieX0=Date.now();toast('Ketuk Batal sekali lagi untuk membuang perubahan');return}ieClose(false)};
 $('#ieok').onclick=()=>{if(!$('#iesheet').hidden)$('#iesapply').click();ieClose(true)};
 $('#iesave').onclick=()=>{if(!IE.L||!IE.c)return;if(!$('#iesheet').hidden)$('#iesapply').click();if(IE.changed){ieClose(true)}else toast('Tidak ada perubahan untuk disimpan')};
