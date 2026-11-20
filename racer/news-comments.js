@@ -43,11 +43,13 @@
   `;
   document.head.appendChild(style);
 
-  async function loadComments(newsId, panel) {
+  async function loadComments(target, panel) {
     const list = panel.querySelector('.nwcList');
     if (!list) return;
     list.innerHTML = '<div class="nwcEmpty">Memuat komentar…</div>';
-    const result = await rpc('skate_news_comments_list', {p_news_id: newsId});
+    const result = target.type === 'record'
+      ? await rpc('skate_record_comments_list', {p_record_key: target.key})
+      : await rpc('skate_news_comments_list', {p_news_id: target.id});
     if (!panel.isConnected) return;
     if (!result || !result.ok || !Array.isArray(result.rows)) {
       list.innerHTML = '<div class="nwcEmpty">Komentar belum dapat dimuat.</div>';
@@ -74,7 +76,7 @@
         const res = await rpc('skate_news_comment_delete', {
           p_name: acct.name, p_token: acct.token, p_id: Number(button.dataset.nwcDel)
         });
-        if (res && res.ok) await loadComments(newsId, panel);
+        if (res && res.ok) await loadComments(target, panel);
         else { button.disabled = false; alert(res && res.err === 'forbidden' ? 'Komentar ini bukan milik akunmu.' : 'Gagal menghapus komentar.'); }
       });
     });
@@ -85,10 +87,14 @@
       if (!modal) return;
       /* Jangan mengunci modal secara global: baris rekor tidak punya ID skate_news,
          sedangkan pengumuman admin menggunakan ID asli tabel skate_news. */
-      modal.querySelectorAll('.it[id^="nwm_adm"]').forEach((card) => {
+      modal.querySelectorAll('.it[id^="nwm_"]').forEach((card) => {
         if (card.dataset.commentsAttached === '1') return;
-        const id = Number(card.id.slice('nwm_adm'.length));
-        if (!Number.isSafeInteger(id) || id <= 0) return;
+        const key = card.dataset.commentKey || '';
+        const newsId = Number(card.dataset.commentNewsId || 0);
+        const target = key
+          ? {type:'record', key}
+          : newsId > 0 ? {type:'news', id:newsId} : null;
+        if (!target) return;
         card.dataset.commentsAttached = '1';
         const panel = document.createElement('section');
         panel.className = 'nwcWrap';
@@ -96,7 +102,7 @@
           <div class="nwcList"></div>
           ${acct ? `<form class="nwcForm"><textarea maxlength="${MAX_BODY}" required placeholder="Tulis komentar…"></textarea><button type="submit">KIRIM</button></form><div class="nwcHint">Berkomentar sebagai ${esc(acct.name)} · maksimal ${MAX_BODY} karakter</div>` : '<div class="nwcLogin">Masuk ke akun Diva Skate untuk ikut berkomentar.</div>'}`;
         card.appendChild(panel);
-        loadComments(id, panel);
+        loadComments(target, panel);
         const form = panel.querySelector('form');
         if (form) form.addEventListener('submit', async (event) => {
           event.preventDefault();
@@ -106,11 +112,15 @@
           const body = String(input.value || '').trim().slice(0, MAX_BODY);
           if (!body) return;
           button.disabled = true; button.textContent = '…';
-          const result = await rpc('skate_news_comment_add', {
-            p_name: acct.name, p_token: acct.token, p_news_id: id, p_body: body
-          });
+          const result = target.type === 'record'
+            ? await rpc('skate_record_comment_add', {
+                p_name: acct.name, p_token: acct.token, p_record_key: target.key, p_body: body
+              })
+            : await rpc('skate_news_comment_add', {
+                p_name: acct.name, p_token: acct.token, p_news_id: target.id, p_body: body
+              });
           button.disabled = false; button.textContent = 'KIRIM';
-          if (result && result.ok) { input.value = ''; await loadComments(id, panel); }
+          if (result && result.ok) { input.value = ''; await loadComments(target, panel); }
           else {
             alert(result && result.err === 'session' ? 'Sesi login berakhir. Masuk kembali.' :
               result && result.err === 'rate' ? 'Terlalu banyak komentar. Coba lagi sebentar.' : 'Komentar gagal dikirim.');
