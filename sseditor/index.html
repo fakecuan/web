@@ -181,32 +181,38 @@ textarea#ptx[hidden]{display:none}
 .tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
 #ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
 #iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}#libg .ldup{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#fffe;color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px #0003}.pdfbox{width:min(560px,94vw)}#pdfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:56vh;overflow:auto;margin:10px 0;padding:2px}#pdfg button{position:relative;border:2px solid #e3e3e8;border-radius:10px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/12px 12px;padding:4px;min-height:120px;cursor:pointer;display:flex;align-items:center;justify-content:center}#pdfg button img{max-width:100%;max-height:150px;display:block}#pdfg button span{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font:600 11px system-ui;padding:1px 6px;border-radius:8px}#pdfg button.on{border-color:#e8661c;box-shadow:0 0 0 2px #e8661c55}#pdfg button.on::after{content:"✓";position:absolute;right:4px;top:4px;background:#e8661c;color:#fff;width:20px;height:20px;border-radius:50%;font:700 12px/20px system-ui;text-align:center}#libup{margin-top:6px}#pdfok:disabled{opacity:.45}.snapk{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:#555;margin:2px 0 0;cursor:pointer;user-select:none}.snapk input{width:16px;height:16px;accent-color:#e8661c}
-/* Landscape: keep the WebGL viewport full-size and place the editor in a compact right drawer. */
+/* Landscape workspace: reserve a permanent right column for the editor.
+   Unlike a floating drawer, the preview canvas never extends underneath it. */
 @media (min-width: 900px), (orientation: landscape) and (min-width: 600px) {
-  #tl { left: 10px; top: 10px; bottom: 10px; width: 148px; padding: 8px; gap: 6px; align-items: stretch; border: 1px solid var(--bd); border-radius: 14px; background: var(--pn); box-shadow: 0 3px 16px #0002; }
+  #tl { left: 10px; top: 10px; bottom: 10px; width: 132px; padding: 7px; gap: 5px; align-items: stretch; border: 1px solid var(--bd); border-radius: 14px; background: var(--pn); box-shadow: 0 3px 16px #0002; }
   #tl .chip { width: 100%; justify-content: flex-start; }
-  #tr { right: 8px; top: 8px; bottom: 8px; width: 46px; padding: 6px 3px; gap: 5px; align-items: center; border: 1px solid var(--bd); border-radius: 14px; background: var(--pn); }
-  #tr .rb, #tr #lock { width: 34px; height: 34px; }
-  #tr #camsel { width: 36px; min-width: 36px; height: 34px; padding: 0; color: transparent; font-size: 0 !important; background-position: center; }
+  #tr { right: 8px; top: 8px; bottom: 8px; width: 42px; padding: 5px 2px; gap: 5px; align-items: center; border: 1px solid var(--bd); border-radius: 14px; background: var(--pn); }
+  #tr .rb, #tr #lock { width: 32px; height: 32px; }
+  #tr #camsel { width: 34px; min-width: 34px; height: 32px; padding: 0; color: transparent; font-size: 0 !important; background-position: center; }
   #sheet {
     left: auto; right: 54px; top: 8px; bottom: 8px;
-    width: min(350px, 40vw); max-height: none; height: auto;
+    width: min(340px, 40vw); max-height: none; height: auto;
     overflow: auto; border: 1px solid var(--bd); border-radius: 16px;
     box-shadow: 0 4px 20px #0003; padding: 8px 10px 12px;
     transform: translateX(calc(100% + 24px));
   }
   #sheet.open { transform: translateX(0); }
-  #pv { max-height: 22vh; }
-  #bar { max-width: calc(100vw - 210px); flex-wrap: wrap; justify-content: center; }
+  #view { right: 0; }
+  body:has(#sheet.open) #view {
+    right: calc(min(340px, 40vw) + 54px);
+  }
+  #pv { max-height: 20vh; }
+  #bar { max-width: calc(100vw - 200px); flex-wrap: wrap; justify-content: center; }
   #tip { max-width: calc(100vw - 220px); white-space: normal; text-align: center; }
 }
 @media (orientation: landscape) and (min-width: 600px) and (max-width: 899px) {
-  #tl { width: 112px; padding: 6px; gap: 5px; }
-  #tl .chip { height: 31px; font-size: 10px !important; padding: 0 6px; }
-  #tr { width: 40px; }
-  #sheet { right: 46px; width: min(330px, 43vw); padding: 7px 9px calc(8px + env(safe-area-inset-bottom)); }
-  #bar { max-width: calc(100vw - 170px); gap: 2px; }
-  #bar button { padding: 0 6px; font-size: 10.5px; }
+  #tl { width: 102px; padding: 5px; gap: 4px; }
+  #tl .chip { height: 30px; font-size: 9.5px !important; padding: 0 5px; }
+  #tr { width: 38px; }
+  #sheet { right: 44px; width: min(310px, 42vw); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); }
+  body:has(#sheet.open) #view { right: calc(min(310px, 42vw) + 44px); }
+  #bar { max-width: calc(100vw - 155px); gap: 2px; }
+  #bar button { padding: 0 5px; font-size: 10px; }
 }
 @media (max-width: 759px) and (orientation: portrait) {
   #tl, #tr, #sheet, #bar { /* retain original portrait layout */ }
