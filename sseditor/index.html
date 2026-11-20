@@ -332,7 +332,7 @@ textarea#ptx[hidden]{display:none}
 <div class="modal" id="mdl" hidden><div class="mbox"><b>File siap disimpan</b><small id="dlinfo"></small>
   <button class="opt" id="dlgo" style="background:var(--ac);color:#fff;border-color:var(--ac)"><b style="color:#fff">Unduh sekarang</b></button>
   <div class="mact"><button data-x>Batal</button></div></div></div>
-<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
+<div id="ied" hidden><div class="ieh"><button id="iex" class="ietx">Batal</button><b>Edit gambar</b><button id="ieexternal" class="ietx" type="button">Buka dengan…</button><button id="ieimport" class="ietx" type="button">Impor hasil edit</button><button id="ieu" class="x hu" title="Undo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button><button id="ier" class="x hu" title="Redo" disabled><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button><button id="iezf" class="x hu" title="Pas layar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button id="ieok" class="ietx pri">Selesai</button></div>
 <div class="iem"><canvas id="iev"></canvas><div id="iesheet" hidden><b id="iest"></b><div id="iesf"></div><div class="iesb"><button id="iescancel">Batal</button><button id="iesapply" class="pri">Terapkan</button></div></div></div>
 <div id="ieopt"></div><div id="ietools"></div></div>
 <div class="modal" id="mimg" hidden><div class="mbox"><b>Tambah gambar</b><small>Pilih sumber gambar untuk bagian ini.</small>
@@ -1461,6 +1461,39 @@ function ieClose(apply){if(apply&&IE.changed){const L=IE.L,k=IE.c.width/IE.w0,sr
   $('#ied').hidden=true;$('#iesheet').hidden=true;document.body.classList.remove('iemode');IE.L=null;IE.c=null;IE.M=null}
 let ieX0=0;$('#iex').onclick=()=>{if(IE.changed&&Date.now()-ieX0>3000){ieX0=Date.now();toast('Ketuk Batal sekali lagi untuk membuang perubahan');return}ieClose(false)};
 $('#ieok').onclick=()=>{if(!$('#iesheet').hidden)$('#iesapply').click();ieClose(true)};
+/* Buka di editor lain dan impor kembali ke layer/gambar yang sama. */
+async function ieOpenExternal(){
+  if(!IE.c||!IE.L)return;
+  try{
+    const blob=await new Promise((res,rej)=>IE.c.toBlob(b=>b?res(b):rej(new Error('Gagal mengekspor PNG')),'image/png'));
+    const file=new File([blob],'sseditor-edit.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'Lanjutkan edit gambar'});
+      toast('Pilih aplikasi editor. Setelah simpan, kembali dan tekan Impor hasil edit.');
+    }else{
+      const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sseditor-edit.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+      toast('PNG diekspor ke Unduhan. Buka di aplikasi editor, lalu impor hasilnya.');
+    }
+  }catch(e){if(e.name!=='AbortError')toast('Ekspor gagal: '+(e.message||e))}
+}
+function ieImportExternal(){
+  const pick=document.createElement('input');pick.type='file';pick.accept='image/png,image/jpeg,image/webp';
+  pick.onchange=async()=>{const file=pick.files&&pick.files[0];if(!file)return;
+    try{
+      const url=URL.createObjectURL(file);
+      const im=await new Promise((res,rej)=>{const a=new Image();a.onload=()=>{URL.revokeObjectURL(url);res(a)};a.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('File gambar tidak dapat dibuka'))};a.src=url});
+      if(im.naturalWidth!==IE.w||im.naturalHeight!==IE.h){
+        const ok=confirm('Ukuran gambar berbeda dari kanvas ('+IE.w+' × '+IE.h+' px). Impor akan menyesuaikan gambar ke ukuran kanvas agar posisi layer tetap terjaga. Lanjutkan?');
+        if(!ok)return;
+      }
+      iePush();IE.x.clearRect(0,0,IE.w,IE.h);IE.x.drawImage(im,0,0,IE.w,IE.h);
+      IE.M=null;IE.mA=null;IE.ov=null;IE.changed=true;ieUndoUI();ieDraw();
+      toast('Hasil edit diimpor ke gambar yang sama');
+    }catch(e){toast('Impor gagal: '+(e.message||e))}
+  };pick.click();
+}
+$('#ieexternal').onclick=ieOpenExternal;
+$('#ieimport').onclick=ieImportExternal;
 /* undo */
 function ieSnap(){return{d:IE.x.getImageData(0,0,IE.w,IE.h),w:IE.w,h:IE.h,ox:IE.ox,oy:IE.oy}}
 function iePush(){IE.undo.push(ieSnap());if(IE.undo.length>12)IE.undo.shift();IE.redo=[];IE.changed=true;ieUndoUI()}
