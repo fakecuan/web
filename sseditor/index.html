@@ -2780,7 +2780,19 @@ async function optRun(){$('#mopt').hidden=true;OPT.jpg=$('#optjpg').checked;OPT.
 $('#optb').onclick=optOpen;$('#optx').onclick=()=>{$('#mopt').hidden=true};$('#optgo').onclick=()=>optRun();
 
 /* awal */
-setAll('#16161a');gBuild();
-setTimeout(()=>{clearTimeout(hT);histCommit()},100);
+try{
+  if(!WEBGL_OK) console.warn('SSEditor berjalan tanpa pratinjau 3D karena WebGL tidak tersedia');
+  setAll('#16161a');
+  gBuild();
+  setTimeout(()=>{try{clearTimeout(hT);histCommit()}catch(e){console.error('History initialization',e)}},100);
+}catch(err){
+  console.error('SSEditor initialization failed',err);
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;z-index:99998;background:#f4f2f6;color:#222;display:grid;place-items:center;padding:24px;font:14px system-ui';
+  const msg=String(err&&err.message||err);
+  el.innerHTML='<section style="background:white;border-radius:14px;padding:20px;max-width:520px;box-shadow:0 8px 30px #0002"><b>SSEditor gagal memulai</b><p>Terjadi kesalahan saat inisialisasi: <code></code></p><button style="padding:10px 16px;border:0;border-radius:8px;background:#e8701a;color:white" onclick="location.reload()">Muat ulang</button></section>';
+  el.querySelector('code').textContent=msg;
+  document.body.appendChild(el);
+}
 </script>
 </body></html>
