@@ -116,6 +116,12 @@
       });
     }
   };
+  /* Pemberitahuan dibuat secara dinamis setiap kali pemain membuka frame. */
+  const modalObserver = new MutationObserver(() => {
+    const modal = $('newsModal');
+    if (modal && modal.dataset.commentsReady !== '1') window.DivaNewsComments.attach(modal);
+  });
+  if (document.body) modalObserver.observe(document.body, { childList: true, subtree: true });
   if (document.readyState !== 'loading') {
     const modal = $('newsModal');
     if (modal) window.DivaNewsComments.attach(modal);
