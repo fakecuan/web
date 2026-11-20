@@ -2157,36 +2157,69 @@ async function cafSolve(data,w,h,hole,prog,settings){const R=3+Math.round((setti
     const r=cafLevel(L.img,L.hole,L.w,L.h,nnf,6+Math.round((settings?.variation||0)/25),Math.min(5,rad));if(r)nnf=r;prog&&prog(1-l/(top+1));await new Promise(r=>setTimeout(r,0))}
   const out=pyr[0].img,res=new Uint8ClampedArray(data.length);for(let i=0;i<res.length;i++)res[i]=out[i];return{res,nnf}}
 function transMask(){const W=IE.w,H=IE.h,d=IE.x.getImageData(0,0,W,H).data,m=new Uint8ClampedArray(W*H*4);let n=0;for(let i=3;i<d.length;i+=4)if(d[i]<200){m[i]=255;n++}return n?m:null}
-async function contentAwareFill(auto,settings){settings={...CAF_DEFAULTS,...(settings||cafSettings())};let m=typeof maskData=='function'&&!auto?maskData():null,tr=false;
-  if(!m){m=transMask();tr=true;if(!m){toast('Tidak ada area transparan. Buat seleksi di bagian yang ingin diganti.');return}}
-  const W=IE.w,H=IE.h,original=IE.x.getImageData(0,0,W,H);let op=0;for(let i=3;i<original.data.length;i+=4)if(original.data[i]>=200)op++;
-  if(op<64){toast('Gambar hampir kosong — tidak ada motif untuk ditiru');return}
-  let x0=W,y0=H,x1=-1,y1=-1;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(m[(y*W+x)*4+3]>127){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+async function contentAwareFill(auto,settings){
+  settings={...CAF_DEFAULTS,...(settings||cafSettings())};
+  const m=typeof maskData==='function'&&!auto?maskData():null;
+  const trans=transMask();
+  const W=IE.w,H=IE.h,original=IE.x.getImageData(0,0,W,H);
+  if(!m&&!trans){toast('Buat seleksi pada area yang ingin diisi, atau perluas kanvas terlebih dahulu.');return}
+  const mask=m||trans;
+  let x0=W,y0=H,x1=-1,y1=-1;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(mask[(y*W+x)*4+3]>127){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}
   if(x1<0){toast('Seleksi kosong');return}
-  const bw=x1-x0+1,bh=y1-y0+1,mg=Math.max(24,Math.round(Math.max(bw,bh)*.35)),rx=Math.max(0,x0-mg),ry=Math.max(0,y0-mg),rw=Math.min(W,x1+mg+1)-rx,rh=Math.min(H,y1+mg+1)-ry;
-  busy('Meneruskan motif…',2);await new Promise(r=>setTimeout(r,30));
-  try{iePush();const full=IE.x.getImageData(rx,ry,rw,rh),hole=new Uint8Array(rw*rh);
-    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const gx=rx+x,gy=ry+y;if(m[(gy*W+gx)*4+3]>127||full.data[(y*rw+x)*4+3]<200)hole[y*rw+x]=1}
+  let opaque=0;for(let i=3;i<original.data.length;i+=4)if(original.data[i]>=200)opaque++;
+  if(opaque<64){toast('Gambar hampir kosong — tidak ada motif untuk ditiru');return}
+  const bw=x1-x0+1,bh=y1-y0+1,margin=Math.max(24,Math.round(Math.max(bw,bh)*.35));
+  const rx=Math.max(0,x0-margin),ry=Math.max(0,y0-margin),rw=Math.min(W,x1+margin+1)-rx,rh=Math.min(H,y1+margin+1)-ry;
+  busy('Mempersiapkan pengisian motif…',2);await new Promise(r=>setTimeout(r,20));
+  try{
+    iePush();
+    const full=IE.x.getImageData(rx,ry,rw,rh),hole=new Uint8Array(rw*rh);
+    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){
+      const gx=rx+x,gy=ry+y,selected=mask[(gy*W+gx)*4+3]>127;
+      const alpha=full.data[(y*rw+x)*4+3];
+      hole[y*rw+x]=selected||alpha<200?1:0;
+    }
+    const sc=Math.min(1,480/Math.max(rw,rh)),sw=Math.max(8,Math.round(rw*sc)),sh=Math.max(8,Math.round(rh*sc));
+    const src=ieCanvas(rw,rh);src.getContext('2d').putImageData(full,0,0);
+    const small=ieCanvas(sw,sh),sx=small.getContext('2d',{willReadFrequently:true});
+    sx.imageSmoothingEnabled=true;sx.imageSmoothingQuality='high';sx.drawImage(src,0,0,sw,sh);
+    const sd=sx.getImageData(0,0,sw,sh),shole=new Uint8Array(sw*sh);
+    for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+      const fx=Math.min(rw-1,Math.floor((x+.5)/sc)),fy=Math.min(rh-1,Math.floor((y+.5)/sc));
+      let hit=false;for(let j=0;j<Math.ceil(1/sc)&&!hit;j++)for(let i=0;i<Math.ceil(1/sc)&&!hit;i++)
+        if(hole[Math.min(rh-1,fy+j)*rw+Math.min(rw-1,fx+i)])hit=true;
+      shole[y*sw+x]=hit?1:0;
+    }
     let result;
-    if(auto)result=cafEdgeExtend(full.data,rw,rh,hole,p=>busy('Meneruskan motif… '+Math.round(p*100)+'%',p*100));
-    else{
-      const sc=Math.min(1,480/Math.max(rw,rh)),sw=Math.max(8,Math.round(rw*sc)),sh=Math.max(8,Math.round(rh*sc));
-      const src=document.createElement('canvas');src.width=rw;src.height=rh;src.getContext('2d').putImageData(full,0,0);
-      const small=document.createElement('canvas');small.width=sw;small.height=sh;const sx=small.getContext('2d',{willReadFrequently:true});sx.imageSmoothingEnabled=true;sx.imageSmoothingQuality='high';sx.drawImage(src,0,0,sw,sh);const sd=sx.getImageData(0,0,sw,sh);
-      const shole=new Uint8Array(sw*sh);for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const fx=Math.min(rw-1,Math.floor((x+.5)/sc)),fy=Math.min(rh-1,Math.floor((y+.5)/sc));let v=0;for(let j=0;j<Math.ceil(1/sc)&&!v;j++)for(let i=0;i<Math.ceil(1/sc)&&!v;i++)if(hole[Math.min(rh-1,fy+j)*rw+Math.min(rw-1,fx+i)])v=1;shole[y*sw+x]=v}
-      const solved=await cafSolve(sd.data,sw,sh,shole,p=>busy('Isi sesuai konten… '+Math.round(p*100)+'%',p*100),settings);
-      const fill=document.createElement('canvas');fill.width=sw;fill.height=sh;fill.getContext('2d').putImageData(new ImageData(solved.res,sw,sh),0,0);
-      const big=document.createElement('canvas');big.width=rw;big.height=rh;const bx=big.getContext('2d');bx.imageSmoothingEnabled=true;bx.imageSmoothingQuality='high';bx.drawImage(fill,0,0,rw,rh);result=new Uint8ClampedArray(bx.getImageData(0,0,rw,rh).data);
-      if(settings.mode==='continue'||settings.mode==='hybrid'){
-        const directional=await cafEdgeExtend(full.data,rw,rh,hole,p=>busy('Meneruskan batas motif… '+Math.round(p*100)+'%',p*100));
-        const edgeWeight=settings.mode==='continue'?1:settings.continuity/100;
-        for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const k=y*rw+x;if(!hole[k])continue;const q=k*4;for(let c=0;c<4;c++)result[q+c]=Math.round(result[q+c]*(1-edgeWeight)+directional[q+c]*edgeWeight)}
+    if(settings.mode==='continue'){
+      result=await cafEdgeExtend(full.data,rw,rh,hole,p=>busy('Meneruskan motif… '+Math.round(p*100)+'%',p*100));
+    }else{
+      const solved=await cafSolve(sd.data,sw,sh,shole,p=>busy('Menyintesis motif… '+Math.round(p*100)+'%',p*100),settings);
+      const fill=ieCanvas(sw,sh);fill.getContext('2d').putImageData(new ImageData(solved.res,sw,sh),0,0);
+      const big=ieCanvas(rw,rh),bx=big.getContext('2d');
+      bx.imageSmoothingEnabled=true;bx.imageSmoothingQuality='high';bx.drawImage(fill,0,0,rw,rh);
+      result=new Uint8ClampedArray(bx.getImageData(0,0,rw,rh).data);
+      if(settings.mode==='hybrid'){
+        const directional=await cafEdgeExtend(full.data,rw,rh,hole,p=>busy('Menyambung tepi motif… '+Math.round(p*100)+'%',p*100));
+        const edgeWeight=settings.continuity/100;
+        for(let k=0;k<rw*rh;k++)if(hole[k])for(let c=0;c<4;c++){
+          const q=k*4+c;result[q]=Math.round(result[q]*(1-edgeWeight)+directional[q]*edgeWeight);
+        }
       }
     }
     const out=full.data;
-    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const gx=rx+x,gy=ry+y;if(m[(gy*W+gx)*4+3]<=0)continue;const q=(y*rw+x)*4,blend=settings.overlap==='low'?.78:settings.overlap==='high'?.98:.9;for(let c=0;c<4;c++)out[q+c]=Math.round(full.data[q+c]+(result[q+c]-full.data[q+c])*blend)}
-    IE.x.putImageData(full,rx,ry);IE.changed=true;ieDraw();toast(tr?'Area kanvas diperluas dengan kelanjutan motif tepi':'Area seleksi diisi sesuai sekitarnya')}
-  catch(e){console.error(e);toast('Isi sesuai konten gagal: '+(e.message||e))}finally{busy(null)}}
+    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){
+      const gx=rx+x,gy=ry+y;if(mask[(gy*W+gx)*4+3]<=0)continue;
+      const k=y*rw+x,q=k*4;
+      const blend=settings.overlap==='low'?.78:settings.overlap==='high'?.98:.90;
+      for(let c=0;c<4;c++)out[q+c]=Math.round(full.data[q+c]+(result[q+c]-full.data[q+c])*blend);
+    }
+    IE.x.putImageData(full,rx,ry);IE.changed=true;ieDraw();
+    toast('Motif berhasil diproses · '+(settings.mode==='hybrid'?'Hybrid':settings.mode==='continue'?'Continue':'Pattern'));
+  }catch(e){console.error(e);toast('Isi sesuai konten gagal: '+(e.message||e))}
+  finally{busy(null)}
+}
 /* ukuran kanvas: tambah/kurangi kanvas tanpa mengubah ukuran gambar */
 function canvasSize(){const W0=IE.w,H0=IE.h;
   sheet('Ukuran kanvas',[['r','w','Lebar %',20,400,100],['r','h','Tinggi %',20,400,100],['sel','an','Jangkar',[['tl','Kiri atas'],['t','Atas'],['tr','Kanan atas'],['l','Kiri'],['c','Tengah'],['r','Kanan'],['bl','Kiri bawah'],['b','Bawah'],['br','Kanan bawah']],'c'],['chk','caf','Isi area baru dengan motif (isi sesuai konten)',false],['chk','fl','Isi warna di area baru',false],['col','Warna',IE.col]],v=>{
