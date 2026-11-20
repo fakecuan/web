@@ -73,7 +73,7 @@
       button.addEventListener('click', async () => {
         if (!acct) return;
         button.disabled = true;
-        const res = await rpc('skate_news_comment_delete', {
+        const res = await rpc(target.type === 'record' ? 'skate_record_comment_delete' : 'skate_news_comment_delete', {
           p_name: acct.name, p_token: acct.token, p_id: Number(button.dataset.nwcDel)
         });
         if (res && res.ok) await loadComments(target, panel);
