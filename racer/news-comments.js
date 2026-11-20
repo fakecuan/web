@@ -84,9 +84,10 @@
     attach: function (modal) {
       if (!modal || modal.dataset.commentsReady === '1') return;
       modal.dataset.commentsReady = '1';
-      modal.querySelectorAll('.it[id^="nwm_adm"]').forEach((card) => {
+      modal.querySelectorAll('.it[id^="nwm_"]').forEach((card) => {
         const id = Number(card.id.slice('nwm_'.length));
-        if (!Number.isSafeInteger(id) || id <= 0) return;
+        if (!Number.isSafeInteger(id) || id <= 0 || card.dataset.commentsAttached === '1') return;
+        card.dataset.commentsAttached = '1';
         const panel = document.createElement('section');
         panel.className = 'nwcWrap';
         panel.innerHTML = `<div class="nwcHeading">💬 KOMENTAR</div>
