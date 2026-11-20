@@ -23,10 +23,13 @@ const DATA=[{"id":"legL","name":"Kaki kiri","m":[1151.4603,0,0,863.6923,1572.695
 const ns='http://www.w3.org/2000/svg',root=document.getElementById('sheets');
 DATA.forEach((p,i)=>{const el=document.createElement('section');el.className='sheet';el.innerHTML='<h2>'+p.name+'</h2>';const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 3016 3896');svg.setAttribute('role','img');svg.setAttribute('aria-label',p.name);
 const path=document.createElementNS(ns,'path');path.setAttribute('d',p.d);path.setAttribute('transform','matrix('+p.m.join(' ')+')');path.setAttribute('class','piece');svg.appendChild(path);
-const seam=document.createElementNS(ns,'path');seam.setAttribute('d',p.d);seam.setAttribute('transform','matrix('+p.m.join(' ')+')');seam.setAttribute('class','seam');seam.style.opacity='.0';svg.appendChild(seam);
-const tx=document.createElementNS(ns,'text');tx.setAttribute('x','1508');tx.setAttribute('y','3800');tx.setAttribute('text-anchor','middle');tx.setAttribute('class','small');tx.textContent='Tampilan referensi — belum ada kampuh';svg.appendChild(tx);
+
+const bb=path.getBBox(),pad=Math.max(45,Math.max(bb.width,bb.height)*.08);
+svg.setAttribute('viewBox',[bb.x-pad,bb.y-pad,bb.width+2*pad,bb.height+2*pad].join(' '));
+const tx=document.createElementNS(ns,'text');tx.setAttribute('x',bb.x+bb.width/2);tx.setAttribute('y',bb.y+bb.height+pad*.55);tx.setAttribute('text-anchor','middle');tx.setAttribute('class','small');tx.textContent='Tampilan referensi — belum ada kampuh';svg.appendChild(tx);
 el.appendChild(svg);root.appendChild(el)});
 document.getElementById('print').onclick=()=>window.print();
+document.getElementById('showSeam').checked=false;
 document.getElementById('showSeam').onchange=e=>document.querySelectorAll('.seam').forEach(x=>x.style.opacity=e.target.checked?'.18':'0');
 let z=false;document.getElementById('zoom').onclick=()=>{z=!z;document.querySelectorAll('.sheet svg').forEach(x=>x.style.maxHeight=z?'none':'75vh')};
 </script></body></html>
