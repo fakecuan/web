@@ -2139,6 +2139,55 @@ async function cafEdgeExtend(data,w,h,hole,prog){
   }
   prog&&prog(1);return out;
 }
+/* Directional patch quilting with minimum-error seam for canvas expansion. */
+async function cafDirectionalQuilt(data,w,h,hole,prog,settings){
+  const out=new Uint8ClampedArray(data),known=new Uint8Array(w*h),target=hole;
+  let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=y*w+x;if(!target[k]&&data[k*4+3]>=200){known[k]=1;x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y)}}
+  if(x1<0)return out;
+  const bw=x1-x0+1,bh=y1-y0+1,patch=Math.max(24,Math.min(96,Math.round(Math.min(bw,bh)*.16)));
+  const overlap=Math.max(8,Math.min(Math.floor(patch*.45),settings?.overlap==='high'?Math.round(patch*.4):settings?.overlap==='low'?Math.round(patch*.18):Math.round(patch*.28)));
+  const step=Math.max(8,patch-overlap),rgb=3,stride=Math.max(2,Math.floor(Math.min(bw,bh)/45));
+  const xs=[],ys=[];for(let x=x0;x<=x1;x+=stride)xs.push(x);for(let y=y0;y<=y1;y+=stride)ys.push(y);
+  const valid=(sx,sy,pw,ph)=>{if(sx<x0||sy<y0||sx+pw>x1+1||sy+ph>y1+1)return false;for(let y=0;y<ph;y++)for(let x=0;x<pw;x++)if(!known[(sy+y)*w+sx+x])return false;return true};
+  const choose=(tx,ty,pw,ph,axis)=>{
+    let best=null,bc=Infinity;
+    for(const sy of ys)for(const sx of xs){if(!valid(sx,sy,pw,ph))continue;let sum=0,n=0;
+      for(let y=0;y<ph;y++)for(let x=0;x<pw;x++){if(axis==='x'?x>=overlap:y>=overlap)continue;const a=((ty+y)*w+tx+x)*4,b=((sy+y)*w+sx+x)*4;for(let c=0;c<rgb;c++){const d=out[a+c]-data[b+c];sum+=d*d;n++}}
+      const cost=n?sum/n:Infinity;if(cost<bc){bc=cost;best={sx,sy}}
+    }return best;
+  };
+  const verticalCut=(tx,ty,src,pw,ph)=>{
+    const dp=new Float32Array(pw*ph),prev=new Int8Array(pw*ph);
+    for(let x=0;x<pw;x++){let e=0;const a=(ty*w+tx+x)*4,b=(src.sy*w+src.sx+x)*4;for(let c=0;c<rgb;c++){const d=out[a+c]-data[b+c];e+=d*d}dp[x]=e}
+    for(let y=1;y<ph;y++)for(let x=0;x<pw;x++){let e=0;const a=((ty+y)*w+tx+x)*4,b=((src.sy+y)*w+src.sx+x)*4;for(let c=0;c<rgb;c++){const d=out[a+c]-data[b+c];e+=d*d}let px=x,pv=dp[(y-1)*pw+x];if(x&&dp[(y-1)*pw+x-1]<pv){px=x-1;pv=dp[(y-1)*pw+x-1]}if(x+1<pw&&dp[(y-1)*pw+x+1]<pv){px=x+1;pv=dp[(y-1)*pw+x+1]}dp[y*pw+x]=pv+e;prev[y*pw+x]=px-x}
+    let x=0;for(let i=1;i<pw;i++)if(dp[(ph-1)*pw+i]<dp[(ph-1)*pw+x])x=i;const path=new Int16Array(ph);for(let y=ph-1;y>=0;y--){path[y]=x;x=Math.max(0,Math.min(pw-1,x+prev[y*pw+x]))}return path;
+  };
+  const paste=(tx,ty,pw,ph,src,axis,fromRight)=>{
+    const path=axis==='x'?verticalCut(tx,ty,src,pw,ph):null;
+    for(let y=0;y<ph;y++)for(let x=0;x<pw;x++){const gx=tx+x,gy=ty+y;if(gx<0||gy<0||gx>=w||gy>=h||!target[gy*w+gx])continue;
+      let take=true;if(axis==='x'&&x<overlap)take=fromRight?x>=path[y]:x<=path[y];if(axis==='y'&&y<overlap)take=y>=Math.floor(overlap/2);if(!take)continue;
+      const d=(gy*w+gx)*4,q=((src.sy+y)*w+src.sx+x)*4;out[d]=data[q];out[d+1]=data[q+1];out[d+2]=data[q+2];out[d+3]=255;target[gy*w+gx]=0;known[gy*w+gx]=1;
+    }
+  };
+  const sides=[];if(x0>0)sides.push('left');if(x1<w-1)sides.push('right');if(y0>0)sides.push('top');if(y1<h-1)sides.push('bottom');
+  for(let n=0;n<sides.length;n++){
+    const side=sides[n],horizontal=side==='left'||side==='right';
+    if(horizontal){
+      for(let ty=y0;ty<=y1;ty+=step){const ph=Math.min(patch,y1-ty+1),right=side==='right',tx=right?x1+1:Math.max(0,x0-patch+overlap),pw=right?Math.min(patch,w-tx):Math.min(patch,x0-tx+overlap);if(pw<=overlap||ph<8)continue;
+        const src=choose(tx,ty,pw,ph,'x');if(src)paste(tx,ty,pw,ph,src,'x',right);
+      }
+    }else{
+      for(let tx=x0;tx<=x1;tx+=step){const pw=Math.min(patch,x1-tx+1),bottom=side==='bottom',ty=bottom?y1+1:Math.max(0,y0-patch+overlap),ph=bottom?Math.min(patch,h-ty):Math.min(patch,y0-ty+overlap);if(ph<=overlap||pw<8)continue;
+        const src=choose(tx,ty,pw,ph,'y');if(src)paste(tx,ty,pw,ph,src,'y',false);
+      }
+    }
+    prog&&prog((n+1)/sides.length);await new Promise(r=>setTimeout(r,0));
+  }
+  let remains=false;for(let i=0;i<target.length;i++)if(target[i]){remains=true;break}
+  if(remains){const solved=await cafSolve(out,w,h,target,prog,settings);for(let i=0;i<target.length;i++)if(target[i]){const k=i*4;out[k]=solved.res[k];out[k+1]=solved.res[k+1];out[k+2]=solved.res[k+2];out[k+3]=255}}
+  return out;
+}
 /* ---------- Pengaturan Hybrid Pattern Fill ---------- */
 const CAF_DEFAULTS={mode:'hybrid',continuity:75,variation:45,overlap:'medium'};
 function cafSettings(){try{return{...CAF_DEFAULTS,...JSON.parse(localStorage.getItem('cafSettings')||'{}')}}catch(e){return{...CAF_DEFAULTS}}}
