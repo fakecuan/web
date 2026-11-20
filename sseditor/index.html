@@ -841,7 +841,9 @@ function tileCanvas(L){const im=L.img,k=(L.fx?1:0)+(L.fy?2:0);let m=TCACHE.get(i
  let w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;const s=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.translate(L.fx?w:0,L.fy?h:0);x.scale(L.fx?-1:1,L.fy?-1:1);x.drawImage(im,0,0,w,h);return m[k]=c}
 /* ubin tanpa sambungan: pola kanvas, bukan gambar per ubin */
-function seamless(x,L,w,h,R){const tc=tileCanvas(L),pt=x.createPattern(tc,L.rep==2?'repeat-x':L.rep==3?'repeat-y':'repeat');
+function seamless(x,L,w,h,R){const tc=tileCanvas(L);let patCanvas=tc;
+ if(L.rep>=4){patCanvas=document.createElement('canvas');patCanvas.width=tc.width*(L.rep===5?1:2);patCanvas.height=tc.height*(L.rep===4?1:2);const pc=patCanvas.getContext('2d');pc.drawImage(tc,0,0);if(L.rep===4||L.rep===6){pc.save();pc.translate(patCanvas.width,0);pc.scale(-1,1);pc.drawImage(tc,0,0);pc.restore()}if(L.rep===5||L.rep===6){pc.save();pc.translate(0,patCanvas.height);pc.scale(1,-1);pc.drawImage(tc,0,0);pc.restore()}}
+ const pt=x.createPattern(patCanvas,L.rep==2?'repeat-x':L.rep==3?'repeat-y':'repeat');
  pt.setTransform(new DOMMatrix([w/tc.width,0,0,h/tc.height,-w/2,-h/2]));x.fillStyle=pt;
  const ax=L.rep==3?w/2:R,ay=L.rep==2?h/2:R;x.fillRect(L.rep==3?-w/2:-R,L.rep==2?-h/2:-R,2*ax,2*ay)}
 function drawLayer(x,L,W,H,ext=0){if(!ready(L))return;const[w,h]=dims(L,W);x.save();x.translate(L.x*W,L.y*H);x.rotate((L.r||0)*Math.PI/180);
@@ -961,11 +963,11 @@ const pvEnd=()=>{if(pd){pd=null;guide=null;view=null;drawPv()}};pv.addEventListe
 function uiTools(){const p=sel&&P[sel],L=A(p);$('#tools').style.display=L?'grid':'none';
  const ly=$('#lyr');ly.hidden=!(p&&p.layers.length>(window.FSON?0:1));if(p&&p.layers.length>(window.FSON?0:1)){let ni=0;ly.innerHTML=p.layers.map((l,i)=>{const lab=l.t=='txt'?'“'+(l.txt||'Teks').slice(0,10)+'”':(l.clo?String(l.clo.name||'Motif CLO').slice(0,16):i==0&&p.layers[0].bg?'Latar':'Gambar '+(++ni));return `<button data-li="${i}" class="${i==p.ai?'on':''}">${l.t=='txt'?'':`<img src="${l.src}" alt="">`}${lab}</button>`}).reverse().join('')+(p.ai>=0?`<span class=ord><button data-mv="1" title="Ke depan">▲</button><button data-mv="-1" title="Ke belakang">▼</button></span>`:'')}
  $('#txp').hidden=!(L&&L.t=='txt');if(L&&L.t=='txt'){if($('#tin')!==document.activeElement)$('#tin').value=L.txt;$('#tfont').value=L.f;$('#tfont').style.fontFamily=`"${L.f}"`;$('#tcol').value=L.c;$('#tsc').value=L.sc;$('#tsw').value=L.sw;$('#tswv').textContent=L.sw}
- if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep);$('#repl').textContent=['Ulang','Ulang: semua','Ulang: X','Ulang: Y'][L.rep===true?1:(L.rep|0)]||'Ulang';$('#repimg').style.display=L.t=='txt'?'none':'';$('#iedit').style.display=L.t=='txt'?'none':''}}
+ if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep);$('#repl').textContent=(['Ulang','Ulang: semua','Ulang: X','Ulang: Y','Ulang: X cermin','Ulang: Y cermin','Ulang: semua cermin'][L.rep|0]||'Ulang');$('#repimg').style.display=L.t=='txt'?'none':'';$('#iedit').style.display=L.t=='txt'?'none':''}}
 const cur=()=>A(P[sel]);
 $('#fh').onclick=()=>{const L=cur();L.fx=!L.fx;render(sel);uiTools()};
 $('#fv').onclick=()=>{const L=cur();L.fy=!L.fy;render(sel);uiTools()};
-$('#rep').onclick=()=>{const L=cur();const r=L.rep===true?1:(L.rep|0);L.rep=(r+1)%4;view=null;render(sel);uiTools();toast(['Ulang dimatikan','Diulang ke semua arah','Diulang mengikuti sumbu X gambar','Diulang mengikuti sumbu Y gambar'][L.rep])};
+$('#rep').onclick=()=>{const L=cur();const r=L.rep===true?1:(L.rep|0);L.rep=(r+1)%7;view=null;render(sel);uiTools();toast(['Ulang dimatikan','Diulang ke semua arah','Diulang mengikuti sumbu X gambar','Diulang mengikuti sumbu Y gambar','Diulang X dengan cermin','Diulang Y dengan cermin','Diulang semua arah dengan cermin'][L.rep])};
 $('#del').onclick=()=>{const p=P[sel];if(p.ai<0)return;const L=p.layers[p.ai];if(mirOn(sel)&&L.tw){const q=P[PAIR[sel]],j=q.layers.findIndex(x=>x.uid==L.tw);if(j>=0){q.layers.splice(j,1);q.ai=q.layers.length-1}}p.layers.splice(p.ai,1);p.ai=p.layers.length-1;view=null;render(sel);uiTools()};
 $('#lyr').onclick=e=>{const p=P[sel],m=e.target.closest('[data-mv]');if(m){const d=+m.dataset.mv,j=p.ai+d;if(j<0||j>=p.layers.length)return;const t=p.layers[j];p.layers[j]=p.layers[p.ai];p.layers[p.ai]=t;p.ai=j;render(sel);uiTools();return}
  const b=e.target.closest('[data-li]');if(!b)return;p.ai=+b.dataset.li;view=null;drawPv();uiTools()};
