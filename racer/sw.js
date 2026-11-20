@@ -1,6 +1,6 @@
 /* Diva Skate service worker: SELALU ambil versi terbaru dari internet (network-first).
    Salinan di HP hanya dipakai saat tidak ada sinyal. */
-const CACHE = 'diva-skate-v1';
+const CACHE = 'diva-skate-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).catch(() => {}));
