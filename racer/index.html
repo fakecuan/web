@@ -5107,7 +5107,37 @@ function nwsOpen(id){const old=$('newsModal');if(old)old.remove();
  document.body.appendChild(m);
   m.querySelector('[data-x]')?.addEventListener('click',()=>m.remove());
   m.addEventListener('click',e=>{if(e.target===m)m.remove()});
- if(window.DivaNewsComments&&typeof window.DivaNewsComments.attach==='function')window.DivaNewsComments.attach(m);
+ /* Fallback: pasang UI komentar dari halaman utama juga.
+    news-comments.js hanya mengurus fungsi data; kartu tetap diberi UI meski modul eksternal gagal dimuat. */
+ m.querySelectorAll('.it[id^="nwm_"]').forEach(card=>{
+  if(card.querySelector('.nwcWrap'))return;
+  const key=card.dataset.commentKey||'';
+  const newsId=Number(card.dataset.commentNewsId||0);
+  if(!key&&!newsId)return;
+  const target=key?{type:'record',key}:{type:'news',id:newsId};
+  const panel=document.createElement('section');panel.className='nwcWrap';
+  panel.style.cssText='margin:10px 0 1px 29px;padding-top:8px;border-top:1px solid #ffffff24';
+  const form=acct?'<form class="nwcForm" style="display:flex;gap:6px;margin-top:7px;align-items:flex-end"><textarea maxlength="500" required placeholder="Tulis komentar…" style="flex:1;min-width:0;min-height:40px;border:1px solid #90bdf766;border-radius:9px;background:#09295f;color:#fff;padding:7px"></textarea><button type="submit" style="border:0;border-radius:9px;background:#e8302a;color:white;padding:9px 11px;font-weight:900">KIRIM</button></form><div style="font-size:10px;color:#b8cbea;margin-top:4px">Berkomentar sebagai '+escapeHTML(acct.name)+' · maksimal 500 karakter</div>':'<div style="font-size:11px;color:#ffe2a1">Masuk ke akun Diva Skate untuk ikut berkomentar.</div>';
+  panel.innerHTML='<div style="font-weight:800;font-size:11px;color:#dceaff;margin-bottom:6px">💬 KOMENTAR</div><div class="nwcList" style="display:flex;flex-direction:column;gap:7px;font-size:12px">Memuat komentar…</div>'+form;
+  card.appendChild(panel);
+  const list=panel.querySelector('.nwcList');
+  const load=async()=>{
+   const result=target.type==='record'?await rpc('skate_record_comments_list',{p_record_key:target.key}):await rpc('skate_news_comments_list',{p_news_id:target.id});
+   if(!panel.isConnected)return;
+   if(!result||!result.ok||!Array.isArray(result.rows)){list.textContent='Komentar belum dapat dimuat.';return}
+   if(!result.rows.length){list.textContent='Belum ada komentar.';return}
+   list.innerHTML=result.rows.map(x=>'<div style="background:#ffffff12;border-radius:9px;padding:7px 9px"><b>'+escapeHTML(x.name)+'</b><div style="white-space:pre-wrap;overflow-wrap:anywhere">'+escapeHTML(x.body)+'</div><small style="color:#adc8ee">'+new Date(x.created_at).toLocaleString('id-ID')+'</small></div>').join('');
+  };
+  load();
+  const f=panel.querySelector('form');
+  if(f)f.addEventListener('submit',async ev=>{
+   ev.preventDefault();const input=f.querySelector('textarea'),btn=f.querySelector('button'),body=input.value.trim();
+   if(!body)return;btn.disabled=true;btn.textContent='…';
+   const result=target.type==='record'?await rpc('skate_record_comment_add',{p_name:acct.name,p_token:acct.token,p_record_key:target.key,p_body:body}):await rpc('skate_news_comment_add',{p_name:acct.name,p_token:acct.token,p_news_id:target.id,p_body:body});
+   btn.disabled=false;btn.textContent='KIRIM';
+   if(result&&result.ok){input.value='';await load()}else alert(result&&result.err==='session'?'Sesi login berakhir. Masuk kembali.':result&&result.err==='rate'?'Terlalu banyak komentar. Coba lagi sebentar.':'Komentar gagal dikirim.');
+  });
+ });
  m.addEventListener('click',async e=>{if(e.target===m||e.target.closest('[data-x]')){m.remove();return}
   if(e.target.closest('[data-best]')){m.remove();menuBest200();return}
   const d=e.target.closest('[data-del]');if(d){d.disabled=true;d.textContent='Menghapus…';const r=await rpc('skate_news_delete',{p_name:acct.name,p_token:acct.token,p_id:+d.dataset.del});if(r&&r.ok){await nwsLoad(true);nwsOpen()}else{d.disabled=false;d.textContent='Gagal'}}});
