@@ -2075,37 +2075,55 @@ function cafLevel(img,hole,w,h,nnf,iters,R){
   return N}
 /* Perluasan motif: directional continuation dari pita tepi, dengan PatchMatch hanya sebagai fallback untuk seleksi bebas. */
 function cafEdgeExtend(data,w,h,hole,prog){
-  const out=new Uint8ClampedArray(data),valid=hole,band=Math.max(8,Math.min(48,Math.round(Math.min(w,h)*.10)));
+  const out=new Uint8ClampedArray(data),valid=hole;
   let minX=w,minY=h,maxX=-1,maxY=-1;
   for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(valid[y*w+x]){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}
   if(maxX<0)return out;
-  const count=(side)=>{let n=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(valid[y*w+x]&&(side==='top'?y<=minY+2:side==='bottom'?y>=maxY-2:side==='left'?x<=minX+2:x>=maxX-2))n++;return n};
-  const edge=[['top',count('top')],['bottom',count('bottom')],['left',count('left')],['right',count('right')]].sort((a,b)=>b[1]-a[1])[0][0];
-  const vertical=edge==='top'||edge==='bottom',sourceLen=Math.max(1,Math.min(band,vertical?h:w));
-  let src0,src1;
-  if(edge==='top'){src0=Math.min(h-1,maxY+1);src1=Math.min(h-1,src0+sourceLen-1)}
-  else if(edge==='bottom'){src1=Math.max(0,minY-1);src0=Math.max(0,src1-sourceLen+1)}
-  else if(edge==='left'){src0=Math.min(w-1,maxX+1);src1=Math.min(w-1,src0+sourceLen-1)}
-  else{src1=Math.max(0,minX-1);src0=Math.max(0,src1-sourceLen+1)}
-  const feather=Math.max(3,Math.min(18,Math.round(sourceLen*.22)));
-  const edgePos=(x,y)=>edge==='top'?minY-y:edge==='bottom'?y-maxY:edge==='left'?minX-x:x-maxX;
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-    const k=y*w+x;if(!valid[k])continue;const d=edgePos(x,y);if(d<0)continue;
-    const phase=(d-1)%sourceLen;
-    let sx=x,sy=y;
-    if(edge==='top')sy=src0+phase;
-    else if(edge==='bottom')sy=src1-phase;
-    else if(edge==='left')sx=src0+phase;
-    else sx=src1-phase;
-    if(sx<0||sx>=w||sy<0||sy>=h)continue;
-    const si=(sy*w+sx)*4,di=k*4;
-    let blend=d<=feather?.5-.5*Math.cos(Math.PI*d/feather):1;
-    if(d===1)blend=.88;
-    let nx=x,ny=y;
-    if(edge==='top')ny=Math.min(h-1,minY+1);else if(edge==='bottom')ny=Math.max(0,maxY-1);
-    else if(edge==='left')nx=Math.min(w-1,minX+1);else nx=Math.max(0,maxX-1);
-    const ni=(ny*w+nx)*4;
-    for(let c=0;c<4;c++)out[di+c]=Math.round(data[ni+c]*(1-blend)+data[si+c]*blend);
+  /* Cari bounding box piksel sumber yang nyata. Area kosong baru dapat berada pada lebih dari satu sisi,
+     sehingga penentuan satu arah global akan meninggalkan sisi lain transparan atau mengulang arah yang salah. */
+  let sx0=w,sy0=h,sx1=-1,sy1=-1;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=y*w+x;if(!valid[k]&&data[k*4+3]>=200){if(x<sx0)sx0=x;if(x>sx1)sx1=x;if(y<sy0)sy0=y;if(y>sy1)sy1=y}}
+  if(sx1<0)return out;
+  const bw=sx1-sx0+1,bh=sy1-sy0+1,edgeBand=Math.max(8,Math.min(64,Math.round(Math.min(bw,bh)*.12)));
+  const pixel=(x,y,c)=>data[(Math.max(0,Math.min(h-1,y))*w+Math.max(0,Math.min(w-1,x)))*4+c];
+  const smooth=(t)=>t*t*(3-2*t);
+  for(let y=0;y<h;y++){
+    if((y&31)===0){prog&&prog(y/h);await new Promise(r=>setTimeout(r,0))}
+    for(let x=0;x<w;x++){
+      const k=y*w+x;if(!valid[k])continue;
+      const l=x-sx0,r=sx1-x,t=y-sy0,b=sy1-y;
+      const candidates=[
+        {d:l,side:'left',cx:sx0,cy:Math.max(sy0,Math.min(sy1,y)),depth:bw},
+        {d:r,side:'right',cx:sx1,cy:Math.max(sy0,Math.min(sy1,y)),depth:bw},
+        {d:t,side:'top',cx:Math.max(sx0,Math.min(sx1,x)),cy:sy0,depth:bh},
+        {d:b,side:'bottom',cx:Math.max(sx0,Math.min(sx1,x)),cy:sy1,depth:bh}
+      ].filter(q=>q.d>=0).sort((a,b)=>a.d-b.d);
+      const q=candidates[0];if(!q)continue;
+      const distance=q.d+1,span=q.side==='left'||q.side==='right'?bh:bw;
+      /* Memperpanjang struktur dari strip tepi terdekat dengan fase sepanjang kontur. */
+      const along=q.side==='left'||q.side==='right'?y-sy0:x-sx0;
+      const sourceX=q.side==='left'?sx0+Math.min(edgeBand-1,distance-1):q.side==='right'?sx1-Math.min(edgeBand-1,distance-1):Math.max(sx0,Math.min(sx1,x));
+      const sourceY=q.side==='top'?sy0+Math.min(edgeBand-1,distance-1):q.side==='bottom'?sy1-Math.min(edgeBand-1,distance-1):Math.max(sy0,Math.min(sy1,y));
+      let tx=sourceX,ty=sourceY;
+      /* Translasi tegak lurus dari garis tepi: gunakan lapisan internal sebagai sumber, bukan koordinat lubang. */
+      const phase=Math.max(0,distance-1)%edgeBand;
+      if(q.side==='left')tx=sx0+phase;
+      else if(q.side==='right')tx=sx1-phase;
+      else if(q.side==='top')ty=sy0+phase;
+      else ty=sy1-phase;
+      /* Sedikit penyesuaian lokal pada sumbu sepanjang tepi menghindari lompatan saat batas gambar miring. */
+      if(q.side==='left'||q.side==='right')ty=Math.max(sy0,Math.min(sy1,y));
+      else tx=Math.max(sx0,Math.min(sx1,x));
+      const fade=smooth(Math.min(1,distance/Math.max(3,Math.min(18,edgeBand*.28))));
+      const outIdx=k*4;
+      for(let c=0;c<4;c++){
+        const base=pixel(tx,ty,c);
+        const nearX=q.side==='left'?sx0:q.side==='right'?sx1:Math.max(sx0,Math.min(sx1,x));
+        const nearY=q.side==='top'?sy0:q.side==='bottom'?sy1:Math.max(sy0,Math.min(sy1,y));
+        const near=pixel(nearX,nearY,c);
+        out[outIdx+c]=Math.round(near*(1-fade)+base*fade);
+      }
+    }
   }
   prog&&prog(1);return out;
 }
