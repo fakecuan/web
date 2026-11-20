@@ -180,7 +180,105 @@ textarea#ptx[hidden]{display:none}
 .swl{font-size:11px;font-weight:600;color:#777;margin:2px 2px 4px}.sw.swm{margin-bottom:8px}
 .tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
 #ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
-#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}#libg .ldup{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#fffe;color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px #0003}.pdfbox{width:min(560px,94vw)}#pdfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:56vh;overflow:auto;margin:10px 0;padding:2px}#pdfg button{position:relative;border:2px solid #e3e3e8;border-radius:10px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/12px 12px;padding:4px;min-height:120px;cursor:pointer;display:flex;align-items:center;justify-content:center}#pdfg button img{max-width:100%;max-height:150px;display:block}#pdfg button span{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font:600 11px system-ui;padding:1px 6px;border-radius:8px}#pdfg button.on{border-color:#e8661c;box-shadow:0 0 0 2px #e8661c55}#pdfg button.on::after{content:"✓";position:absolute;right:4px;top:4px;background:#e8661c;color:#fff;width:20px;height:20px;border-radius:50%;font:700 12px/20px system-ui;text-align:center}#libup{margin-top:6px}#pdfok:disabled{opacity:.45}.snapk{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:#555;margin:2px 0 0;cursor:pointer;user-select:none}.snapk input{width:16px;height:16px;accent-color:#e8661c}</style></head>
+#iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}#libg .ldup{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#fffe;color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px #0003}.pdfbox{width:min(560px,94vw)}#pdfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:56vh;overflow:auto;margin:10px 0;padding:2px}#pdfg button{position:relative;border:2px solid #e3e3e8;border-radius:10px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/12px 12px;padding:4px;min-height:120px;cursor:pointer;display:flex;align-items:center;justify-content:center}#pdfg button img{max-width:100%;max-height:150px;display:block}#pdfg button span{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font:600 11px system-ui;padding:1px 6px;border-radius:8px}#pdfg button.on{border-color:#e8661c;box-shadow:0 0 0 2px #e8661c55}#pdfg button.on::after{content:"✓";position:absolute;right:4px;top:4px;background:#e8661c;color:#fff;width:20px;height:20px;border-radius:50%;font:700 12px/20px system-ui;text-align:center}#libup{margin-top:6px}#pdfok:disabled{opacity:.45}.snapk{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:#555;margin:2px 0 0;cursor:pointer;user-select:none}.snapk input{width:16px;height:16px;accent-color:#e8661c}
+/* Desktop + landscape workspace: keep the 3D garment canvas wide by docking
+   the global controls on the left and the part editor on the right. */
+@media (min-width: 900px), (orientation: landscape) and (min-width: 600px) {
+  #view { inset: 0; }
+  #tl {
+    left: max(10px, env(safe-area-inset-left));
+    top: max(10px, env(safe-area-inset-top));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: 164px;
+    overflow: visible;
+    align-items: stretch;
+    gap: 7px;
+    padding: 10px;
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    background: var(--pn);
+    box-shadow: 0 4px 22px #0002;
+    backdrop-filter: blur(12px);
+  }
+  #tl .chip { width: 100%; justify-content: flex-start; }
+  #tl #verb { align-self: flex-start; }
+  #tl .pop { top: 44px; left: 0; }
+  #tr {
+    right: max(10px, env(safe-area-inset-right));
+    top: max(10px, env(safe-area-inset-top));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: 58px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 9px 6px;
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    background: var(--pn);
+    box-shadow: 0 4px 22px #0002;
+    backdrop-filter: blur(12px);
+  }
+  #tr #camsel {
+    width: 44px;
+    min-width: 44px;
+    height: 42px;
+    padding: 0;
+    color: transparent;
+    font-size: 0 !important;
+    background-position: center;
+  }
+  #tr .rb, #tr #lock { flex: none; }
+  #bar {
+    left: 50%;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    max-width: calc(100vw - 270px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  #sheet {
+    left: auto;
+    right: max(78px, calc(env(safe-area-inset-right) + 70px));
+    top: max(10px, env(safe-area-inset-top));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: min(390px, 34vw);
+    max-height: none;
+    height: auto;
+    overflow: auto;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px #0003;
+    transform: translateX(calc(100% + 30px));
+    padding-bottom: 14px;
+  }
+  #sheet.open { transform: translateX(0); }
+  #pv { max-height: 28vh; }
+  #tip {
+    bottom: max(58px, calc(env(safe-area-inset-bottom) + 54px));
+    max-width: calc(100vw - 300px);
+    white-space: normal;
+    text-align: center;
+  }
+}
+/* On compact landscape phones, use slimmer side rails. */
+@media (orientation: landscape) and (min-width: 600px) and (max-width: 899px) {
+  #tl { width: 132px; padding: 7px; gap: 5px; }
+  #tl .chip { height: 32px; font-size: 11px !important; padding: 0 8px; }
+  #tr { width: 48px; padding: 7px 4px; gap: 5px; }
+  #tr .rb, #tr #lock { width: 36px; height: 36px; }
+  #sheet {
+    right: 58px;
+    width: min(330px, 38vw);
+    padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
+  }
+  #bar { max-width: calc(100vw - 220px); gap: 2px; }
+  #bar button { padding: 0 7px; font-size: 11px; }
+}
+/* Respect the existing lower-sheet layout on portrait phones. */
+@media (max-width: 759px) and (orientation: portrait) {
+  #tl, #tr, #sheet, #bar { /* retain existing mobile positioning */ }
+}
+
+</style></head>
 <body>
 <div id="view"></div>
 
