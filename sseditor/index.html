@@ -181,15 +181,16 @@ textarea#ptx[hidden]{display:none}
 .tsug{flex-wrap:wrap;align-items:center}.tsug .sugw{flex:1 1 100%}
 #ieopt .sugw{margin:0 4px}#ieopt .iesm.pri{background:#e8661c;color:#fff;border-color:#e8661c}#ieopt .iesm:disabled{opacity:.45}
 #iesf .sugw{margin:-2px 0 6px}#verb{order:99;font-size:11px;font-weight:600;color:#6b6b75;background:#ffffffcc;border-radius:999px;padding:3px 9px;box-shadow:0 1px 3px #0001;pointer-events:none}body.iemode #verb{display:none}.mnewm button{display:flex;flex-direction:column;gap:2px}.mnewm button small{font-weight:400;color:#777;font-size:12px}.mnewm button.on{border-color:#e8661c;background:#fff3ea}.mnewm button.on b{color:#c4500f}#apkupd{position:fixed;left:12px;right:12px;top:max(12px,env(safe-area-inset-top));z-index:80;background:#1f1f24;color:#fff;border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px #0004}#apkupd>div{flex:1;display:flex;flex-direction:column;gap:2px}#apkupd small{color:#cfcfd6;font-size:12px}#apkupd button{border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}#apkdl{background:#e8661c;color:#fff;padding:8px 16px}#apkno{background:transparent;color:#aaa;padding:6px 8px}#libg .ldup{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;background:#fffe;color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 3px #0003}.pdfbox{width:min(560px,94vw)}#pdfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:56vh;overflow:auto;margin:10px 0;padding:2px}#pdfg button{position:relative;border:2px solid #e3e3e8;border-radius:10px;background:repeating-conic-gradient(#eee 0 25%,#fafafa 0 50%) 0 0/12px 12px;padding:4px;min-height:120px;cursor:pointer;display:flex;align-items:center;justify-content:center}#pdfg button img{max-width:100%;max-height:150px;display:block}#pdfg button span{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font:600 11px system-ui;padding:1px 6px;border-radius:8px}#pdfg button.on{border-color:#e8661c;box-shadow:0 0 0 2px #e8661c55}#pdfg button.on::after{content:"✓";position:absolute;right:4px;top:4px;background:#e8661c;color:#fff;width:20px;height:20px;border-radius:50%;font:700 12px/20px system-ui;text-align:center}#libup{margin-top:6px}#pdfok:disabled{opacity:.45}.snapk{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:#555;margin:2px 0 0;cursor:pointer;user-select:none}.snapk input{width:16px;height:16px;accent-color:#e8661c}
-/* layar lebar (PC / HP miring): alat di panel kiri, lapisan di panel kanan, kanvas di tengah */
+/* layar lebar (PC / HP miring): menu di panel kiri & kanan, kanvas di tengah dibuat lebih luas */
 @media (orientation:landscape) and (min-width:640px){
- #fsw{display:grid;grid-template-columns:minmax(260px,330px) 1fr;grid-template-rows:auto 1fr}
- #fsw>.fsh{grid-column:1/-1;grid-row:1}
- #fsw>#fst{grid-column:1;grid-row:2;max-height:none;overflow:auto;box-shadow:1px 0 0 #0000001a;padding:10px 12px max(10px,env(safe-area-inset-bottom))}
- #fsw>.fsb{grid-column:2;grid-row:2;min-width:0}
- #fsw #fst .tools,#fsw #fst .btns{display:grid;width:100%}
- #fsw #fsl{position:relative;right:auto;top:auto;bottom:auto;box-shadow:none;width:220px;border-left:1px solid #0000000f}
+ #fsw{display:grid;grid-template-columns:250px minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr)}
+ #fsw>.fsh{grid-column:1;grid-row:1;flex-wrap:wrap;height:auto;padding:8px 10px;border-bottom:1px solid #0000000f}
+ #fsw>#fst{grid-column:1;grid-row:2;max-height:none;overflow:auto;min-height:0;box-shadow:1px 0 0 #0000001a;padding:10px 12px max(10px,env(safe-area-inset-bottom))}
+ #fsw>.fsb{display:contents}
+ #fsw #fsc{grid-column:2;grid-row:1/span 2;min-width:0;min-height:0;padding:12px}
+ #fsw #fsl{grid-column:3;grid-row:1/span 2;position:relative;right:auto;top:auto;bottom:auto;box-shadow:none;width:200px;min-height:0;border-left:1px solid #0000000f}
  #fsw #fsl.min{width:46px;border-radius:0;box-shadow:none}
+ #fsw #fst .tools,#fsw #fst .btns{display:grid;width:100%}
 }
 </style></head>
 <body>
@@ -1589,8 +1590,14 @@ function edt(inside,W,H){/* squared distance to nearest 'inside' pixel */const I
   const col=new Float64Array(H);for(let x=0;x<W;x++){for(let y=0;y<H;y++)col[y]=g[y*W+x];const r=edt1(col,H);for(let y=0;y<H;y++)g[y*W+x]=r[y]}
   const row=new Float64Array(W);for(let y=0;y<H;y++){for(let x=0;x<W;x++)row[x]=g[y*W+x];const r=edt1(row,W);for(let x=0;x<W;x++)g[y*W+x]=r[x]}return g}
 function stroke(v){const sz=v.sz,pad=v.pos=='in'?0:(v.pos=='mid'?Math.ceil(sz/2):sz)+2,c=hex2rgb(v.col),o=v.op/100;
-  if(pad){IE.ox-=pad;IE.oy-=pad;const old=IE.x.getImageData(0,0,IE.w,IE.h);IE.c.width=IE.w=IE.w+2*pad;IE.c.height=IE.h=IE.h+2*pad;IE.x.putImageData(old,pad,pad);IE.M=null;IE.mA=null;IE.ov=null}
-  const W=IE.w,H=IE.h,id=IE.x.getImageData(0,0,W,H),d=id.data,ins=new Uint8Array(W*H),out=new Uint8Array(W*H);for(let i=0;i<W*H;i++){const a=d[i*4+3]>=128;ins[i]=a?1:0;out[i]=a?0:1}
+  /* jika ada seleksi, garis hanya mengelilingi area seleksi */
+  const m0=maskData(),W0=IE.w,H0=IE.h;let selA=null;if(m0){selA=new Uint8Array(W0*H0);for(let i=0;i<W0*H0;i++)selA[i]=m0[i*4+3]>127?1:0}
+  if(pad){IE.ox-=pad;IE.oy-=pad;const old=IE.x.getImageData(0,0,IE.w,IE.h);IE.c.width=IE.w=IE.w+2*pad;IE.c.height=IE.h=IE.h+2*pad;IE.x.putImageData(old,pad,pad);IE.M=null;IE.mA=null;IE.ov=null;
+    if(selA){const mc=document.createElement('canvas');mc.width=IE.w;mc.height=IE.h;const g=mc.getContext('2d'),md=g.createImageData(IE.w,IE.h);
+      for(let y=0;y<H0;y++)for(let x=0;x<W0;x++)if(selA[y*W0+x]){const q=((y+pad)*IE.w+x+pad)*4;md.data[q]=md.data[q+1]=md.data[q+2]=md.data[q+3]=255}
+      g.putImageData(md,0,0);IE.M=mc;IE.mA=null;IE.ov=null}}
+  const W=IE.w,H=IE.h,id=IE.x.getImageData(0,0,W,H),d=id.data;let selP=null;if(selA){const mp=maskData();selP=new Uint8Array(W*H);for(let i=0;i<W*H;i++)selP[i]=mp[i*4+3]>127?1:0}
+  const ins=new Uint8Array(W*H),out=new Uint8Array(W*H);for(let i=0;i<W*H;i++){const a=d[i*4+3]>=128&&(!selP||selP[i]);ins[i]=a?1:0;out[i]=a?0:1}
   const dOut=v.pos!='in'?edt(ins,W,H):null,dIn=v.pos!='out'?edt(out,W,H):null,R=v.pos=='mid'?sz/2:sz;
   const res=new Uint8ClampedArray(d.length);
   for(let i=0;i<W*H;i++){let a=0;if(dOut&&!ins[i])a=Math.max(a,cl01(R-Math.sqrt(dOut[i])+.5));if(dIn&&ins[i])a=Math.max(a,cl01(R-Math.sqrt(dIn[i])+.5));a*=o;
@@ -2062,7 +2069,7 @@ async function contentAwareFill(auto){let m=typeof maskData=='function'&&!auto?m
   if(x1<0){toast('Seleksi kosong');return}
   const bw=x1-x0+1,bh=y1-y0+1,mg=Math.max(24,Math.round(Math.max(bw,bh)*.9));const rx=Math.max(0,x0-mg),ry=Math.max(0,y0-mg),rw=Math.min(W,x1+mg+1)-rx,rh=Math.min(H,y1+mg+1)-ry;
   /* kerjakan di resolusi ≤ 360 px agar cepat, lalu salin pergeseran ke resolusi penuh */
-  const sc=Math.min(1,360/Math.max(rw,rh)),sw=Math.max(8,Math.round(rw*sc)),sh=Math.max(8,Math.round(rh*sc));
+  const sc=Math.min(1,460/Math.max(rw,rh)),sw=Math.max(8,Math.round(rw*sc)),sh=Math.max(8,Math.round(rh*sc));
   busy('Isi sesuai konten…',2);await new Promise(r=>setTimeout(r,30));
   try{iePush();const full=IE.x.getImageData(rx,ry,rw,rh),src=document.createElement('canvas');src.width=rw;src.height=rh;src.getContext('2d').putImageData(full,0,0);
     const small=document.createElement('canvas');small.width=sw;small.height=sh;const sx=small.getContext('2d',{willReadFrequently:true});sx.drawImage(src,0,0,sw,sh);const sd=sx.getImageData(0,0,sw,sh);
@@ -2073,11 +2080,9 @@ async function contentAwareFill(auto){let m=typeof maskData=='function'&&!auto?m
     const fill=document.createElement('canvas');fill.width=sw;fill.height=sh;fill.getContext('2d').putImageData(new ImageData(res,sw,sh),0,0);
     const big=document.createElement('canvas');big.width=rw;big.height=rh;const bx=big.getContext('2d');bx.imageSmoothingQuality='high';bx.drawImage(fill,0,0,rw,rh);
     const bd=bx.getImageData(0,0,rw,rh).data,od=full.data,orig=new Uint8ClampedArray(od);
-    /* tajamkan: salin piksel asli resolusi penuh memakai pergeseran tambalan dari hasil kasar */
-    if(nnf&&sc<1)for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){if(m[((ry+y)*W+rx+x)*4+3]<=0)continue;const cx=Math.min(sw-1,Math.floor((x+.5)*sc)),cy=Math.min(sh-1,Math.floor((y+.5)*sc)),s=nnf[cy*sw+cx];if(s<0)continue;
-      const sx=Math.round(x+((s%sw)-cx)/sc),sy=Math.round(y+(((s/sw)|0)-cy)/sc);if(sx<0||sy<0||sx>=rw||sy>=rh)continue;if(m[((ry+sy)*W+rx+sx)*4+3]>40||orig[(sy*rw+sx)*4+3]<200)continue;const q=(y*rw+x)*4,o=(sy*rw+sx)*4;bd[q]=orig[o];bd[q+1]=orig[o+1];bd[q+2]=orig[o+2];bd[q+3]=orig[o+3]}
     /* hanya area seleksi yang diganti, tepi seleksi dihaluskan */
-    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const a=m[((ry+y)*W+rx+x)*4+3]/255;if(a<=0)continue;const q=(y*rw+x)*4;for(let c=0;c<4;c++)od[q+c]=od[q+c]+(bd[q+c]-od[q+c])*a}
+    const fw=Math.max(3,Math.round(Math.min(bw,bh)*.04)),ou=new Uint8Array(rw*rh);for(let y=0;y<rh;y++)for(let x=0;x<rw;x++)ou[y*rw+x]=m[((ry+y)*W+rx+x)*4+3]>127?0:1;const dO=edt(ou,rw,rh);
+    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const a0=m[((ry+y)*W+rx+x)*4+3]/255;if(a0<=0)continue;const a=a0*Math.min(1,Math.sqrt(dO[y*rw+x])/fw);const q=(y*rw+x)*4;for(let c=0;c<4;c++)od[q+c]=od[q+c]+(bd[q+c]-od[q+c])*a}
     IE.x.putImageData(full,rx,ry);IE.changed=true;ieDraw();toast(tr?'Area transparan diisi dengan motif sekitarnya':'Area seleksi diisi sesuai sekitarnya')}
   catch(e){console.error(e);toast('Isi sesuai konten gagal: '+(e.message||e))}finally{busy(null)}}
 /* ukuran kanvas: tambah/kurangi kanvas tanpa mengubah ukuran gambar */
