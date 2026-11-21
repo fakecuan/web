@@ -16,7 +16,7 @@ input,select,textarea{border:1px solid #d9d9e3;border-radius:10px;padding:10px 1
 .card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;background:#fff}.card-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.card h3{margin:0;font-size:16px}.sub{font-size:12px;color:var(--muted)}
 .tag{display:inline-block;background:#efeaff;color:#4b36b8;border-radius:99px;padding:3px 9px;font-size:11px;font-weight:800}.tag.new{background:#fff1d6;color:#8a5a00}
 pre{white-space:pre-wrap;font:13px/1.5 inherit;background:#f8f8fb;border-radius:10px;padding:10px 12px;margin:10px 0;max-height:260px;overflow:auto}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.row select{width:auto}.total{font-weight:900;font-size:17px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.row select{width:auto}.total{font-weight:900;font-size:17px}.file-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.file-meta{font-size:12px;color:var(--muted);flex:1;min-width:150px}.file-input{display:none}
 .s-pending{background:#fff1d6}.s-produksi{background:#dfeaff}.s-selesai{background:#dff6e8}
 .modal{position:fixed;inset:0;background:#0009;z-index:10;display:flex;align-items:center;justify-content:center;padding:14px}.dialog{background:#fff;width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:20px}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#181820;color:#fff;padding:10px 16px;border-radius:99px;font-size:13px;z-index:20}
@@ -73,9 +73,9 @@ function card(o){
   +'<div class="sub">📞 '+esc(o.customer_phone)+'<br>📍 '+esc(o.shipping_address)+'</div>'
   +(o.note?'<div class="sub" style="margin-top:6px">📝 '+esc(o.note)+'</div>':'')
   +'<div class="row"><select class="s-'+o.status.toLowerCase()+'" data-st="'+o.id+'">'+statuses.map(s=>'<option'+(s===o.status?' selected':'')+'>'+s+'</option>').join('')+'</select>'
-  +(o.file&&o.file.chunks?'<button class="btn acc" data-dl="'+o.id+'">⬇ 3MF ('+(o.file.size/1048576).toFixed(1)+' MB)</button>':'<span class="sub">'+(o.file?.error?'⚠ 3MF gagal diunggah (pakai file dari WhatsApp)':'Tanpa file 3MF')+'</span>')
+  +(o.file&&o.file.chunks?'<button class="btn acc" data-dl="'+o.id+'">⬇ 3MF ('+(o.file.size/1048576).toFixed(1)+' MB)</button>':'<span class="sub">'+(o.file?.error?'⚠ 3MF gagal diunggah':'Tanpa file 3MF')+'</span>')
   +(wa?'<a class="btn wa" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')
-  +'<button class="btn light" data-edit="'+o.id+'">Catatan</button></div></div>';
+  +'<button class="btn light" data-file="'+o.id+'">Kelola file</button><button class="btn light" data-edit="'+o.id+'">Catatan</button></div></div>';
 }
 $('list').addEventListener('change',async e=>{const id=e.target.dataset.st;if(!id)return;const o=orders.find(x=>x.id===id);try{await store.setStatus(id,e.target.value);o.status=e.target.value;toast('Status disimpan');render()}catch(err){toast('Gagal: '+(err.message||err));render()}});
 $('list').addEventListener('click',async e=>{
@@ -83,7 +83,31 @@ $('list').addEventListener('click',async e=>{
   if(b.dataset.dl){const o=orders.find(x=>x.id===b.dataset.dl);const t=b.textContent;b.disabled=true;b.textContent='Mengunduh…';
     try{const blob=await store.dsFile(o.id,o.file);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=o.file.name||'pesanan.3mf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),10000)}
     catch(err){toast('Gagal unduh: '+(err.message||err))}b.disabled=false;b.textContent=t}
-  if(b.dataset.edit)openEdit(b.dataset.edit)});
+  if(b.dataset.edit)openEdit(b.dataset.edit);if(b.dataset.file)openFileManager(b.dataset.file)});
+function openFileManager(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  $('dialog').innerHTML='<h2 style="margin:0 0 4px">Kelola file order #'+o.order_number+'</h2><div class="sub">'+esc(o.customer_name)+'</div>'
+    +'<div class="card" style="margin:14px 0"><strong>File saat ini</strong><div class="sub" style="margin-top:5px">'+(o.file&&o.file.chunks?esc(o.file.name)+' · '+(o.file.size/1048576).toFixed(2)+' MB':'Belum ada file 3MF')+'</div></div>'
+    +'<div class="field"><label>'+(o.file&&o.file.chunks?'Pilih file pengganti (.3mf)':'Upload file (.3mf)')+'</label><input id="fileIn" type="file" accept=".3mf,application/vnd.ms-package.3dmanufacturing-3dmodel+zip"></div>'
+    +'<div class="sub">Maksimal 50 MB. File baru akan menggantikan lampiran lama pada order ini.</div>'
+    +'<div class="row" style="justify-content:flex-end;margin-top:18px">'+(o.file&&o.file.chunks?'<button id="removeFileBtn" class="btn danger" style="margin-right:auto">Hapus file saja</button>':'')+'<button id="fileCancel" class="btn light">Batal</button><button id="fileSave" class="btn acc">Simpan file</button></div>';
+  $('modal').classList.remove('hidden');
+  $('fileCancel').onclick=()=>$('modal').classList.add('hidden');
+  $('fileSave').onclick=async()=>{
+    const f=$('fileIn').files[0];if(!f){toast('Pilih file 3MF terlebih dahulu');return}
+    if(!/\.3mf$/i.test(f.name)){toast('Format harus .3mf');return}
+    if(f.size>50*1024*1024){toast('Ukuran file maksimal 50 MB');return}
+    const btn=$('fileSave');btn.disabled=true;btn.textContent='Mengunggah…';
+    try{const bytes=new Uint8Array(await f.arrayBuffer());const meta=await store.dsReplaceFile(o.id,o,o.file,bytes,f.name);o.file=meta;o.app='ds';$('modal').classList.add('hidden');render();toast('File order berhasil diperbarui')}
+    catch(err){toast('Gagal menyimpan: '+(err.message||err));btn.disabled=false;btn.textContent='Simpan file'}
+  };
+  const remove=$('removeFileBtn');if(remove)remove.onclick=async()=>{
+    if(!confirm('Hapus lampiran 3MF saja? Data dan detail order tetap tersimpan.'))return;
+    remove.disabled=true;remove.textContent='Menghapus…';
+    try{const next=await store.dsDeleteFile(o.id,o,o.file);delete o.file;Object.assign(o,next);$('modal').classList.add('hidden');render();toast('File dihapus, order tetap tersimpan')}
+    catch(err){toast('Gagal menghapus: '+(err.message||err));remove.disabled=false;remove.textContent='Hapus file saja'}
+  };
+}
 function openEdit(id){const o=orders.find(x=>x.id===id);
   $('dialog').innerHTML='<h2 style="margin:0 0 4px">#'+o.order_number+' · '+esc(o.customer_name)+'</h2><div class="sub">'+fdate(o.created_at)+'</div><div class="field"><label>Catatan admin</label><textarea id="noteIn" placeholder="Catatan produksi, pembayaran, dll.">'+esc(o.note||'')+'</textarea></div><div class="row" style="justify-content:flex-end"><button id="delBtn" class="btn danger" style="margin-right:auto">Hapus</button><button id="cancelBtn" class="btn light">Batal</button><button id="saveBtn" class="btn acc">Simpan</button></div>';
   $('modal').classList.remove('hidden');
