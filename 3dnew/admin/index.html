@@ -86,6 +86,7 @@ $('list').addEventListener('click',async e=>{
   if(b.dataset.edit)openEdit(b.dataset.edit);if(b.dataset.file)openFileManager(b.dataset.file)});
 function openFileManager(id){
   const o=orders.find(x=>x.id===id);if(!o)return;
+  const {id:_id,status:_status,images:_images,created_at:_created,order_number:_number,...orderData}=o;
   $('dialog').innerHTML='<h2 style="margin:0 0 4px">Kelola file order #'+o.order_number+'</h2><div class="sub">'+esc(o.customer_name)+'</div>'
     +'<div class="card" style="margin:14px 0"><strong>File saat ini</strong><div class="sub" style="margin-top:5px">'+(o.file&&o.file.chunks?esc(o.file.name)+' · '+(o.file.size/1048576).toFixed(2)+' MB':'Belum ada file 3MF')+'</div></div>'
     +'<div class="field"><label>'+(o.file&&o.file.chunks?'Pilih file pengganti (.3mf)':'Upload file (.3mf)')+'</label><input id="fileIn" type="file" accept=".3mf,application/vnd.ms-package.3dmanufacturing-3dmodel+zip"></div>'
@@ -98,13 +99,13 @@ function openFileManager(id){
     if(!/\.3mf$/i.test(f.name)){toast('Format harus .3mf');return}
     if(f.size>50*1024*1024){toast('Ukuran file maksimal 50 MB');return}
     const btn=$('fileSave');btn.disabled=true;btn.textContent='Mengunggah…';
-    try{const bytes=new Uint8Array(await f.arrayBuffer());const meta=await store.dsReplaceFile(o.id,o,o.file,bytes,f.name);o.file=meta;o.app='ds';$('modal').classList.add('hidden');render();toast('File order berhasil diperbarui')}
+    try{const bytes=new Uint8Array(await f.arrayBuffer());const meta=await store.dsReplaceFile(o.id,orderData,o.file,bytes,f.name);o.file=meta;o.app='ds';$('modal').classList.add('hidden');render();toast('File order berhasil diperbarui')}
     catch(err){toast('Gagal menyimpan: '+(err.message||err));btn.disabled=false;btn.textContent='Simpan file'}
   };
   const remove=$('removeFileBtn');if(remove)remove.onclick=async()=>{
     if(!confirm('Hapus lampiran 3MF saja? Data dan detail order tetap tersimpan.'))return;
     remove.disabled=true;remove.textContent='Menghapus…';
-    try{const next=await store.dsDeleteFile(o.id,o,o.file);delete o.file;Object.assign(o,next);$('modal').classList.add('hidden');render();toast('File dihapus, order tetap tersimpan')}
+    try{const next=await store.dsDeleteFile(o.id,orderData,o.file);delete o.file;Object.assign(o,next);$('modal').classList.add('hidden');render();toast('File dihapus, order tetap tersimpan')}
     catch(err){toast('Gagal menghapus: '+(err.message||err));remove.disabled=false;remove.textContent='Hapus file saja'}
   };
 }
