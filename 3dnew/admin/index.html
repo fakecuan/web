@@ -115,15 +115,15 @@ function openEdit(id){
  const o=orders.find(x=>x.id===id);if(!o)return;
  const details=String(o.size_details||'');
  const isPen=/NAME_PEN_HOLDER/i.test(o.product||'');
- const palette=[['Pink muda','#F6A6C8'],['Ungu muda','#B9A4E8'],['Biru muda','#91C8F2'],['Hijau muda','#9AD9A8'],['Kuning','#F6E58D'],['Coklat muda','#C99A75'],['Pink tua','#E65391'],['Ungu tua','#7546B8'],['Biru tua','#2764B5'],['Hijau tua','#25864D'],['Coklat tua','#75452E'],['Merah','#D93636'],['Hitam','#23262B'],['Putih','#F2F2EF']];
+ const palette=[['Pink Muda','#ffc7e8'],['Pink Tua','#e84b9b'],['Merah Muda','#ff9da8'],['Merah Tua','#c62828'],['Ungu Muda','#c9a7f5'],['Ungu Tua','#673ab7'],['Biru Muda','#8ecbff'],['Biru Tua','#2455b8'],['Hijau Muda','#9be7b0'],['Hijau Tua','#16834a'],['Kuning Muda','#ffe58a'],['Kuning Tua','#d49a00'],['Oranye Muda','#ffc18a'],['Oranye Tua','#d96a12'],['Putih','#ffffff'],['Abu-abu','#9ca3af'],['Hitam','#1d1d1f']];
  let items=[];
  if(isPen){
   const re=/^\s*\d+\.\s*(.+?)\n\s*Dasar:\s*(.+?)\n\s*Font:\s*(.+?)\n\s*Warna dasar:\s*(.+?)\n\s*Warna tulisan:\s*(.+?)\n\s*Harga:/gmi;
   let m;while((m=re.exec(details))!==null){
-   const color=t=>palette.find(x=>x[0].toLowerCase()===t.trim().toLowerCase())?.[1]||'#F6A6C8';
+   const color=t=>{const raw=String(t||'').trim(),code=raw.match(/#([0-9a-f]{6})/i);if(code)return '#'+code[1].toLowerCase();return palette.find(x=>x[0].toLowerCase()===raw.toLowerCase())?.[1]||'#ffc7e8'};
    items.push({name:m[1].trim(),flat:/Versi 1/i.test(m[2]),font:m[3].trim(),base:color(m[4]),text:color(m[5]),size:'M'});
   }
-  if(!items.length)items=[{name:'',flat:false,font:'Chewy',base:'#F6A6C8',text:'#F2F2EF',size:'M'}];
+  if(!items.length)items=[{name:'',flat:false,font:'Chewy',base:'#ffc7e8',text:'#ffffff',size:'M'}];
  }
  const colorInput=(label,key,val)=>'<div class="field"><label>'+label+'</label><div class="edit-color-row"><input type="color" data-key="'+key+'" value="'+esc(val)+'"><select data-key="'+key+'">'+palette.map(([n,v])=>'<option value="'+v+'" '+(v.toLowerCase()===String(val).toLowerCase()?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>';
  const itemHtml=items.map((p,i)=>'<div class="edit-item"><div class="edit-item-head"><b>Item '+(i+1)+'</b><button type="button" class="btn danger" data-remove>Hapus</button></div><div class="edit-item-grid"><div class="field"><label>Nama</label><input data-key="name" value="'+esc(p.name)+'"></div><div class="field"><label>Font</label><input data-key="font" value="'+esc(p.font)+'"></div><div class="field"><label>Dasar holder</label><select data-key="flat"><option value="false" '+(!p.flat?'selected':'')+'>Versi 2 — mengikuti font</option><option value="true" '+(p.flat?'selected':'')+'>Versi 1 — dasar datar</option></select></div><div class="field"><label>Ukuran</label><select data-key="size">'+['S','M','L','XL'].map(s=>'<option '+(s===(p.size||'M')?'selected':'')+'>'+s+'</option>').join('')+'</select></div></div>'+colorInput('Warna dasar','base',p.base)+colorInput('Warna tulisan','text',p.text)+'</div>').join('');
@@ -135,7 +135,7 @@ function openEdit(id){
  bind($('dialog'));
  if(wrap){
   wrap.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{btn.closest('.edit-item').remove()});
-  $('addEditItem').onclick=()=>{const p={name:'',flat:false,font:'Chewy',base:'#F6A6C8',text:'#F2F2EF',size:'M'};const node=document.createElement('div');node.className='edit-item';node.innerHTML='<div class="edit-item-head"><b>Pesanan baru</b><button type="button" class="btn danger" data-remove>Hapus</button></div><div class="edit-item-grid"><div class="field"><label>Nama</label><input data-key="name"></div><div class="field"><label>Font</label><input data-key="font" value="Chewy"></div><div class="field"><label>Dasar holder</label><select data-key="flat"><option value="false" selected>Versi 2 — mengikuti font</option><option value="true">Versi 1 — dasar datar</option></select></div><div class="field"><label>Ukuran</label><select data-key="size"><option>S</option><option selected>M</option><option>L</option><option>XL</option></select></div></div>'+colorInput('Warna dasar','base',p.base)+colorInput('Warna tulisan','text',p.text);node.querySelector('[data-remove]').onclick=()=>node.remove();wrap.appendChild(node);bind(node)};
+  $('addEditItem').onclick=()=>{const p={name:'',flat:false,font:'Chewy',base:'#ffc7e8',text:'#ffffff',size:'M'};const node=document.createElement('div');node.className='edit-item';node.innerHTML='<div class="edit-item-head"><b>Pesanan baru</b><button type="button" class="btn danger" data-remove>Hapus</button></div><div class="edit-item-grid"><div class="field"><label>Nama</label><input data-key="name"></div><div class="field"><label>Font</label><input data-key="font" value="Chewy"></div><div class="field"><label>Dasar holder</label><select data-key="flat"><option value="false" selected>Versi 2 — mengikuti font</option><option value="true">Versi 1 — dasar datar</option></select></div><div class="field"><label>Ukuran</label><select data-key="size"><option>S</option><option selected>M</option><option>L</option><option>XL</option></select></div></div>'+colorInput('Warna dasar','base',p.base)+colorInput('Warna tulisan','text',p.text);node.querySelector('[data-remove]').onclick=()=>node.remove();wrap.appendChild(node);bind(node)};
  }
  $('cancelBtn').onclick=()=>$('modal').classList.add('hidden');
  $('saveBtn').onclick=async()=>{
