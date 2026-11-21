@@ -111,6 +111,33 @@ export async function unlock(password){
       for(let i=0;i<file.chunks;i++){const s=await getDoc(doc(db,IMAGES,id+'_f'+i));if(!s.exists())throw new Error('Potongan file '+(i+1)+' hilang');parts.push(unb64(s.data().full))}
       return new Blob(parts,{type:'application/vnd.ms-package.3dmanufacturing-3dmodel+zip'});
     },
+    async dsReplaceFile(id,data,oldFile,fileBytes,fileName){
+      await ready();
+      if(!fileBytes?.length)throw new Error('File kosong');
+      const chunks=Math.ceil(fileBytes.length/CHUNK);
+      const written=[];
+      try{
+        for(let i=0;i<chunks;i++){
+          const path=id+'_f'+i;
+          await setDoc(doc(db,IMAGES,path),{full:bytesToB64(fileBytes.subarray(i*CHUNK,(i+1)*CHUNK))});
+          written.push(path);
+        }
+        const next={...data,file:{name:fileName||'pesanan.3mf',size:fileBytes.length,chunks}};
+        await updateDoc(doc(db,COLLECTION,id),{...await seal(next)});
+        for(let i=0;i<(oldFile?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}
+        return next.file;
+      }catch(e){
+        for(const path of written){try{await deleteDoc(doc(db,IMAGES,path))}catch{}}
+        throw e;
+      }
+    },
+    async dsDeleteFile(id,data,file){
+      await ready();
+      const next={...data};delete next.file;
+      await updateDoc(doc(db,COLLECTION,id),{...await seal(next)});
+      for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}
+      return next;
+    },
     async dsRemove(id,file){await ready();await deleteDoc(doc(db,COLLECTION,id));for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}},
     async setStatus(id,status){await ready();await updateDoc(doc(db,COLLECTION,id),{status})},
     async save(id,status,data){await ready();await updateDoc(doc(db,COLLECTION,id),{status,...await seal(data)})},
