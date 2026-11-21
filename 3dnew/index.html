@@ -2355,17 +2355,26 @@ refresh();
    const blob=await makeExport();
    const bytes=new Uint8Array(await blob.arrayBuffer());
    const fileName=`${safeName(customer)}_${p.label}_${p.qty}_PCS.3mf`;
-   const {submitDsOrder}=await import("../form/orders-db.js");
-   await submitDsOrder({
-    customer_name:customer,
-    customer_phone:$id("dsCustomerPhone").value.trim(),
-    shipping_address:$id("dsCustomerAddress").value.trim(),
-    product:p.label,
-    size_details:lines.join("\n\n"),
-    total:total,
-    note:""
-   },bytes,fileName);
-   status.textContent="Pesanan tersimpan. Membuka WhatsApp…";
+   // Simpan ke admin maksimal 45 detik; kalau gagal/sinyal lemah, pesanan tetap diteruskan ke WhatsApp.
+   try{
+    const {submitDsOrder}=await import("../form/orders-db.js");
+    await Promise.race([
+     submitDsOrder({
+      customer_name:customer,
+      customer_phone:$id("dsCustomerPhone").value.trim(),
+      shipping_address:$id("dsCustomerAddress").value.trim(),
+      product:p.label,
+      size_details:lines.join("\n\n"),
+      total:total,
+      note:""
+     },bytes,fileName),
+     new Promise((_,no)=>setTimeout(()=>no(new Error("waktu habis")),45000))
+    ]);
+    status.textContent="Pesanan tersimpan. Membuka WhatsApp…";
+   }catch(err){
+    console.warn("Simpan ke admin gagal",err);
+    status.textContent="Pesanan belum masuk admin ("+(err?.message||err)+"), tetap lanjut ke WhatsApp…";
+   }
    const waUrl="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg);
    if(popup&&!popup.closed)popup.location.href=waUrl;
    else window.location.href=waUrl;
