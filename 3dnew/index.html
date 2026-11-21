@@ -900,7 +900,7 @@ $("cFirst").onclick=()=>{S3.mode="first";rebuild3();refresh()};
 $("cUp").onclick=()=>{S3.mode="upper";rebuild3();refresh()};
 function sync1(){tint(body.material,col.body);P1.keys.forEach((k,i)=>tint(k.material,col.keys[i]));refresh()}
 function sync2(){recolor2();refresh()}
-function setProduct(P){active=P;held=-1;if(window.dsShowProductPrice)window.dsShowProductPrice(P===P1?1:P===P2?2:P===P3?3:1);
+function setProductLegacy(P){active=P;held=-1;if(window.dsShowProductPrice)window.dsShowProductPrice(P===P1?1:P===P2?2:P===P3?3:1);
  const L=[P1,P2,P3],wall=P===P3;
  L.forEach((Q,i)=>{Q.root.visible=Q===P;$("p"+(i+1)).hidden=Q!==P});
  floor.rotation.x=wall?0:-Math.PI/2;floor.position.set(0,wall?0:P.floor,wall?-16:0);
@@ -916,6 +916,7 @@ function setProduct(P){active=P;held=-1;if(window.dsShowProductPrice)window.dsSh
 
 function refresh(){
  $("pr1").setAttribute("aria-pressed",active===P1);$("pr2").setAttribute("aria-pressed",active===P2);$("pr3").setAttribute("aria-pressed",active===P3);
+ $("pr4")?.setAttribute("aria-pressed",active===(window.__ds&&window.__ds.P4));$("pr5")?.setAttribute("aria-pressed",active===(window.__dsPenHolder&&window.__dsPenHolder.P5));$("pr6")?.setAttribute("aria-pressed",active===(window.__dsBag&&window.__dsBag.P6));
  let lines;
  if(active===P1){
   $("cAll").setAttribute("aria-pressed",sel==="all");$("cBody").setAttribute("aria-pressed",sel==="body");
@@ -1823,7 +1824,28 @@ $("dl").onclick=async()=>{
   msg.textContent="Unduhan 3MF dimulai.";
  }catch(err){msg.textContent="Gagal membuat 3MF: "+(err?.message||err)}
 };
-const mcOldSetProduct=setProduct;
+const function setProduct(P){
+ if(P===P1){
+  document.body.classList.remove("ds-pen-holder-open");
+  active=P;held=-1;
+  [root,root2,root3,cloverScene].forEach(r=>r.visible=false);
+  mcRoot.visible=true;
+  ["p1","p2","p3","p4","p5","p6"].forEach(id=>{const el=$(id);if(el)el.hidden=id!=="p1"});
+  ["pr1","pr2","pr3","pr4","pr5","pr6"].forEach(id=>{const el=$(id);if(el)el.setAttribute("aria-pressed",String(id==="pr1"))});
+  if(window.dsShowProductPrice)window.dsShowProductPrice(1);
+  floor.rotation.x=-Math.PI/2;floor.position.set(0,P1.floor,0);
+  $("stage").style.display="block";
+  $("ttl").textContent="Clicker 3×3";
+  $("lead").textContent="Sembilan key mekanikal. Pilih pola warna keycap dan warna base untuk setiap pesanan, lalu pesan.";
+  $("dlNote").textContent="Satu file 3MF berisi seluruh pesanan Clicker 3×3.";
+  $("rnd").textContent="Acak warna";
+  half=48;mcBuildPreview();fit();controls.target.set(0,0,0);controls.update();
+  hint.classList.remove("off");refresh();return;
+ }
+ mcRoot.visible=false;
+ return setProductLegacy(P);
+}
+mcOldSetProduct=setProduct;
 setProduct=function(P){
  if(P===P1){
   root.visible=false;mcRoot.visible=true;root2.visible=false;root3.visible=false;
