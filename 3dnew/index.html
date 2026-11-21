@@ -620,7 +620,7 @@ body.ds-pen-holder-open #penHolderEditor{
     <h2>Daftar pesanan Karikatur Keychain</h2>
     <div id="karOrders" class="multi-name-orders"></div>
     <button type="button" class="chip" id="karAdd">＋ Tambah Pesanan</button>
-    <p class="help">Nama dan tulisan lucu ditampilkan di bawah karakter. Warna rambut, kulit, baju, garis baju, dan border dipilih dari palet Karikatur. Warna tulisan sama seperti produk lain. Punya kartun sendiri? Upload gambarnya, lalu warna dan bentuk mengikuti gambar itu.</p>
+    <p class="help">Gantungan tanpa nama. Upload gambar kartun sendiri, lalu bentuk dan warnanya mengikuti gambar, dengan outline putih dan ring putih. Tanpa upload, karakter memakai warna dari palet Karikatur.</p>
    </section>
   </div>
   <section>
@@ -2921,7 +2921,7 @@ window.addEventListener('message',ev=>{
  const K_DEFAULT={name:"",fun:"",size:"M",text:"#E65391",parts:{hair:0,skin:2,shirt:0,stripe:0,border:0}};
  let kOrders=[{...K_DEFAULT,parts:{...K_DEFAULT.parts}}];
  const kShown=s=>{const BCF=window.__dsBag.lib.BCF;return [...String(s||"").toUpperCase()].filter(c=>BCF.g[c]).slice(0,10).join("")};
- const kPrice=o=>35000+(o.fun?5000:0)+(o.size==="L"?5000:0);
+ const kPrice=o=>35000;
  const rpK=n=>"Rp"+Number(n).toLocaleString("id-ID");
  const esc=t=>String(t).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 
@@ -3013,7 +3013,8 @@ window.addEventListener('message',ev=>{
   return lay.L.map(l=>{const g=letterGeo({...l,th:.8},lay);g.translate(0,yc,0);return{ch:l.ch,geo:g}});
  }
  /* daftar bagian (nama + tulisan lucu) dengan posisi di bawah karakter */
- function orderTexts(o){
+ function orderTexts(o){return[]; /* produk Karikatur tanpa nama */
+
   const nm=kShown(o.name),fn=kShown(o.fun);
   const capN=K_CAP[o.size]||K_CAP.M,capF=capN*.75;
   const yN=-30-3-capN/2;
@@ -3037,13 +3038,7 @@ window.addEventListener('message',ev=>{
    const partSel=(k,label,list2)=>`<label>${label} ${sel("part:"+k,list2,o.parts[k])}</label>`;
    return `<div class="clover-order-card" data-k-row="${i}">
     <div class="clover-order-top">
-     <input type="text" class="bc-in" data-k-name maxlength="10" value="${esc(o.name)}" placeholder="Nama (opsional)" aria-label="Nama karikatur ${i+1}" autocomplete="off" autocapitalize="characters" spellcheck="false">
      <button type="button" class="multi-remove" data-k-remove="${i}" ${kOrders.length===1?"disabled":""} aria-label="Hapus pesanan ${i+1}">×</button>
-    </div>
-    <div class="clover-colors">
-     <label>TULISAN LUCU <select data-k="fun" aria-label="Tulisan lucu">${K_FUN.map(([l,v],j)=>`<option value="${j}" ${j===(funIdx<0?0:funIdx)?"selected":""}>${esc(l)}</option>`).join("")}</select></label>
-     <label>UKURAN TULISAN <select data-k="size" aria-label="Ukuran tulisan">${K_SIZE.map(([v,l],j)=>`<option value="${j}" ${j===(sizeIdx<0?1:sizeIdx)?"selected":""}>${esc(l)}</option>`).join("")}</select></label>
-     <label>WARNA TULISAN <select data-k="tcol" aria-label="Warna tulisan">${MULTI_COLORS.map(([n,c],j)=>`<option value="${j}" ${j===(colIdx<0?6:colIdx)?"selected":""}>${esc(n)}</option>`).join("")}</select></label>
     </div>
     <div class="clover-colors">
      ${o.img?`<p class="help" style="grid-column:1/-1">Warna mengikuti kartun: ${esc(o.imgName||"gambar")}</p>`:K_PARTS.map(([k,l])=>partSel(k,l.toUpperCase(),KC[k].map(([n])=>[n,n]))).join("")}
@@ -3202,9 +3197,11 @@ window.addEventListener('message',ev=>{
    if(!rows.length)continue;
    let u=kUni(...rows);
    if(!u.length)continue;
-   u=kOff(kOff(u,-.3),.3);u=kOff(kOff(u,.3),-.3);
+   u=kOff(kOff(u,-.5),.5);u=kOff(kOff(u,.5),-.5);
+   u=u.filter(p=>Math.abs(kArea(p))/(SC*SC)>=4);
+   if(!u.length)continue;
    let area=0;u.forEach(p=>{area+=Math.abs(kArea(p))/(SC*SC)});
-   if(area<2)continue;
+   if(area<3)continue;
    let r=0,g=0,b=0,n=0;
    for(const i of fg)if(lab[i]===k){r+=d[i*4];g+=d[i*4+1];b+=d[i*4+2];n++}
    const hex="#"+[r/n,g/n,b/n].map(v=>Math.round(v).toString(16).padStart(2,"0")).join("").toUpperCase();
@@ -3212,12 +3209,23 @@ window.addEventListener('message',ev=>{
   }
   if(!shapes.length)throw new Error("tidak ada warna yang terbaca");
   shapes.sort((a,b)=>b.area-a.area);
+  /* outline putih: siluet diperbesar 0,8 mm lalu dihaluskan */
+  const silAll=kUni(...shapes.map(x=>x.u));
+  let border=kOff(silAll,.8);border=kOff(kOff(border,.6),-.6);
+  /* ring putih di atas kepala */
+  let top=-1e18;border.forEach(p=>p.forEach(q=>{if(q.Y>top)top=q.Y}));top/=SC;
+  const cy=top+2.2;
+  const ring=kDif(kEll(0,cy,3.6,3.6,64),kEll(0,cy,1.6,1.6,40));
+  const base=kUni(border,ring);
   const geos=[];
+  const baseGeo=new THREE.ExtrudeGeometry(kToShapes(base),{depth:.6,bevelEnabled:false,curveSegments:1});
+  geos.push({name:"Outline dan ring putih",geo:baseGeo,color:"#FFFFFF"});
   shapes.forEach((sh,i)=>{
    const above=shapes.slice(i+1).map(x=>x.u);
    const fp=above.length?kDif(sh.u,kUni(...above)):sh.u;
    if(!fp.length)return;
-   const g=new THREE.ExtrudeGeometry(kToShapes(fp),{depth:1.2,bevelEnabled:false,curveSegments:1});
+   const g=new THREE.ExtrudeGeometry(kToShapes(fp),{depth:1,bevelEnabled:false,curveSegments:1});
+   g.translate(0,0,.6);
    geos.push({name:"Kartun "+(i+1),geo:g,color:sh.color});
   });
   return geos;
@@ -3259,7 +3267,7 @@ window.addEventListener('message',ev=>{
   controls.target.set(0,0,0);
   cam.position.copy(controls.target).addScaledVector(new THREE.Vector3(.1,-.45,.9).normalize(),200);
   $("ttl").textContent="Karikatur Keychain";
-  $("lead").textContent="Gantungan karikatur dengan rambut, kulit, baju, dan border yang bisa diganti warnanya. Tambahkan nama dan tulisan lucu di bawah karakter.";
+  $("lead").textContent="Gantungan karikatur tanpa nama. Upload gambar kartun sendiri untuk membuat gantungan dengan outline dan ring putih.";
   $("dlNote").textContent="Satu file 3MF berisi semua pesanan Karikatur. Tiap bagian karakter dan huruf jadi objek terpisah dengan warnanya.";
   hint.classList.add("off");
   grp.visible=true;kPreview();refresh();
