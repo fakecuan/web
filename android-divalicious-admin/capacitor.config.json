@@ -1,0 +1,13 @@
+{
+  "appId": "com.fakecuan.divaliciousadmin",
+  "appName": "Divalicious Admin",
+  "webDir": "www",
+  "server": {
+    "url": "https://fakecuan.github.io/web/3dnew/admin/",
+    "androidScheme": "https",
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "backgroundColor": "#ffffff"
+  }
+}

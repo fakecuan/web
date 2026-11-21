@@ -1,0 +1,85 @@
+name: Divalicious Admin APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android-divalicious-admin/**"
+      - "android-order-notify/**"
+      - ".github/workflows/divalicious-admin-apk.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: divalicious-admin-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-divalicious-admin
+    env:
+      KS_B64: ${{ secrets.DIVALICIOUS_ADMIN_KEYSTORE_BASE64 }}
+      KS_PASS: ${{ secrets.DIVALICIOUS_ADMIN_KEYSTORE_PASSWORD }}
+      KS_ALIAS: ${{ secrets.DIVALICIOUS_ADMIN_KEY_ALIAS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: android-divalicious-admin/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Siapkan proyek Android
+        run: |
+          npm ci
+          npx cap add android
+          npx @capacitor/assets generate --android
+          npx cap sync android
+          node ../android-order-notify/inject.mjs divalicious-order-87d5f8f856dc8f59
+          VC=$(( 100 + ${{ github.run_number }} ))
+          sed -i "s/versionCode 1$/versionCode $VC/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
+
+      - name: Build APK
+        working-directory: android-divalicious-admin/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Tanda tangani APK
+        run: |
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ] && [ -n "$KS_ALIAS" ]; then
+            echo "$KS_B64" | base64 -d > release.jks; KS=release.jks
+          else
+            KS=signing/divalicious-admin.jks; export KS_PASS='YGIg7nN-gzKbz7EDNIiHIQdu'; KS_ALIAS=divaliciousadmin
+          fi
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          IN=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          "$BT/zipalign" -f -p 4 "$IN" aligned.apk
+          "$BT/apksigner" sign --ks "$KS" --ks-key-alias "$KS_ALIAS" --ks-pass env:KS_PASS --key-pass env:KS_PASS --out Divalicious-Admin.apk aligned.apk
+          "$BT/apksigner" verify Divalicious-Admin.apk
+          rm -f release.jks
+
+      - name: Unggah ke Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="divalicious-admin-apk-latest"
+          gh release delete "$TAG" -y --cleanup-tag || true
+          git push origin ":refs/tags/$TAG" || true
+          gh release create "$TAG" Divalicious-Admin.apk \
+            --target "${{ github.sha }}" \
+            --title "Divalicious Admin APK 1.${{ github.run_number }}" \
+            --notes "APK Android admin pesanan Divalicious Studio dengan notifikasi + suara saat order masuk. Aplikasi memuat https://fakecuan.github.io/web/3dnew/admin/, jadi isinya ikut ter-update tanpa instal ulang. Link tetap: https://github.com/fakecuan/web/releases/download/divalicious-admin-apk-latest/Divalicious-Admin.apk" \
+            --latest=false
