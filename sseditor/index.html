@@ -2028,24 +2028,56 @@ $('#mnewok').onclick=async()=>{const m=NEWM;$('#mnew').hidden=true;
 
 /* ---------- model lengan: pendek / panjang / raglan pendek / raglan panjang ---------- */
 const MODELS={s:'7S-lengan-pendek.zprj',l:'7S-lengan-panjang.zprj',rs:'7S-raglan-pendek.zprj',rl:'7S-raglan-panjang.zprj'};
-async function getTpl(k){await tplGet(k);if(TPL.file)return TPL;const fn=MODELS[k];
-  for(const u of ['pola/'+fn,'https://fakecuan.github.io/web/sseditor/pola/'+fn]){try{busy('Mengunduh pola '+KNAME[k]+'…',1);const r=await fetch(u);if(!r.ok)throw new Error(r.status);
-      const tot=+r.headers.get('content-length')||38e6,rd=r.body.getReader(),parts=[];let got=0;for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;busy('Mengunduh pola '+KNAME[k]+'… '+Math.round(got/1048576)+' MB',Math.min(99,got/tot*100))}
-      const f=new File(parts,fn);busy(null);TPLS[k].file=f;TPLS[k].name=fn;TPL=TPLS[k];tplPut(f,k);return TPL}catch(e){console.warn('unduh pola',u,e)}}
-  busy(null);toast('Pola '+KNAME[k]+' tidak bisa diunduh. Buka file .zprj-nya lewat Buka.');return null}
+async function getTpl(k){
+  const fn=MODELS[k];
+  if(!fn)throw new Error('Model pola tidak dikenal: '+k);
+  const url=new URL('pola/'+fn,document.baseURI);
+  url.searchParams.set('rev','main');
+  url.searchParams.set('t',String(Date.now()));
+  busy('Mengambil pola resmi '+fn+'…',1);
+  try{
+    const r=await fetch(url.href,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status+' saat mengambil '+fn);
+    const b=await r.blob();
+    if(!b.size)throw new Error('File pola kosong: '+fn);
+    const f=new File([b],fn,{type:'application/octet-stream',lastModified:Date.now()});
+    TPLS[k]={file:f,name:fn};TPL=TPLS[k];
+    return TPL;
+  }finally{busy(null)}
+}
 function curKind(){return ZP?tplKind():(ls?'l':'s')}
 function syncSlv(){const s=$('#slv');s.style.display='';s.value=curKind()}
 $('#slv').innerHTML=Object.keys(KNAME).map(k=>`<option value="${k}">${KNAME[k][0].toUpperCase()+KNAME[k].slice(1)}</option>`).join('');
 {const _as=applySleeve;applySleeve=function(){_as.apply(this,arguments);try{syncSlv()}catch(e){}}}
 {const _oz=openZprj;openZprj=async function(f){const r=await _oz.apply(this,arguments);syncSlv();return r}}
 function remapSleeves(o,toLong){const a=toLong?'sleeve':'long',b=toLong?'long':'sleeve';['L','R'].forEach(s=>{const src=o.parts[a+s];if(src&&(!o.parts[b+s]||!(o.parts[b+s].layers||[]).length))o.parts[b+s]=src});return o}
-async function switchModel(k,force){const prev=curKind();if(k===prev&&!force)return;
-  if(!ZP&&(k=='s'||k=='l')&&(typeof curSizeBic!='function'||curSizeBic())){ls=k=='l'?1:0;['L','R'].forEach(s=>{const a=P[(ls?'sleeve':'long')+s],b=P[(ls?'long':'sleeve')+s];b.base=a.base;if(a.layers.length){b.layers=a.layers.map(cloneL);b.ai=b.layers.length-1}render(b.d.id)});
-    if(sel&&!vis(P[sel].d))select(null);applySleeve();toast(ls?'Model lengan panjang':'Model lengan pendek');return}
-  const o=remapSleeves(projObj(),k=='l'||k=='rl'),had=Object.values(o.parts).some(p=>(p.layers||[]).length),nm=ZP?FS.zprj.n:(FS.json.named?FS.json.n:'desain-skinsuit-baru');
-  const t=await getTpl(k);if(!t){syncSlv();return}const f=t.file instanceof File?t.file:new File([t.file],t.name);f.__tpl=1;
-  await openZprj(f);if(!ZP){syncSlv();return}o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();setTimeout(()=>setDirty(had),900);syncSlv();toast('Model: '+(typeof CURSIZE!='undefined'?CURSIZE+' · ':'')+KNAME[k])}
-$('#slv').onchange=e=>switchModel(e.target.value);
+let switchRequestId=0;
+async function switchModel(k,force){
+  if(!MODELS[k]){toast('Model pola tidak dikenal: '+k);return}
+  const requestId=++switchRequestId,prev=curKind();
+  if(k===prev&&!force)return;
+  const beforeSize=CURSIZE;
+  const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);
+  if(S&&!S.bic){toast('Pola '+CURSIZE+' bukan pola bawaan 7S. Pemilihan model ini dibatalkan.');syncSlv();return}
+  const o=remapSleeves(projObj(),k==='l'||k==='rl');
+  const had=Object.values(o.parts).some(p=>(p.layers||[]).length);
+  const nm=ZP?FS.zprj.n:(FS.json.named?FS.json.n:'desain-skinsuit-baru');
+  try{
+    const t=await getTpl(k);
+    if(requestId!==switchRequestId)return;
+    if(!t||!t.file)throw new Error('File pola tidak tersedia');
+    const expected=MODELS[k];
+    if(t.name!==expected||t.file.name!==expected)throw new Error('Validasi nama file gagal. Diharapkan '+expected);
+    const f=new File([t.file],expected,{type:'application/octet-stream',lastModified:Date.now()});f.__tpl=1;
+    await openZprj(f);
+    if(requestId!==switchRequestId)return;
+    if(!ZP)throw new Error('Editor tidak berhasil membuka '+expected);
+    o.ls=0;applyProject(o);FS.zprj.h=null;FS.zprj.n=nm;FS.zprj.named=false;fnLabels();
+    CURSIZE=beforeSize;try{localStorage.setItem('szCur',CURSIZE)}catch(_){}
+    setTimeout(()=>setDirty(had),900);syncSlv();toast('Model '+CURSIZE+' · '+KNAME[k]+' dimuat dari repository');
+  }catch(e){console.error('Gagal memuat pola resmi',e);toast('Pola '+MODELS[k]+' gagal dimuat: '+e.message);syncSlv()}
+}
+$('#slv').onchange=e=>switchModel(e.target.value,true);
 setTimeout(syncSlv,0);
 /* versi aplikasi ikut tersimpan di data desain (untuk melacak masalah) */
 {const _po=projObj;projObj=function(){const o=_po.apply(this,arguments);try{o.rv=($('#appver').textContent.match(/r\d+/)||[''])[0]}catch(e){}return o}}
