@@ -240,7 +240,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.4.3';
+const APP_VERSION = '1.4.4';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
@@ -2914,7 +2914,7 @@ function bindVectorPanel() {
 
 // ================= GANTUNGAN (keychain logo) =================
 const KC = { src: 'text', text: 'Rifki', font: 'luckiest-guy-400', img: null, imgName: '', mode: 'auto', thr: 128, detail: 320, svgPolys: null, svgName: '',
-  width: 45, size: 14, logoH: 1.2, hList: [], twist: 15, twistOn: false, batch: true, useBase: true, spacing: -1, autoJoin: false, ringH: 3, baseH: 3, outline: 2.5, fill: true, ring: 'left', ringOut: 9, ringIn: 4.5, ringShift: 0, _raw: null };
+  width: 45, size: 14, logoH: 1.2, hList: [], twist: 15, twistOn: false, batch: true, useBase: true, spacing: -1, autoJoin: false, ringH: 3, baseH: 3, outline: 2.5, fill: true, ring: 'left', ringOut: 9, ringIn: 4.5, ringShift: 0, _raw: null, multi: true, ncol: 3 };
 let kcTimer = null, kcBusy = false;
 const kcEl = document.createElement('input'); kcEl.type = 'file'; kcEl.id = 'kcFile'; kcEl.accept = 'image/*'; kcEl.style.display = 'none'; document.body.appendChild(kcEl);
 const kcSvgEl = document.createElement('input'); kcSvgEl.type = 'file'; kcSvgEl.id = 'kcSvgFile'; kcSvgEl.accept = '.svg,image/svg+xml'; kcSvgEl.style.display = 'none'; document.body.appendChild(kcSvgEl);
@@ -2952,6 +2952,38 @@ async function traceImage() {
   const loops = traceMask(mask, W, H).map(l => simplifyLoop(l, 0.6)).filter(l => l.length >= 3 && Math.abs(area(l)) > 3);
   return loops;
 }
+async function traceColorLayers(K) {
+  const im = KC.img; const D = KC.detail; const sc = Math.min(1, D / Math.max(im.width, im.height)); const W = Math.max(8, Math.round(im.width * sc)), H = Math.max(8, Math.round(im.height * sc));
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(im, 0, 0, W, H);
+  const d = cx.getImageData(0, 0, W, H).data; let hasA = false; for (let i = 3; i < d.length; i += 16) if (d[i] < 245) { hasA = true; break; }
+  const N = W * H; const px = [];
+  for (let p = 0, i = 0; p < N; p++, i += 4) { const a = d[i + 3]; const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; if (hasA ? a > 127 : lum < 235) px.push(p); }
+  if (px.length < 4) return null;
+  const rgb = p => [d[p * 4], d[p * 4 + 1], d[p * 4 + 2]];
+  const dist = (a, b) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+  const step = Math.max(1, Math.ceil(px.length / 5000)); const samp = px.filter((_, j) => j % step === 0);
+  let cen = [rgb(samp[0])];
+  while (cen.length < K) { let best = null, bd = -1; for (const p of samp) { const c = rgb(p); const dd = Math.min(...cen.map(q => dist(c, q))); if (dd > bd) { bd = dd; best = c; } } if (bd < 400) break; cen.push(best); }
+  for (let it = 0; it < 12; it++) {
+    const sum = cen.map(() => [0, 0, 0, 0]);
+    for (const p of samp) { const c = rgb(p); let bi = 0, bd = 1e18; cen.forEach((q, j) => { const dd = dist(c, q); if (dd < bd) { bd = dd; bi = j; } }); const sm = sum[bi]; sm[0] += c[0]; sm[1] += c[1]; sm[2] += c[2]; sm[3]++; }
+    cen = cen.map((q, j) => sum[j][3] ? [sum[j][0] / sum[j][3], sum[j][1] / sum[j][3], sum[j][2] / sum[j][3]] : q);
+  }
+  const asg = new Int16Array(N).fill(-1); const cnt = cen.map(() => 0);
+  for (const p of px) { const c = rgb(p); let bi = 0, bd = 1e18; cen.forEach((q, j) => { const dd = dist(c, q); if (dd < bd) { bd = dd; bi = j; } }); asg[p] = bi; cnt[bi]++; }
+  const keep = cen.map((_, j) => cnt[j] >= px.length * 0.01); const kept = cen.map((_, j) => j).filter(j => keep[j]); if (!kept.length) return null;
+  for (const p of px) if (!keep[asg[p]]) { const c = rgb(p); let bi = kept[0], bd = 1e18; for (const j of kept) { const dd = dist(c, cen[j]); if (dd < bd) { bd = dd; bi = j; } } asg[p] = bi; }
+  const order = kept.slice().sort((a, b) => cnt[b] - cnt[a]).slice(0, Math.max(1, K)); const layers = [];
+  for (const j of order) {
+    const mask = new Uint8Array(N); let r = 0, g = 0, b = 0, n = 0;
+    for (const p of px) if (asg[p] === j) { mask[p] = 1; const c = rgb(p); r += c[0]; g += c[1]; b += c[2]; n++; }
+    const loops = traceMask(mask, W, H).map(l => simplifyLoop(l, 0.6)).filter(l => l.length >= 3 && Math.abs(area(l)) > 3);
+    if (!loops.length) continue;
+    const hex = '#' + [r / n, g / n, b / n].map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+    layers.push({ hex, loops });
+  }
+  return layers.length ? layers : null;
+}
 function glyphPolys(str, fontId, gap = 0) {
   const font = getFont(fontId); const size = 10; const lines = String(str).split('\n'); const lh = size * 1.25; const out = [];
   lines.forEach((line, li) => { const gl = font.stringToGlyphs(line); const xs = []; let x = 0; const sc = size / font.unitsPerEm;
@@ -2976,6 +3008,7 @@ async function svgPolysFrom(text) {
 async function kcSource(w) {
   // returns {cs: CrossSection (unscaled), name}
   if (KC.src === 'text') { if (!String(KC.text).trim()) throw new Error('teks masih kosong'); return { cs: new w.CrossSection(textPolys(KC.text, KC.font), 'NonZero'), name: 'Gantungan ' + String(KC.text).split('\n')[0].slice(0, 16) }; }
+  if (KC.src === 'png' && KC.img && KC.multi && KC.useBase !== false) { const layers = await traceColorLayers(+KC.ncol || 3); if (layers && layers.length > 1) { const css = layers.map(L => new w.CrossSection(L.loops, 'EvenOdd')); return { cs: css.reduce((a, c) => a.add(c)), layers: css, colors: layers.map(L => L.hex), name: 'Gantungan ' + (KC.imgName || 'logo') }; } }
   if (KC.src === 'png') { if (!KC.img) throw new Error('pilih gambar PNG dulu'); const loops = await traceImage(); if (!loops || !loops.length) throw new Error('tidak ada bentuk terdeteksi — ubah mode Gelap/Terang atau ambang'); return { cs: new w.CrossSection(loops, 'EvenOdd'), name: 'Gantungan ' + (KC.imgName || 'logo') }; }
   if (KC.src === 'svg') { if (!KC.svgPolys || !KC.svgPolys.length) throw new Error('pilih file SVG dulu'); let u = null; for (const sh of KC.svgPolys) { const c = new w.CrossSection(sh, 'EvenOdd'); u = u ? u.add(c) : c; } return { cs: u, name: 'Gantungan ' + (KC.svgName || 'svg') }; }
   if (KC.src === 'sketch') { const ol = sketchOutline({ ...SK, closed: true }); if (ol.length < 3) throw new Error('gambar dulu bentuk tertutup di tab Vektor'); return { cs: new w.CrossSection([ol], 'EvenOdd'), name: 'Gantungan vektor' }; }
@@ -2998,6 +3031,7 @@ async function kcBuild(P = KC, text = KC.text) {
     const s = P.src === 'text' ? P.size / 10 : P.width / rw; const cx0 = -(b0.min[0] + b0.max[0]) / 2, cy0 = -(b0.min[1] + b0.max[1]) / 2;
     logo = T(logo.translate([cx0, cy0]).scale([s, s]));
     if (letters) letters = letters.map(l => T(T(l.translate([cx0, cy0])).scale([s, s])));
+    const layers = src.layers ? src.layers.map(L => T(T(L.translate([cx0, cy0])).scale([s, s]))) : null;
     logo = T(logo.simplify(0.01));
     const useBase = P.useBase !== false;
     let base = useBase ? (P.outline > 0 ? T(logo.offset(P.outline, 'Round', 2, 40)) : logo) : logo;
@@ -3027,6 +3061,10 @@ async function kcBuild(P = KC, text = KC.text) {
     const tw = P.twistOn ? (+P.twist || 0) : 0; const nDiv = tw ? Math.max(2, Math.ceil(Math.abs(tw) / 4)) : 0;
     const ext = (cs, hgt) => { const bb = cs.bounds(); const lx = (bb.min[0] + bb.max[0]) / 2, ly = (bb.min[1] + bb.max[1]) / 2;
       const m = T(T(cs.translate([-lx, -ly])).extrude(hgt, nDiv, tw)); return T(m.translate([lx, ly, useBase ? z0 - 0.02 : 0])); };
+    if (layers && useBase) {
+      const logos = layers.map((L, i) => ({ data: manToData(ext(L, P.logoH)), extruder: i + 1, color: src.colors[i], name: 'Logo ' + (i + 1) }));
+      return { loose: 0, base: mBase ? manToData(mBase) : null, logos, baseExt: 1, baseColor: src.colors[0], logo: null, name: 'Gantungan ' + src.name.replace(/^Gantungan /, '') };
+    }
     let mLogo;
     if (letters) { const hl = (P.hList || []).filter(v => v > 0);
       const solids = letters.map((l, i) => { let cs = clear ? T(l.subtract(clear)) : l; if (cs.isEmpty()) return null; return ext(cs, hl.length ? hl[i % hl.length] : P.logoH); }).filter(Boolean);
@@ -3037,8 +3075,16 @@ async function kcBuild(P = KC, text = KC.text) {
     return { loose, base: mBase ? manToData(mBase) : null, logo: manToData(mLogo), name: 'Gantungan ' + src.name.replace(/^Gantungan /, '') };
   } finally { trash.forEach(x => { try { x.delete(); } catch (e) {} }); }
 }
+function setFil(slot, hex) { while (state.filaments.length < slot) state.filaments.push('#cccccc'); state.filaments[slot - 1] = hex; }
 function kcSetParts(o, r, exLogo) {
   const old = Object.fromEntries(o.parts.map(p => [p.role, p])); const out = [];
+  if (r.logos) {
+    setFil(r.baseExt || 1, r.baseColor);
+    out.push(old.base ? { ...old.base, data: r.base, name: 'Base', extruder: r.baseExt || 1 } : { id: nid++, name: 'Base', role: 'base', data: r.base, extruder: r.baseExt || 1, subtype: 'normal_part', _welded: true, ...T0() });
+    r.logos.forEach((L, i) => { setFil(L.extruder, L.color); const role = 'logo' + i; const prev = old[role] || (i === 0 ? old.logo : null);
+      out.push(prev ? { ...prev, data: L.data, name: L.name, role, extruder: L.extruder } : { id: nid++, name: L.name, role, data: L.data, extruder: L.extruder, subtype: 'normal_part', _welded: true, ...T0() }); });
+    o.parts = out; return;
+  }
   if (r.base) out.push(old.base ? { ...old.base, data: r.base, name: 'Base' } : { id: nid++, name: 'Base', role: 'base', data: r.base, extruder: 1, subtype: 'normal_part', _welded: true, ...T0() });
   out.push(old.logo ? { ...old.logo, data: r.logo, name: r.base ? 'Logo' : 'Teks + ring' } : { id: nid++, name: r.base ? 'Logo' : 'Teks + ring', role: 'logo', data: r.logo, extruder: exLogo || (state.filaments.length >= 2 ? 2 : 1), subtype: 'normal_part', _welded: true, ...T0() });
   o.parts = out;
@@ -3104,6 +3150,7 @@ function kcPanel() {
   if (KC.src === 'png') h += `<button class="btn" data-a="kcimg" style="width:100%;margin-bottom:8px">${KC.img ? 'Ganti gambar · ' + esc(KC.imgName) : 'Pilih gambar (PNG/JPG)'}</button>
     <div class="row"><span class="hint" style="margin:0;width:78px">Bagian logo</span><div class="seg" id="kcmode">${[['auto', 'Otomatis'], ['dark', 'Gelap'], ['light', 'Terang']].map(([v, l]) => `<button data-v="${v}" class="${KC.mode === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
     <div class="row"><span class="hint" style="margin:0;width:78px">Ambang</span><input type="range" id="kcthr" min="20" max="235" step="1" value="${KC.thr}" style="flex:1"></div>
+    <div class="row"><span class="hint" style="margin:0;width:78px">Warna</span><label class="chk" style="margin:0;padding:6px 8px"><input type="checkbox" id="kcmulti" ${KC.multi ? 'checked' : ''}>Warna asli gambar</label><div class="seg" id="kcncol" style="margin-left:6px">${[2, 3, 4, 5, 6].map(v => `<button data-v="${v}" class="${KC.ncol === v ? 'on' : ''}">${v}</button>`).join('')}</div></div>
     <div class="row"><span class="hint" style="margin:0;width:78px">Detail</span><div class="seg" id="kcdet">${[[200, 'Ringan'], [320, 'Sedang'], [500, 'Tinggi']].map(([v, l]) => `<button data-v="${v}" class="${KC.detail === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
     <p class="hint" style="margin-top:0">PNG transparan: bagian tidak transparan jadi logo. Gambar berlatar putih: pakai Otomatis/Gelap.</p>`;
   if (KC.src === 'svg') h += `<button class="btn" data-a="kcsvg" style="width:100%;margin-bottom:8px">${KC.svgPolys ? 'Ganti SVG · ' + esc(KC.svgName) : 'Pilih file SVG'}</button>`;
@@ -3144,6 +3191,8 @@ function bindKcPanel() {
   seg('#kcsrc', v => { KC.src = v; renderPanel(); kcChanged(); });
   seg('#kcmode', v => { KC.mode = v; kcChanged(); });
   seg('#kcdet', v => { KC.detail = +v; kcChanged(); });
+  seg('#kcncol', v => { KC.ncol = +v; kcChanged(); });
+  const mcx = $('#kcmulti'); if (mcx) mcx.onchange = () => { KC.multi = mcx.checked; kcChanged(); };
   seg('#kcring', v => { KC.ring = v; renderPanel(); kcChanged(); });
   const tx2 = $('#kctext'); if (tx2) tx2.onchange = () => renderPanel();
   const tx = $('#kctext'); if (tx) tx.oninput = () => { KC.text = tx.value; const fb = P.querySelector('.fontbtn .s'); if (fb) fb.textContent = (tx.value.split('\n')[0] || 'Abc').slice(0, 14); kcChanged(); };
