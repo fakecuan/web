@@ -143,9 +143,13 @@ export async function parse3mf(blob) {
       const t = await zip.text(path);
       if (t == null) throw new Error('Bagian model tidak ditemukan: ' + path);
       const d = new DOMParser().parseFromString(t, 'application/xml');
-      const objs = {};
+      const objs = {}, mats = {};
       for (const o of d.getElementsByTagName('object')) objs[o.getAttribute('id')] = o;
-      docs[path] = { d, objs, meshes: {} };
+      // Warna 3MF standar (basematerials), dipakai file non-Bambu
+      for (const bm of d.getElementsByTagName('basematerials')) {
+        mats[bm.getAttribute('id')] = [...bm.getElementsByTagName('base')].map((b) => (b.getAttribute('displaycolor') || '').slice(0, 7));
+      }
+      docs[path] = { d, objs, mats, meshes: {} };
     }
     return docs[path];
   };
@@ -171,7 +175,15 @@ export async function parse3mf(blob) {
     if (!el) return;
     const mesh = el.getElementsByTagName('mesh')[0];
     const myExt = partExt[id] || ext || objExt[id] || 1;
-    if (mesh) { parts.push({ mesh: meshOf(doc, path + '#' + id, mesh), matrix, ext: myExt, label }); return; }
+    if (mesh) {
+      let hex = null;
+      const t0 = mesh.getElementsByTagName('triangle')[0];
+      const pid = (t0 && t0.getAttribute('pid')) || el.getAttribute('pid');
+      const pi = t0 && t0.getAttribute('p1') != null ? t0.getAttribute('p1') : el.getAttribute('pindex');
+      if (!ms && pid != null && doc.mats[pid]) hex = doc.mats[pid][+pi || 0] || null;
+      parts.push({ mesh: meshOf(doc, path + '#' + id, mesh), matrix, ext: myExt, label, hex });
+      return;
+    }
     for (const c of el.getElementsByTagName('component')) {
       const cp = c.getAttribute('p:path') || c.getAttributeNS('http://schemas.microsoft.com/3dmanufacturing/production/2015/06', 'path') || path;
       const cid = c.getAttribute('objectid');
@@ -281,7 +293,8 @@ export async function openPreview(getBlob, title) {
         g = gi.toNonIndexed(); g.computeVertexNormals(); gi.dispose();
         geoCache.set(p.mesh, g);
       }
-      const hex = colors[(p.ext - 1) % colors.length] || '#cccccc';
+      const hex = p.hex || colors[(p.ext - 1) % colors.length] || '#cccccc';
+      const key = p.hex ? 'w' + p.hex : p.ext;
       let mtl = matCache.get(hex);
       if (!mtl) { mtl = new THREE.MeshStandardMaterial({ color: new THREE.Color(hex), roughness: 0.62, metalness: 0.02 }); matCache.set(hex, mtl); }
       const mesh = new THREE.Mesh(g, mtl);
@@ -289,7 +302,7 @@ export async function openPreview(getBlob, title) {
       mesh.matrix.fromArray(p.matrix);
       model.add(mesh);
       tris += p.mesh.idx.length / 3;
-      used.set(p.ext, hex);
+      used.set(key, hex);
     }
     scene.add(model);
     model.updateMatrixWorld(true);
@@ -321,8 +334,8 @@ export async function openPreview(getBlob, title) {
     const hint = document.createElement('div'); hint.className = 'p3Hint'; hint.textContent = 'Geser untuk memutar · cubit untuk zoom · dua jari untuk geser';
     stage.appendChild(hint); setTimeout(() => hint.remove(), 4000);
 
-    const legend = [...used.entries()].sort((a, b) => a[0] - b[0])
-      .map(([e, hex]) => `<span class="p3Chip"><i style="background:${hex}"></i>Filamen ${e} · ${String(hex).toUpperCase()}</span>`).join('');
+    const legend = [...used.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]), undefined, { numeric: true }))
+      .map(([e, hex]) => `<span class="p3Chip"><i style="background:${hex}"></i>${typeof e === 'number' ? 'Filamen ' + e + ' · ' : 'Warna '}${String(hex).toUpperCase()}</span>`).join('');
     info.innerHTML = `<b>Ukuran total:</b> ${size.x.toFixed(1)} × ${size.z.toFixed(1)} × ${size.y.toFixed(1)} mm (P × L × T) · ${parts.length} part · ${Math.round(tris).toLocaleString('id-ID')} segitiga<div class="p3Legend">${legend}</div>`;
 
     const loop = () => { if (!alive) return; controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(loop); };
