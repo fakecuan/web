@@ -2056,10 +2056,13 @@ async function switchModel(k,force){
   if(!MODELS[k]){toast('Model pola tidak dikenal: '+k);return}
   const requestId=++switchRequestId,prev=curKind();
   if(k===prev&&!force)return;
+  const sizeSelect=$('#szsel');
+  if(sizeSelect&&sizeSelect.value&&SIZES&&SIZES.some(x=>x.id===sizeSelect.value))CURSIZE=sizeSelect.value;
   const beforeSize=CURSIZE;
-  const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);
-  if(S&&!S.bic){toast('Pola '+CURSIZE+' bukan pola bawaan 7S. Pemilihan model ini dibatalkan.');syncSlv();return}
   const o=remapSleeves(projObj(),k==='l'||k==='rl');
+  /* Pola CLO baru punya ID geometri sendiri. Lepaskan pemetaan CLO lama agar
+     gambar/teks dirender sebagai artwork panel dan mengikuti bentuk pola baru. */
+  Object.values(o.parts||{}).forEach(part=>(part.layers||[]).forEach(layer=>{delete layer.clo;delete layer.rep}));
   const had=Object.values(o.parts).some(p=>(p.layers||[]).length);
   const nm=ZP?FS.zprj.n:(FS.json.named?FS.json.n:'desain-skinsuit-baru');
   try{
@@ -2413,9 +2416,11 @@ async function buildSizeTpl(file){const idx=await(await szFetch('index.json',{ca
   const out=new Uint8Array(e.size);let o=0;for(const[pi,off,len]of e.parts){out.set(data[pi].subarray(off,off+len),o);o+=len}
   try{const h=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1',out))).map(b=>b.toString(16).padStart(2,'0')).join('');if(h!==e.sha1)throw new Error('File pola rusak, coba lagi')}catch(err){if(/rusak/.test(err.message))throw err}
   return new File([out],file)}
-{const _gt=getTpl;getTpl=async function(k){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE);if(!S||S.bic)return _gt(k);
-  const file=(k=='l'||k=='rl')?S.l:(k=='s'?S.s:null);if(!file){toast('Ukuran '+S.label+' belum punya pola '+KNAME[k]);return null}
-  const key=CURSIZE+'|'+k;if(SZC[key])return SZC[key];try{busy('Menyiapkan pola '+S.label+'…',1);const f=await buildSizeTpl(file);busy(null);SZC[key]={file:f,name:file};return SZC[key]}catch(e){busy(null);toast('Pola '+S.label+' gagal diunduh: '+e.message);return null}}}
+{const _gt=getTpl;getTpl=async function(k){
+  /* Semua ukuran memakai pola model resmi dari sseditor/pola/. Tidak membaca
+     pola per-ukuran, IndexedDB, atau cache paket lama. */
+  return _gt(k);
+}}
 /* ganti ukuran: pola & model ikut, desain menyesuaikan proporsi */
 $('#szsel').onchange=async e=>{const v=e.target.value,old=CURSIZE;if(!v)return;CURSIZE=v;try{localStorage.setItem('szCur',v)}catch(_){}
   const S=SIZES.find(x=>x.id===v);let k=curKind();if(S&&!S.bic){if(k=='rs')k='s';if(k=='rl')k='l';if(k=='l'&&!S.l){k='s';toast('Ukuran '+S.label+' belum ada lengan panjang, pakai lengan pendek')}if(k=='s'&&!S.s){k='l';toast('Ukuran '+S.label+' baru ada lengan panjang')}}
