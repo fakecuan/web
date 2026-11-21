@@ -81,6 +81,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        com.fakecuan.updatecheck.UpdateCheck.run(this);
         web = new WebView(this);
         setContentView(web);
         WebView.setWebContentsDebuggingEnabled(true);

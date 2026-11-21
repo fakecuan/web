@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "android-diva/**"
+      - "android-update-check/**"
       - ".github/workflows/diva-skinsuit-apk.yml"
 
 permissions:

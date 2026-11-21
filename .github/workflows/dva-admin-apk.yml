@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "android-dva-admin/**"
+      - "android-update-check/**"
       - "android-order-notify/**"
       - ".github/workflows/dva-admin-apk.yml"
 
@@ -47,6 +48,7 @@ jobs:
           npx @capacitor/assets generate --android
           npx cap sync android
           node ../android-order-notify/inject.mjs dva-order-84570c2f5259edf5
+          node ../android-update-check/inject.mjs dva-admin-apk-latest DVA-Admin.apk false
           VC=$(( 100 + ${{ github.run_number }} ))
           sed -i "s/versionCode 1$/versionCode $VC/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
           grep -n "versionCode\|versionName" android/app/build.gradle

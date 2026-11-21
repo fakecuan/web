@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "android-divalicious-admin/**"
+      - "android-update-check/**"
       - "android-order-notify/**"
       - ".github/workflows/divalicious-admin-apk.yml"
 
@@ -47,6 +48,7 @@ jobs:
           npx @capacitor/assets generate --android
           npx cap sync android
           node ../android-order-notify/inject.mjs divalicious-order-87d5f8f856dc8f59
+          node ../android-update-check/inject.mjs divalicious-admin-apk-latest Divalicious-Admin.apk true
           VC=$(( 100 + ${{ github.run_number }} ))
           sed -i "s/versionCode 1$/versionCode $VC/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
           grep -n "versionCode\|versionName" android/app/build.gradle

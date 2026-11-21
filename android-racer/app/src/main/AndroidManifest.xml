@@ -30,5 +30,12 @@
             android:name=".NotifJob"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false" />
+        <meta-data android:name="updatecheck.tag" android:value="diva-skate-latest" />
+        <meta-data android:name="updatecheck.apk" android:value="DivaSkate.apk" />
+        <meta-data android:name="updatecheck.dialog" android:value="true" />
+        <service
+            android:name="com.fakecuan.updatecheck.UpdateJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
     </application>
 </manifest>

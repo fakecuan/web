@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "android-padel/**"
+      - "android-update-check/**"
       - ".github/workflows/padel-apk.yml"
 
 permissions:
@@ -45,6 +46,7 @@ jobs:
           npx cap add android
           npx @capacitor/assets generate --android
           npx cap sync android
+          node ../android-update-check/inject.mjs padel-apk-latest TheWinnerPadel.apk true
           VC=$(( 100 + ${{ github.run_number }} ))
           sed -i "s/versionCode 1$/versionCode $VC/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
           grep -n "versionCode\|versionName" android/app/build.gradle

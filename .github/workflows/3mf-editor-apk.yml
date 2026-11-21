@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "android-3mf/**"
+      - "android-update-check/**"
       - ".github/workflows/3mf-editor-apk.yml"
 
 permissions:
