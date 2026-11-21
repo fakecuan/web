@@ -140,6 +140,12 @@ export async function unlock(password){
       return next;
     },
     async dsRemove(id,file){await ready();await deleteDoc(doc(db,COLLECTION,id));for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,(file.key||id)+'_f'+i))}catch{}}},
+    async updateOrder(id,status,createdAt,data){
+      await ready();
+      const patch={status,...await seal(data)};
+      if(createdAt instanceof Date && !Number.isNaN(createdAt.getTime()))patch.createdAt=Timestamp.fromDate(createdAt);
+      await updateDoc(doc(db,COLLECTION,id),patch);
+    },
     async setStatus(id,status){await ready();await updateDoc(doc(db,COLLECTION,id),{status})},
     async save(id,status,data){await ready();await updateDoc(doc(db,COLLECTION,id),{status,...await seal(data)})},
     // Impor banyak pesanan sekaligus. id tetap (mis. sheet-12) supaya impor ulang tidak membuat duplikat.
