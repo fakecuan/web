@@ -141,7 +141,7 @@ function openEdit(id){
  $('saveBtn').onclick=async()=>{
   const btn=$('saveBtn');btn.disabled=true;
   const data={...o,customer_name:$('editCustomer').value.trim(),customer_phone:$('editPhone').value.trim(),shipping_address:$('editAddress').value.trim(),total:Number($('editTotal').value||0),note:$('noteIn').value.trim()};
-  delete data.id;delete data.created_at;delete data.order_number;delete data.images;delete data.file;
+  delete data.id;delete data.created_at;delete data.order_number;delete data.images;/* file 3MF tetap ikut disimpan */
   if(isPen){const arr=read();if(!arr.length||arr.some(x=>!x.name.trim())){toast('Nama Pen Holder wajib diisi');btn.disabled=false;return}data.size_details=arr.map((p,i)=>(i+1)+'. '+p.name.toUpperCase()+'\n   Dasar: '+(p.flat?'Versi 1 — dasar datar':'Versi 2 — mengikuti font')+'\n   Font: '+p.font+'\n   Warna dasar: '+(palette.find(x=>x[1].toLowerCase()===p.base.toLowerCase())?.[0]||p.base)+'\n   Warna tulisan: '+(palette.find(x=>x[1].toLowerCase()===p.text.toLowerCase())?.[0]||p.text)+'\n   Harga: konfirmasi admin').join('\n\n')}
   else data.size_details=$('editDetails').value;
   try{await store.save(o.id,$('editStatus').value,data);Object.assign(o,data,{status:$('editStatus').value});$('modal').classList.add('hidden');render();toast('Revisi order tersimpan')}
