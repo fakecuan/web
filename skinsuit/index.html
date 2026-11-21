@@ -909,7 +909,7 @@ async function sendOrder(){
   // Simpan juga ke database admin (sama seperti form order utama).
   // Kalau penyimpanan gagal, WhatsApp tetap dibuka.
   try{
-    const { submitOrder } = await import("../form/orders-db.js?v=11");
+    const { submitOrder } = await import("../form/orders-db.js?v=14");
     const sizeLines = cart.map(item=>{
       const extra=[item.height&&`T ${item.height} cm`,item.weight&&`BB ${item.weight} kg`,item.chest&&`LD ${item.chest} cm`].filter(Boolean);
       return `${item.size} ${item.model} — ${item.name}`+(item.customName?` (logo: ${item.customName})`:'')+(extra.length?` (${extra.join(', ')})`:'');

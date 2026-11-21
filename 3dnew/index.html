@@ -2357,7 +2357,7 @@ refresh();
    const fileName=`${safeName(customer)}_${p.label}_${p.qty}_PCS.3mf`;
    // Simpan ke admin maksimal 45 detik; kalau gagal/sinyal lemah, pesanan tetap diteruskan ke WhatsApp.
    try{
-    const {submitDsOrder}=await import("../form/orders-db.js");
+    const {submitDsOrder}=await import("../form/orders-db.js?v=14");
     await Promise.race([
      submitDsOrder({
       customer_name:customer,

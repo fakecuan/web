@@ -37,6 +37,22 @@ async function open(sealed,priv){
 
 // Gambar desain: daftar {k, thumb} di dokumen pesanan; gambar penuh di dvaOrderImages/<id>_<k>.
 // (Data lama: satu field `thumb` + dvaOrderImages/<id>, dibaca sebagai gambar dengan k = '').
+// ---------- Notifikasi HP admin (ntfy.sh) ----------
+// Aplikasi admin Android mendengarkan topik ini dan berbunyi saat ada order baru.
+// Topik terlihat publik di kode, jadi isi notifikasi sengaja singkat: tanpa nama/HP/alamat pelanggan.
+const NOTIFY_TOPIC={dva:'dva-order-84570c2f5259edf5',ds:'divalicious-order-87d5f8f856dc8f59'};
+const rupiah=n=>Number(n)>0?' · Rp'+Math.round(Number(n)).toLocaleString('id-ID'):'';
+async function notifyAdmin(app,title,message){
+  try{
+    // Body JSON tanpa header khusus = permintaan "simple" (tanpa preflight CORS); keepalive agar tetap
+    // terkirim walau halaman langsung pindah ke WhatsApp.
+    await Promise.race([
+      fetch('https://ntfy.sh/',{method:'POST',keepalive:true,body:JSON.stringify({topic:NOTIFY_TOPIC[app],title,message,priority:5,tags:['shopping_cart']})}),
+      new Promise(ok=>setTimeout(ok,4000))
+    ]);
+  }catch(e){console.warn('Notifikasi admin gagal',e)}
+}
+
 const imgDocId=(id,k)=>k?id+'_'+k:id;
 const newKey=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
@@ -47,6 +63,7 @@ export async function submitOrder(data,images=[]){
   const list=(images||[]).map(im=>({k:newKey(),thumb:im.thumb,full:im.full}));
   const ref=await addDoc(collection(db,COLLECTION),{v:1,status:'Pending',createdAt:serverTimestamp(),...(list.length?{images:list.map(({k,thumb})=>({k,thumb}))}:{}),...sealed});
   for(const im of list) await setDoc(doc(db,IMAGES,imgDocId(ref.id,im.k)),{full:im.full});
+  await notifyAdmin('dva','Order baru D.VA SKATE','Pesanan skinsuit baru masuk'+rupiah(data&&data.total_amount)+'. Buka admin untuk detail.');
 }
 
 
@@ -67,6 +84,7 @@ export async function submitDsOrder(data,fileBytes,fileName){
     }catch(e){d.file={name:fileName||'pesanan.3mf',size:fileBytes.length,error:String(e&&e.message||e)}}
   }
   await setDoc(ref,{v:1,status:'Pending',createdAt:serverTimestamp(),...await seal(d)});
+  await notifyAdmin('ds','Order baru Divalicious','Pesanan '+String(data&&data.product||'baru').replace(/_/g,' ')+' masuk'+rupiah(data&&data.total)+'. Buka admin untuk detail.');
   return ref.id;
 }
 
