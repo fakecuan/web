@@ -17,6 +17,8 @@ input,select,textarea{border:1px solid #d9d9e3;border-radius:10px;padding:10px 1
 .tag{display:inline-block;background:#efeaff;color:#4b36b8;border-radius:99px;padding:3px 9px;font-size:11px;font-weight:800}.tag.new{background:#fff1d6;color:#8a5a00}
 pre{white-space:pre-wrap;font:13px/1.5 inherit;background:#f8f8fb;border-radius:10px;padding:10px 12px;margin:10px 0;max-height:260px;overflow:auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.row select{width:auto}.total{font-weight:900;font-size:17px}.file-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.file-meta{font-size:12px;color:var(--muted);flex:1;min-width:150px}.file-input{display:none}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.edit-grid .field{margin:8px 0}.edit-grid .full{grid-column:1/-1}.edit-items{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}.edit-item{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}.edit-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.edit-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.edit-color-row{display:flex;align-items:center;gap:8px}.edit-color-row input[type=color]{width:42px;height:40px;padding:2px;flex:0 0 42px}
+@media(max-width:560px){.edit-grid,.edit-item-grid{grid-template-columns:1fr}.edit-grid .full{grid-column:auto}}
 .s-pending{background:#fff1d6}.s-produksi{background:#dfeaff}.s-selesai{background:#dff6e8}
 .modal{position:fixed;inset:0;background:#0009;z-index:10;display:flex;align-items:center;justify-content:center;padding:14px}.dialog{background:#fff;width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:20px}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#181820;color:#fff;padding:10px 16px;border-radius:99px;font-size:13px;z-index:20}
@@ -39,7 +41,7 @@ pre{white-space:pre-wrap;font:13px/1.5 inherit;background:#f8f8fb;border-radius:
 <div id="modal" class="modal hidden"><div class="dialog" id="dialog"></div></div>
 <div id="toast" class="hidden"></div>
 <script type="module">
-import { unlock } from "../../form/orders-db.js?v=12";
+import { unlock } from "../../form/orders-db.js?v=13";
 const $=id=>document.getElementById(id);
 const statuses=['Pending','Produksi','Selesai'];
 let store=null,orders=[],tt;
@@ -109,12 +111,43 @@ function openFileManager(id){
     catch(err){toast('Gagal menghapus: '+(err.message||err));remove.disabled=false;remove.textContent='Hapus file saja'}
   };
 }
-function openEdit(id){const o=orders.find(x=>x.id===id);
-  $('dialog').innerHTML='<h2 style="margin:0 0 4px">#'+o.order_number+' · '+esc(o.customer_name)+'</h2><div class="sub">'+fdate(o.created_at)+'</div><div class="field"><label>Catatan admin</label><textarea id="noteIn" placeholder="Catatan produksi, pembayaran, dll.">'+esc(o.note||'')+'</textarea></div><div class="row" style="justify-content:flex-end"><button id="delBtn" class="btn danger" style="margin-right:auto">Hapus</button><button id="cancelBtn" class="btn light">Batal</button><button id="saveBtn" class="btn acc">Simpan</button></div>';
-  $('modal').classList.remove('hidden');
-  $('cancelBtn').onclick=()=>$('modal').classList.add('hidden');
-  $('saveBtn').onclick=async()=>{const {id:_i,status,images,created_at,order_number,...data}=o;data.note=$('noteIn').value.trim();try{await store.save(o.id,o.status,data);o.note=data.note;$('modal').classList.add('hidden');render();toast('Tersimpan')}catch(err){toast('Gagal: '+(err.message||err))}};
-  $('delBtn').onclick=async()=>{if(!confirm('Hapus pesanan ini beserta file 3MF-nya?'))return;try{await store.dsRemove(o.id,o.file);orders=orders.filter(x=>x.id!==o.id);$('modal').classList.add('hidden');render();toast('Dihapus')}catch(err){toast('Gagal: '+(err.message||err))}};
+function openEdit(id){
+ const o=orders.find(x=>x.id===id);if(!o)return;
+ const details=String(o.size_details||'');
+ const isPen=/NAME_PEN_HOLDER/i.test(o.product||'');
+ const palette=[['Pink muda','#F6A6C8'],['Ungu muda','#B9A4E8'],['Biru muda','#91C8F2'],['Hijau muda','#9AD9A8'],['Kuning','#F6E58D'],['Coklat muda','#C99A75'],['Pink tua','#E65391'],['Ungu tua','#7546B8'],['Biru tua','#2764B5'],['Hijau tua','#25864D'],['Coklat tua','#75452E'],['Merah','#D93636'],['Hitam','#23262B'],['Putih','#F2F2EF']];
+ let items=[];
+ if(isPen){
+  const re=/^\s*\d+\.\s*(.+?)\n\s*Dasar:\s*(.+?)\n\s*Font:\s*(.+?)\n\s*Warna dasar:\s*(.+?)\n\s*Warna tulisan:\s*(.+?)\n\s*Harga:/gmi;
+  let m;while((m=re.exec(details))!==null){
+   const color=t=>palette.find(x=>x[0].toLowerCase()===t.trim().toLowerCase())?.[1]||'#F6A6C8';
+   items.push({name:m[1].trim(),flat:/Versi 1/i.test(m[2]),font:m[3].trim(),base:color(m[4]),text:color(m[5]),size:'M'});
+  }
+  if(!items.length)items=[{name:'',flat:false,font:'Chewy',base:'#F6A6C8',text:'#F2F2EF',size:'M'}];
+ }
+ const colorInput=(label,key,val)=>'<div class="field"><label>'+label+'</label><div class="edit-color-row"><input type="color" data-key="'+key+'" value="'+esc(val)+'"><select data-key="'+key+'">'+palette.map(([n,v])=>'<option value="'+v+'" '+(v.toLowerCase()===String(val).toLowerCase()?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>';
+ const itemHtml=items.map((p,i)=>'<div class="edit-item"><div class="edit-item-head"><b>Item '+(i+1)+'</b><button type="button" class="btn danger" data-remove>Hapus</button></div><div class="edit-item-grid"><div class="field"><label>Nama</label><input data-key="name" value="'+esc(p.name)+'"></div><div class="field"><label>Font</label><input data-key="font" value="'+esc(p.font)+'"></div><div class="field"><label>Dasar holder</label><select data-key="flat"><option value="false" '+(!p.flat?'selected':'')+'>Versi 2 — mengikuti font</option><option value="true" '+(p.flat?'selected':'')+'>Versi 1 — dasar datar</option></select></div><div class="field"><label>Ukuran</label><select data-key="size">'+['S','M','L','XL'].map(s=>'<option '+(s===(p.size||'M')?'selected':'')+'>'+s+'</option>').join('')+'</select></div></div>'+colorInput('Warna dasar','base',p.base)+colorInput('Warna tulisan','text',p.text)+'</div>').join('');
+ $('dialog').innerHTML='<h2>#'+o.order_number+' · '+esc(o.customer_name)+'</h2><div class="sub">Edit semua detail order</div><div class="edit-grid"><div class="field"><label>Nama pelanggan</label><input id="editCustomer" value="'+esc(o.customer_name)+'"></div><div class="field"><label>No. HP</label><input id="editPhone" value="'+esc(o.customer_phone)+'"></div><div class="field full"><label>Alamat</label><textarea id="editAddress">'+esc(o.shipping_address)+'</textarea></div><div class="field"><label>Status</label><select id="editStatus">'+statuses.map(s=>'<option '+(s===o.status?'selected':'')+'>'+s+'</option>').join('')+'</select></div><div class="field"><label>Total tagihan</label><input type="number" id="editTotal" value="'+Number(o.total||0)+'"></div></div>'+(isPen?'<div class="edit-items"><b>Detail Name Pen Holder</b><div id="editItems">'+itemHtml+'</div><button type="button" id="addEditItem" class="btn light">＋ Tambah nama</button></div>':'<div class="field"><label>Detail pesanan</label><textarea id="editDetails">'+esc(details)+'</textarea></div>')+'<div class="field"><label>Catatan admin</label><textarea id="noteIn">'+esc(o.note||'')+'</textarea></div><div class="row" style="justify-content:flex-end"><button id="delBtn" class="btn danger" style="margin-right:auto">Hapus order</button><button id="cancelBtn" class="btn light">Batal</button><button id="saveBtn" class="btn acc">Simpan perubahan</button></div>';
+ $('modal').classList.remove('hidden');
+ const wrap=$('editItems');
+ const read=()=>wrap?[...wrap.querySelectorAll('.edit-item')].map(el=>{const d={};el.querySelectorAll('[data-key]').forEach(x=>d[x.dataset.key]=x.value);d.flat=d.flat==='true';return d}):[];
+ const bind=root=>root.querySelectorAll('.edit-color-row').forEach(row=>{const picker=row.querySelector('input[type=color]'),sel=row.querySelector('select');picker.oninput=()=>{const opt=[...sel.options].find(x=>x.value.toLowerCase()===picker.value.toLowerCase());if(opt)sel.value=opt.value};sel.onchange=()=>picker.value=sel.value});
+ bind($('dialog'));
+ if(wrap){
+  wrap.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{btn.closest('.edit-item').remove()});
+  $('addEditItem').onclick=()=>{const p={name:'',flat:false,font:'Chewy',base:'#F6A6C8',text:'#F2F2EF',size:'M'};const node=document.createElement('div');node.className='edit-item';node.innerHTML='<div class="edit-item-head"><b>Pesanan baru</b><button type="button" class="btn danger" data-remove>Hapus</button></div><div class="edit-item-grid"><div class="field"><label>Nama</label><input data-key="name"></div><div class="field"><label>Font</label><input data-key="font" value="Chewy"></div><div class="field"><label>Dasar holder</label><select data-key="flat"><option value="false" selected>Versi 2 — mengikuti font</option><option value="true">Versi 1 — dasar datar</option></select></div><div class="field"><label>Ukuran</label><select data-key="size"><option>S</option><option selected>M</option><option>L</option><option>XL</option></select></div></div>'+colorInput('Warna dasar','base',p.base)+colorInput('Warna tulisan','text',p.text);node.querySelector('[data-remove]').onclick=()=>node.remove();wrap.appendChild(node);bind(node)};
+ }
+ $('cancelBtn').onclick=()=>$('modal').classList.add('hidden');
+ $('saveBtn').onclick=async()=>{
+  const btn=$('saveBtn');btn.disabled=true;
+  const data={...o,customer_name:$('editCustomer').value.trim(),customer_phone:$('editPhone').value.trim(),shipping_address:$('editAddress').value.trim(),total:Number($('editTotal').value||0),note:$('noteIn').value.trim()};
+  delete data.id;delete data.created_at;delete data.order_number;delete data.images;delete data.file;
+  if(isPen){const arr=read();if(!arr.length||arr.some(x=>!x.name.trim())){toast('Nama Pen Holder wajib diisi');btn.disabled=false;return}data.size_details=arr.map((p,i)=>(i+1)+'. '+p.name.toUpperCase()+'\n   Dasar: '+(p.flat?'Versi 1 — dasar datar':'Versi 2 — mengikuti font')+'\n   Font: '+p.font+'\n   Warna dasar: '+(palette.find(x=>x[1].toLowerCase()===p.base.toLowerCase())?.[0]||p.base)+'\n   Warna tulisan: '+(palette.find(x=>x[1].toLowerCase()===p.text.toLowerCase())?.[0]||p.text)+'\n   Harga: konfirmasi admin').join('\n\n')}
+  else data.size_details=$('editDetails').value;
+  try{await store.save(o.id,$('editStatus').value,data);Object.assign(o,data,{status:$('editStatus').value});$('modal').classList.add('hidden');render();toast('Revisi order tersimpan')}
+  catch(e){toast('Gagal: '+(e.message||e));btn.disabled=false}
+ };
+ $('delBtn').onclick=async()=>{if(!confirm('Hapus order ini beserta file 3MF?'))return;try{await store.dsRemove(o.id,o.file);orders=orders.filter(x=>x.id!==o.id);$('modal').classList.add('hidden');render();toast('Dihapus')}catch(e){toast('Gagal: '+(e.message||e))}};
 }
 </script>
 </body></html>
