@@ -2900,11 +2900,11 @@ window.addEventListener('message',ev=>{
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipper-lib/6.4.2/clipper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipper-lib@6.4.2/clipper.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/clipper-lib@6.4.2/clipper.js';document.head.appendChild(s)"></script>
 <script id="ds-karikatur">
 (()=>{
  const $=id=>document.getElementById(id);
- const C=ClipperLib,SC=1000;
+ const CL=()=>window.ClipperLib,SC=1000;
  /* ---------- warna (dari desain Karikatur) ---------- */
  const KC={
   hair:[["Hitam","#1E1412"],["Cokelat tua","#4A2A1E"],["Cokelat","#7A4A2C"],["Pirang","#C9A15A"],["Biru tua","#2B2B3A"]],
@@ -2929,11 +2929,11 @@ window.addEventListener('message',ev=>{
  const KP=(x,y)=>({X:Math.round(x*SC),Y:Math.round(y*SC)});
  const kEll=(cx,cy,rx,ry,n=56)=>{const p=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;p.push(KP(cx+rx*Math.cos(a),cy+ry*Math.sin(a)))}return[p]};
  const kRect=(x0,y0,x1,y1)=>[[KP(x0,y0),KP(x1,y0),KP(x1,y1),KP(x0,y1)]];
- const kRun=(t,a,b)=>{const c=new C.Clipper();c.AddPaths(a,C.PolyType.ptSubject,true);if(b&&b.length)c.AddPaths(b,C.PolyType.ptClip,true);const r=new C.Paths();c.Execute(t,r,C.PolyFillType.pftNonZero,C.PolyFillType.pftNonZero);return r};
- const kUni=(...l)=>kRun(C.ClipType.ctUnion,[].concat(...l.filter(x=>x&&x.length)));
- const kDif=(a,b)=>(a&&a.length)?kRun(C.ClipType.ctDifference,a,b):[];
- const kInt=(a,b)=>(a&&a.length&&b&&b.length)?kRun(C.ClipType.ctIntersection,a,b):[];
- const kOff=(p,d)=>{if(!p||!p.length)return[];const co=new C.ClipperOffset(2,80);co.AddPaths(p,C.JoinType.jtRound,C.EndType.etClosedPolygon);const o=new C.Paths();co.Execute(o,d*SC);return o};
+ const kRun=(t,a,b)=>{const c=new (CL().Clipper)();c.AddPaths(a,CL().PolyType.ptSubject,true);if(b&&b.length)c.AddPaths(b,CL().PolyType.ptClip,true);const r=new (CL().Paths)();c.Execute(t,r,CL().PolyFillType.pftNonZero,CL().PolyFillType.pftNonZero);return r};
+ const kUni=(...l)=>kRun(CL().ClipType.ctUnion,[].concat(...l.filter(x=>x&&x.length)));
+ const kDif=(a,b)=>(a&&a.length)?kRun(CL().ClipType.ctDifference,a,b):[];
+ const kInt=(a,b)=>(a&&a.length&&b&&b.length)?kRun(CL().ClipType.ctIntersection,a,b):[];
+ const kOff=(p,d)=>{if(!p||!p.length)return[];const co=new (CL().ClipperOffset)(2,80);co.AddPaths(p,CL().JoinType.jtRound,CL().EndType.etClosedPolygon);const o=new (CL().Paths)();co.Execute(o,d*SC);return o};
  const kWavy=(hw,yt,yb,amp,fr)=>{const p=[],n=40;for(let i=0;i<=n;i++){const y=yt+(yb-yt)*i/n;p.push(KP(-(hw+amp*Math.sin(y*fr)),y))}for(let i=n;i>=0;i--){const y=yt+(yb-yt)*i/n;p.push(KP(hw+amp*Math.sin(y*fr+1.7),y))}return kOff(kOff([p],-1.2),1.2)};
  const kArea=p=>{let a=0;for(let i=0,j=p.length-1;i<p.length;j=i++)a+=(p[j].X+p[i].X)*(p[j].Y-p[i].Y);return a/2};
  const kInside=(pt,poly)=>{let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a.Y>pt.Y)!==(b.Y>pt.Y)&&pt.X<(b.X-a.X)*(pt.Y-a.Y)/(b.Y-a.Y)+a.X)c=!c}return c};
@@ -3070,6 +3070,7 @@ window.addEventListener('message',ev=>{
   return `Rambut ${KC.hair[o.parts.hair][0]}, Kulit ${KC.skin[o.parts.skin][0]}, Baju ${KC.shirt[o.parts.shirt][0]}, Garis ${KC.stripe[o.parts.stripe][0]}, Border ${KC.border[o.parts.border][0]}`+(o.fun?`, Tulisan lucu ${o.fun}`:"")+(kShown(o.name)?`, Nama ${kShown(o.name)} (${tc?tc[0]:""}, ${K_SIZE.find(([v])=>v===o.size)[1]})`:"");
  };
  function kPreview(){
+  if(!window.ClipperLib){$("msg")&&($("msg").textContent="Pustaka bentuk gagal dimuat. Muat ulang halaman.");return}
   if(!CH)buildChar();
   grp.children.slice().forEach(r=>{r.children.forEach(m=>{if(m.userData.own&&m.geometry)m.geometry.dispose()});grp.remove(r)});
   const n=kOrders.length;
@@ -3108,6 +3109,7 @@ window.addEventListener('message',ev=>{
 
  /* ---------- ekspor 3MF ---------- */
  async function kExport(){
+  if(!window.ClipperLib)throw new Error("Pustaka bentuk belum termuat. Muat ulang halaman.");
   if(!CH)buildChar();
   const groups=[],n=kOrders.length;
   kOrders.forEach((o,i)=>{
