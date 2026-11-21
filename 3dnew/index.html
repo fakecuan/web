@@ -2311,7 +2311,7 @@ refresh();
   }
   const {p,lines,total}=orderLines();
   const heading=(window.__dsBag&&active===window.__dsBag.P6)?"BAG CHARM":active===P2?"KLIKER NAMA":active===P1?"CLICKER 3×3":active===P3?"KLIKER CLOVER":(window.__dsPenHolder&&active===window.__dsPenHolder.P5)?"NAME PEN HOLDER":"KLIKER BASKET";
-  return `HALO DIVALICIOUS, SAYA INGIN ORDER ${heading}\n\nDATA PELANGGAN\nNama: ${customer.name}\nTelepon: ${customer.phone}\nAlamat: ${customer.address}\n\nDAFTAR PESANAN\n\n${lines.join("\n")}\n\nTOTAL PESANAN: ${money(total)}\nBelum termasuk biaya kirim.\n\n🔴 *SILAHKAN UPLOAD FILE PESANAN DI FOLDER DOWNLOAD.*\n*Klik Attachment, lalu pilih Document dan pilih file pesanan.*\n\nMohon konfirmasi pesanan.`;
+  return `HALO DIVALICIOUS, SAYA INGIN ORDER ${heading}\n\nDATA PELANGGAN\nNama: ${customer.name}\nTelepon: ${customer.phone}\nAlamat: ${customer.address}\n\nDAFTAR PESANAN\n\n${lines.join("\n")}\n\nTOTAL PESANAN: ${money(total)}\nBelum termasuk biaya kirim.\n\n✅ *File desain pesanan sudah kami terima.*\n\nMohon konfirmasi pesanan.`;
  };
  const makeExport=async()=>{
   const p=productInfo();
@@ -2348,11 +2348,24 @@ refresh();
   try{msg=buildMessage()}catch(e){status.textContent=e.message;return}
   const popup=window.open("about:blank","_blank");
   try{
-   status.textContent="Menyiapkan pesan dan mengunduh model 3MF…";
+   status.textContent="Menyimpan pesanan…";
    const customer=$id("dsCustomerName").value.trim();
+   const p=productInfo();
+   const {lines,total}=orderLines();
    const blob=await makeExport();
-   const filename=downloadBlob(blob,customer);
-   status.textContent=`File ${filename} diunduh. Membuka WhatsApp…`;
+   const bytes=new Uint8Array(await blob.arrayBuffer());
+   const fileName=`${safeName(customer)}_${p.label}_${p.qty}_PCS.3mf`;
+   const {submitDsOrder}=await import("../form/orders-db.js");
+   await submitDsOrder({
+    customer_name:customer,
+    customer_phone:$id("dsCustomerPhone").value.trim(),
+    shipping_address:$id("dsCustomerAddress").value.trim(),
+    product:p.label,
+    size_details:lines.join("\n\n"),
+    total:total,
+    note:""
+   },bytes,fileName);
+   status.textContent="Pesanan tersimpan. Membuka WhatsApp…";
    const waUrl="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg);
    if(popup&&!popup.closed)popup.location.href=waUrl;
    else window.location.href=waUrl;
