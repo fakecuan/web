@@ -620,7 +620,7 @@ body.ds-pen-holder-open #penHolderEditor{
     <h2>Daftar pesanan Karikatur Keychain</h2>
     <div id="karOrders" class="multi-name-orders"></div>
     <button type="button" class="chip" id="karAdd">＋ Tambah Pesanan</button>
-    <p class="help">Nama dan tulisan lucu ditampilkan di bawah karakter. Warna rambut, kulit, baju, garis baju, dan border dipilih dari palet Karikatur. Warna tulisan sama seperti produk lain.</p>
+    <p class="help">Nama dan tulisan lucu ditampilkan di bawah karakter. Warna rambut, kulit, baju, garis baju, dan border dipilih dari palet Karikatur. Warna tulisan sama seperti produk lain. Punya kartun sendiri? Upload gambarnya, lalu warna dan bentuk mengikuti gambar itu.</p>
    </section>
   </div>
   <section>
@@ -2917,7 +2917,7 @@ window.addEventListener('message',ev=>{
  const K_FUN=[["Tanpa tulisan lucu",""],["JUARA!","JUARA"],["GEMES","GEMES"],["MANTAP","MANTAP"],["SEMANGAT","SEMANGAT"],["KEREN","KEREN"],["HALO","HALO"],["CERIA","CERIA"],["LUCU","LUCU"],["OKE","OKE"]];
  const K_SIZE=[["S","Kecil"],["M","Sedang"],["L","Besar"]];
  const K_CAP={S:5,M:7,L:9};
- const K_MAXW=52, K_GY=92;
+ const K_MAXW=52, K_GY=92, imgBodyH=60;
  const K_DEFAULT={name:"",fun:"",size:"M",text:"#E65391",parts:{hair:0,skin:2,shirt:0,stripe:0,border:0}};
  let kOrders=[{...K_DEFAULT,parts:{...K_DEFAULT.parts}}];
  const kShown=s=>{const BCF=window.__dsBag.lib.BCF;return [...String(s||"").toUpperCase()].filter(c=>BCF.g[c]).slice(0,10).join("")};
@@ -3046,8 +3046,9 @@ window.addEventListener('message',ev=>{
      <label>WARNA TULISAN <select data-k="tcol" aria-label="Warna tulisan">${MULTI_COLORS.map(([n,c],j)=>`<option value="${j}" ${j===(colIdx<0?6:colIdx)?"selected":""}>${esc(n)}</option>`).join("")}</select></label>
     </div>
     <div class="clover-colors">
-     ${K_PARTS.map(([k,l])=>partSel(k,l.toUpperCase(),KC[k].map(([n])=>[n,n]))).join("")}
+     ${o.img?`<p class="help" style="grid-column:1/-1">Warna mengikuti kartun: ${esc(o.imgName||"gambar")}</p>`:K_PARTS.map(([k,l])=>partSel(k,l.toUpperCase(),KC[k].map(([n])=>[n,n]))).join("")}
     </div>
+    <div class="clover-colors" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="chip" data-k-pick="${i}">${o.img?"Ganti kartun":"Upload kartun sendiri (opsional)"}</button>${o.img?`<button type="button" class="chip" data-k-clear="${i}">Hapus kartun</button>`:""}<input type="file" accept="image/*" data-k-file hidden></div>
     <p class="help" data-k-info></p>
    </div>`;
   }).join("");
@@ -3067,7 +3068,7 @@ window.addEventListener('message',ev=>{
  }
  const kDesc=o=>{
   const tc=MULTI_COLORS.find(([n,c])=>c.toLowerCase()===String(o.text).toLowerCase());
-  return `Rambut ${KC.hair[o.parts.hair][0]}, Kulit ${KC.skin[o.parts.skin][0]}, Baju ${KC.shirt[o.parts.shirt][0]}, Garis ${KC.stripe[o.parts.stripe][0]}, Border ${KC.border[o.parts.border][0]}`+(o.fun?`, Tulisan lucu ${o.fun}`:"")+(kShown(o.name)?`, Nama ${kShown(o.name)} (${tc?tc[0]:""}, ${K_SIZE.find(([v])=>v===o.size)[1]})`:"");
+  return partDesc(o)+(o.fun?`, Tulisan lucu ${o.fun}`:"")+(kShown(o.name)?`, Nama ${kShown(o.name)} (${tc?tc[0]:""}, ${K_SIZE.find(([v])=>v===o.size)[1]})`:"");
  };
  function kPreview(){
   if(!window.ClipperLib){$("msg")&&($("msg").textContent="Pustaka bentuk gagal dimuat. Muat ulang halaman.");return}
@@ -3076,7 +3077,7 @@ window.addEventListener('message',ev=>{
   const n=kOrders.length;
   kOrders.forEach((o,i)=>{
    const row=new THREE.Group();row.position.set(0,-(i-(n-1)/2)*K_GY,0);
-   CH.forEach(c=>row.add(shade(new THREE.Mesh(c.geo,mat(colorOf(o,c.key))))));
+   bodyParts(o).forEach(p=>row.add(shade(new THREE.Mesh(p.geo,mat(p.color)))));
    orderTexts(o).forEach(t=>{const m=shade(new THREE.Mesh(t.geo,mat(t.color)));m.userData.own=true;row.add(m)});
    grp.add(row);
   });
@@ -3101,11 +3102,126 @@ window.addEventListener('message',ev=>{
   else if(f.startsWith("part:"))o.parts[f.slice(5)]=j;
   kPreview();
  });
+ list.addEventListener("change",async e=>{
+  if(!e.target.matches("[data-k-file]"))return;
+  const card=e.target.closest("[data-k-row]"),o=card&&kOrders[+card.dataset.kRow],f=e.target.files&&e.target.files[0];
+  e.target.value="";
+  if(!o||!f)return;
+  const msg=$("dlMsg");
+  try{
+   if(msg)msg.textContent="Memproses kartun…";
+   o.img=await fileToDataURL(f);o.imgName=f.name.slice(0,40);
+   kRender();kPreview();
+   if(msg)msg.textContent="Kartun terpasang. Warna dan bentuk mengikuti gambar.";
+  }catch(err){if(msg)msg.textContent="Gambar tidak bisa dibaca: "+(err&&err.message||err)}
+ });
+ list.addEventListener("click",e=>{
+  const pk=e.target.closest("[data-k-pick]");
+  if(pk){const inp=pk.closest("[data-k-row]").querySelector("[data-k-file]");if(inp)inp.click();return}
+  const cl=e.target.closest("[data-k-clear]");
+  if(cl){const o=kOrders[+cl.dataset.kClear];if(o){o.img=null;o.imgName="";kRender();kPreview()}return}
+ });
  list.addEventListener("click",e=>{
   const b=e.target.closest("[data-k-remove]");if(!b||kOrders.length===1)return;
   kOrders.splice(+b.dataset.kRemove,1);kRender();kPreview();
  });
  $("karAdd").onclick=()=>{kOrders.push({...K_DEFAULT,parts:{...K_DEFAULT.parts}});kRender();kPreview();list.querySelector(`[data-k-row="${kOrders.length-1}"] input`)?.focus()};
+
+ /* ---------- kartun upload: lapisan warna dari gambar ---------- */
+ const imgCache=new Map();
+ const partDesc=o=>o.img?`Kartun upload (${o.imgName||"gambar"})`:`Rambut ${KC.hair[o.parts.hair][0]}, Kulit ${KC.skin[o.parts.skin][0]}, Baju ${KC.shirt[o.parts.shirt][0]}, Garis ${KC.stripe[o.parts.stripe][0]}, Border ${KC.border[o.parts.border][0]}`;
+ const partLines=o=>o.img?`   Kartun: ${o.imgName||"upload"}\n`:`   Rambut: ${KC.hair[o.parts.hair][0]}\n   Kulit: ${KC.skin[o.parts.skin][0]}\n   Baju: ${KC.shirt[o.parts.shirt][0]}\n   Garis baju: ${KC.stripe[o.parts.stripe][0]}\n   Border: ${KC.border[o.parts.border][0]}\n`;
+ function bodyParts(o){
+  if(o.img){const g=imgGeos(o.img);return g?g:[]}
+  return CH.map(c=>({name:c.name,geo:c.geo,color:colorOf(o,c.key)}));
+ }
+ function imgGeos(url){
+  if(!imgCache.has(url)){
+   imgCache.set(url,null);
+   buildImgGeos(url).then(g=>{imgCache.set(url,g);if(kOrders.some(o=>o.img===url))kPreview()},err=>{
+    console.warn("kartun gagal:",err);imgCache.set(url,[]);
+    const m=$("dlMsg");if(m)m.textContent="Kartun tidak bisa diproses. Coba gambar lain yang lebih jelas.";
+    if(kOrders.some(o=>o.img===url))kPreview();
+   });
+  }
+  return imgCache.get(url)||null;
+ }
+ async function fileToDataURL(file){
+  const bm=await createImageBitmap(file);
+  const sc=Math.min(1,200/bm.width),cv=document.createElement("canvas");
+  cv.width=Math.max(1,Math.round(bm.width*sc));cv.height=Math.max(1,Math.round(bm.height*sc));
+  cv.getContext("2d").drawImage(bm,0,0,cv.width,cv.height);
+  if(bm.close)bm.close();
+  return cv.toDataURL("image/png");
+ }
+ async function buildImgGeos(url){
+  const im=new Image();im.src=url;await im.decode();
+  const W=im.width,H=im.height,cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const ctx=cv.getContext("2d");ctx.drawImage(im,0,0);
+  const d=ctx.getImageData(0,0,W,H).data,N=W*H;
+  /* latar: transparan, atau putih yang tersambung ke tepi gambar */
+  const bg=new Uint8Array(N);
+  const cand=i=>d[i*4+3]<128||(d[i*4]>=235&&d[i*4+1]>=235&&d[i*4+2]>=235);
+  const q=[];const push=i=>{if(!bg[i]&&cand(i)){bg[i]=1;q.push(i)}};
+  for(let x=0;x<W;x++){push(x);push((H-1)*W+x)}
+  for(let y=0;y<H;y++){push(y*W);push(y*W+W-1)}
+  for(let h=0;h<q.length;h++){const i=q[h],x=i%W,y=(i-x)/W;
+   if(x>0)push(i-1);if(x<W-1)push(i+1);if(y>0)push(i-W);if(y<H-1)push(i+W)}
+  const fg=[];for(let i=0;i<N;i++)if(!bg[i])fg.push(i);
+  if(fg.length<80)throw new Error("gambar terlalu kosong");
+  /* k-means warna (maks 6 warna) */
+  const K=6;let C=[];
+  for(let k=0;k<K;k++){const i=fg[Math.floor((k+.5)*fg.length/K)];C.push([d[i*4],d[i*4+1],d[i*4+2]])}
+  const lab=new Int16Array(N).fill(-1);
+  for(let it=0;it<12;it++){
+   const sum=C.map(()=>[0,0,0,0]);
+   for(const i of fg){
+    let best=0,bd=1e18;
+    for(let k=0;k<K;k++){const dr=d[i*4]-C[k][0],dg=d[i*4+1]-C[k][1],db=d[i*4+2]-C[k][2],dd=dr*dr+dg*dg+db*db;if(dd<bd){bd=dd;best=k}}
+    lab[i]=best;const s=sum[best];s[0]+=d[i*4];s[1]+=d[i*4+1];s[2]+=d[i*4+2];s[3]++;
+   }
+   C=C.map((c,k)=>sum[k][3]?[sum[k][0]/sum[k][3],sum[k][1]/sum[k][3],sum[k][2]/sum[k][3]]:c);
+  }
+  const cnt=new Array(K).fill(0);for(const i of fg)cnt[lab[i]]++;
+  const keep=[];for(let k=0;k<K;k++)if(cnt[k]>=fg.length*.008)keep.push(k);
+  /* ukuran: lebar maks 30 mm, tinggi maks 60 mm, dasar di -30 mm (sama dengan karakter) */
+  let x0=W,x1=0,y0=H,y1=0;
+  for(const i of fg){const x=i%W,y=(i-x)/W;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  const bw=x1-x0+1,bh=y1-y0+1,s=Math.min(30/bw,imgBodyH/bh),cxm=(x0+x1+1)/2;
+  const toX=px=>(px-cxm)*s,toY=py=>-30+(y1+1-py)*s;
+  const shapes=[];
+  for(const k of keep){
+   const rows=[];
+   for(let y=y0;y<=y1;y++){
+    let x=x0;
+    while(x<=x1){
+     if(lab[y*W+x]===k){let e=x;while(e+1<=x1&&lab[y*W+e+1]===k)e++;rows.push(kRect(toX(x),toY(y+1),toX(e+1),toY(y)));x=e+1}
+     else x++;
+    }
+   }
+   if(!rows.length)continue;
+   let u=kUni(...rows);
+   if(!u.length)continue;
+   u=kOff(kOff(u,-.3),.3);u=kOff(kOff(u,.3),-.3);
+   let area=0;u.forEach(p=>{area+=Math.abs(kArea(p))/(SC*SC)});
+   if(area<2)continue;
+   let r=0,g=0,b=0,n=0;
+   for(const i of fg)if(lab[i]===k){r+=d[i*4];g+=d[i*4+1];b+=d[i*4+2];n++}
+   const hex="#"+[r/n,g/n,b/n].map(v=>Math.round(v).toString(16).padStart(2,"0")).join("").toUpperCase();
+   shapes.push({u,area,color:hex});
+  }
+  if(!shapes.length)throw new Error("tidak ada warna yang terbaca");
+  shapes.sort((a,b)=>b.area-a.area);
+  const geos=[];
+  shapes.forEach((sh,i)=>{
+   const above=shapes.slice(i+1).map(x=>x.u);
+   const fp=above.length?kDif(sh.u,kUni(...above)):sh.u;
+   if(!fp.length)return;
+   const g=new THREE.ExtrudeGeometry(kToShapes(fp),{depth:1.2,bevelEnabled:false,curveSegments:1});
+   geos.push({name:"Kartun "+(i+1),geo:g,color:sh.color});
+  });
+  return geos;
+ }
 
  /* ---------- ekspor 3MF ---------- */
  async function kExport(){
@@ -3114,7 +3230,7 @@ window.addEventListener('message',ev=>{
   const groups=[],n=kOrders.length;
   kOrders.forEach((o,i)=>{
    const nm=kShown(o.name),parts=[];
-   CH.forEach(c=>{const g=c.geo.clone();parts.push({name:c.name,mesh:weld(g),color:colorOf(o,c.key)});g.dispose()});
+   bodyParts(o).forEach(c=>{const g=c.geo.clone();parts.push({name:c.name,mesh:weld(g),color:c.color});g.dispose()});
    orderTexts(o).forEach(t=>{parts.push({name:t.nm,mesh:weld(t.geo),color:t.color});t.geo.dispose()});
    groups.push({name:(nm?nm:"Karikatur")+" - Karikatur",x:128,y:128+(i-(n-1)/2)*K_GY,z:0,parts});
   });
@@ -3124,7 +3240,7 @@ window.addEventListener('message',ev=>{
   return kOrders.map((o,i)=>{
    const nm=kShown(o.name);
    const price=kPrice(o);
-   return {price,line:`${i+1}. ${nm||"Karikatur tanpa nama"}\n   Rambut: ${KC.hair[o.parts.hair][0]}\n   Kulit: ${KC.skin[o.parts.skin][0]}\n   Baju: ${KC.shirt[o.parts.shirt][0]}\n   Garis baju: ${KC.stripe[o.parts.stripe][0]}\n   Border: ${KC.border[o.parts.border][0]}\n   Tulisan nama: ${nm?nm+" ("+MULTI_COLORS.find(([x,c])=>c.toLowerCase()===String(o.text).toLowerCase())[0]+", ukuran "+K_SIZE.find(([v])=>v===o.size)[1]+")":"-"}\n   Tulisan lucu: ${o.fun||"-"}\n   1 pcs — ${rpK(price)}`};
+   return {price,line:`${i+1}. ${nm||"Karikatur tanpa nama"}\n${partLines(o)}   Tulisan nama: ${nm?nm+" ("+MULTI_COLORS.find(([x,c])=>c.toLowerCase()===String(o.text).toLowerCase())[0]+", ukuran "+K_SIZE.find(([v])=>v===o.size)[1]+")":"-"}\n   Tulisan lucu: ${o.fun||"-"}\n   1 pcs — ${rpK(price)}`};
   });
  }
 
@@ -3179,7 +3295,7 @@ window.addEventListener('message',ev=>{
  };
  window.__dsKari={P7,kExport,orders:()=>kOrders,describe:()=>kLines(),setOrders:v=>{
   if(!Array.isArray(v)||!v.length)return;
-  kOrders=v.slice(0,20).map(o=>({name:String(o.name||"").toUpperCase().replace(/[^A-Z0-9 ]/g,"").slice(0,10),fun:String(o.fun||""),size:K_SIZE.some(([s])=>s===o.size)?o.size:"M",text:String(o.text||K_DEFAULT.text),parts:{hair:+o.parts?.hair||0,skin:+o.parts?.skin||0,shirt:+o.parts?.shirt||0,stripe:+o.parts?.stripe||0,border:+o.parts?.border||0}}));
+  kOrders=v.slice(0,20).map(o=>({name:String(o.name||"").toUpperCase().replace(/[^A-Z0-9 ]/g,"").slice(0,10),fun:String(o.fun||""),size:K_SIZE.some(([s])=>s===o.size)?o.size:"M",text:String(o.text||K_DEFAULT.text),img:(typeof o.img==="string"&&o.img.startsWith("data:image/"))?o.img:null,imgName:String(o.imgName||"").slice(0,40),parts:{hair:+o.parts?.hair||0,skin:+o.parts?.skin||0,shirt:+o.parts?.shirt||0,stripe:+o.parts?.stripe||0,border:+o.parts?.border||0}}));
   kRender();kPreview();
  }};
  kRender();
