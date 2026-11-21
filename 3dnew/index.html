@@ -466,6 +466,16 @@ body.ds-pen-holder-open #penHolderEditor{
 <style id="ds-home-ico-img">.ds-pc-ico img{display:block;height:56px;width:auto;max-width:100%;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}</style><style id="ds-bag-charm-css">.ds-home .pc-lemon{--tint:#fff6c7;--edge:#ffe07a}.ds-home .pc-lemon{grid-template-columns:150px 1fr}.ds-home .pc-lemon .ds-pc-ico{width:150px}.ds-home .ds-product-card:nth-child(6){animation-delay:.4s}.bc-in{text-transform:uppercase;letter-spacing:.06em;font-weight:700}.bc-info{margin:0;font-size:12px}</style>
 <style id="ds-ver-chips">#nameV5,#nameGridRow{display:none!important}/* V5 ditahan (hold) */#nameV1,#nameV2,#nameV3,#nameV4,#nameV5{white-space:nowrap;padding-left:10px;padding-right:10px}[aria-label="Versi Clicker Nama"]{flex-wrap:wrap}</style>
 <style id="ds-dim-css">.ds-dim{margin:10px 0 0;padding:7px 11px;font-size:13px;line-height:1.45;font-weight:600;color:#1f2a37;background:#f1f4f9;border:1px solid #dde3ec;border-radius:10px;max-width:46ch}.ds-dim[hidden]{display:none}.ds-dim small{display:block;font-weight:500;color:#667085}</style>
+
+<style id="ds-clicker3x3-recovery">
+/* Clicker 3x3: recover editor panel after hidden first render */
+body.ds-product-open #stage{display:block!important;visibility:visible!important}
+body.ds-product-open .panel{display:block!important;visibility:visible!important}
+body.ds-product-open .panel #p1{display:block!important;visibility:visible!important}
+body.ds-product-open .panel #multiClickerOrders{display:flex!important;flex-direction:column;gap:10px;min-height:1px}
+body.ds-product-open .panel #multiClickerOrders:empty{min-height:1px}
+#stage canvas{display:block!important}
+</style>
 </head>
 <body>
 <main>
