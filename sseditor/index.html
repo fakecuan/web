@@ -191,7 +191,19 @@ textarea#ptx[hidden]{display:none}
  #fsw #fsl{grid-column:3;grid-row:1/span 2;position:relative;right:auto;top:auto;bottom:auto;box-shadow:none;width:200px;min-height:0;border-left:1px solid #0000000f}
  #fsw #fsl.min{width:46px;border-radius:0;box-shadow:none}
  #fsw #fst .tools,#fsw #fst .btns{display:grid;width:100%}
+ #fsw .pnl-tg{display:block!important}
+ #fsw #lto{left:258px}#fsw.l-off #lto{left:8px}
+ #fsw #rto{right:208px}#fsw.r-off #rto{right:8px}
+ #fsw.l-off{grid-template-columns:0 minmax(0,1fr) auto}
+ #fsw.l-off>.fsh,#fsw.l-off>#fst{display:none}
+ #fsw.r-off{grid-template-columns:250px minmax(0,1fr) 0}
+ #fsw.r-off #fsl{display:none}
+ #fsw.l-off.r-off{grid-template-columns:0 minmax(0,1fr) 0}
+ #sheet{left:0;right:auto;top:0;bottom:0;width:320px;max-height:none;border-radius:0;padding:12px;z-index:40;transform:translateX(-105%)}
+ #sheet.open{transform:none}
+ body:has(#sheet.open) #fsw{padding-left:320px}
 }
+#fsw .pnl-tg{display:none;position:absolute;top:8px;z-index:5;width:36px;height:36px;border-radius:10px;border:0;background:#fff;box-shadow:0 2px 8px #0002;font:600 18px system-ui,sans-serif;cursor:pointer}
 </style></head>
 <body>
 <div id="view"></div>
@@ -2082,7 +2094,7 @@ async function contentAwareFill(auto){let m=typeof maskData=='function'&&!auto?m
     const bd=bx.getImageData(0,0,rw,rh).data,od=full.data,orig=new Uint8ClampedArray(od);
     /* hanya area seleksi yang diganti, tepi seleksi dihaluskan */
     const fw=Math.max(3,Math.round(Math.min(bw,bh)*.04)),ou=new Uint8Array(rw*rh);for(let y=0;y<rh;y++)for(let x=0;x<rw;x++)ou[y*rw+x]=m[((ry+y)*W+rx+x)*4+3]>127?0:1;const dO=edt(ou,rw,rh);
-    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const a0=m[((ry+y)*W+rx+x)*4+3]/255;if(a0<=0)continue;const a=a0*Math.min(1,Math.sqrt(dO[y*rw+x])/fw);const q=(y*rw+x)*4;for(let c=0;c<4;c++)od[q+c]=od[q+c]+(bd[q+c]-od[q+c])*a}
+    for(let y=0;y<rh;y++)for(let x=0;x<rw;x++){const a0=m[((ry+y)*W+rx+x)*4+3]/255;if(a0<=0)continue;const q0=(y*rw+x)*4;const a=a0*(od[q0+3]<200?1:Math.min(1,Math.sqrt(dO[y*rw+x])/fw));const q=(y*rw+x)*4;for(let c=0;c<4;c++)od[q+c]=od[q+c]+(bd[q+c]-od[q+c])*a}
     IE.x.putImageData(full,rx,ry);IE.changed=true;ieDraw();toast(tr?'Area transparan diisi dengan motif sekitarnya':'Area seleksi diisi sesuai sekitarnya')}
   catch(e){console.error(e);toast('Isi sesuai konten gagal: '+(e.message||e))}finally{busy(null)}}
 /* ukuran kanvas: tambah/kurangi kanvas tanpa mengubah ukuran gambar */
@@ -2101,10 +2113,21 @@ let SNAPON=(()=>{try{return localStorage.getItem('snapOn')!=='0'}catch(e){return
 $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;try{localStorage.setItem('snapOn',SNAPON?'1':'0')}catch(_){}toast(SNAPON?'Snap aktif':'Snap mati: geser & putar bebas')};
 /* cubit 2 jari juga bisa di area abu-abu sekitar pola (bukan hanya di atas pola) */
 {const W=$('#pvw'),pts=new Map();let st=null;W.style.touchAction='none';
-  W.addEventListener('pointerdown',e=>{if(e.target===pv||e.pointerType==='mouse')return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===2&&sel){if(!view)computeView();if(vz<=1||!vbase||!vbase.w){vz=1;view=null;computeView();vbase={...view};vcx=view.x0+view.w/2;vcy=view.y0+view.h/2}
+  W.addEventListener('pointerdown',e=>{if(e.target===pv||e.pointerType==='mouse')return;pts.set(e.pointerId,[e.clientX,e.clientY]);W.style.touchAction=vz>1?'none':'pan-y';if(pts.size===2&&sel){if(!view)computeView();if(vz<=1||!vbase||!vbase.w){vz=1;view=null;computeView();vbase={...view};vcx=view.x0+view.w/2;vcy=view.y0+view.h/2}
     const[a,b]=[...pts.values()];st={d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,z:vz}}});
-  W.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(st&&pts.size>=2){const[a,b]=[...pts.values()];vz=cl(st.z*Math.hypot(a[0]-b[0],a[1]-b[1])/st.d,1,8);if(vz<1.03)vz=1;view=null;drawPv()}});
+  W.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const pr=pts.get(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);
+    /* satu jari: geser kanvas saat sudah di-zoom; saat belum di-zoom, halaman ikut tergeser */
+    if(pts.size===1&&sel&&vz>1&&pv){if(!view)computeView();const r=pv.getBoundingClientRect();vcx-=(e.clientX-pr[0])*(view.w/r.width);vcy-=(e.clientY-pr[1])*(view.h/r.height);view=null;drawPv();return}
+    if(st&&pts.size>=2){const[a,b]=[...pts.values()];vz=cl(st.z*Math.hypot(a[0]-b[0],a[1]-b[1])/st.d,1,8);if(vz<1.03)vz=1;view=null;drawPv()}});
   const end=e=>{pts.delete(e.pointerId);if(pts.size<2)st=null};W.addEventListener('pointerup',end);W.addEventListener('pointercancel',end)}
+
+/* landscape: panel alat (kiri) dan lapisan (kanan) bisa dibuka-tutup agar kanvas lebih luas */
+{const fsw=$('#fsw');if(fsw&&!$('#lto')){const mk=(id,t,ch)=>{const b=document.createElement('button');b.id=id;b.className='pnl-tg';b.title=t;b.textContent=ch;fsw.appendChild(b);return b};
+  const lt=mk('lto','Alat: buka / tutup','\u2630'),rt=mk('rto','Lapisan: buka / tutup','\u25A4');
+  let L=null,R=null;try{L=localStorage.getItem('skn_lo');R=localStorage.getItem('skn_ro')}catch(e){}
+  fsw.classList.toggle('l-off',L!=='1');fsw.classList.toggle('r-off',R!=='1');
+  lt.onclick=()=>{const v=fsw.classList.toggle('l-off');try{localStorage.setItem('skn_lo',v?'0':'1')}catch(e){}};
+  rt.onclick=()=>{const v=fsw.classList.toggle('r-off');try{localStorage.setItem('skn_ro',v?'0':'1')}catch(e){}}}}
 
 /* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
 let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
