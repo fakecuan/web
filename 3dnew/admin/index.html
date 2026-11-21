@@ -75,7 +75,7 @@ function card(o){
   +'<div class="row"><select class="s-'+o.status.toLowerCase()+'" data-st="'+o.id+'">'+statuses.map(s=>'<option'+(s===o.status?' selected':'')+'>'+s+'</option>').join('')+'</select>'
   +(o.file&&o.file.chunks?'<button class="btn acc" data-dl="'+o.id+'">⬇ 3MF ('+(o.file.size/1048576).toFixed(1)+' MB)</button>':'<span class="sub">'+(o.file?.error?'⚠ 3MF gagal diunggah':'Tanpa file 3MF')+'</span>')
   +(wa?'<a class="btn wa" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')
-  +'<button class="btn light" data-file="'+o.id+'">Kelola file</button><button class="btn light" data-edit="'+o.id+'">Catatan</button></div></div>';
+  +'<button class="btn light" data-file="'+o.id+'">Kelola file</button><button class="btn acc" data-edit="'+o.id+'">✏️ Edit pesanan</button></div></div>';
 }
 $('list').addEventListener('change',async e=>{const id=e.target.dataset.st;if(!id)return;const o=orders.find(x=>x.id===id);try{await store.setStatus(id,e.target.value);o.status=e.target.value;toast('Status disimpan');render()}catch(err){toast('Gagal: '+(err.message||err));render()}});
 $('list').addEventListener('click',async e=>{
