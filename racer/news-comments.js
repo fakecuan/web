@@ -89,7 +89,7 @@
       /* Jangan mengunci modal secara global: baris rekor tidak punya ID skate_news,
          sedangkan pengumuman admin menggunakan ID asli tabel skate_news. */
       modal.querySelectorAll('.it[id^="nwm_"]').forEach((card) => {
-        if (card.dataset.commentsAttached === '1') return;
+        if (card.dataset.commentsAttached === '1' || card.querySelector('.nwcWrap')) return;
         const key = card.dataset.commentKey || '';
         const newsId = Number(card.dataset.commentNewsId || 0);
         const target = key
