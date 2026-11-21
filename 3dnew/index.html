@@ -1824,7 +1824,7 @@ $("dl").onclick=async()=>{
   msg.textContent="Unduhan 3MF dimulai.";
  }catch(err){msg.textContent="Gagal membuat 3MF: "+(err?.message||err)}
 };
-const function setProduct(P){
+function setProduct(P){
  if(P===P1){
   document.body.classList.remove("ds-pen-holder-open");
   active=P;held=-1;
