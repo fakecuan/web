@@ -2062,7 +2062,7 @@ async function switchModel(k,force){
   const o=remapSleeves(projObj(),k==='l'||k==='rl');
   /* Pola CLO baru punya ID geometri sendiri. Lepaskan pemetaan CLO lama agar
      gambar/teks dirender sebagai artwork panel dan mengikuti bentuk pola baru. */
-  Object.values(o.parts||{}).forEach(part=>(part.layers||[]).forEach(layer=>{delete layer.clo;delete layer.rep}));
+  Object.values(o.parts||{}).forEach(part=>(part.layers||[]).forEach(layer=>{delete layer.clo}));
   const had=Object.values(o.parts).some(p=>(p.layers||[]).length);
   const nm=ZP?FS.zprj.n:(FS.json.named?FS.json.n:'desain-skinsuit-baru');
   try{
