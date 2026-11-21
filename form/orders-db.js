@@ -108,23 +108,24 @@ export async function unlock(password){
     // Menyusun ulang file 3MF dari potongan-potongannya.
     async dsFile(id,file){
       await ready();const parts=[];
-      for(let i=0;i<file.chunks;i++){const s=await getDoc(doc(db,IMAGES,id+'_f'+i));if(!s.exists())throw new Error('Potongan file '+(i+1)+' hilang');parts.push(unb64(s.data().full))}
+      for(let i=0;i<file.chunks;i++){const s=await getDoc(doc(db,IMAGES,(file.key||id)+'_f'+i));if(!s.exists())throw new Error('Potongan file '+(i+1)+' hilang');parts.push(unb64(s.data().full))}
       return new Blob(parts,{type:'application/vnd.ms-package.3dmanufacturing-3dmodel+zip'});
     },
     async dsReplaceFile(id,data,oldFile,fileBytes,fileName){
       await ready();
       if(!fileBytes?.length)throw new Error('File kosong');
       const chunks=Math.ceil(fileBytes.length/CHUNK);
+      const storageKey=id+'_'+newKey();
       const written=[];
       try{
         for(let i=0;i<chunks;i++){
-          const path=id+'_f'+i;
+          const path=storageKey+'_f'+i;
           await setDoc(doc(db,IMAGES,path),{full:bytesToB64(fileBytes.subarray(i*CHUNK,(i+1)*CHUNK))});
           written.push(path);
         }
-        const next={...data,file:{name:fileName||'pesanan.3mf',size:fileBytes.length,chunks}};
+        const next={...data,file:{name:fileName||'pesanan.3mf',size:fileBytes.length,chunks,key:storageKey}};
         await updateDoc(doc(db,COLLECTION,id),{...await seal(next)});
-        for(let i=0;i<(oldFile?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}
+        for(let i=0;i<(oldFile?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,(oldFile.key||id)+'_f'+i))}catch{}}
         return next.file;
       }catch(e){
         for(const path of written){try{await deleteDoc(doc(db,IMAGES,path))}catch{}}
@@ -135,10 +136,10 @@ export async function unlock(password){
       await ready();
       const next={...data};delete next.file;
       await updateDoc(doc(db,COLLECTION,id),{...await seal(next)});
-      for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}
+      for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,(file.key||id)+'_f'+i))}catch{}}
       return next;
     },
-    async dsRemove(id,file){await ready();await deleteDoc(doc(db,COLLECTION,id));for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,id+'_f'+i))}catch{}}},
+    async dsRemove(id,file){await ready();await deleteDoc(doc(db,COLLECTION,id));for(let i=0;i<(file?.chunks||0);i++){try{await deleteDoc(doc(db,IMAGES,(file.key||id)+'_f'+i))}catch{}}},
     async setStatus(id,status){await ready();await updateDoc(doc(db,COLLECTION,id),{status})},
     async save(id,status,data){await ready();await updateDoc(doc(db,COLLECTION,id),{status,...await seal(data)})},
     // Impor banyak pesanan sekaligus. id tetap (mis. sheet-12) supaya impor ulang tidak membuat duplikat.
