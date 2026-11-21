@@ -2406,7 +2406,7 @@ $('#szsel').addEventListener('pointerdown',()=>{if(SZFAIL)loadSizes(1)});$('#szs
 function szUI(){const s=$('#szsel');if(!s||!SIZES)return;const g=(t,a)=>a.length?`<optgroup label="${t}">${a.map(x=>`<option value="${x.id}">${x.label}</option>`).join('')}</optgroup>`:'';
   const kid=SIZES.filter(x=>/^\d+S$/.test(x.id)),ad=SIZES.filter(x=>/^(XS|S|M|L|XL|XXL)$/.test(x.id)),oth=SIZES.filter(x=>!kid.includes(x)&&!ad.includes(x));
   s.innerHTML=(CURSIZE==''?'<option value="">File ini</option>':'')+g('Anak',kid)+g('Dewasa',ad)+g('Lainnya',oth);s.value=CURSIZE;slvAvail()}
-function slvAvail(){const S=SIZES&&SIZES.find(x=>x.id===CURSIZE),bic=!S||S.bic;document.querySelectorAll('#slv option').forEach(o=>{const k=o.value;o.disabled=!bic&&(k=='rs'||k=='rl'||((k=='l')&&!(S&&S.l))||((k=='s')&&!(S&&S.s)))})}
+function slvAvail(){document.querySelectorAll('#slv option').forEach(o=>{o.disabled=false})}
 async function packGet(name,onp){let c=null;try{c=await caches.open('diva-pola-v2');const m=await c.match(name);if(m)return new Uint8Array(await m.arrayBuffer())}catch(e){c=null}
   const r=await szFetch(name);const tot=+r.headers.get('content-length')||0,rd=r.body.getReader(),parts=[];let got=0;for(;;){const{done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;onp&&onp(got,tot)}
   const u=new Uint8Array(got);let o=0;for(const p of parts){u.set(p,o);o+=p.length}try{if(c)await c.put(name,new Response(u))}catch(e){}return u}
@@ -2423,9 +2423,9 @@ async function buildSizeTpl(file){const idx=await(await szFetch('index.json',{ca
 }}
 /* ganti ukuran: pola & model ikut, desain menyesuaikan proporsi */
 $('#szsel').onchange=async e=>{const v=e.target.value,old=CURSIZE;if(!v)return;CURSIZE=v;try{localStorage.setItem('szCur',v)}catch(_){}
-  const S=SIZES.find(x=>x.id===v);let k=curKind();if(S&&!S.bic){if(k=='rs')k='s';if(k=='rl')k='l';if(k=='l'&&!S.l){k='s';toast('Ukuran '+S.label+' belum ada lengan panjang, pakai lengan pendek')}if(k=='s'&&!S.s){k='l';toast('Ukuran '+S.label+' baru ada lengan panjang')}}
-  slvAvail();if(S&&S.bic&&!ZP){syncSlv();return}
-  const before=ZP;await switchModel(k,true);if(ZP===before&&old!==v){CURSIZE=old;try{localStorage.setItem('szCur',old)}catch(_){}szUI()}};
+  /* Ukuran hanya label ukuran badan. Semua ukuran tetap memakai file pola model resmi dari repository. */
+  slvAvail();const k=curKind(),before=ZP;await switchModel(k,true);
+  if(ZP===before&&old!==v){CURSIZE=old;try{localStorage.setItem('szCur',old)}catch(_){}szUI()}};
 /* file CLO yang dibuka: kenali ukurannya dari tinggi pola badan depan */
 function detectSize(f){if(f&&f.__tpl)return;/* pola bawaan dari pilihan ukuran: ukuran sudah dipilih pengguna, jangan ditebak ulang */
   const nm=f&&f.name?SZTAG_RE.exec(f.name.replace(/\.[^.]+$/,'')):null;
