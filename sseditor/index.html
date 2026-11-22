@@ -213,6 +213,10 @@ body:has(#sheet.open) #tr,body:has(#sheet.open) .chip.rb,body:has(#sheet.open) #
 body.fsmode #sheet{display:none!important}
 body.fsmode #fsw{padding-left:0!important}
 #fst #snapxy{display:flex;gap:12px;margin:6px 0}
+#fsc{position:relative}
+#fzm{position:absolute;right:8px;top:8px;z-index:6;display:flex;flex-direction:column;gap:6px}
+#fzm button{width:40px;height:40px;border:0;border-radius:10px;background:#fff;box-shadow:0 2px 8px #0002;font:600 20px system-ui,sans-serif;cursor:pointer;color:#222}
+@media (orientation:landscape) and (min-width:640px){#fzm{top:52px}}
 </style></head>
 <body>
 <div id="view"></div>
@@ -2147,6 +2151,11 @@ $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;tr
 /* layar penuh: warna bagian & snap X/Y ikut pindah ke panel kiri bersama semua menu */
 {const _fo=fsOpen;fsOpen=function(){const was=FSON;const r=_fo.apply(this,arguments);if(!was&&FSON){const fst=$('#fst'),pb=$('#pbtn');
   const items=[pb&&pb.parentNode,$('#snapxy')].filter(Boolean);items.reverse().forEach(e=>{const ph=document.createComment('fs');e.parentNode.insertBefore(ph,e);fsHome.push([e,ph]);fst.insertBefore(e,fst.firstChild)})}return r}}
+
+/* layar penuh: tombol zoom (+, −, reset) di kanan atas area kanvas */
+{const fsc=$('#fsc');if(fsc&&!$('#fzm')){const g=document.createElement('div');g.id='fzm';
+  [['fzi','+','Perbesar',()=>fsZoom(1.4)],['fzo','\u2212','Perkecil',()=>fsZoom(1/1.4)],['fzr','\u21BA','Reset zoom',()=>{vz=1;view=null;drawPv()}]].forEach(([id,t,ti,fn])=>{const b=document.createElement('button');b.id=id;b.textContent=t;b.title=ti;b.onclick=fn;g.appendChild(b)});
+  fsc.appendChild(g)}}
 
 /* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
 let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
