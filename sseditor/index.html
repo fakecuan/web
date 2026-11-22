@@ -184,6 +184,7 @@ textarea#ptx[hidden]{display:none}
 /* layar lebar (PC / HP miring): menu di panel kiri & kanan, kanvas di tengah dibuat lebih luas */
 @media (orientation:landscape) and (min-width:640px){
  #fsw{display:grid;grid-template-columns:250px minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr)}
+ #fsw>.fsh #fsn{flex-basis:100%;white-space:normal}
  #fsw>.fsh{grid-column:1;grid-row:1;flex-wrap:wrap;height:auto;padding:8px 10px;border-bottom:1px solid #0000000f}
  #fsw>#fst{grid-column:1;grid-row:2;max-height:none;overflow:auto;min-height:0;box-shadow:1px 0 0 #0000001a;padding:10px 12px max(10px,env(safe-area-inset-bottom))}
  #fsw>.fsb{display:contents}
@@ -208,6 +209,10 @@ textarea#ptx[hidden]{display:none}
 /* saat panel edit bagian terbuka: tombol-tombol di atas 3D disembunyikan, 3D tampil penuh */
 body:has(#sheet.open) #tr,body:has(#sheet.open) .chip.rb,body:has(#sheet.open) #bar,body:has(#sheet.open) #tl{display:none!important}
 @media (orientation:landscape) and (min-width:640px){body:has(#sheet.open) #view{left:320px}}
+/* mode layar penuh: panel bagian disembunyikan, semua menu ada di panel kiri layar penuh */
+body.fsmode #sheet{display:none!important}
+body.fsmode #fsw{padding-left:0!important}
+#fst #snapxy{display:flex;gap:12px;margin:6px 0}
 </style></head>
 <body>
 <div id="view"></div>
@@ -2129,7 +2134,7 @@ $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;tr
 {const fsw=$('#fsw');if(fsw&&!$('#lto')){const mk=(id,t,ch)=>{const b=document.createElement('button');b.id=id;b.className='pnl-tg';b.title=t;b.textContent=ch;fsw.appendChild(b);return b};
   const lt=mk('lto','Alat: buka / tutup','\u2630'),rt=mk('rto','Lapisan: buka / tutup','\u25A4');
   let L=null,R=null;try{L=localStorage.getItem('skn_lo');R=localStorage.getItem('skn_ro')}catch(e){}
-  fsw.classList.toggle('l-off',L!=='1');fsw.classList.toggle('r-off',R!=='1');
+  fsw.classList.toggle('l-off',L==='0');fsw.classList.toggle('r-off',R==='0');
   lt.onclick=()=>{const v=fsw.classList.toggle('l-off');try{localStorage.setItem('skn_lo',v?'0':'1')}catch(e){}};
   rt.onclick=()=>{const v=fsw.classList.toggle('r-off');try{localStorage.setItem('skn_ro',v?'0':'1')}catch(e){}}}}
 
@@ -2138,6 +2143,10 @@ $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;tr
 
 /* panel kiri selalu menampilkan menu edit; saat belum ada objek dipilih, tombolnya diredupkan */
 {const _ut2=uiTools;uiTools=function(){const r=_ut2.apply(this,arguments);try{const p=sel&&P[sel],L=p?A(p):null,t=$('#tools');if(t){t.style.display='grid';t.querySelectorAll('button').forEach(b=>{b.disabled=!L;b.style.opacity=L?'':'.45'})}}catch(_){}return r}}
+
+/* layar penuh: warna bagian & snap X/Y ikut pindah ke panel kiri bersama semua menu */
+{const _fo=fsOpen;fsOpen=function(){const was=FSON;const r=_fo.apply(this,arguments);if(!was&&FSON){const fst=$('#fst'),pb=$('#pbtn');
+  const items=[pb&&pb.parentNode,$('#snapxy')].filter(Boolean);items.reverse().forEach(e=>{const ph=document.createComment('fs');e.parentNode.insertBefore(ph,e);fsHome.push([e,ph]);fst.insertBefore(e,fst.firstChild)})}return r}}
 
 /* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
 let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
