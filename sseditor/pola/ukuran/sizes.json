@@ -36,8 +36,11 @@
  {
   "id": "7S",
   "label": "7S",
-  "bic": true,
-  "fh": 401
+  "fh": 401,
+  "s": "7S.zprj",
+  "l": "7S-LS.zprj",
+  "rs": "7S-R.zprj",
+  "rl": "7S-RLS.zprj"
  },
  {
   "id": "6S",
