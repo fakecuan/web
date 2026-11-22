@@ -2136,6 +2136,9 @@ $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;tr
 /* klik di luar kanvas: lepas pilihan objek (kotak transformasi hilang); klik objek berikutnya memilih objek itu */
 {const W0=document.querySelector('#pvw')||W;if(W0)W0.addEventListener('pointerdown',e=>{if(e.target===pv)return;try{const p=P[sel];if(p&&p.ai>=0){p.ai=-1;uiTools();drawPv()}}catch(_){}});}
 
+/* panel kiri selalu menampilkan menu edit; saat belum ada objek dipilih, tombolnya diredupkan */
+{const _ut2=uiTools;uiTools=function(){const r=_ut2.apply(this,arguments);try{const p=sel&&P[sel],L=p?A(p):null,t=$('#tools');if(t){t.style.display='grid';t.querySelectorAll('button').forEach(b=>{b.disabled=!L;b.style.opacity=L?'':'.45'})}}catch(_){}return r}}
+
 /* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
 let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
 const SZURLS=['pola/ukuran/','https://fakecuan.github.io/web/sseditor/pola/ukuran/'];
