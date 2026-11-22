@@ -320,7 +320,7 @@ body.fsmode #fsw{padding-left:0!important}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-22 r49</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-22 r50</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -767,7 +767,44 @@ function resolveFile(zf,names){const keys=Object.keys(zf);for(const n of names){
   for(const n of names){if(!n)continue;const base=n.replace(/^.*[\\/]/,''),i=base.lastIndexOf('.'),stem=i>0?base.slice(0,i):base,ext=i>0?base.slice(i).toLowerCase():'';
     if(zf[base])return base;const re=new RegExp('^'+stem.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'_\\d+'+ext.replace('.','\\.')+'$','i');const hit=keys.find(k=>re.test(k));if(hit)return hit}
   return null}
-G.CLO={cloGfxRefs,dedupeFiles,stripAvatar,stripFabricTex,resolveFile,canBakeGraphics,parseMap,parseList,serMap,serList,CMap,CList,readZprj,writeZprj,readPatterns,walk,clone,DESIGN};
+/* ===== gabung beberapa .zprj jadi satu: semua pola berjejer (EKSPERIMEN, jahitan pakaian kedua dst. tidak ikut) ===== */
+function mergeZprjs(bufs,gapMm){
+  const sts=bufs.map(b=>readZprj(b)),A=sts[0],pac=clone(A.pac);let nextId=maxId(pac)+1;const nid=()=>nextId++;
+  const pl=pac.get('mapPatternEditor').get('mapPatternList').get('listPattern'),fabs=pac.get('listFabric');
+  const cwRoot=pac.get('mapColorWay'),nc=cwRoot&&cwRoot.get('mapNewColorway'),cw=nc&&nc.get('listColorway').at(0);
+  const assign=cw&&cw.get('mapAssign'),chipA=cw&&cw.get('mapAssignStyleChip');
+  const scv=cwRoot&&cwRoot.get('mapStyleChipAssign')&&cwRoot.get('mapStyleChipAssign').get('listFabricToStyleChipVector');
+  const zf={...A.zf};const ID=/^ui(ID|StyleID|StyleChipID|ItemID|SelfID)$/;
+  let gid=0;pl.all().forEach(p=>{const g=p.get('uiPatternGID');if(g>gid)gid=g});
+  const bb=st=>{let a=1e12,c=-1e12;st.patterns.forEach(q=>q.path.forEach(o=>{for(let i=1;i<o.length;i++){const x=o[i][0];if(x<a)a=x;if(x>c)c=x}}));return[a,c]};
+  const [a0,c0]=bb(A);let right=c0;const added=[];
+  for(let k=1;k<sts.length;k++){const B=sts[k],pb=clone(B.pac),idm={},rm=v=>idm[v]||(idm[v]=nid());
+    const rn=m=>walk(m,x=>{for(const e of x.e){if(e.t===T_U32&&ID.test(e.k)){const v=x.get(e.k);if(v>0&&v<0x7fffffff)x.set(e.k,rm(v))}}});
+    const plB=pb.get('mapPatternEditor').get('mapPatternList').get('listPattern'),fabsB=pb.get('listFabric');
+    const [b0,b1]=bb(B),dx=right+gapMm-b0;right=right+gapMm+(b1-b0);
+    const fmap={};
+    plB.all().forEach(p=>{
+      const fs=p.get('mapFabricShape2D'),fi=Math.max(0,fs.get('iFabricIndex')|0);
+      if(!(fi in fmap)){const f=clone(fabsB.at(Math.min(fi,fabsB.length-1)));rn(f);if(f.has('qsUuid'))setStr(f,'qsUuid',uuid());fabs.push(f);fmap[fi]=fabs.length-1}
+      rn(p);fs.set('iFabricIndex',fmap[fi]);const s2=p.get('mapShape2D');if(s2.has('iFabricIndex')&&s2.get('iFabricIndex')>=0)s2.set('iFabricIndex',fmap[fi]);
+      if(p.has('qsUuid'))setStr(p,'qsUuid',uuid());if(p.has('uiPatternGID'))p.set('uiPatternGID',++gid);
+      const M=s2.get('mapTransformer2D').get('m3Matrix').slice();M[6]+=dx;s2.get('mapTransformer2D').set('m3Matrix',M);
+      pl.push(p);added.push(p)});
+    /* warna & tekstur pola ini */
+    const cwB=pb.get('mapColorWay'),ncB=cwB&&cwB.get('mapNewColorway'),cB=ncB&&ncB.get('listColorway').at(0);
+    const asB=cB&&cB.get('mapAssign'),chB=cB&&cB.get('mapAssignStyleChip'),svB=cwB&&cwB.get('mapStyleChipAssign')&&cwB.get('mapStyleChipAssign').get('listFabricToStyleChipVector');
+    if(assign&&asB){const l=asB.get('listPatternToFabric'),d=assign.get('listPatternToFabric');l.all().forEach(x=>{const y=clone(x);rn(y);d.push(y)});
+      const g1=asB.get('listFabricShape2DToGrainLineInfo'),g2=assign.get('listFabricShape2DToGrainLineInfo');if(g1&&g2)g1.all().forEach(x=>{const y=clone(x);rn(y);g2.push(y)})}
+    if(scv&&svB)svB.all().forEach(x=>{const y=clone(x);rn(y);scv.push(y)});
+    if(chipA&&chB){const l=chB.get('listFabricToStyleChip'),d=chipA.get('listFabricToStyleChip');if(l&&d)l.all().forEach(x=>{const y=clone(x);rn(y);d.push(y)})}
+    Object.keys(B.zf).forEach(n=>{if(!zf[n]&&!/\.(pac|pos)$/i.test(n)&&!/^(clofiles|displaysettings)\.json$/i.test(n))zf[n]=B.zf[n]});
+    const cB2=B.zf['clofiles.json'];if(cB2&&zf['clofiles.json']){try{const o=JSON.parse(TD.decode(zf['clofiles.json'])),ob=JSON.parse(TD.decode(cB2));for(const n in ob)if(!o[n]&&zf[n])o[n]=ob[n];zf['clofiles.json']=TE.encode(JSON.stringify(o,null,1))}catch(e){}}}
+  zf[A.pn]=serMap(pac);
+  const lv=o=>{const r={};for(const n in o){const b=o[n];r[n]=[b,{level:(/\.(avt|png|jpe?g|zpac)$/i.test(n)||b.length>8e6)?0:(/\.pac$/i.test(n)?1:6)}]}return r};
+  const files={...A.files};files[A.zn]=joinCLO(A.zhdr,fflate.zipSync(lv(zf)));
+  return{data:joinCLO(A.hdr,fflate.zipSync(lv(files))),count:pl.length}}
+
+G.CLO={mergeZprjs,cloGfxRefs,dedupeFiles,stripAvatar,stripFabricTex,resolveFile,canBakeGraphics,parseMap,parseList,serMap,serList,CMap,CList,readZprj,writeZprj,readPatterns,walk,clone,DESIGN};
 })(typeof window!=='undefined'?window:globalThis);
 </script>
 <script>
@@ -2696,7 +2733,7 @@ body.laymode>*:not(#lay):not(#busy):not(#toast):not(#mfb):not(#mname):not(script
 #layempty[hidden]{display:none!important}#layempty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#667085;text-align:center;padding:30px;line-height:1.6}
 #layft{padding:8px 14px;background:#fff;border-top:1px solid #d9dde4;display:flex;gap:14px;align-items:center;font-size:13px;color:#4b5563}
 `;document.head.appendChild(css)}
-{const L=document.createElement('div');L.id='lay';L.hidden=true;L.innerHTML=`<div id="layhd"><h1>Print Layout</h1><button class="pr" id="layadd">+ Tambah desain</button><select id="layview"><option value="3d">Tampilan 3D</option><option value="pola">Tampilan pola</option></select><button id="laypdf" hidden>PDF</button><button class="pr" id="laypng">PNG pola</button><button class="pr" id="laypng3">PNG 3D</button><button class="pr" id="layzprj">Simpan ZPRJ</button>
+{const L=document.createElement('div');L.id='lay';L.hidden=true;L.innerHTML=`<div id="layhd"><h1>Print Layout</h1><button class="pr" id="layadd">+ Tambah desain</button><select id="layview"><option value="3d">Tampilan 3D</option><option value="pola">Tampilan pola</option></select><button id="laypdf" hidden>PDF</button><button class="pr" id="laypng">PNG pola</button><button class="pr" id="laypng3">PNG 3D</button><button class="pr" id="layzprj">ZPRJ terpisah</button><button class="pr" id="layzmrg">ZPRJ gabungan</button>
 <label hidden><input type="checkbox" id="laytag" checked> Name tag</label><label>Zoom <input type="range" id="layzoom" min="6" max="60" value="28"></label><button id="layclr">Kosongkan</button><button id="layback">Buka editor</button></div>
 <div id="laybody"><div id="layempty">Tambahkan file pakaian (.zprj, memakai polanya sendiri) atau desain (.json, ukuran dari nama file, mis. “Batik 7S LS.json”). Ganti ukuran di tiap kartu bila perlu. Tiap pakaian ditaruh berjejer dengan susunan pola bawaannya.</div><div id="layrow"></div></div>
 <div id="layft"><span id="layn"></span><span id="layst"></span></div><input type="file" id="layfile" accept=".json,.zprj,.zip,application/json" multiple hidden>`;document.body.appendChild(L)}
@@ -2760,6 +2797,20 @@ $('#layzprj').onclick=async()=>{if(LAY.busy)return;const ok=LAY.items.filter(i=>
       else{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(tg.name||nm+'.zprj');document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},8000);await layWait(600)}
       done++}
     st.textContent=done+' file ZPRJ tersimpan'}
+  catch(e){console.error(e);st.textContent='Gagal: '+((e&&e.message)||e)}
+  finally{busy(null);LAY.busy=false;LAY.busy2=false}};
+$('#layzmrg').onclick=async()=>{if(LAY.busy)return;const ok=LAY.items.filter(i=>i.st=='ok');if(!ok.length){toast('Belum ada desain');return}
+  if(LAY.items.some(i=>i.st=='new'||i.st=='work'||i.st=='redo')){toast('Tunggu semua desain selesai diproses');return}
+  LAY.busy=true;LAY.busy2=true;const st=$('#layst'),F=FS.zprj;
+  try{F.h=null;F.drive=null;F.dev=null;F.named=false;const bufs=[];
+    for(let n=0;n<ok.length;n++){st.textContent='Menyiapkan pola '+(n+1)+'/'+ok.length+'…';await layWait(20);await layProcess(ok[n],true);const b=await zprjBlob();bufs.push(new Uint8Array(await b.arrayBuffer()))}
+    st.textContent='Menggabungkan '+ok.length+' pola…';busy('Menggabungkan pola…');await layWait(50);
+    const r=CLO.mergeZprjs(bufs,150),blob=new Blob([r.data],{type:'application/octet-stream'});bufs.length=0;busy(null);
+    F.n='Print layout gabungan';const keep=CURSIZE;CURSIZE='';let tg;try{tg=await getTarget('zprj',true)}finally{CURSIZE=keep}
+    if(!tg){st.textContent='';return}
+    if(tg.h||tg.drive){const w=await writeTarget('zprj',tg,blob);if(w!==true)throw new Error(typeof w=='string'?w:'Gagal menulis file')}
+    else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(tg.name||'Print layout gabungan.zprj');document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},8000)}
+    st.textContent='ZPRJ gabungan tersimpan ('+r.count+' pola, '+(blob.size/1048576).toFixed(1)+' MB)'}
   catch(e){console.error(e);st.textContent='Gagal: '+((e&&e.message)||e)}
   finally{busy(null);LAY.busy=false;LAY.busy2=false}};
 async function layPng(m3){const ok=LAY.items.filter(i=>i.snap&&(!m3||i.snap.v3));if(!ok.length){toast('Belum ada desain');return}
