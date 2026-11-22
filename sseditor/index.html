@@ -2,7 +2,7 @@
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Skinsuit 3D</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Audiowide&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Cinzel:wght@700&family=Dancing+Script:wght@700&family=Great+Vibes&family=Lobster&family=Montserrat:wght@800&family=Orbitron:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Racing+Sans+One&family=Russo+One&family=Staatliches&family=Teko:wght@600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Audiowide&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Cinzel:wght@700&family=Dancing+Script:wght@700&family=Great+Vibes&family=Lobster&family=Montserrat:wght@800&family=Orbitron:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Racing+Sans+One&family=Russo+One&family=Staatliches&family=Teko:wght@600&family=Alfa+Slab+One&family=Big+Shoulders+Display:wght@800&family=Graduate&family=Holtwood+One+SC&family=Saira+Condensed:wght@800&family=Squada+One&display=swap">
 <style>
 :root{--ac:#e8701a;--tx:#1b1b1f;--mu:#6b6b73;--pn:#ffffffee;--bd:#0000001a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -217,6 +217,9 @@ body.fsmode #fsw{padding-left:0!important}
 #fzm{position:absolute;right:8px;top:8px;z-index:6;display:flex;flex-direction:column;gap:6px}
 #fzm button{width:40px;height:40px;border:0;border-radius:10px;background:#fff;box-shadow:0 2px 8px #0002;font:600 20px system-ui,sans-serif;cursor:pointer;color:#222}
 @media (orientation:landscape) and (min-width:640px){#fzm{top:52px}}
+#libg .it .tg{position:absolute;left:4px;bottom:4px;background:#000a;color:#fff;font:700 10px system-ui,sans-serif;padding:2px 6px;border-radius:6px}
+#libg .it .tn{object-fit:contain!important;background:#2a2a30}
+#txsv{width:100%;margin-top:6px}
 </style></head>
 <body>
 <div id="view"></div>
@@ -804,7 +807,7 @@ let locked=false;function setLock(v){locked=v;const b=$('#lock');b.innerHTML=v?I
 $('#lock').onclick=()=>setLock(!locked);locked=false;$('#lock').innerHTML=ICON_ROT;
 
 /* ---------- render tekstur ---------- */
-const FONTS=['Bebas Neue','Anton','Oswald','Russo One','Teko','Orbitron','Racing Sans One','Staatliches','Audiowide','Black Ops One','Bungee','Montserrat','Pacifico','Lobster','Permanent Marker','Dancing Script','Great Vibes','Cinzel'];
+const FONTS=['Bebas Neue','Anton','Oswald','Russo One','Teko','Orbitron','Racing Sans One','Staatliches','Audiowide','Black Ops One','Bungee','Montserrat','Pacifico','Lobster','Permanent Marker','Dancing Script','Great Vibes','Cinzel','Big Shoulders Display','Saira Condensed','Squada One','Graduate','Alfa Slab One','Holtwood One SC'];
 const A=p=>p?(p.layers[p.ai]||null):null;
 const cloneL=L=>L.t=='txt'?{...L}:{...L,img:L.img};
 const PAIR={sleeveL:'sleeveR',sleeveR:'sleeveL',legL:'legR',legR:'legL',cuffL:'cuffR',cuffR:'cuffL',longL:'longR',longR:'longL'},pk=id=>id.replace(/[LR]$/,'');
@@ -824,17 +827,21 @@ function tile(x,L,cx,cy,w,h,W){x.save();x.translate(cx,cy);x.scale(L.fx?-1:1,L.f
   if(L.sw>0){x.lineJoin='round';x.miterLimit=2;x.lineWidth=f*L.sw/50;x.strokeStyle=L.sc;x.strokeText(L.txt,0,f*.04)}x.fillStyle=L.c;x.fillText(L.txt,0,f*.04)}
  else x.drawImage(L.img,-w/2,-h/2,w,h);x.restore()}
 const TCACHE=new WeakMap();
-function tileCanvas(L){const im=L.img,k=(L.fx?1:0)+(L.fy?2:0);let m=TCACHE.get(im);if(!m){m={};TCACHE.set(im,m)}if(m[k])return m[k];
- let w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;const s=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
- const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.translate(L.fx?w:0,L.fy?h:0);x.scale(L.fx?-1:1,L.fy?-1:1);x.drawImage(im,0,0,w,h);return m[k]=c}
+/* rep: 1 semua, 2 X, 3 Y, 4 X cermin, 5 Y cermin, 6 semua cermin (ubin selang-seling dicermin) */
+function repMode(L){const r=L.rep===true?1:(L.rep|0);return{b:[0,1,2,3,2,3,1][r]||1,mx:r==4||r==6,my:r==5||r==6}}
+function tileCanvas(L){const im=L.img,M=repMode(L),k=(L.fx?1:0)+(L.fy?2:0)+(M.mx?4:0)+(M.my?8:0);let m=TCACHE.get(im);if(!m){m={};TCACHE.set(im,m)}if(m[k])return m[k];
+ let w=im.naturalWidth||im.width,h=im.naturalHeight||im.height;const s=Math.min(1,(M.mx||M.my?1400:2048)/Math.max(w,h));w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
+ const c=document.createElement('canvas');c.width=M.mx?2*w:w;c.height=M.my?2*h:h;const x=c.getContext('2d');
+ const put=(ox,oy,ix,iy)=>{const fx=!!L.fx!==ix,fy=!!L.fy!==iy;x.setTransform(fx?-1:1,0,0,fy?-1:1,ox+(fx?w:0),oy+(fy?h:0));x.drawImage(im,0,0,w,h)};
+ put(0,0,false,false);if(M.mx)put(w,0,true,false);if(M.my)put(0,h,false,true);if(M.mx&&M.my)put(w,h,true,true);x.setTransform(1,0,0,1,0,0);c.__w=w;c.__h=h;return m[k]=c}
 /* ubin tanpa sambungan: pola kanvas, bukan gambar per ubin */
-function seamless(x,L,w,h,R){const tc=tileCanvas(L),pt=x.createPattern(tc,L.rep==2?'repeat-x':L.rep==3?'repeat-y':'repeat');
- pt.setTransform(new DOMMatrix([w/tc.width,0,0,h/tc.height,-w/2,-h/2]));x.fillStyle=pt;
- const ax=L.rep==3?w/2:R,ay=L.rep==2?h/2:R;x.fillRect(L.rep==3?-w/2:-R,L.rep==2?-h/2:-R,2*ax,2*ay)}
+function seamless(x,L,w,h,R){const tc=tileCanvas(L),B=repMode(L).b,pt=x.createPattern(tc,B==2?'repeat-x':B==3?'repeat-y':'repeat');
+ pt.setTransform(new DOMMatrix([w/tc.__w,0,0,h/tc.__h,-w/2,-h/2]));x.fillStyle=pt;
+ const ax=B==3?w/2:R,ay=B==2?h/2:R;x.fillRect(B==3?-w/2:-R,B==2?-h/2:-R,2*ax,2*ay)}
 function drawLayer(x,L,W,H,ext=0){if(!ready(L))return;const[w,h]=dims(L,W);x.save();x.translate(L.x*W,L.y*H);x.rotate((L.r||0)*Math.PI/180);
  if(!L.rep)tile(x,L,0,0,w,h,W);
  else if(L.t!='txt'&&typeof DOMMatrix!='undefined'){seamless(x,L,w,h,Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2))}
- else{const Dg=Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);const NI=L.rep==3?0:ni,NJ=L.rep==2?0:nj;for(let i=-NI;i<=NI;i++)for(let j=-NJ;j<=NJ;j++)tile(x,L,i*w,j*h,w,h,W)}
+ else{const Dg=Math.hypot(W+2*ext,H+2*ext)+2*Math.hypot(L.x*W-W/2,L.y*H-H/2),ni=Math.min(80,Math.ceil(Dg/w/2)+1),nj=Math.min(80,Math.ceil(Dg/h/2)+1);const RB=[0,1,2,3,2,3,1][L.rep===true?1:(L.rep|0)]||1,NI=RB==3?0:ni,NJ=RB==2?0:nj;for(let i=-NI;i<=NI;i++)for(let j=-NJ;j<=NJ;j++)tile(x,L,i*w,j*h,w,h,W)}
  x.restore()}
 function paint(id){histTouch();const p=P[id],c=p.cv.getContext('2d'),W=p.cv.width,H=p.cv.height;c.fillStyle=p.base;c.fillRect(0,0,W,H);p.layers.forEach(L=>drawLayer(c,L,W,H));p.tx.needsUpdate=true;if(id==sel)drawPv()}
 function render(id){if(!P[id])return;paint(id);if(id==sel)syncTwins(id)}
@@ -948,11 +955,11 @@ const pvEnd=()=>{if(pd){pd=null;guide=null;view=null;drawPv()}};pv.addEventListe
 function uiTools(){const p=sel&&P[sel],L=A(p);$('#tools').style.display=L?'grid':'none';
  const ly=$('#lyr');ly.hidden=!(p&&p.layers.length>(window.FSON?0:1));if(p&&p.layers.length>(window.FSON?0:1)){let ni=0;ly.innerHTML=p.layers.map((l,i)=>{const lab=l.t=='txt'?'“'+(l.txt||'Teks').slice(0,10)+'”':(l.clo?String(l.clo.name||'Motif CLO').slice(0,16):i==0&&p.layers[0].bg?'Latar':'Gambar '+(++ni));return `<button data-li="${i}" class="${i==p.ai?'on':''}">${l.t=='txt'?'':`<img src="${l.src}" alt="">`}${lab}</button>`}).reverse().join('')+(p.ai>=0?`<span class=ord><button data-mv="1" title="Ke depan">▲</button><button data-mv="-1" title="Ke belakang">▼</button></span>`:'')}
  $('#txp').hidden=!(L&&L.t=='txt');if(L&&L.t=='txt'){if($('#tin')!==document.activeElement)$('#tin').value=L.txt;$('#tfont').value=L.f;$('#tfont').style.fontFamily=`"${L.f}"`;$('#tcol').value=L.c;$('#tsc').value=L.sc;$('#tsw').value=L.sw;$('#tswv').textContent=L.sw}
- if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep);$('#repl').textContent=['Ulang','Ulang: semua','Ulang: X','Ulang: Y'][L.rep===true?1:(L.rep|0)]||'Ulang';$('#repimg').style.display=L.t=='txt'?'none':'';$('#iedit').style.display=L.t=='txt'?'none':''}}
+ if(L){$('#fh').classList.toggle('on',!!L.fx);$('#fv').classList.toggle('on',!!L.fy);$('#rep').classList.toggle('on',!!L.rep);$('#repl').textContent=['Ulang','Ulang: semua','Ulang: X','Ulang: Y','Ulang: X cermin','Ulang: Y cermin','Ulang: semua cermin'][L.rep===true?1:(L.rep|0)]||'Ulang';$('#repimg').style.display=L.t=='txt'?'none':'';$('#iedit').style.display=L.t=='txt'?'none':''}}
 const cur=()=>A(P[sel]);
 $('#fh').onclick=()=>{const L=cur();L.fx=!L.fx;render(sel);uiTools()};
 $('#fv').onclick=()=>{const L=cur();L.fy=!L.fy;render(sel);uiTools()};
-$('#rep').onclick=()=>{const L=cur();const r=L.rep===true?1:(L.rep|0);L.rep=(r+1)%4;view=null;render(sel);uiTools();toast(['Ulang dimatikan','Diulang ke semua arah','Diulang mengikuti sumbu X gambar','Diulang mengikuti sumbu Y gambar'][L.rep])};
+$('#rep').onclick=()=>{const L=cur();const r=L.rep===true?1:(L.rep|0);L.rep=(r+1)%7;view=null;render(sel);uiTools();toast(['Ulang dimatikan','Diulang ke semua arah','Diulang mengikuti sumbu X gambar','Diulang mengikuti sumbu Y gambar','Diulang sumbu X, selang-seling dicermin','Diulang sumbu Y, selang-seling dicermin','Diulang ke semua arah, selang-seling dicermin'][L.rep])};
 $('#del').onclick=()=>{const p=P[sel];if(p.ai<0)return;const L=p.layers[p.ai];if(mirOn(sel)&&L.tw){const q=P[PAIR[sel]],j=q.layers.findIndex(x=>x.uid==L.tw);if(j>=0){q.layers.splice(j,1);q.ai=q.layers.length-1}}p.layers.splice(p.ai,1);p.ai=p.layers.length-1;view=null;render(sel);uiTools()};
 $('#lyr').onclick=e=>{const p=P[sel],m=e.target.closest('[data-mv]');if(m){const d=+m.dataset.mv,j=p.ai+d;if(j<0||j>=p.layers.length)return;const t=p.layers[j];p.layers[j]=p.layers[p.ai];p.layers[p.ai]=t;p.ai=j;render(sel);uiTools();return}
  const b=e.target.closest('[data-li]');if(!b)return;p.ai=+b.dataset.li;view=null;drawPv();uiTools()};
@@ -2550,6 +2557,37 @@ let SNAPY=(()=>{try{return localStorage.getItem('snapY')!=='0'}catch(e){return t
 /* buka file CLO: kalau gagal, tampilkan alasannya (sebelumnya diam saja) */
 {const _oz5=openZprj;openZprj=function(f){let r;try{r=_oz5.apply(this,arguments)}catch(e){toast('File CLO tidak bisa dibuka: '+((e&&e.message)||e));return Promise.resolve()}
   return Promise.resolve(r).catch(e=>{console.error('buka CLO',e);toast('File CLO tidak bisa dibuka: '+((e&&e.message)||e))})}}
+
+
+/* ===== teks: pilihan font athletic & varsity, dan teks tersimpan di Library ===== */
+{const ATH=['Big Shoulders Display','Saira Condensed','Squada One','Teko','Bebas Neue','Anton','Oswald','Staatliches'],VAR=['Graduate','Alfa Slab One','Holtwood One SC','Cinzel','Bungee'];
+  const og=(t,a)=>`<optgroup label="${t}">`+a.map(f=>`<option value="${f}" style="font-family:'${f}'">${f}</option>`).join('')+'</optgroup>';
+  const rest=FONTS.filter(f=>!ATH.includes(f)&&!VAR.includes(f));
+  const tf=$('#tfont');if(tf){const v=tf.value;tf.innerHTML=og('Athletic',ATH)+og('Varsity',VAR)+og('Lainnya',rest);tf.value=v||'Bebas Neue'}}
+/* gambar kecil teks untuk Library */
+async function txtThumb(L){const W=360,H=180,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  try{await document.fonts.load('100px "'+L.f+'"')}catch(e){}
+  x.fillStyle='#2a2a30';x.fillRect(0,0,W,H);const t=(L.txt||'').toUpperCase()===L.txt?L.txt:L.txt;let fs=100;x.font=`${fs}px "${L.f}",sans-serif`;
+  const sw0=Math.max(0,+L.sw||0),m=x.measureText(t).width||1;fs=Math.min(120,fs*(W-40-sw0)/m);x.font=`${fs}px "${L.f}",sans-serif`;x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  const sw=sw0*fs/100*.4;if(sw>0){x.lineWidth=sw;x.strokeStyle=L.sc||'#000';x.strokeText(t,W/2,H/2)}x.fillStyle=L.c||'#fff';x.fillText(t,W/2,H/2);return c.toDataURL('image/png')}
+let TXSAVE=0;
+async function txtToLib(L,quiet){if(!L||L.t!='txt'||!(L.txt||'').trim())return;if(!L.tk)L.tk='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  const k='T'+L.tk,d=await txtThumb(L),en={k,t:'txt',txt:L.txt,f:L.f,c:L.c,sc:L.sc,sw:L.sw,d};
+  const i=LIB.findIndex(e=>e.k==k);if(i>=0)LIB[i]=en;else LIB.unshift(en);libStore();libRender();if(!quiet)toast('Teks disimpan di Library')}
+/* simpan otomatis setelah teks / font / warna diubah */
+{const deb=()=>{clearTimeout(TXSAVE);TXSAVE=setTimeout(()=>{try{const L=cur();if(L&&L.t=='txt')txtToLib(L,true)}catch(e){}},900)};
+  ['#tin','#tcol','#tsc','#tsw'].forEach(s=>{const e=$(s);if(e)e.addEventListener('input',deb)});const tf=$('#tfont');if(tf)tf.addEventListener('change',deb);
+  const txp=$('#txp');if(txp&&!$('#txsv')){const b=document.createElement('button');b.id='txsv';b.className='chip';b.textContent='Simpan teks ke Library';b.onclick=()=>{const L=cur();if(L&&L.t=='txt')txtToLib(L,false)};txp.appendChild(b)}}
+/* pilih teks dari Library → jadi lapisan teks yang masih bisa diedit */
+$('#libg').addEventListener('click',e=>{if(e.target.closest('[data-del],[data-dup]'))return;const b=e.target.closest('.it');if(!b||b.dataset.pm!=null)return;const en=LIB[+b.dataset.i];if(!en||en.t!='txt')return;
+  e.stopImmediatePropagation();e.preventDefault();PENDSZ=null;
+  if(!sel){toast('Ketuk bagian skinsuit dulu, lalu pilih teks');return}
+  try{REPL=0}catch(_){}
+  const p=P[sel],nt=p.layers.filter(l=>l.t=='txt').length,L={t:'txt',txt:en.txt,f:en.f,c:en.c,sc:en.sc,sw:en.sw,x:.5,y:nt?.6:.35,s:.9,sx:1,sy:1,r:0,fx:0,fy:0,rep:0};
+  addLayer(p,L);view=null;document.fonts.load(ffont(L,100)).then(()=>{view=null;render(sel)});render(sel);uiTools();toast('Teks dipasang ke '+NAME[sel].toLowerCase())},true);
+/* tanda "Aa" pada item teks di Library */
+{const _lr2=libRender;libRender=function(){_lr2.apply(this,arguments);try{$('#libg').querySelectorAll('[data-i]').forEach(b=>{const e=LIB[+b.dataset.i];if(e&&e.t=='txt'){const im=b.querySelector('img');if(im)im.classList.add('tn');if(!b.querySelector('.tg')){const s=document.createElement('span');s.className='tg';s.textContent='Teks';b.appendChild(s)}}})}catch(_){}}}
+try{libRender()}catch(e){}
 
 /* ---------- Properti: ukuran skinsuit (diukur dari pola) + info file ---------- */
 let ZFILE=null,LASTSAVE=null;window.FBMETA=null;
