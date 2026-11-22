@@ -3486,8 +3486,8 @@ window.addEventListener('message',ev=>{
    groups.push({name:`Base ${oi+1} - Clicker 2x2`,x:90,y:128+off,z:0,parts});
    KEYPOS.forEach(([x,y],k)=>{
     const cp=[];
-    S.cap.forEach((g,gi)=>{const c=g.clone();c.applyMatrix4(flipM);c.translate(0,0,top);cp.push({name:"Cap "+(k+1)+" bagian "+(gi+1),mesh:weld(c),color:o.caps[k]});c.dispose()});
-    const lg=letterGeo(ls[k],o.ts).clone();lg.applyMatrix4(flipM);lg.translate(0,0,top);cp.push({name:"Huruf "+ls[k],mesh:weld(lg),color:o.text});lg.dispose();
+    S.cap.forEach((g,gi)=>{const c=g.clone();cp.push({name:"Cap "+(k+1)+" bagian "+(gi+1),mesh:weld(c),color:o.caps[k]});c.dispose()});
+    const lg=letterGeo(ls[k],o.ts).clone();lg.translate(0,0,.05);cp.push({name:"Huruf "+ls[k],mesh:weld(lg),color:o.text});lg.dispose();
     groups.push({name:`Cap ${k+1} (${ls[k]}) pesanan ${oi+1}`,x:160+(k%2)*24,y:128+off+(k<2?12:-12),z:0,parts:cp});
    });
   });
@@ -3509,7 +3509,7 @@ window.addEventListener('message',ev=>{
   cam.position.copy(controls.target).addScaledVector(new THREE.Vector3(.1,-.95,.7).normalize(),230);
   $("ttl").textContent="Clicker 2×2 Huruf";
   $("lead").textContent="Empat key mekanikal berhuruf. Ketik satu huruf per key, lalu pilih warna base, cap, dan huruf. Dasar tertutup, lubang gantungan di belakang.";
-  $("dlNote").textContent="Satu file 3MF berisi base dan empat cap tiap pesanan. Cap dicetak terbalik (huruf menghadap plate). Ukuran lubang untuk switch MX standar.";
+  $("dlNote").textContent="Satu file 3MF berisi base dan empat cap tiap pesanan. Cap dicetak tegak (huruf menghadap atas). Huruf terpisah dan mulai tepat di permukaan atas cap, jadi dicetak setelah cap selesai; rongga di bawah cap perlu support. Ukuran lubang untuk switch MX standar.";
   hint.classList.remove("off");
   grp.visible=true;preview();refresh();
  };
