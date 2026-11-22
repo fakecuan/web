@@ -201,6 +201,7 @@ textarea#ptx[hidden]{display:none}
  #fsw.l-off.r-off{grid-template-columns:0 minmax(0,1fr) 0}
  #sheet{left:0;right:auto;top:0;bottom:0;width:320px;max-height:none;border-radius:0;padding:12px;z-index:40;transform:translateX(-105%)}
  #sheet.open{transform:none}
+ #sheet{overflow-y:auto;-webkit-overflow-scrolling:touch}
  body:has(#sheet.open) #fsw{padding-left:320px}
 }
 #fsw .pnl-tg{display:none;position:absolute;top:8px;z-index:5;width:36px;height:36px;border-radius:10px;border:0;background:#fff;box-shadow:0 2px 8px #0002;font:600 18px system-ui,sans-serif;cursor:pointer}
@@ -2131,6 +2132,9 @@ $('#snapck').checked=SNAPON;$('#snapck').onchange=e=>{SNAPON=e.target.checked;tr
   fsw.classList.toggle('l-off',L!=='1');fsw.classList.toggle('r-off',R!=='1');
   lt.onclick=()=>{const v=fsw.classList.toggle('l-off');try{localStorage.setItem('skn_lo',v?'0':'1')}catch(e){}};
   rt.onclick=()=>{const v=fsw.classList.toggle('r-off');try{localStorage.setItem('skn_ro',v?'0':'1')}catch(e){}}}}
+
+/* klik di luar kanvas: lepas pilihan objek (kotak transformasi hilang); klik objek berikutnya memilih objek itu */
+{const W0=document.querySelector('#pvw')||W;if(W0)W0.addEventListener('pointerdown',e=>{if(e.target===pv)return;try{const p=P[sel];if(p&&p.ai>=0){p.ai=-1;uiTools();drawPv()}}catch(_){}});}
 
 /* ---------- pilihan ukuran (pola CLO per ukuran, diunduh sekali lalu disimpan) ---------- */
 let SIZES=null,CURSIZE=(()=>{try{return localStorage.getItem('szCur')||'7S'}catch(e){return'7S'}})(),SZBASE=null;const SZC={};
