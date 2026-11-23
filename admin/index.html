@@ -21,7 +21,7 @@
 .dialog{background:#fff;width:min(600px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:20px}.dialog-head{display:flex;justify-content:space-between;align-items:center}.dialog-head h2{margin:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.dialog-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}.notice{padding:10px 12px;border-radius:10px;background:#fff5db;color:#775500;font-size:12px;margin:12px 0}.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17171c;color:#fff;padding:11px 16px;border-radius:10px;z-index:20;font-size:13px;box-shadow:0 8px 25px #0003}
 @media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.heading{align-items:flex-start}.heading h1{font-size:20px}}
 @media(max-width:480px){.top{padding:14px}.wrap{padding:15px 10px 35px}.stats{grid-template-columns:repeat(2,1fr)}.stat strong{font-size:21px}.panel{padding:13px}.grid{grid-template-columns:1fr}.dialog{padding:15px}.heading{flex-direction:column}.heading .btn{width:100%}}
-.merge-opt{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}.merge-opt small{display:block;color:#77778a;margin-top:2px}.cust-head{padding:4px 0 12px}.cust-name{font-size:22px;font-weight:800}.po-group{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}.po-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.cust-order{border-top:1px solid #f0f0f4;padding:8px 0}.po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.link-btn{color:#c2185b;cursor:pointer;text-decoration:underline;background:none;border:0;padding:0;font:inherit;font-weight:700}.merge-opt{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}.merge-opt small{display:block;color:#77778a;margin-top:2px}.cust-head{padding:4px 0 12px}.cust-name{font-size:22px;font-weight:800}.po-group{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}.po-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.cust-order{border-top:1px solid #f0f0f4;padding:8px 0}.po-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 </style>
 </head>
 <body>
@@ -54,6 +54,7 @@
 <div class="field" style="grid-column:1/-1"><label>Alamat pengiriman</label><textarea id="editAddress"></textarea></div>
 <div class="field" style="grid-column:1/-1"><label>Catatan admin</label><textarea id="editNote" placeholder="Catatan produksi, pembayaran, dll."></textarea></div>
 </div><div class="dialog-actions"><button id="deleteOrder" class="btn danger" type="button" style="margin-right:auto">Hapus</button><button id="cancelEdit" class="btn light" type="button">Batal</button><button id="saveEdit" class="btn pink" type="submit">Simpan perubahan</button></div></form></div></div>
+<div id="poModal" class="modal hidden"><div class="dialog" style="width:min(720px,100%)"><div class="dialog-head"><h2 id="poTitle">No. PO</h2><button id="closePo" class="btn light" type="button">✕</button></div><div id="poBody"></div></div></div>
 <div id="mergeModal" class="modal hidden"><div class="dialog" style="width:min(640px,100%)"><div class="dialog-head"><h2 id="mergeTitle">Gabung pelanggan</h2><button id="closeMerge" class="btn light" type="button">✕</button></div>
 <div id="mergeList"></div>
 <div class="grid" style="margin-top:12px"><div class="field full"><label>Nama pelanggan</label><input id="mergeName" required autocomplete="off"></div><div class="field"><label>No. HP / WhatsApp</label><input id="mergePhone" autocomplete="off"></div><div class="field full"><label>Alamat pengiriman</label><textarea id="mergeAddr"></textarea></div></div>
@@ -140,10 +141,10 @@ const ig=t.match(/@([A-Za-z0-9_.]+)/);if(ig)return '<a class="phone ig" href="ht
 function row(o){const opts=statuses.map(s=>'<option'+(s===o.status?' selected':'')+'>'+s+'</option>').join('');const calc=calcOrder(o.size_details);
 return '<tr>'+
 '<td data-label="No. Order"><b>#'+esc(o.order_number)+'</b><button type="button" class="btn edit-order order-edit-mobile" data-edit="'+o.id+'" aria-label="Edit order '+esc(o.order_number)+'">✏️ Edit</button></td>'+
-'<td data-label="No. PO"><input class="po-input" data-po="'+o.id+'" value="'+esc(o.po_number)+'" placeholder="Isi No. PO"></td>'+
+'<td data-label="No. PO"><input class="po-input" data-po="'+o.id+'" value="'+esc(o.po_number)+'" placeholder="Isi No. PO"> '+(poOf(o)?'<button type="button" class="link-btn" data-pofind="'+esc(o.id)+'" title="Lihat semua pesanan dengan No. PO ini">Lihat</button>':'')+'</td>'+
 '<td data-label="Desain"><button type="button" class="img-cell" data-img="'+o.id+'" title="Klik untuk tambah/lihat gambar desain">'+(o.images.length?'<img src="'+o.images[0].thumb+'" alt="Desain">'+(o.images.length>1?'<span class="img-count">'+o.images.length+'</span>':''):'＋ Gambar')+'</button></td>'+
 '<td data-label="Tanggal">'+date(o.created_at)+'</td>'+
-'<td data-label="Pelanggan"><b>'+esc(o.customer_name)+'</b></td>'+
+'<td data-label="Pelanggan"><b class="link-btn" data-custfind="'+esc(o.id)+'" title="Lihat data dan histori pelanggan">'+esc(o.customer_name)+'</b></td>'+
 '<td data-label="No. HP">'+contactCell(o.customer_phone,o.customer_name,o.shipping_address)+'</td>'+
 '<td data-label="Ukuran">'+esc(o.size_details).replaceAll('\n','<br>')+'</td>'+
 '<td data-label="Alamat">'+(String(o.shipping_address||'').trim()?'<div class="addr-box"><div class="addr" data-addr title="Klik untuk lihat lengkap">'+esc(o.shipping_address)+'</div><button type="button" class="copy-btn" data-copy="'+o.id+'" title="Salin nama, No. HP, dan alamat untuk ekspedisi">⧉ Salin</button></div>':'<span class="sub">—</span>')+'</td>'+
@@ -404,6 +405,17 @@ async function applyMerge(){const name=$('mergeName').value.trim(),phone=$('merg
   if(n===targets.length){closeMerge();custSel.clear();custOpen=mergeGroups.length===1?custKeyOf(name,phone,addr):null;toast(n+' pesanan diperbarui')}
   await loadOrders();
 }
+function openCustFor(id){const o=orders.find(x=>x.id===id);if(!o)return;custOpen=custKeyOf(o.customer_name,phoneOf(o));custSel.clear();showTab('customersView')}
+function openPoFor(id){const o=orders.find(x=>x.id===id);const po=o?poOf(o):'';if(!po)return;
+  const list=orders.filter(x=>poOf(x)===po).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const tot=list.filter(billed).reduce((a,x)=>a+totalOf(x),0);
+  $('poTitle').textContent='No. PO '+po;
+  $('poBody').innerHTML='<p class="muted" style="margin:0 0 10px">'+list.length+' pesanan'+(tot?' · total tagihan '+money(tot):'')+'</p>'+
+    list.map(x=>{const c=calcOrder(x.size_details);return '<div class="cust-order"><div><b class="link-btn" data-custfind="'+esc(x.id)+'" data-closepo="1">'+esc(x.customer_name||'Tanpa nama')+'</b> · '+esc(x.order_number||'')+' · '+date(x.created_at)+' · '+esc(x.status)+'</div><div>'+esc(c.pcs?c.summary:(x.size_details||'-'))+'</div><div class="muted">'+(billed(x)?'Tagihan '+money(totalOf(x)):'Belum ditagih')+'</div></div>'}).join('');
+  $('poModal').classList.remove('hidden')}
+$('ordersBody').addEventListener('click',e=>{const f=e.target.closest('[data-custfind]');if(f){openCustFor(f.dataset.custfind);return}const p=e.target.closest('[data-pofind]');if(p)openPoFor(p.dataset.pofind)});
+$('poBody').addEventListener('click',e=>{const f=e.target.closest('[data-custfind]');if(!f)return;$('poModal').classList.add('hidden');openCustFor(f.dataset.custfind)});
+$('closePo').addEventListener('click',()=>$('poModal').classList.add('hidden'));
 $('custSearch').addEventListener('input',renderCustomers);
 $('custAll').addEventListener('change',e=>{custFiltered().forEach(g=>e.target.checked?custSel.add(g.key):custSel.delete(g.key));renderCustomers()});
 $('custBody').addEventListener('change',e=>{const c=e.target.closest('[data-cs]');if(!c)return;c.checked?custSel.add(c.dataset.cs):custSel.delete(c.dataset.cs);renderCustomers()});
