@@ -56,10 +56,19 @@ export async function openWith(blob, name) {
     catch (e) { /* menu ditutup tanpa memilih */ }
     return 'Pilih aplikasi 3MF di menu';
   }
-  const file = new File([blob], name, { type: 'model/3mf' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: name }); return 'Pilih aplikasi 3MF di menu'; }
-    catch (e) { if (e && e.name === 'AbortError') return ''; throw e; }
+  const types = ['application/vnd.ms-package.3dmanufacturing-3dmodel+zip', 'application/octet-stream'];
+  if (navigator.share) {
+    for (const type of types) {
+      const file = new File([blob], name, { type });
+      try {
+        if (navigator.canShare && !navigator.canShare({ files: [file] })) continue;
+        await navigator.share({ files: [file], title: name });
+        return 'Pilih aplikasi 3MF di menu';
+      } catch (e) {
+        if (e && e.name === 'AbortError') return '';
+        /* tipe ini ditolak browser: coba tipe berikutnya */
+      }
+    }
   }
   browserDownload(blob, name);
   return 'Browser ini tidak bisa membuka menu aplikasi. File diunduh, buka dari folder unduhan.';
