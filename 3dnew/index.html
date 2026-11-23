@@ -3493,10 +3493,32 @@ window.addEventListener('message',ev=>{
   });
   return bambuPack(groups,"Clicker 2x2 Huruf");
  }
+ /* ---------- buka 3MF dengan aplikasi pilihan (menu berbagi perangkat) ---------- */
+ const dlBtn=$("dl");
+ const openBtn=document.createElement("button");
+ openBtn.type="button";openBtn.id="c22Open";openBtn.className=dlBtn.className;openBtn.hidden=true;
+ openBtn.textContent="Buka dengan aplikasi…";
+ dlBtn.insertAdjacentElement("afterend",openBtn);
+ openBtn.onclick=async()=>{
+  const msg=$("dlMsg");
+  try{
+   const blob=await exportC22();
+   const file=new File([blob],`clicker-2x2-huruf-${orders.length}-pesanan.3mf`,{type:"model/3mf"});
+   if(navigator.canShare&&navigator.canShare({files:[file]})){
+    await navigator.share({files:[file],title:"Clicker 2×2 Huruf"});
+    msg.textContent="Pilih aplikasi 3MF editor di menu berbagi.";
+   }else{
+    msg.textContent="Browser ini tidak bisa membuka dengan aplikasi. Pakai tombol Unduh 3MF lalu buka dari folder unduhan.";
+   }
+  }catch(err){
+   if(err&&err.name==="AbortError")return;
+   msg.textContent="Gagal membuka: "+(err&&err.message||err);
+  }
+ };
  /* ---------- pergantian produk ---------- */
  const prevSet=window.setProduct;
  window.setProduct=function(P){
-  if(P!==P8){grp.visible=false;$("p8").hidden=true;$("pr8").setAttribute("aria-pressed","false");prevSet(P);return}
+  if(P!==P8){grp.visible=false;$("p8").hidden=true;openBtn.hidden=true;$("pr8").setAttribute("aria-pressed","false");prevSet(P);return}
   document.body.classList.remove("ds-pen-holder-open");
   active=P8;held=-1;
   [root,mcRoot,root2,root3,cloverScene,window.__ds.P4.root,window.__dsBag.P6.root,window.__dsKari.P7.root].forEach(r=>r.visible=false);
@@ -3511,7 +3533,7 @@ window.addEventListener('message',ev=>{
   $("lead").textContent="Empat key mekanikal berhuruf. Ketik satu huruf per key, lalu pilih warna base, cap, dan huruf. Dasar tertutup, lubang gantungan di belakang.";
   $("dlNote").textContent="Satu file 3MF berisi base dan empat cap tiap pesanan. Cap dicetak tegak (huruf menghadap atas). Huruf terpisah dan mulai tepat di permukaan atas cap, jadi dicetak setelah cap selesai; rongga di bawah cap perlu support. Ukuran lubang untuk switch MX standar.";
   hint.classList.remove("off");
-  grp.visible=true;preview();refresh();
+  grp.visible=true;openBtn.hidden=false;preview();refresh();
  };
  $("pr8").addEventListener("click",()=>window.setProduct(P8));
  const prevRefresh=refresh;
