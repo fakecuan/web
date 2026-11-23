@@ -59,9 +59,9 @@ header .title small{display:block;font-weight:500;color:var(--muted);font-size:1
 #tabs button svg{width:21px;height:21px}
 #tabs button.on{color:var(--acc2);background:rgba(0,174,66,.12)}
 .dsk{display:none!important}
-@media (min-width:900px){
+@media (min-width:900px), (orientation:landscape) and (min-width:560px) and (max-height:620px){
   .dsk{display:grid!important}
-  #app{display:grid;grid-template-columns:124px minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr)}
+  #app{display:grid;grid-template-columns:var(--lw,124px) minmax(0,1fr) var(--rw,340px);grid-template-rows:auto minmax(0,1fr)}
   header{grid-column:1/-1}
   #view{grid-column:2;grid-row:2;min-width:0}
   #sheet{display:contents}
@@ -70,12 +70,17 @@ header .title small{display:block;font-weight:500;color:var(--muted);font-size:1
   #tabs button svg{width:18px;height:18px;flex:none}
   #panel{grid-column:3;grid-row:2;height:auto;min-height:0;overflow:auto;background:var(--panel);border-left:1px solid var(--line);padding:12px}
   #ver{display:none}
-  #app.nopanel{grid-template-columns:124px minmax(0,1fr) 0}
+}
+@media (orientation:landscape) and (max-height:620px) and (max-width:1279px){
+  #app{--lw:76px;--rw:280px}
+  header{padding:4px 8px}
+  #tabs button{flex-direction:column;justify-content:center;gap:2px;padding:6px 2px;font-size:10px}
+  #panel{padding:8px}
+  #app.nopanel{--rw:0px}
   #app.nopanel #panel{display:none}
-  #app.notabs{grid-template-columns:0 minmax(0,1fr) 340px}
+  #app.notabs{--lw:0px}
   #app.notabs #tabs{display:none}
-  #app.nopanel.notabs{grid-template-columns:0 minmax(0,1fr) 0}
-  #app:has(#panel.collapsed){grid-template-columns:124px minmax(0,1fr) 0}
+  #app:has(#panel.collapsed){--rw:0px}
   #app:has(#panel.collapsed) #panel{display:none}
 }
 
@@ -210,7 +215,7 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
       <button class="ib" id="vIso" title="3D"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg></button>
     </div>
     <div id="modeBanner"><span id="mbText"></span><button id="mbCancel">Batal</button></div>
-    <div id="empty"><button class="big" id="bOpen2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Buka file 3MF / STL</button><button class="big2" id="bLib2">🌐 Cari model di MakerWorld</button><button class="big2" id="bNewText">atau mulai dengan teks</button><p>File dibuka langsung di HP, tidak diunggah ke mana pun. 1 jari: putar kamera · 2 jari: zoom &amp; geser · tahan objek: pilih banyak.</p></div>
+    <div id="empty"><button class="big" id="bOpen2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Buka file 3MF / STL</button><button class="big2" id="bLib2">🌐 Cari model di MakerWorld</button><button class="big2" id="bNewText">atau mulai dengan teks</button><p>File dibuka langsung di HP, tidak diunggah ke mana pun. 1 jari: putar kamera · 2 jari: zoom &amp; geser.</p></div>
     <div id="chip" style="display:none"></div>
     <div id="sk"><svg id="skSvg"></svg><div id="skTop"><span id="skInfo"></span></div></div>
   </div>
@@ -240,7 +245,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.4.4';
+const APP_VERSION = '1.5.0';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
@@ -303,6 +308,7 @@ let step = 1;
 let lockScale = true;
 let alignRef = 'plate';  // plate | sel   (parts: parent | sel)
 let edgeGap = 0;
+let arrGap = 0.5;
 let pickMode = null;     // 'lay' | 'stick'
 const undoS = [], redoS = [];
 
@@ -609,7 +615,7 @@ function updateSelBox() {
 }
 function syncTopUI() {
   document.querySelectorAll('#selmode button').forEach(b => b.classList.toggle('on', b.dataset.sm === selMode));
-  $('#allBtn').style.display = sel.length > 1 ? 'flex' : 'none'; $('#noneBtn').style.display = sel.length ? 'flex' : 'none';
+  $('#allBtn').style.display = visObjs().length > 1 && sel.length < visObjs().length ? 'flex' : 'none'; $('#noneBtn').style.display = sel.length ? 'flex' : 'none';
   const pb = $('#platebar'); if (pb) { pb.style.display = state.objects.length ? 'flex' : 'none'; $('#plLbl').textContent = `Plate ${curPlate + 1} / ${plateCount()}`;
     $('#plLock').classList.toggle('on', plateLocked); $('#plPrev').disabled = curPlate <= 0; $('#plNext').disabled = curPlate >= plateCount() - 1; }
 }
@@ -1016,6 +1022,27 @@ function arrange() {
     if (x + w > S - gap && x > gap) { x = gap; y += rh + gap; rh = 0; }
     it.o.pos.x += x - it.b.min.x; it.o.pos.y += y - it.b.min.y; it.o.pos.z -= it.b.min.z; x += w + gap; rh = Math.max(rh, d); }
   refresh(false); camView('fit'); toast('Objek diatur otomatis');
+}
+function arrangeSel(mode) {
+  const ts = tgts().filter(t => !t.part); const objs = (ts.length > 1 ? ts.map(t => t.obj) : visObjs());
+  if (objs.length < 2) { toast('Pilih minimal 2 objek'); return; }
+  push(); const g = Math.max(0, +arrGap || 0);
+  const it = objs.map(o => ({ o, b: worldBox(o) })).map(x => ({ ...x, w: x.b.max.x - x.b.min.x, d: x.b.max.y - x.b.min.y }));
+  const x0 = Math.min(...it.map(x => x.b.min.x)), y0 = Math.min(...it.map(x => x.b.min.y)), yTop = Math.max(...it.map(x => x.b.max.y));
+  const put = (x, X, Y) => { x.o.pos.x += X - x.b.min.x; x.o.pos.y += Y - x.b.min.y; };
+  if (mode === 'x') { it.sort((a, b) => a.b.min.x - b.b.min.x); let X = x0; for (const x of it) { put(x, X, y0); X += x.w + g; } }
+  else if (mode === 'y') { it.sort((a, b) => b.b.max.y - a.b.max.y); let Y = yTop; for (const x of it) { Y -= x.d; put(x, x0, Y); Y -= g; } }
+  else {
+    const n = it.length, cols = Math.ceil(Math.sqrt(n));
+    it.sort((a, b) => (b.b.max.y - a.b.max.y) || (a.b.min.x - b.b.min.x));
+    let Y = yTop, X = x0, rh = 0;
+    it.forEach((x, i) => { if (i % cols === 0 && i > 0) { Y -= rh + g; X = x0; rh = 0; } put(x, X, Y - x.d); X += x.w + g; rh = Math.max(rh, x.d); });
+  }
+  // jaga agar tetap di dalam plate
+  const S = state.plate; const bb = objs.map(o => worldBox(o)); const mnx = Math.min(...bb.map(b => b.min.x)), mxx = Math.max(...bb.map(b => b.max.x)), mny = Math.min(...bb.map(b => b.min.y)), mxy = Math.max(...bb.map(b => b.max.y));
+  const sx = mnx < 0 ? -mnx : mxx > S ? Math.max(-mnx, S - mxx) : 0, sy = mny < 0 ? -mny : mxy > S ? Math.max(-mny, S - mxy) : 0;
+  if (sx || sy) objs.forEach(o => { o.pos.x += sx; o.pos.y += sy; });
+  refresh(false); toast(`${objs.length} objek disusun · jarak ${fx(g)} mm`);
 }
 function addShape(kind, as) {
   let g; if (kind === 'cube') g = new THREE.BoxGeometry(10, 10, 10);
@@ -1495,7 +1522,7 @@ $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-ta
 $('#bTabs').onclick = () => { $('#app').classList.toggle('notabs'); };
 $('#bPanel').onclick = () => { $('#app').classList.toggle('nopanel'); };
 
-const noSel = () => `<p class="hint">Ketuk ${selMode === 'part' ? 'part' : 'objek'} di layar untuk memilih. Tahan (long-press) atau aktifkan <b>Pilih banyak</b> untuk memilih beberapa sekaligus.</p>`;
+const noSel = () => `<p class="hint">Ketuk ${selMode === 'part' ? 'part' : 'objek'} di layar untuk memilih. Untuk memilih beberapa: tekan <b>Kunci</b> di bawah plate lalu tarik kotak di area kosong, atau tekan <b>Semua</b>.</p>`;
 const fld = (lbl, cls, key, val, unit) => `<div class="fld"><label class="${cls}">${lbl}</label><input inputmode="decimal" type="number" step="any" data-f="${key}" value="${val}"><em>${unit || ''}</em></div>`;
 const pmFld = (lbl, key, val, unit, w) => `<div class="fld" style="${w || ''}"><label>${lbl}</label><input inputmode="decimal" type="number" step="any" data-t="${key}" value="${val}"><em>${unit}</em><button class="pm" data-a="tpm" data-k="${key}" data-v="-1">−</button><button class="pm" data-a="tpm" data-k="${key}" data-v="1">+</button></div>`;
 function headTxt(ts) { if (!ts.length) return ''; return ts.length > 1 ? `${ts.length} ${ts[0].part ? 'part' : 'objek'}` : (ts[0].part ? 'Part: ' + esc(ts[0].part.name) : 'Objek: ' + esc(ts[0].obj.name)); }
@@ -1522,6 +1549,10 @@ function renderPanel() {
         <div class="grid6" style="margin-bottom:8px">${[['xmin', 'axmin', 'Kiri'], ['xmid', 'axmid', 'Tengah X'], ['xmax', 'axmax', 'Kanan'], ['ymin', 'aymin', 'Depan'], ['ymid', 'aymid', 'Tengah Y'], ['ymax', 'aymax', 'Belakang']].map(([e, ic, l]) => `<button class="btn ic col" data-a="align" data-e="${e}" title="${l}">${svg(ic)}<span class="lb">${l}</span></button>`).join('')}</div>`;
       if (alignRef !== 'sel') h += `<div class="row" style="align-items:center"><div class="pos9">${[2, 1, 0].map(iy => [0, 1, 2].map(ix => `<button data-a="a9" data-x="${ix}" data-y="${iy}" title="posisi"></button>`).join('')).join('')}</div>
         <div style="flex:1;min-width:120px"><p class="hint" style="margin-top:0">Ketuk kotak untuk menaruh ke pojok, pinggir, atau tengah ${partMode ? 'objek induk' : 'plate'}.</p>${partMode ? '' : fld('Jarak tepi', '', 'gap', fx(edgeGap), 'mm')}</div></div>`;
+      if (!partMode && ts.length > 1) h += `<div class="sub"><span>Susun ${ts.length} objek</span></div>
+        <div class="grid3" style="margin-bottom:6px"><button class="btn" data-a="arr" data-m="x">Baris X →</button><button class="btn" data-a="arr" data-m="y">Kolom Y ↓</button><button class="btn" data-a="arr" data-m="grid">Persegi ▦</button></div>
+        <div style="margin-bottom:6px">${fld('Jarak', '', 'arrgap', fx(arrGap), 'mm')}</div>
+        <p class="hint" style="margin-top:0">Objek disusun rapat dengan jarak antar sisi ${fx(arrGap)} mm. 0.5 mm cukup agar tidak menyatu saat dicetak; naikkan ke 1–2 mm bila objek tinggi.</p>`;
       // stick
       h += `<div class="sub"><span>Tempel ke ${partMode ? 'part lain' : 'objek lain'}</span></div>
         <div class="grid3" style="margin-bottom:8px">${[['down', 'Bawah ↓'], ['up', 'Atas ↑'], ['left', 'Kiri ←'], ['right', 'Kanan →'], ['front', 'Depan'], ['back', 'Belakang']].map(([d, l]) => `<button class="btn" data-a="stick" data-d="${d}">${l}</button>`).join('')}</div>
@@ -1667,6 +1698,7 @@ $('#panel').addEventListener('change', e => {
   if (t.dataset.a === 'ptype') { const o = getObj(+t.dataset.o); const p = o?.parts.find(q => q.id === +t.dataset.p); if (p) { push(); p.subtype = t.value; refresh(true); } return; }
   const f = t.dataset.f; if (!f) return; const v = parseFloat(t.value); if (isNaN(v)) return;
   if (f === 'gap') { edgeGap = Math.max(0, v); return; }
+  if (f === 'arrgap') { arrGap = Math.max(0, v); return; }
   const ts = tgts(); if (!ts.length) return;
   if (f === 'px' || f === 'py' || f === 'pz') {
     push(); const ax = { px: 0, py: 1, pz: 2 }[f]; const b = gbox(ts);
@@ -1684,6 +1716,7 @@ $('#panel').addEventListener('click', e => {
     case 'align': align(b.dataset.e); break;
     case 'a9': align9(+b.dataset.x, +b.dataset.y); break;
     case 'stick': stick(b.dataset.d); break;
+    case 'arr': arrangeSel(b.dataset.m); break;
     case 'stickpick': setPick(pickMode === 'stick' ? null : 'stick'); break;
     case 'rot': rotate(b.dataset.ax, +b.dataset.deg); break;
     case 'rotc': { const ax = $('#rax .on')?.dataset.ax || 'z'; const d = parseFloat($('#rdeg').value); if (!isNaN(d)) rotate(ax, d); break; }
@@ -1779,12 +1812,29 @@ function hitAt(ev, exclude) {
   return ok.find(h => h.object.userData.solid) || ok[0] || null;
 }
 let drag = null, tap = null, lpTimer = null; const pointers = new Set();
+const cutSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); cutSvg.setAttribute('style', 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:60;display:none');
+cutSvg.innerHTML = '<line stroke="#0bd35a" stroke-width="3" stroke-dasharray="8 5" stroke-linecap="round"/>'; document.body.appendChild(cutSvg);
+function drawCutLn() { const l = cutSvg.firstChild; cutSvg.style.display = cutLn ? 'block' : 'none'; if (!cutLn) return; l.setAttribute('x1', cutLn.x0); l.setAttribute('y1', cutLn.y0); l.setAttribute('x2', cutLn.x1); l.setAttribute('y2', cutLn.y1); }
+function finishCutLn() {
+  const L = cutLn; cutLn = null; drawCutLn(); controls.enabled = true;
+  if (!L || Math.hypot(L.x1 - L.x0, L.y1 - L.y0) < 12) { toast('Garis terlalu pendek'); return; }
+  const r = cvs.getBoundingClientRect(); const nd = (x, y, z) => V((x - r.left) / r.width * 2 - 1, -(y - r.top) / r.height * 2 + 1, z).unproject(camera);
+  const A = nd(L.x0, L.y0, -1), Bp = nd(L.x1, L.y1, -1), C = nd(L.x0, L.y0, 1);
+  const u = Bp.clone().sub(A).normalize(); let n = u.clone().cross(C.clone().sub(A)).normalize(); let uu = u;
+  if (!isFinite(n.x) || n.lengthSq() < 0.5) { toast('Tidak bisa membuat bidang dari garis ini'); return; }
+  if (n.z < -1e-6 || (Math.abs(n.z) < 1e-6 && n.x < 0)) { n.negate(); uu = u.clone().negate(); }
+  JN.custom = { n, u: uu }; jnDraw = false;
+  const S = jnSetup(); if (S.err) { toast(S.err); renderPanel(); return; }
+  JN.off = A.clone().sub(S.R.c).dot(n); renderPanel(); toast('Bidang potong mengikuti garis · atur posisi atau pasak, lalu Potong');
+}
 const cvs = renderer.domElement;
 cvs.addEventListener('pointerdown', ev => {
   pointers.add(ev.pointerId); clearTimeout(lpTimer);
   if (pointers.size > 1) { if (drag) endDrag(); cancelBox(); tap = null; return; }
   tap = { x: ev.clientX, y: ev.clientY, t: performance.now(), ev };
   if (pickMode) return;
+  if (tool === 'join' && jnDraw) { tap = null; cutLn = { x0: ev.clientX, y0: ev.clientY, x1: ev.clientX, y1: ev.clientY, id: ev.pointerId }; drawCutLn();
+    controls.enabled = false; cvs.setPointerCapture(ev.pointerId); ev.stopImmediatePropagation(); return; }
   if (tool === 'move' && plateLocked) { // plate terkunci: seret objek = pindahkan, seret area kosong = kotak pilih
     const hl = hitAt(ev); const ho = hl && getObj(hl.object.userData.oid);
     if (ho && onPlate(ho)) { if (!isSelMesh(hl.object.userData.oid, hl.object.userData.pid)) { sel = [{ oid: ho.id, pid: null }]; selMode = 'object'; refresh(true); } }
@@ -1801,6 +1851,7 @@ cvs.addEventListener('pointerdown', ev => {
   }
 }, { capture: true });
 cvs.addEventListener('pointermove', ev => {
+  if (cutLn && ev.pointerId === cutLn.id) { cutLn.x1 = ev.clientX; cutLn.y1 = ev.clientY; drawCutLn(); return; }
   if (boxSel && ev.pointerId === boxSel.id) { boxSel.x1 = ev.clientX; boxSel.y1 = ev.clientY; drawBox(); return; }
   if (tap && Math.hypot(ev.clientX - tap.x, ev.clientY - tap.y) > 8) clearTimeout(lpTimer);
   if (!drag || ev.pointerId !== drag.id) return;
@@ -1811,6 +1862,7 @@ cvs.addEventListener('pointermove', ev => {
 function endDrag() { if (!drag) return; const m = drag.moved; drag = null; controls.enabled = true; if (m) { tap = null; refresh(false); } }
 cvs.addEventListener('pointerup', ev => {
   pointers.delete(ev.pointerId); clearTimeout(lpTimer);
+  if (cutLn && ev.pointerId === cutLn.id) { finishCutLn(); return; }
   if (boxSel && ev.pointerId === boxSel.id) { finishBox(); return; }
   const wasDrag = drag && drag.moved; if (drag && ev.pointerId === drag.id) endDrag();
   if (wasDrag || !tap) return;
@@ -1825,7 +1877,7 @@ cvs.addEventListener('pointerup', ev => {
   const { oid, pid } = h.object.userData;
   toggleSel({ oid, pid: selMode === 'part' ? pid : null });
 });
-cvs.addEventListener('pointercancel', ev => { pointers.delete(ev.pointerId); clearTimeout(lpTimer); cancelBox(); endDrag(); tap = null; });
+cvs.addEventListener('pointercancel', ev => { pointers.delete(ev.pointerId); clearTimeout(lpTimer); if (cutLn) { cutLn = null; drawCutLn(); controls.enabled = true; } cancelBox(); endDrag(); tap = null; });
 
 // ================= SHAPE TOOLS: face extrude (multi), round corners =================
 let faceSel = null; // {regions:[{oid,pid,data,verts,tris,n,t0}], total}
@@ -2054,7 +2106,8 @@ async function boolOp(kind) {
 $('#panel').addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b || b.disabled) return; if (b.dataset.a === 'bool') boolOp(b.dataset.k); });
 
 // ================= SAMBUNG: potong dengan pasak, sambung 2 bagian =================
-const JN = { mode: 'cut', axis: 'z', off: 0, t1: 0, t2: 0, flip: true, type: 'plug', shape: 'round', d: 5, depth: 5, tol: 0.2, count: 1, spacing: 15, dx: 0, dy: 0 };
+let jnDraw = false, cutLn = null;
+const JN = { custom: null, mode: 'cut', axis: 'z', off: 0, t1: 0, t2: 0, flip: true, type: 'plug', shape: 'round', d: 5, depth: 5, tol: 0.2, count: 1, spacing: 15, dx: 0, dy: 0 };
 let jnPrev = { conn: [], ok: true, msg: '', basis: null, p0: null }; let jnTimer = null, jnSeq = 0;
 const jnG = new THREE.Group(); scene.add(jnG);
 const rad = d => d * Math.PI / 180;
@@ -2072,7 +2125,7 @@ function jnSetup() {
   const ts = tgts();
   if (JN.mode === 'cut') {
     if (ts.length !== 1) return { err: 'Pilih 1 objek atau 1 part yang mau dipotong' };
-    const t = ts[0]; const B = jnBasisFor(JN.axis, JN.t1, JN.t2);
+    const t = ts[0]; const B = JN.custom ? { n: JN.custom.n.clone(), u: JN.custom.u.clone(), v: JN.custom.n.clone().cross(JN.custom.u) } : jnBasisFor(JN.axis, JN.t1, JN.t2);
     const o = t.obj; const R = t.part ? (() => { const b = worldBox(o, t.part); const c = b.getCenter(V()); let mn = Infinity, mx = -Infinity; for (let i = 0; i < 8; i++) { const p = V(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z); const d = p.sub(c).dot(B.n); mn = Math.min(mn, d); mx = Math.max(mx, d); } return { c, mn, mx }; })() : cutRange(o, B.n);
     JN.off = Math.max(R.mn + 0.01, Math.min(R.mx - 0.01, JN.off));
     return { t, B, p0: R.c.clone().add(B.n.clone().multiplyScalar(JN.off)), R };
@@ -2152,8 +2205,8 @@ function drawJoinPreview() {
   for (const [x, y] of jnPrev.conn) {
     const c = S.p0.clone().add(S.B.u.clone().multiplyScalar(x)).add(S.B.v.clone().multiplyScalar(y));
     const len = JN.type === 'dowel' ? JN.depth * 2 : JN.depth; const z0 = JN.type === 'dowel' ? -JN.depth : 0;
-    const g = JN.shape === 'round' ? new THREE.CylinderGeometry(JN.d / 2, JN.d / 2, len, 32) : new THREE.BoxGeometry(JN.d, len, JN.d);
-    g.rotateX(Math.PI / 2); g.translate(0, 0, z0 + len / 2);
+    let g; if (JN.shape === 'trap') { const sh = new THREE.Shape(TRAP(JN.d / 2).map(([x, y]) => new THREE.Vector2(x, y))); g = new THREE.ExtrudeGeometry(sh, { depth: len, bevelEnabled: false }); g.translate(0, 0, z0); }
+    else { g = JN.shape === 'round' ? new THREE.CylinderGeometry(JN.d / 2, JN.d / 2, len, 32) : new THREE.BoxGeometry(JN.d, len, JN.d); g.rotateX(Math.PI / 2); g.translate(0, 0, z0 + len / 2); }
     const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .75, depthTest: false }));
     m.matrixAutoUpdate = false; m.matrix.copy(basisMat(S.B, c)); m.renderOrder = 7; jnG.add(m);
   }
@@ -2168,8 +2221,14 @@ function schedJoin() {
 }
 function updJoinMsg() { const el = $('#jnMsg'); if (!el) return; const S = jnSetup();
   el.innerHTML = S.err ? `<span style="color:#ffb020">${esc(S.err)}</span>` : jnPrev.ok ? `<span style="color:#0bd35a">✓ ${JN.type === 'none' ? 'Siap dipotong' : `${jnPrev.conn.length} pasak muat di penampang`}${jnPrev.area ? ` · luas penampang ${fx(jnPrev.area, 0)} mm²` : ''}</span>` : `<span style="color:#ff6b5b">${esc(jnPrev.msg || '')}</span>`; }
+const TRAP = r => [[-r, -r], [r, -r], [r * 0.5, r], [-r * 0.5, r]];
+function connBase(w, r, len) {
+  if (JN.shape === 'round') return w.Manifold.cylinder(len, r, r, 48, false);
+  if (JN.shape === 'trap') { const cs = new w.CrossSection([TRAP(r)], 'NonZero'); const m = cs.extrude(len); cs.delete(); return m; }
+  return w.Manifold.cube([2*r, 2*r, len], false).translate([-r, -r, 0]);
+}
 function connMan(w, B, c, r, len, start) {
-  const base = JN.shape === 'round' ? w.Manifold.cylinder(len, r, r, 48, false) : w.Manifold.cube([2*r, 2*r, len], false).translate([-r, -r, 0]);
+  const base = connBase(w, r, len);
   const M = basisMat(B, c.clone().add(B.n.clone().multiplyScalar(start)));
   const out = base.transform(Array.from(M.elements)); base.delete(); return out;
 }
@@ -2240,7 +2299,7 @@ async function doJoin() {
       [pa, pb].forEach(p => { p.text = undefined; p.sketch = undefined; p._welded = true; });
     }
     if (JN.type === 'dowel' && centers.length) {
-      const L = Math.max(1, 2 * dep - 0.4); const pin = JN.shape === 'round' ? w.Manifold.cylinder(L, r, r, 48, false) : w.Manifold.cube([2*r, 2*r, L], false).translate([-r, -r, 0]); trash.push(pin);
+      const L = Math.max(1, 2 * dep - 0.4); const pin = connBase(w, r, L); trash.push(pin);
       const d = manToData(pin); const pins = centers.map((_, i) => { const o = { id: nid++, name: `Pin ${i + 1}`, ...T0(), parts: [{ id: nid++, name: `Pin ${i + 1}`, data: { pos: new Float32Array(d.pos), idx: new Uint32Array(d.idx) }, extruder: 1, subtype: 'normal_part', ...T0() }] }; placeNew(o); state.objects.push(o); return o; });
     }
     jnPrev = { conn: [], ok: true, msg: '' };
@@ -2259,15 +2318,17 @@ function joinPanel(ts) {
   <div class="seg" id="jnmode" style="margin-bottom:10px;flex-wrap:wrap"><button data-v="cut" class="${JN.mode === 'cut' ? 'on' : ''}">Potong + pasak</button><button data-v="connect" class="${JN.mode === 'connect' ? 'on' : ''}">Sambung 2 bagian</button><button data-v="inlay" class="${JN.mode === 'inlay' ? 'on' : ''}">Lubang tempel</button></div>`;
   if (JN.mode === 'inlay') return h + inlayPanel(ts);
   if (cut) {
-    h += `<div class="row"><span class="hint" style="margin:0;width:78px">Arah potong</span><div class="seg" id="jnaxis">${[['z', 'Datar'], ['x', 'Tegak X'], ['y', 'Tegak Y']].map(([v, l]) => `<button data-v="${v}" class="${JN.axis === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+    h += `<button class="btn ${jnDraw ? 'on' : ''}" data-a="jndraw" style="width:100%;margin-bottom:6px">✏️ ${jnDraw ? 'Tarik garis di layar… (ketuk lagi untuk batal)' : JN.custom ? 'Gambar ulang garis potong' : 'Gambar garis potong di layar'}</button>
+    ${JN.custom ? '<p class="hint" style="margin-top:0">Arah potong mengikuti garis yang Anda gambar (tegak lurus layar). Pilih Datar/Tegak untuk kembali ke arah biasa.</p>' : ''}`;
+    h += `<div class="row"><span class="hint" style="margin:0;width:78px">Arah potong</span><div class="seg" id="jnaxis">${[['z', 'Datar'], ['x', 'Tegak X'], ['y', 'Tegak Y']].map(([v, l]) => `<button data-v="${v}" class="${!JN.custom && JN.axis === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
     ${rng ? sl('jnoff', 'Posisi', fx(rng.mn, 1), fx(rng.mx, 1), 0.1, JN.off, '') : ''}
     ${rng ? `<div class="grid6" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px"><button class="btn" data-a="jnoff" data-v="-1">−1</button><button class="btn" data-a="jnoff" data-v="-0.1">−0.1</button><button class="btn" data-a="jnoff" data-v="0.1">+0.1</button><button class="btn" data-a="jnoff" data-v="1">+1</button></div>` : ''}
-    ${sl('jnt1', 'Miring 1', -75, 75, 1, JN.t1, '°')}${sl('jnt2', 'Miring 2', -75, 75, 1, JN.t2, '°')}
+    ${JN.custom ? '' : sl('jnt1', 'Miring 1', -75, 75, 1, JN.t1, '°') + sl('jnt2', 'Miring 2', -75, 75, 1, JN.t2, '°')}
     <label class="chk" style="padding:8px 10px"><input type="checkbox" id="jnflip" ${JN.flip ? 'checked' : ''}> Balik potongan atas (sisi potong menghadap plate)</label>`;
   }
   h += `<div class="sub"><span>Penyambung</span></div>
   <div class="seg" id="jntype" style="margin-bottom:8px;flex-wrap:wrap">${[['plug', 'Tonjolan + lubang'], ['dowel', 'Pin terpisah'], ['none', 'Tanpa']].map(([v, l]) => `<button data-v="${v}" class="${JN.type === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
-  if (JN.type !== 'none') h += `<div class="row"><span class="hint" style="margin:0;width:78px">Bentuk</span><div class="seg" id="jnshape"><button data-v="round" class="${JN.shape === 'round' ? 'on' : ''}">Silinder</button><button data-v="square" class="${JN.shape === 'square' ? 'on' : ''}">Kotak</button></div>
+  if (JN.type !== 'none') h += `<div class="row"><span class="hint" style="margin:0;width:78px">Bentuk</span><div class="seg" id="jnshape"><button data-v="round" class="${JN.shape === 'round' ? 'on' : ''}">Silinder</button><button data-v="square" class="${JN.shape === 'square' ? 'on' : ''}">Kotak</button><button data-v="trap" class="${JN.shape === 'trap' ? 'on' : ''}">Trapesium</button></div>
     <span class="hint" style="margin:0 0 0 auto">Jumlah</span><div class="seg" id="jncount">${[1, 2, 3].map(v => `<button data-v="${v}" class="${JN.count === v ? 'on' : ''}">${v}</button>`).join('')}</div></div>
   <div class="vstack">${nf('d', 'Diameter', fx(JN.d), 'mm')}${nf('depth', 'Kedalaman', fx(JN.depth), 'mm')}${nf('tol', 'Toleransi', fx(JN.tol), 'mm')}${JN.count > 1 ? nf('spacing', 'Jarak pasak', fx(JN.spacing), 'mm') : ''}</div>
   <div class="grid2" style="margin-bottom:6px">${nf('dx', 'Geser 1', fx(JN.dx), 'mm')}${nf('dy', 'Geser 2', fx(JN.dy), 'mm')}</div>
@@ -2281,7 +2342,7 @@ function bindJoinPanel() {
   const seg = (id, fn) => { const s = $(id); if (s) s.onclick = e => { const b = e.target.closest('button'); if (!b) return; s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); fn(b.dataset.v); }; };
   seg('#jnmode', v => { JN.mode = v; renderPanel(); });
   if (JN.mode === 'inlay') { jnG.clear(); bindInlayPanel(); return; }
-  seg('#jnaxis', v => { JN.axis = v; JN.off = 0; JN.t1 = 0; JN.t2 = 0; renderPanel(); });
+  seg('#jnaxis', v => { JN.custom = null; jnDraw = false; JN.axis = v; JN.off = 0; JN.t1 = 0; JN.t2 = 0; renderPanel(); });
   seg('#jntype', v => { JN.type = v; renderPanel(); });
   seg('#jnshape', v => { JN.shape = v; schedJoin(); });
   seg('#jncount', v => { JN.count = +v; renderPanel(); });
@@ -2293,6 +2354,7 @@ function bindJoinPanel() {
 }
 $('#panel').addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b || b.disabled) return;
   if (b.dataset.a === 'jngo') doJoin();
+  if (b.dataset.a === 'jndraw') { jnDraw = !jnDraw; if (jnDraw) toast('Tarik garis melintasi objek di bagian yang mau dipotong'); renderPanel(); }
   if (b.dataset.a === 'jnoff') { JN.off += +b.dataset.v; renderPanel(); } });
 
 // ================= PRINT SETTINGS (per object, Bambu overrides) =================
@@ -3244,7 +3306,7 @@ view.addEventListener('drop', async e => {
 
 buildPlate(); renderTabs(); refresh(true); resize(); camView('iso');
 window.__ed = { _cam: (t, p) => { controls.target.set(...t); camera.position.set(...p); controls.update(); }, getInlayWorker, buildSurfaceText, textMode, liveText, buildWrappedText, holeInfo: () => { let n = 0; root.traverse(m => { if (m.isMesh && m.userData.cut) n++; }); return n; }, KC, kcApply, kcBuild, doInlay, editCornersOf, cornerInfo, pickRay: (o, d) => { scene.updateMatrixWorld(true); ray.set(V(...o), V(...d).normalize()); ray.far = Infinity; const fh = ray.firstHitOnly; ray.firstHitOnly = false; const h = ray.intersectObjects(root.children, true)[0]; ray.firstHitOnly = fh; if (h) pickFace(h); return !!h; }, JN, doJoin, jnSetup, getJnPrev: () => jnPrev, project: (x, y, z) => { const v = V(x, y, z).project(camera); const r = renderer.domElement.getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }, camView, skView: () => skView, SK, sketchPlace, drawSketch, extrudeFace, pickFace, roundCorners, boolOp, sketchOutline, getFaceSel: () => faceSel, state, build3MF, addText, buildText, stick, align, align9, tgts, setSel: (s, m) => { sel = s; if (m !== undefined) multi = m; selMode = s[0]?.pid ? 'part' : 'object'; refresh(true); }, setTool: t => { tool = t; collapsed = false; renderTabs(); renderPanel(); }, tdraft, rotate, scaleUniform, stickToHit, getAlignRef: () => alignRef, setAlignRef: r => { alignRef = r; }, worldBox };
-window.__t = { toScreen: o => { const r = renderer.domElement.getBoundingClientRect(); const c = worldBox(o).getCenter(V()).project(camera); return [r.left + (c.x + 1) / 2 * r.width, r.top + (1 - c.y) / 2 * r.height]; }, addShape, plateCount, plateNums, build3MF, state, setTool: t => { tool = t; renderTabs(); refresh(true); }, get sel() { return sel; }, get curPlate() { return curPlate; }, get plateLocked() { return plateLocked; }, toggleLock: () => $('#plLock').click() };
+window.__t = { wbox: o => worldBox(o), selectObj: id => { sel = [{ oid: id, pid: null }]; selMode = 'object'; refresh(true); }, toScreen: o => { const r = renderer.domElement.getBoundingClientRect(); const c = worldBox(o).getCenter(V()).project(camera); return [r.left + (c.x + 1) / 2 * r.width, r.top + (1 - c.y) / 2 * r.height]; }, addShape, plateCount, plateNums, build3MF, state, setTool: t => { tool = t; renderTabs(); refresh(true); }, get sel() { return sel; }, get curPlate() { return curPlate; }, get plateLocked() { return plateLocked; }, toggleLock: () => $('#plLock').click() };
 </script>
 </body>
 </html>
