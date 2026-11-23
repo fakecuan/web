@@ -45,6 +45,26 @@ export async function saveFile(blob, name) {
   return where ? 'Tersimpan di ' + where : 'File siap dibagikan';
 }
 
+/* Buka dengan aplikasi pilihan: menu berbagi perangkat (Android/iOS atau browser yang mendukung) */
+export async function openWith(blob, name) {
+  const cap = window.Capacitor;
+  const P = cap && cap.Plugins;
+  if (cap && cap.isNativePlatform && cap.isNativePlatform() && P && P.Filesystem && P.Share) {
+    const data = await blobToB64(blob);
+    const r = await P.Filesystem.writeFile({ path: name, data, directory: 'CACHE', recursive: true });
+    try { await P.Share.share({ title: name, dialogTitle: 'Buka dengan aplikasi 3MF', files: [r.uri] }); }
+    catch (e) { /* menu ditutup tanpa memilih */ }
+    return 'Pilih aplikasi 3MF di menu';
+  }
+  const file = new File([blob], name, { type: 'model/3mf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return 'Pilih aplikasi 3MF di menu'; }
+    catch (e) { if (e && e.name === 'AbortError') return ''; throw e; }
+  }
+  browserDownload(blob, name);
+  return 'Browser ini tidak bisa membuka menu aplikasi. File diunduh, buka dari folder unduhan.';
+}
+
 /* ---------------- Baca ZIP (3MF) ---------------- */
 async function inflateRaw(u8) {
   const ds = new DecompressionStream('deflate-raw');
