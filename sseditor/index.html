@@ -298,7 +298,7 @@ body.fsmode #fsw{padding-left:0!important}
 </div>
 <div id="bar">
   <button id="bnew"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg>Baru</button>
-  <button class="chip" id="blay">Print layout</button><button class="chip" id="bmotif" title="Ambil motif dari file lain" aria-label="Ambil motif">Ambil motif</button>
+  <button class="chip" id="bmotif" title="Ganti pola dengan pola custom (.zprj)" aria-label="Ganti pola">Ganti pola</button>
   <button id="bopen"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Buka</button>
   <span class="split"><button id="bsave"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3M7 21v-7h10v7"/></svg>Simpan</button><button id="bsaveas" title="Simpan sebagai…" aria-label="Simpan sebagai">⋯</button></span>
   <button id="exp"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Export</button>
@@ -320,7 +320,7 @@ body.fsmode #fsw{padding-left:0!important}
   <button class="opt" id="opdf"><b>Pola PDF (clipping mask)</b><small>Tiap pola berisi desain yang dipotong (clipping mask) sesuai garis pola. Bisa dibuka di Illustrator, CorelDRAW, dll.</small><small class="fnm" id="pdfnm"></small></button>
   <button class="lnk" id="opdfas">Simpan PDF sebagai… (ganti nama / lokasi)</button>
   <button class="opt" id="ozprj"><b>File CLO 3D (.zprj)</b><small>Desain tiap bagian dipasang sebagai grafik di satu kain CLO. Bisa dibuka lagi di sini untuk diedit.</small></button>
-  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-24 r58</small>
+  <small id="appver" style="display:block;text-align:center;color:var(--mu);font-size:11px;margin-top:6px">Versi 2026-11-24 r59</small>
   <button class="opt" id="ojson"><b>Proyek aplikasi (.json)</b><small>Hanya desain (gambar, teks, warna), tanpa model CLO</small></button>
   <small id="pdfst"></small><div class="mact"><button data-x>Tutup</button></div></div></div>
 <div class="modal" id="mexp" hidden><div class="mbox"><b>Preview desain</b><img id="pimg" alt="Preview skinsuit dari depan, belakang, kiri, dan kanan"><div class="mact"><button data-x>Tutup</button><button class="pri" id="pdl">Unduh PNG</button></div></div></div>
@@ -2547,27 +2547,30 @@ function mapMotifBody(src){
   const fin={};Object.keys(out).forEach(k=>{fin[k]={layers:out[k]}});
   Object.keys(bgOut).forEach(k=>{fin[k]={layers:[...bgOut[k].layers,...((fin[k]&&fin[k].layers)||[])]}});
   return fin}
+/* Ganti pola: pola baru (.zprj) dibuka, lalu motif dari desain yang sedang dibuka dipindahkan ke bagian yang sama
+   dengan skala seragam (tidak digepengkan). Penyesuaian ukuran/posisi selanjutnya dikerjakan pengguna di editor. */
+function motifExtent(){let mn=[1e18,1e18,1e18],mx=[-1e18,-1e18,-1e18],n=0;
+  Object.keys(P).forEach(k=>{const p=P[k];if(!p||!p.m||!p.m.visible||!p.g)return;const a=p.g.attributes.position.array;
+    for(let i=0;i<a.length;i+=3){n++;for(let j=0;j<3;j++){mn[j]=Math.min(mn[j],a[i+j]);mx[j]=Math.max(mx[j],a[i+j])}}});
+  if(!n)return 0;return Math.hypot(mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2])}
 async function importMotif(f){
   if(!ZP&&!Object.keys(P).length){toast('Buat atau buka desain dulu');return}
-  busy('Mengambil motif dari '+f.name+'…');await tick();
-  try{const src=await motifRead(f),ukur=(f.name.match(SZTAG_RE)||[])[2]||'';
-    /* motif lengan masuk ke lengan yang sedang terlihat (pendek/panjang), bukan yang tersembunyi */
-    const vis=k=>!!(P[k]&&P[k].m&&P[k].m.visible);
-    const tgt=k=>{const m=/^(sleeve|long)(L|R)$/.exec(k);if(!m)return k;const lk='long'+m[2],sk='sleeve'+m[2];return vis(lk)?lk:(vis(sk)?sk:k)};
-    let sp={};
-    if(src.geo&&Object.keys(src.geo).length)sp=mapMotifBody(src);
-    else Object.keys(src.parts).forEach(k=>{const t=tgt(k);sp[t]={layers:[...((sp[t]&&sp[t].layers)||[]),...((src.parts[k].layers)||[])]}});
-    const cur=JSON.parse(JSON.stringify(projObj()));let n=0;
-    Object.keys(cur.parts).forEach(k=>{const add=((sp[k]&&sp[k].layers)||[]).filter(L=>L&&!L.bg).map(L=>{const s=motifImgs(L.src,src.imgs);if(typeof s!='string'||!/^data:/.test(s))return null;
-      return{...L,src:s,clo:undefined,rep:0,bg:0}}).filter(Boolean);
-      if(add.length){cur.parts[k].layers=[...(cur.parts[k].layers||[]),...add];n+=add.length}});
-    if(!n){toast('Tidak ada motif yang bisa diambil dari '+f.name);return}
+  busy('Mengganti pola dengan '+f.name+'…');await tick();
+  try{const old=JSON.parse(JSON.stringify(projObj())),oldExt=motifExtent();
+    await openZprj(f);
+    const newExt=motifExtent(),k=oldExt>1e-9&&newExt>1e-9?newExt/oldExt:1;
+    const cur=JSON.parse(JSON.stringify(projObj()));let n=0,lost=0;
+    Object.keys(old.parts||{}).forEach(pk=>{const layers=(old.parts[pk]&&old.parts[pk].layers)||[];
+      if(!layers.length)return;
+      if(!cur.parts[pk]){lost+=layers.length;return}
+      const add=layers.filter(L=>L).map(L=>({...L,s:(L.s||1)*k,clo:undefined,rep:L.rep||0}));
+      cur.parts[pk].layers=[...(cur.parts[pk].layers||[]),...add];n+=add.length});
     applyProject(cur);histCommit();setDirty(true);
-    toast(n+' motif diambil'+(ukur?' dari ukuran '+ukur:'')+'. Motif menyesuaikan ukuran pola.')}
-  catch(e){toast('Motif tidak bisa diambil: '+((e&&e.message)||e))}
+    toast('Pola diganti. '+n+' motif dipertahankan'+(lost?' ('+lost+' motif bagian tidak ada di pola baru)':'')+'. Atur ukuran di editor bila perlu.')}
+  catch(e){toast('Pola tidak bisa diganti: '+((e&&e.message)||e))}
   finally{busy(null)}}
 $('#fjson').addEventListener('change',e=>{if(!window.__motifPick||Date.now()-window.__motifPick>600000)return;e.stopImmediatePropagation();window.__motifPick=0;const f=e.target.files[0];e.target.value='';if(f)importMotif(f)},true);
-$('#bmotif').onclick=()=>{if(typeof fbOpen=='function'){fbOpen('motif');$('#fbt').textContent='Ambil motif dari…';return}/* browser (bukan APK): pemilih file sistem, seperti Buka */
+$('#bmotif').onclick=()=>{if(typeof fbOpen=='function'){fbOpen('motif');$('#fbt').textContent='Ganti pola dari…';return}/* browser (bukan APK): pemilih file sistem, seperti Buka */
   window.__motifPick=Date.now();const el=$('#fjson');el.accept='.zprj,.zip,.json,application/json,application/zip,application/octet-stream';el.click()};
 /* pemilih sistem untuk ambil motif (cadangan bila Drive/folder HP tidak dipakai) */
 {const _fs=$('#fbsys').onclick;$('#fbsys').onclick=function(e){if(V.mode==='motif'){fbDone('sys');window.__motifPick=Date.now();const el=$('#fjson');el.accept='.zprj,.zip,.json,application/json,application/zip,application/octet-stream';el.click();return}return _fs.call(this,e)}}
