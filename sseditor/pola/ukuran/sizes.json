@@ -3,7 +3,8 @@
   "id": "12S",
   "label": "12S",
   "l": "12S-LS.zprj",
-  "fh": 304
+  "fh": 304,
+  "s": "12S.zprj"
  },
  {
   "id": "11S",
@@ -67,30 +68,47 @@
   "id": "3S",
   "label": "3S",
   "l": "3S-LS.zprj",
-  "fh": 461
+  "fh": 461,
+  "s": "3S.zprj"
  },
  {
   "id": "2S",
   "label": "2S",
   "s": "2S.zprj",
-  "fh": 473
+  "fh": 473,
+  "l": "2S-LS.zprj"
  },
  {
   "id": "XS",
   "label": "XS",
   "s": "XS.zprj",
-  "fh": 486
+  "fh": 486,
+  "l": "XS-LS.zprj"
  },
  {
   "id": "S",
   "label": "S",
   "s": "S.zprj",
-  "fh": 498
+  "fh": 498,
+  "l": "S-LS.zprj"
  },
  {
   "id": "L",
   "label": "L",
   "s": "L.zprj",
-  "fh": 531
+  "fh": 531,
+  "l": "L-LS.zprj"
+ },
+ {
+  "id": "M",
+  "label": "M",
+  "s": "M.zprj",
+  "l": "M-LS.zprj"
+ },
+ {
+  "id": "XL",
+  "label": "XL",
+  "s": "XL.zprj",
+  "l": "XL-LS.zprj"
  }
 ]
