@@ -277,7 +277,7 @@ export async function openPreview(getBlob, title) {
   }
   const ov = document.createElement('div');
   ov.id = 'p3Overlay';
-  ov.innerHTML = `<div class="p3Top"><div class="p3Title"></div><button class="p3Btn" data-reset>⟲ Pusatkan</button><button class="p3Btn" data-close>✕ Tutup</button></div>
+  ov.innerHTML = `<div class="p3Top"><div class="p3Title"></div><button class="p3Btn" data-reset>⟲ Pusatkan</button><button class="p3Btn" data-jpg>⬇ JPG</button><button class="p3Btn" data-close>✕ Tutup</button></div>
     <div class="p3Stage"><div class="p3Msg">Memuat file 3MF…</div></div><div class="p3Info">Menyiapkan…</div>`;
   ov.querySelector('.p3Title').textContent = title || 'Preview 3MF';
   document.body.appendChild(ov);
@@ -369,6 +369,17 @@ export async function openPreview(getBlob, title) {
 
     const loop = () => { if (!alive) return; controls.update(); renderer.render(scene, camera); raf = requestAnimationFrame(loop); };
     loop();
+    ov.querySelector('[data-jpg]').onclick = async () => {
+      try {
+        renderer.render(scene, camera);
+        const src = renderer.domElement, c = document.createElement('canvas');
+        c.width = src.width; c.height = src.height;
+        const x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(src, 0, 0);
+        const jpg = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('gagal membuat JPG')), 'image/jpeg', 0.95));
+        const base = String(title || 'preview').replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'preview';
+        info.textContent = await saveFile(jpg, 'preview-' + base + '.jpg');
+      } catch (e) { info.textContent = 'Gagal membuat JPG: ' + (e && e.message || e); }
+    };
   } catch (e) {
     if (!alive) return;
     msg.textContent = 'Preview gagal: ' + (e && e.message || e);

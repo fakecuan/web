@@ -642,7 +642,6 @@ body.ds-pen-holder-open #penHolderEditor{
    <h2>Model 3D siap cetak</h2>
    <p class="now" id="dlNote"></p>
    <button class="btn" id="dl">Unduh model (.3mf)</button>
-   <button class="btn" type="button" id="dlJpg">Unduh gambar preview (JPG)</button>
    <p class="sum" id="dlMsg"></p>
   </section>
 
@@ -3616,31 +3615,6 @@ document.querySelectorAll('.ds-home .ds-product-card').forEach(b=>b.addEventList
   if(txt!==last){last=txt;if(txt){note.innerHTML="Ukuran jadi ±: "+txt+"<small>lebar × tinggi × tebal (perkiraan model jadi, termasuk key)</small>";note.hidden=false}else note.hidden=true}
  }
  setInterval(update,600);update();
-})();
-</script>
-<script id="ds-jpg-preview">
-(()=>{
- const btn=document.getElementById("dlJpg");
- if(!btn)return;
- btn.addEventListener("click",()=>{
-  const msg=document.getElementById("dlMsg");
-  try{
-   renderer.render(scene,cam);
-   const src=renderer.domElement,c=document.createElement("canvas");
-   c.width=src.width;c.height=src.height;
-   const x=c.getContext("2d");
-   x.fillStyle="#ffffff";x.fillRect(0,0,c.width,c.height);
-   x.drawImage(src,0,0);
-   c.toBlob(blob=>{
-    if(!blob){msg.textContent="Gagal membuat gambar preview.";return}
-    const url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;const is2=!!(window.__dsC22&&active===window.__dsC22.P8);a.download="preview-"+(is2?"clicker-2x2":active===P1?"clicker-3x3":"produk")+".jpg";
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2500);
-    msg.textContent="Gambar preview JPG dimulai.";
-   },"image/jpeg",0.95);
-  }catch(err){msg.textContent="Gagal membuat gambar preview: "+(err&&err.message||err)}
- });
 })();
 </script>
 </body>
