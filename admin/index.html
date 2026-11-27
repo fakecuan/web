@@ -69,6 +69,7 @@
 <div class="dialog-actions"><button id="importGo" class="btn pink hidden" type="button">Masukkan pesanan</button></div></div></div>
 <div id="imgModal" class="modal hidden"><div class="dialog"><div class="dialog-head"><h2 id="imgTitle">Gambar desain</h2><button id="closeImg" class="btn light" type="button">✕</button></div>
 <div id="imgBody" style="margin-top:12px"></div><div id="imgStatus" class="sub" style="margin-top:8px"></div>
+<div style="margin-top:10px"><button id="imgCopy" class="btn light" type="button">📋 Salin desain</button></div>
 <div id="pasteZone" class="paste-zone" contenteditable="true" inputmode="none">Tempel gambar di sini: <b>Ctrl+V</b> di komputer, atau <b>tekan lama → Tempel</b> di HP.</div>
 <div class="img-actions"><button id="pickImg" class="btn pink" type="button">📁 Pilih dari perangkat</button><button id="clipImg" class="btn light" type="button">📋 Tempel dari clipboard</button></div>
 <input id="imgFile" type="file" accept="image/*" multiple class="hidden"></div></div>
@@ -307,7 +308,7 @@ async function saveOne(blob){const o=imgOrder;if(!o||!blob)return;if(!/^image\//
 const url=URL.createObjectURL(blob);$('imgStatus').textContent='Menyimpan gambar…';
 try{const img=await loadImage(url);let full,q=.85,max=1600;do{full=shrink(img,max,q);q-=.1;if(q<.5){max=Math.round(max*.75);q=.8}}while(full.length>900000);const thumb=shrink(img,180,.75);
 o.images=await store.addImage(o.id,o.images,thumb,full);const k=o.images.at(-1).k;fullCache[o.id+'/'+k]=full;imgSel=o.images.length-1;render();if(imgOrder===o)showImg();toast('Gambar desain disimpan ('+o.images.length+')')}catch(err){toast('Gagal menyimpan gambar: '+err.message);if(imgOrder===o)showImg()}finally{URL.revokeObjectURL(url)}}
-async function showImg(){const o=imgOrder;if(!o)return;const n=o.images.length;$('imgTitle').textContent='Desain · '+(o.customer_name||'')+(o.po_number?' · '+o.po_number:'');$('imgStatus').textContent=n?n+' gambar · klik gambar kecil untuk melihat, 🗑 untuk menghapus':'';
+async function showImg(){const o=imgOrder;if(!o)return;const n=o.images.length;$('imgTitle').textContent='Desain · '+(o.customer_name||'')+(o.po_number?' · '+o.po_number:'');$('imgStatus').textContent=n?n+' gambar · klik gambar kecil untuk melihat, 🗑 untuk menghapus':'';$('imgCopy').classList.toggle('hidden',!n);
 $('pasteZone').innerHTML='Tempel gambar di sini: <b>Ctrl+V</b> di komputer, atau <b>tekan lama → Tempel</b> di HP. Bisa lebih dari satu gambar.';
 if(!n){$('imgBody').innerHTML='<div class="muted" style="text-align:center;padding:24px">Belum ada gambar desain.</div>';return}
 if(imgSel>=n)imgSel=n-1;const cur=o.images[imgSel],key=o.id+'/'+cur.k;
@@ -316,6 +317,7 @@ if(!fullCache[key]){try{const f=await store.getImage(o.id,cur.k);if(f){fullCache
 function openImg(id){imgOrder=orders.find(x=>x.id===id);if(!imgOrder)return;imgSel=0;$('imgModal').classList.remove('hidden');showImg()}
 function closeImg(){$('imgModal').classList.add('hidden');imgOrder=null}
 $('ordersBody').addEventListener('click',e=>{const b=e.target.closest('[data-img]');if(b)openImg(b.dataset.img)});
+$('imgCopy').addEventListener('click',()=>{if(imgOrder)copyDesigns(imgOrder.id)});
 $('imgBody').addEventListener('click',async e=>{const d=e.target.closest('[data-del]');if(d){e.stopPropagation();const o=imgOrder,im=o.images[+d.dataset.del];if(!im||!confirm('Hapus gambar desain ini?'))return;try{o.images=await store.removeImage(o.id,o.images,im.k)}catch(err){toast('Gagal menghapus: '+err.message);return}delete fullCache[o.id+'/'+im.k];render();showImg();toast('Gambar dihapus');return}
 const t=e.target.closest('[data-sel]');if(t){imgSel=+t.dataset.sel;showImg()}});
 $('closeImg').addEventListener('click',closeImg);
