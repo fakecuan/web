@@ -245,24 +245,55 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = s => document.querySelector(s);
 const FONTS = window.FONTS;
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.5.2';
 const APK = window.Editor3MF || null, IS_APK = !!(APK && APK.pickSave);
 let APK_VER = ''; try { APK_VER = IS_APK ? APK.version() : ''; } catch (e) {}
 document.getElementById('ver').textContent = `3MF Editor HP · versi ${APP_VERSION}${IS_APK ? ' · APK ' + APK_VER : ''}`;
 document.getElementById('vtag').textContent = 'v' + APP_VERSION;
-// cek versi baru (hindari cache lama di browser)
-if (/^https?:/.test(location.protocol) && !(window.claude && window.claude.use)) setTimeout(async () => {
-  try {
-    const r = await fetch(new URL('version.json', location.href).href + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return;
-    const v = (await r.json()).version, n = x => String(x).split('.').map(Number), a = n(v), b = n(APP_VERSION);
-    let newer = false; for (let i = 0; i < Math.max(a.length, b.length); i++) { if ((a[i] || 0) !== (b[i] || 0)) { newer = (a[i] || 0) > (b[i] || 0); break; } }
-    if (!newer) return;
-    const bar = document.createElement('div'); bar.id = 'updbar';
-    bar.innerHTML = `Versi baru <b>v${v}</b> tersedia <button>Muat ulang</button>`;
-    bar.querySelector('button').onclick = () => { location.replace(location.pathname + '?v=' + v + location.hash); };
-    document.body.appendChild(bar);
-  } catch (e) {}
-}, 1500);
+// cek update: web (version.json) dan APK (rilis GitHub 3mf-editor-latest), dicek berkala
+const UPD = { seen: {} };
+function notifUpd(title, body, url) {
+  try { if ('Notification' in window && Notification.permission === 'granted') { const n = new Notification(title, { body, tag: 'upd-' + title }); n.onclick = () => { if (url) window.open(url, '_blank'); n.close(); }; } } catch (e) {}
+}
+function showUpd(key, text, btnLabel, action, url) {
+  if (UPD.seen[key]) return; UPD.seen[key] = 1;
+  document.querySelectorAll('#updbar').forEach(x => x.remove());
+  const bar = document.createElement('div'); bar.id = 'updbar';
+  bar.innerHTML = `<span>${text}</span><button>${btnLabel}</button><button class="x" title="Tutup" style="background:transparent;padding:0 4px">✕</button>`;
+  bar.querySelector('button').onclick = action;
+  bar.querySelector('.x').onclick = () => bar.remove();
+  document.body.appendChild(bar);
+  notifUpd('3MF Editor HP', text.replace(/<[^>]+>/g, ''), url);
+}
+async function checkUpdates() {
+  // 1) web: versi di version.json lebih baru dari yang sedang dibuka
+  if (/^https?:/.test(location.protocol) && !(window.claude && window.claude.use)) {
+    try {
+      const r = await fetch(new URL('version.json', location.href).href + '?t=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) { const v = (await r.json()).version, n = x => String(x).split('.').map(Number), a = n(v), b = n(APP_VERSION);
+        let newer = false; for (let i = 0; i < Math.max(a.length, b.length); i++) { if ((a[i] || 0) !== (b[i] || 0)) { newer = (a[i] || 0) > (b[i] || 0); break; } }
+        if (newer) showUpd('web-' + v, `Versi baru <b>v${v}</b> tersedia`, 'Muat ulang', () => location.replace(location.pathname + '?v=' + v + location.hash)); }
+    } catch (e) {}
+  }
+  // 2) APK: rilis terbaru di GitHub dibandingkan dengan APK yang terpasang
+  if (IS_APK) {
+    try {
+      const r = await fetch('https://api.github.com/repos/fakecuan/web/releases/tags/3mf-editor-latest', { headers: { Accept: 'application/vnd.github+json' } });
+      if (r.ok) { const rel = await r.json(); const m = /1\.(\d+)/.exec(rel.name || ''); const cur = +(String(APK_VER).split('.')[1] || 0);
+        const asset = (rel.assets || []).find(a => /\.apk$/i.test(a.name)); const url = asset ? asset.browser_download_url : rel.html_url;
+        if (m && +m[1] > cur) showUpd('apk-' + m[1], `APK baru <b>1.${m[1]}</b> tersedia`, 'Unduh APK', () => { window.open(url, '_blank'); }, url); }
+    } catch (e) {}
+  }
+}
+if (/^https?:/.test(location.protocol) || IS_APK) {
+  setTimeout(checkUpdates, 1500);
+  setInterval(checkUpdates, 20 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdates(); });
+}
+// izin notifikasi (sekali, lewat ketukan)
+if ('Notification' in window && Notification.permission === 'default') {
+  document.addEventListener('click', function askNotif() { document.removeEventListener('click', askNotif); try { Notification.requestPermission(); } catch (e) {} }, { once: true });
+}
 const ICON = {
   move:'<path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>',
   rotate:'<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/>',
@@ -1741,7 +1772,7 @@ $('#panel').addEventListener('click', e => {
     case 'twang': { const et2 = editingText(); if (!et2) break; const wr = { on: true, ang: -90, zf: 0.5, ...(et2.part.text.wrap || {}) }; let a = wr.ang + +b.dataset.v; if (a > 180) a -= 360; if (a < -180) a += 360; liveText({ wrap: { ...wr, ang: a } }); const r = $('#twang'); if (r) r.value = a; break; }
     case 'tnew': { const keep = prim(); tdraft = { ...TDEF, font: tdraft.font, h: tdraft.h, d: tdraft.d }; sel = keep ? [{ oid: keep.obj.id, pid: null }] : []; selMode = 'object'; refresh(true); break; }
     case 'fil': if (!e.target.closest('.ed')) assignFil(+b.dataset.i); break;
-    case 'fedit': { e.stopPropagation(); const i = +b.dataset.i; const ci = $('#colIn'); ci.value = state.filaments[i]; push(); ci.oninput = () => { state.filaments[i] = ci.value.toUpperCase(); rebuild(); }; ci.onchange = () => renderPanel(); ci.click(); break; }
+    case 'fedit': { e.stopPropagation(); const i = +b.dataset.i; const ci = $('#colIn'); const br = b.getBoundingClientRect(); ci.style.left = br.left + 'px'; ci.style.top = br.bottom + 'px'; ci.style.width = br.width + 'px'; ci.style.height = '1px'; ci.value = state.filaments[i]; push(); ci.oninput = () => { state.filaments[i] = ci.value.toUpperCase(); rebuild(); }; ci.onchange = () => renderPanel(); ci.click(); break; }
     case 'fadd': push(); state.filaments.push(['#FF6B6B', '#4F9DFF', '#FFD23F', '#2EC27E', '#B57EDC', '#000000', '#FF8C42'][state.filaments.length % 7]); refresh(true); break;
     case 'fdel': { if (state.filaments.length < 2) break; push(); const n = state.filaments.length; state.filaments.pop(); state.objects.forEach(o => o.parts.forEach(p => { if (p.extruder >= n) p.extruder = 1; })); refresh(true); break; }
     case 'pick': { if (e.target.closest('.mini') || e.target.closest('select')) break; const s = { oid: +b.dataset.o, pid: b.dataset.p ? +b.dataset.p : null }; selMode = s.pid ? 'part' : 'object'; toggleSel(s); break; }
