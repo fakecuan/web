@@ -251,6 +251,7 @@ td.pts{font-family:var(--display);font-weight:800;font-size:19px;color:var(--bal
    <div id="roundNav" class="rounds" style="margin-top:12px"></div>
   </div>
   <div id="ballNote" class="ballnote hide">Pindah bola</div>
+  <div id="autoNote" class="card row hide" style="border-color:rgba(67,227,154,.55);background:rgba(67,227,154,.12)"><b id="autoText" class="grow" style="color:#c9ffe5"></b><button class="btn" id="autoCancel">Batal</button></div>
   <div id="matches" class="stack"></div>
   <div id="rest" class="rest"></div>
   <div id="nextBox" class="card"></div>
@@ -412,17 +413,27 @@ function curIdx(){const i=session.rounds.findIndex(r=>r.running);if(i>=0)return 
 function start(){const i=viewIdx??curIdx(),r=session.rounds[i];if(!r||r.locked)return toast('Ronde ini sudah terkunci.');
  if(r.running){r.seconds=remaining(r);r.running=false;r.endsAt=null}else{session.rounds.forEach(x=>{if(x.running){x.seconds=remaining(x);x.running=false;x.endsAt=null}});if(remaining(r)<=0)return toast('Waktu ronde habis. Kunci & lanjut.');r.running=true;r.endsAt=Date.now()+r.seconds*1000}
  saveSession();renderSkor()}
-function lockNext(i,auto=false){const r=session.rounds[i];if(!r||r.locked)return;const left=auto?0:remaining(r),wasRun=r.running;
+/* mode: false = manual, 'time' = waktu habis, 'score' = semua lapangan mencapai total 21 */
+function lockNext(i,mode=false){const r=session.rounds[i];if(!r||r.locked)return;cancelAuto();const left=mode==='time'?0:remaining(r),wasRun=r.running;
  r.locked=true;r.running=false;r.seconds=0;r.endsAt=null;
  const n=session.rounds.findIndex((x,k)=>k>i&&!x.locked);
- if(n>=0){const nx=session.rounds[n];nx.seconds+=left;nx.dur=(nx.dur||0)+left;if(wasRun&&!auto){nx.running=true;nx.endsAt=Date.now()+nx.seconds*1000}viewIdx=n;
-  toast(auto?`Waktu ronde ${r.number} habis, skor dikunci.`:`Ronde ${r.number} dikunci${left?`, sisa ${left} detik pindah ke ronde ${nx.number}`:''}.`)}
- else toast('Ronde terakhir dikunci. Simpan ke arsip.');
+ if(n>=0){const nx=session.rounds[n];nx.seconds+=left;nx.dur=(nx.dur||0)+left;if(wasRun){nx.running=true;nx.endsAt=Date.now()+nx.seconds*1000}viewIdx=n;
+  const why=mode==='time'?`Waktu ronde ${r.number} habis`:mode==='score'?`Ronde ${r.number} selesai (skor 21)`:`Ronde ${r.number} dikunci`;
+  toast(`${why}. Lanjut ke ronde ${nx.number}${wasRun?', timer berjalan':''}${left&&mode!=='time'?` · sisa ${left} detik ikut dipindah`:''}.`,3500)}
+ else toast(mode==='time'?'Waktu ronde terakhir habis. Simpan ke arsip.':'Ronde terakhir selesai. Simpan ke arsip.',3500);
  saveSession();renderAll()}
 function bump(j,k,d){const r=session.rounds[viewIdx];if(!r||r.locked)return;const m=r.matches[j];
  if(d>0&&total(m)>=21)return;const before=ballTeam(m);undo.push({ri:viewIdx,j,s1:m.s1,s2:m.s2});
  if(!fin(m.s1))m.s1=0;if(!fin(m.s2))m.s2=0;m[k]=Math.max(0,Math.min(99,m[k]+d));popKey=j+k;
- if(ballTeam(m)!==before)ballChange();saveSession();renderSkor();popKey=null}
+ if(ballTeam(m)!==before)ballChange();saveSession();renderSkor();popKey=null;
+ if(r.matches.every(x=>total(x)>=21))scheduleAuto(viewIdx);else if(AUTO&&AUTO.ri===viewIdx)cancelAuto()}
+/* kunci & lanjut otomatis 3 detik setelah semua lapangan mencapai total 21 (bisa dibatalkan) */
+let AUTO=null;
+function scheduleAuto(ri){cancelAuto();const r=session.rounds[ri];let n=3;
+ const nx=session.rounds.find((x,k)=>k>ri&&!x.locked);
+ const show=()=>{$('autoNote').classList.remove('hide');$('autoText').textContent=nx?`Semua lapangan selesai · lanjut ke ronde ${nx.number} dalam ${n} detik`:`Ronde terakhir selesai · dikunci dalam ${n} detik`};
+ show();AUTO={ri,t:setInterval(()=>{n--;if(n>0)return show();const ok=session.rounds[ri]&&!session.rounds[ri].locked&&session.rounds[ri].matches.every(x=>total(x)>=21);cancelAuto();if(ok)lockNext(ri,'score')},1000)}}
+function cancelAuto(){if(AUTO){clearInterval(AUTO.t);AUTO=null}$('autoNote')?.classList.add('hide')}
 function ballChange(){toast('Pindah bola',4000);$('ballNote').classList.remove('hide');clearTimeout(ballTimer);ballTimer=setTimeout(()=>$('ballNote').classList.add('hide'),4500)}
 
 /* ---------- renders ---------- */
@@ -645,6 +656,7 @@ $('pick').onclick=e=>{const b=e.target.closest('[data-pick]');if(!b)return;const
 $('clearPick').onclick=()=>{session.picked=[];saveSession();renderSetup()};
 $('generate').onclick=async()=>{if(session.rounds.some(r=>r.matches.some(m=>fin(m.s1)))&&!await ask('Buat jadwal baru?','Jadwal dan skor sesi sekarang yang belum diarsipkan akan diganti.','Buat ulang',true))return;generate()};
 $('bStart').onclick=start;
+$('autoCancel').onclick=()=>{cancelAuto();toast('Lanjut otomatis dibatalkan. Tekan Kunci & lanjut bila siap.')};
 $('bLock').onclick=()=>lockNext(viewIdx);
 $('bUnlock').onclick=async()=>{const r=session.rounds[viewIdx];if(!await ask('Buka kunci ronde '+r.number+'?','Skor bisa dikoreksi lagi. Timer ronde tetap 00:00.','Buka kunci'))return;r.locked=false;saveSession();renderSkor()};
 $('bUndo').onclick=()=>{const u=undo.pop();if(!u)return;const m=session.rounds[u.ri]?.matches[u.j];if(m){m.s1=u.s1;m.s2=u.s2;viewIdx=u.ri}saveSession();renderSkor()};
@@ -672,7 +684,7 @@ $('bMigrate').onclick=migrateFromLegacy;
 
 /* timer tick: tampilan + kunci otomatis saat waktu habis */
 setInterval(()=>{const R=session.rounds;if(!R.length)return;const i=R.findIndex(r=>r.running&&!r.locked);if(i<0)return;
- if(remaining(R[i])<=0){lockNext(i,true);return}
+ if(remaining(R[i])<=0){lockNext(i,'time');return}
  if(tab==='skor'&&viewIdx===i)tickView(R[i])},500);
 
 const h=(location.hash||'').slice(1);if(TABS.includes(h))switch_(h);
