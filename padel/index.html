@@ -266,7 +266,7 @@ td.pts{font-family:var(--display);font-weight:800;font-size:19px;color:var(--bal
 <section id="v-klasemen" class="stack hide">
  <div><div class="eyebrow">Klasemen</div><h2 class="title">Siapa di puncak</h2></div>
  <div class="card"><div class="row between" style="margin-bottom:12px"><div class="h">Global</div><span id="globalInfo" class="mut xs"></span></div><div id="podium"></div><div id="boardGlobal" class="tablewrap"></div></div>
- <div class="card"><div class="row between" style="margin-bottom:12px"><div class="h">Sesi hari ini</div><span class="mut xs">belum diarsipkan</span></div><div id="boardToday" class="tablewrap"></div></div>
+ <div class="card"><div class="row between" style="margin-bottom:12px"><div class="h">Sesi hari ini</div><span class="mut xs">belum diarsipkan</span></div><div id="podiumToday"></div><div id="boardToday" class="tablewrap"></div></div>
 </section>
 
 <!-- PEMAIN -->
@@ -460,10 +460,11 @@ function tickView(r){const s=remaining(r),T=$('rTimer');T.textContent=fmt(s);T.c
 function rows(pts,st){return Object.keys({...pts,...st}).filter(id=>id!==FILLER).map(id=>({id,p:pts[id]||0,s:st[id]||blank()})).filter(x=>x.p||x.s.played).sort((a,b)=>b.p-a.p||pname(a.id).localeCompare(pname(b.id),'id'))}
 function tableHTML(list){if(!list.length)return '<p class="mut sm" style="margin:0">Belum ada hasil.</p>';
  return `<table><thead><tr><th>#</th><th>Nama</th><th class="n">Poin</th><th class="n">Main</th><th class="n">M-S-K</th></tr></thead><tbody>${list.map((x,i)=>`<tr class="r${i+1}"><td><span class="rank">${i+1}</span></td><td><b>${esc(pname(x.id))}</b></td><td class="n pts">${x.p}</td><td class="n">${x.s.played}</td><td class="n mut">${x.s.won}-${x.s.drawn}-${x.s.lost}</td></tr>`).join('')}</tbody></table>`}
-function renderBoards(){const t=todayBoard(),g=globalBoard(),gl=rows(g.pts,g.st);
- $('boardToday').innerHTML=tableHTML(rows(t.pts,t.st));$('boardGlobal').innerHTML=tableHTML(gl);$('globalInfo').textContent=archives.length+' arsip';
- const top=gl.slice(0,3);
- $('podium').innerHTML=top.length===3?`<div class="podium">${[1,0,2].map(i=>{const x=top[i],p=players[x.id]||{name:pname(x.id)};return `<div class="pod p${i+1}"><div class="rk">#${i+1}</div>${avatar(p,i===0?52:42)}<div class="nm">${esc(p.name)}</div><div class="pt">${x.p}</div><div class="mut xs">poin</div></div>`}).join('')}</div>`:''}
+function podiumHTML(list){const top=list.slice(0,3);if(top.length<3)return '';
+ return `<div class="podium">${[1,0,2].map(i=>{const x=top[i],p=players[x.id]||{name:pname(x.id)};return `<div class="pod p${i+1}"><div class="rk">#${i+1}</div>${avatar(p,i===0?52:42)}<div class="nm">${esc(p.name)}</div><div class="pt">${x.p}</div><div class="mut xs">poin</div></div>`}).join('')}</div>`}
+function renderBoards(){const t=todayBoard(),g=globalBoard(),gl=rows(g.pts,g.st),tl=rows(t.pts,t.st);
+ $('boardToday').innerHTML=tableHTML(tl);$('boardGlobal').innerHTML=tableHTML(gl);$('globalInfo').textContent=archives.length+' arsip';
+ $('podium').innerHTML=podiumHTML(gl);$('podiumToday').innerHTML=podiumHTML(tl)}
 function rankMap(){const g=globalBoard();const ids=Object.keys(players).sort((a,b)=>(g.pts[b]||0)-(g.pts[a]||0));return {g,rank:Object.fromEntries(ids.map((id,i)=>[id,(g.pts[id]||0)?i+1:null]))}}
 function avatar(p,size=44){const src=p.photo||p.photoUrl;return src?`<img class="av" style="width:${size}px;height:${size}px" src="${esc(src)}" alt="">`:`<div class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px">${ini(p.name)}</div>`}
 function renderPlayers(){const {g,rank}=rankMap(),q=norm($('pSearch').value||'');
