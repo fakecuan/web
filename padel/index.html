@@ -139,6 +139,15 @@ nav button.on{background:var(--ball);color:var(--ballInk)}
 .ml{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:10px;align-items:center;font-size:13px;padding:9px 0;border-top:1px solid var(--line)}
 .ml:first-of-type{border-top:0}
 .ml .c{font-family:var(--display);font-weight:700;color:var(--mut);letter-spacing:.08em}
+.em{border:1px solid var(--line);border-radius:14px;padding:10px;background:rgba(3,14,36,.35);display:grid;gap:8px}
+.em .top{display:flex;align-items:center;gap:6px;font-family:var(--display);font-weight:700;letter-spacing:.06em;color:var(--mut)}
+.em .top input{width:52px;padding:6px;text-align:center}
+.emg{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.emg .side2{display:grid;gap:6px;min-width:0}
+.emg select{padding:8px;font-size:13px}
+.emg .sc2{display:flex;align-items:center;gap:4px}
+.emg .sc2 input{width:54px;text-align:center;font-family:var(--display);font-size:22px;font-weight:800;padding:6px 2px}
+.ept{display:grid;grid-template-columns:1fr 80px auto;gap:6px;align-items:center}
 .ml .s{font-family:var(--display);font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
 
 /* klasemen */
@@ -469,7 +478,60 @@ function renderArchives(){
   const dp=(a.date||'').split('-');
   return `<details class="arch"><summary><div class="date"><b>${+dp[2]||'–'}</b><span>${MON[+dp[1]-1]||''}</span></div><div style="min-width:0"><b>${esc(a.name||'Pertandingan')}</b><div class="mut xs" style="margin-top:3px">${top||esc(longDate(a.date))}</div></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></summary>
   <div style="margin-top:12px"><div class="mut xs" style="margin-bottom:6px">${esc(longDate(a.date))}</div>${(a.matches||[]).map(m=>`<div class="ml"><span class="c">R${m.round??'-'}</span><span>${team(m.team1)}</span><span class="s">${m.s1}–${m.s2}</span><span style="text-align:right">${team(m.team2)}</span></div>`).join('')||'<p class="mut xs">Arsip impor tanpa detail skor.</p>'}
-  <button class="btn dan" style="margin-top:10px" data-delarch="${a._id}">Hapus arsip</button></div></details>`}).join('')||'<div class="card mut sm">Belum ada arsip. Hasil sesi yang disimpan dari tab Skor muncul di sini.</div>'}
+  <div class="row" style="margin-top:10px"><button class="btn" data-editarch="${a._id}">Edit arsip</button><span class="grow"></span><button class="btn dan" data-delarch="${a._id}">Hapus arsip</button></div>${a.editedAt?`<div class="mut xs" style="margin-top:6px">Diedit ${esc(new Date(a.editedAt).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}))}</div>`:''}</div></details>`}).join('')||'<div class="card mut sm">Belum ada arsip. Hasil sesi yang disimpan dari tab Skor muncul di sini.</div>'}
+/* ---------- edit arsip ---------- */
+let ED=null;
+function edOptions(sel){const ids=Object.keys(players).sort((a,b)=>pname(a).localeCompare(pname(b),'id'));if(sel&&sel!==FILLER&&!players[sel])ids.unshift(sel);
+ return `<option value="">— pilih —</option>${ids.map(id=>`<option value="${esc(id)}" ${id===sel?'selected':''}>${esc(pname(id))}</option>`).join('')}<option value="${FILLER}" ${sel===FILLER?'selected':''}>Pemain Pengisi</option>`}
+function edSync(){if(!ED)return;ED.name=$('eaName').value;ED.date=$('eaDate').value;
+ ED.matches.forEach((m,i)=>{const q=k=>$(`ea${k}${i}`);m.round=+q('R').value||1;m.court=+q('C').value||1;m.team1=[q('A0').value,q('A1').value];m.team2=[q('B0').value,q('B1').value];m.s1=q('S1').value===''?NaN:+q('S1').value;m.s2=q('S2').value===''?NaN:+q('S2').value});
+ ED.points.forEach((x,i)=>{x.playerId=$('eaP'+i).value;x.points=+$('eaV'+i).value||0})}
+function edRender(){const a=ED,useM=a.matches.length||!a.points.length;a.matches.sort((x,y)=>(x.round||1)-(y.round||1)||(x.court||1)-(y.court||1));
+ const ms=a.matches.map((m,i)=>`${i===0||a.matches[i-1].round!==m.round?`<div class="row between" style="margin-top:${i?8:0}px"><div class="eyebrow">Ronde ${m.round??1}</div><button class="btn ghost" data-edaddc="${m.round??1}">+ Lapangan</button></div>`:''}<div class="em"><div class="top">R<input id="eaR${i}" class="field" type="number" min="1" value="${m.round??1}" aria-label="Ronde"> L<input id="eaC${i}" class="field" type="number" min="1" value="${m.court??1}" aria-label="Lapangan"><span class="grow"></span><button class="btn ghost" data-edrm="${i}" aria-label="Hapus pertandingan">Hapus</button></div>
+  <div class="emg"><div class="side2"><select id="eaA0${i}" class="field" aria-label="Tim A pemain 1">${edOptions(m.team1[0])}</select><select id="eaA1${i}" class="field" aria-label="Tim A pemain 2">${edOptions(m.team1[1])}</select></div>
+  <div class="sc2"><input id="eaS1${i}" class="field" type="number" min="0" max="99" inputmode="numeric" value="${fin(m.s1)?m.s1:''}" aria-label="Skor tim A"><b class="mut">–</b><input id="eaS2${i}" class="field" type="number" min="0" max="99" inputmode="numeric" value="${fin(m.s2)?m.s2:''}" aria-label="Skor tim B"></div>
+  <div class="side2"><select id="eaB0${i}" class="field" aria-label="Tim B pemain 1">${edOptions(m.team2[0])}</select><select id="eaB1${i}" class="field" aria-label="Tim B pemain 2">${edOptions(m.team2[1])}</select></div></div></div>`).join('');
+ const ps=a.points.map((x,i)=>`<div class="ept"><select id="eaP${i}" class="field">${edOptions(x.playerId)}</select><input id="eaV${i}" class="field" type="number" min="0" value="${x.points}" aria-label="Poin"><button class="btn ghost" data-edprm="${i}">Hapus</button></div>`).join('');
+ $('modalBox').innerHTML=`<div class="row between" style="margin-bottom:12px"><div><div class="eyebrow">Edit arsip</div><div class="h" style="font-size:18px">${esc(a.name||'Pertandingan')}</div></div><button class="btn ghost" id="eaX" aria-label="Tutup">✕</button></div>
+ <div class="stack"><div class="grid2"><input id="eaName" class="field" maxlength="120" value="${esc(a.name)}" placeholder="Nama arsip" aria-label="Nama arsip"><input id="eaDate" class="field" type="date" value="${esc(a.date)}" aria-label="Tanggal"></div>
+ ${useM?`<div class="row between"><div class="h">Pertandingan · ${a.matches.length}</div><span class="mut xs">Poin dihitung ulang dari skor</span></div>${ms}<button class="btn" id="eaAddR">+ Tambah ronde</button>`
+ :`<div class="row between"><div class="h">Poin pemain</div><span class="mut xs">Arsip impor tanpa detail skor</span></div>${ps}<button class="btn" id="eaAddP">+ Tambah pemain</button>`}
+ <div class="row" style="margin-top:4px"><button class="btn ghost" id="eaCancel">Batal</button><span class="grow"></span><button class="btn pri" id="eaSave">Simpan perubahan</button></div></div>`;
+ $('eaX').onclick=$('eaCancel').onclick=()=>{ED=null;closeModal()};
+ $('eaSave').onclick=saveArchiveEdit;
+ const blankM=(round,court)=>({round,court,team1:['',''],team2:['',''],s1:NaN,s2:NaN});
+ if($('eaAddR'))$('eaAddR').onclick=()=>{edSync();const r=Math.max(0,...ED.matches.map(m=>m.round||1))+1,courts=Math.max(1,...ED.matches.map(m=>m.court||1));for(let c=1;c<=courts;c++)ED.matches.push(blankM(r,c));edRender();$('modalBox').scrollTop=1e6;toast(`Ronde ${r} ditambahkan.`)};
+ $('modalBox').querySelectorAll('[data-edaddc]').forEach(b=>b.onclick=()=>{edSync();const r=+b.dataset.edaddc,c=Math.max(0,...ED.matches.filter(m=>m.round===r).map(m=>m.court||1))+1;ED.matches.push(blankM(r,c));edRender()});
+ if($('eaAddP'))$('eaAddP').onclick=()=>{edSync();ED.points.push({playerId:'',points:0});edRender()};
+ $('modalBox').querySelectorAll('[data-edrm]').forEach(b=>b.onclick=()=>{edSync();ED.matches.splice(+b.dataset.edrm,1);edRender()});
+ $('modalBox').querySelectorAll('[data-edprm]').forEach(b=>b.onclick=()=>{edSync();ED.points.splice(+b.dataset.edprm,1);edRender()});
+}
+function editArchive(id){const a=archives.find(x=>x._id===id);if(!a)return;
+ ED=JSON.parse(JSON.stringify({_id:a._id,name:a.name||'',date:a.date||'',matches:(a.matches||[]).map(m=>({round:m.round,court:m.court,team1:[m.team1?.[0]||'',m.team1?.[1]||''],team2:[m.team2?.[0]||'',m.team2?.[1]||''],s1:m.s1,s2:m.s2})),points:a.matches?.length?[]:(a.points||[]).map(x=>({playerId:x.playerId,points:Number(x.points)||0}))}));
+ ED.matches.forEach(m=>{m.s1=Number(m.s1);m.s2=Number(m.s2)});
+ modal('');edRender()}
+async function saveArchiveEdit(){edSync();const a=ED,orig=archives.find(x=>x._id===a._id);if(!orig)return;
+ const name=a.name.trim(),date=a.date;if(!name||!date)return toast('Isi nama dan tanggal.');
+ if(archives.some(x=>x._id!==a._id&&norm(x.name)===norm(name)&&x.date===date))return toast('Nama & tanggal ini sudah dipakai arsip lain.');
+ let matches=[],points=[],stats={};
+ if(a.matches.length||!a.points.length){
+  for(const [i,m] of a.matches.entries()){const n=i+1;
+   if([...m.team1,...m.team2].some(x=>!x))return toast(`Pertandingan ${n}: pilih 4 pemain.`);
+   const real=[...m.team1,...m.team2].filter(x=>x!==FILLER);if(new Set(real).size!==real.length)return toast(`Pertandingan ${n}: ada pemain yang dipilih dua kali.`);
+   if(!Number.isInteger(m.s1)||!Number.isInteger(m.s2)||m.s1<0||m.s2<0||m.s1>99||m.s2>99)return toast(`Pertandingan ${n}: skor harus angka 0–99.`)}
+  if(!a.matches.length)return toast('Arsip harus punya minimal satu pertandingan. Pakai Hapus arsip kalau ingin menghapusnya.');
+  matches=[...a.matches].sort((x,y)=>x.round-y.round||x.court-y.court);const pts={};tally(matches,pts,stats);points=Object.entries(pts).map(([playerId,points])=>({playerId,points}));
+ }else{
+  if(a.points.some(x=>!x.playerId||x.playerId===FILLER))return toast('Pilih pemain di setiap baris poin.');
+  if(new Set(a.points.map(x=>x.playerId)).size!==a.points.length)return toast('Ada pemain yang muncul dua kali.');
+  points=a.points;stats=orig.stats||{};
+ }
+ const ids=matches.length?[...new Set(matches.flatMap(m=>[...m.team1,...m.team2]).filter(x=>x!==FILLER))]:points.map(x=>x.playerId);
+ const {_id,kind,...rest}=orig;
+ const doc={...rest,kind:'archive',id:_id,name,date,matches,points,stats,players:ids.map(x=>({playerId:x,name:pname(x)})),editedAt:new Date().toISOString()};
+ if(!db)return toast('Firebase belum tersambung.');
+ try{await fsSet('archive-'+_id,doc);Object.assign(orig,doc);ED=null;closeModal();renderAll();toast('Arsip diperbarui. Klasemen dihitung ulang.')}catch(e){writeErr(e)}
+}
 function renderAll(){renderSetup();renderSkor();renderBoards();renderPlayers();renderArchives()}
 
 /* ---------- profile modal ---------- */
@@ -600,7 +662,7 @@ $('bSave').onclick=async()=>{const name=$('mName').value.trim(),date=$('mDate').
  if(!db)return toast('Firebase belum tersambung.');try{await fsSet('archive-'+id,{...doc,kind:'archive',id});$('mName').value='';toast('Tersimpan ke arsip.');switch_('klasemen');renderAll()}catch(e){writeErr(e)}};
 $('pSearch').oninput=renderPlayers;
 $('plist').onclick=e=>{const b=e.target.closest('[data-prof]');if(b)openProfile(b.dataset.prof)};
-$('alist').onclick=async e=>{const b=e.target.closest('[data-delarch]');if(!b)return;const a=archives.find(x=>x._id===b.dataset.delarch);
+$('alist').onclick=async e=>{const ed=e.target.closest('[data-editarch]');if(ed)return editArchive(ed.dataset.editarch);const b=e.target.closest('[data-delarch]');if(!b)return;const a=archives.find(x=>x._id===b.dataset.delarch);
  if(!a||!await ask('Hapus arsip?',`"${esc(a.name)}" dan poinnya akan dikurangi dari klasemen global. Tidak bisa dibatalkan.`,'Hapus',true))return;
  archives=archives.filter(x=>x._id!==a._id);renderAll();await delDoc('archive',a._id);toast('Arsip dihapus.')};
 $('importFile').onchange=e=>{const f=e.target.files[0];if(f)importFile(f);e.target.value=''};
