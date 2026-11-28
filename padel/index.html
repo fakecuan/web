@@ -676,6 +676,15 @@ setInterval(()=>{const R=session.rounds;if(!R.length)return;const i=R.findIndex(
 
 const h=(location.hash||'').slice(1);if(TABS.includes(h))switch_(h);
 renderAll();connect();
+
+/* cek versi: bandingkan halaman di cache dengan versi terbaru di server; jika beda, muat ulang tanpa cache */
+async function checkUpdate(){try{
+ const url=location.pathname,h=t=>{let x=0;for(let i=0;i<t.length;i++)x=(x*31+t.charCodeAt(i))|0;return (x>>>0).toString(36)};
+ const [fresh,cached]=await Promise.all([fetch(url+'?_='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():''),fetch(url,{cache:'force-cache'}).then(r=>r.ok?r.text():'')]);
+ if(!fresh||!cached)return;const v=h(fresh);
+ if(v!==h(cached)&&new URLSearchParams(location.search).get('v')!==v){toast('Versi baru ditemukan, memuat ulang…',2000);setTimeout(()=>location.replace(url+'?v='+v+location.hash),800)}
+}catch(e){}}
+checkUpdate();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate()});
 </script>
 </body>
 </html>
